@@ -17,11 +17,16 @@ from captions.vtt import get_vtt
 
 def get_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--host', default='localhost')
-    parser.add_argument('-p', '--port', default=8080)
-    parser.add_argument('--data', dest='data_dir', default='data')
-    parser.add_argument('--index', dest='index_dir', default='index')
-    parser.add_argument('-d', '--debug', action='store_true')
+    parser.add_argument('--host', default='localhost',
+                        help='Host interface. Default: localhost')
+    parser.add_argument('-p', '--port', default=8080,
+                        help='Server port. Default: 8080')
+    parser.add_argument('--data', dest='data_dir', default='data',
+                        help='Directory of video metadata. Default: data')
+    parser.add_argument('--index', dest='index_dir', default='index',
+                        help='Directory of caption index. Default: index')
+    parser.add_argument('-d', '--debug', action='store_true',
+                        help='Run in debug mode with server auto-reload')
     return parser.parse_args()
 
 
