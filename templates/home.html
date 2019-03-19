@@ -176,7 +176,8 @@
         return Object.keys(data).map(
           t => ({
             time: t, color: color, query: results[color].query,
-            value: data[t].reduce((acc, x) => acc + x[1], 0)
+            value: data[t].reduce((acc, x) => acc + x[1], 0),
+            videos: data[t].map(x => x[0])
           })
         );
       })
@@ -205,6 +206,10 @@
               size: {
                 condition: {selection: {not: 'highlight'}, value: 2},
                 value: 8
+              },
+              opacity: {
+                condition: {selection: {not: 'highlight'}, value: 0.8},
+                value: 1
               }
             },
           }
