@@ -188,20 +188,27 @@
         data: {
           values: agg_results
         },
-        mark: {
-          type: 'line',
-          point: true
-        },
-        encoding: {
-          x: {field: 'time', type: 'temporal', timeUnit: 'utcyearmonthdate'},
-          y: {field: 'value', type: 'quantitative', title: unit},
-          color: {field: 'color', type: 'nominal', scale: null},
-          tooltip: [
-            {field: 'time', type: 'temporal', timeUnit: 'utcyearmonthdate', title: 'time'},
-            {field: 'query', type: 'nominal'},
-            {field: 'value', type: 'quantitative', title: unit}
-          ]
-        },
+        layer: [{
+            selection: {
+              highlight: {type: 'single', on: 'mouseover', nearest: 'true', field: 'color'}
+            },
+            mark: 'line',
+            encoding: {
+              x: {field: 'time', type: 'temporal', timeUnit: 'utcyearmonthdate', title: 'time'},
+              y: {field: 'value', type: 'quantitative', title: unit},
+              color: {field: 'color', type: 'nominal', scale: null},
+              tooltip: [
+                {field: 'time', type: 'temporal', timeUnit: 'utcyearmonthdate', title: 'time'},
+                {field: 'query', type: 'nominal'},
+                {field: 'value', type: 'quantitative', title: unit}
+              ],
+              size: {
+                condition: {selection: {not: 'highlight'}, value: 2},
+                value: 8
+              }
+            },
+          }
+        ],
         width: 1200,
         height: 500,
         autosize: {
