@@ -82,6 +82,7 @@ def load_video_data(data_dir):
 
 
 def load_index(index_dir):
+    print('Loading caption index: please wait...')
     documents = Documents.load(os.path.join(index_dir, 'docs.list'))
     lexicon = Lexicon.load(os.path.join(index_dir, 'words.lex'))
     index = CaptionIndex(os.path.join(index_dir, 'index.bin'),
