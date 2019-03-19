@@ -92,8 +92,8 @@
         'socialism | socialist', 'hurricane irma', 'fifa', 'facebook',
         'alternative facts | fake news', 'collusion', 'sean spicer & [resign]',
         'global warming', 'arab spring', '787 | dreamliner', 'trayvon martin',
-        'north korea | dprk', 'bernie sanders', 'nafta', 'ecoli', 'ebola',
-        'border wall | border fence', 'government shutdown'
+        'north korea | dprk', 'bernie sanders', 'nafta', 'e coli | ecoli',
+        'ebola', 'border wall | border fence', 'government shutdown'
     ];
 
     function choice(arr) {
@@ -186,7 +186,8 @@
           t => ({
             time: t, color: color, query: results[color].query,
             value: data[t].reduce((acc, x) => acc + x[1], 0),
-            videos: data[t].map(x => x[0]), video_count: data[t].length
+            video_count: data[t].length,
+            video_href: `/videos?ids=${JSON.stringify(data[t].map(x => x[0]))}`
           })
         );
       })
@@ -220,7 +221,8 @@
               opacity: {
                 condition: {selection: {not: 'highlight'}, value: 0.8},
                 value: 1
-              }
+              },
+              href: {field: 'video_href', type: 'nominal'}
             },
           }
         ],

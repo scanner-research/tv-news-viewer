@@ -225,7 +225,11 @@ def build_app(videos, index, documents, lexicon):
 
     @app.route('/videos')
     def get_video_names():
-        return jsonify(list(videos.keys()))
+        ids = request.args.get('ids', None)
+        if ids:
+            return jsonify(list(video_name_by_id[i] for i in json.loads(ids)))
+        else:
+            return jsonify(list(videos.keys()))
 
     @app.route('/videos/<video>')
     def get_video_info(video):
