@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Search</title>
+  <style>
+    .container {
+      width: auto;
+      height: auto;
+      margin: 5px;
+    }
+    .search-table-container table {
+      width: 850px;
+      border-spacing: 0px;
+    }
+    .search-table-container input[name=query] {
+      width: 600px;
+      height: 25px;
+      text-align: center;
+    }
+    .search-table-container input[name=options] {
+      width: 300px;
+      height: 25px;
+      text-align: center;
+    }
+    .color-box {
+      width: 25px;
+      height: 25px;
+    }
+    #global-options {
+      width: 300px;
+      height: auto;
+    }
+  </style>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.11/lodash.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/backbone.js/1.4.0/backbone-min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vega@5.3.0"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vega-lite@3.0.0-rc15"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vega-embed@4.0.0-rc1"></script>
+</head>
+<body>
+  <div class="container">
+    <p>
+      <b>Global Options</b> - These options are applied across all queries.
+      For a list of shows by channel: <a href="/shows" target="_blank">shows</a>
+    </p>
+<textarea id="global-options">{
+  "start_date": "{{ start_date }}",
+  "end_date": "{{ end_date }}",
+  "channel": null,
+  "show": null,
+  "hours": "0-23",
+  "weekdays": "1-7",
+  "aggregate": "{{ aggregate }}",
+  "window": 0
+}</textarea>
+  </div>
+
+  <div class="container">
+    <div class="search-table-container">
+      <table id="search-table">
+        <tr>
+          <th>&nbsp;</th>
+          <th>Keyword Query <a href="https://github.com/scanner-research/caption-index/blob/master/captions/query.py" target="_blank">(grammar)</a></th>
+          <th>Options</th>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="container">
+    <button type="button" id='addRow'>+</button>
+    <button type="button" id='removeRow'>-</button>
+    <button type="button" id='search'>Search</button>
+  </div>
+
+  <div class="container">
+    <div id="chart"></div>
+  </div>
+
+  <script>
+    const COLORS = [
+      'red', 'blue', 'green',  'orange', 'cyan', 'magenta',
+      'purple', 'yellow', 'gray', 'brown'
+    ];
+
+    const DEFAULT_QUERIES = {{ default_queries|safe }};
+
+    function choice(arr) {
+      return arr[Math.floor(Math.random() * arr.length)];
+    }
+
+    function getColor() {
+      for (var i in COLORS) {
+        if ($(`#search-table tr[name='${COLORS[i]}']`).length == 0)
+          return COLORS[i];
+      }
+      throw 'All colors used';
+    }
+
+    function addRow() {
+      var color = getColor();
+      let html = `<tr name='${color}'>
+        <td><div class="color-box" style="background-color: ${color};"></div></td>
+        <td><input type="text" name="query" value="${choice(DEFAULT_QUERIES)}"</td>
+        <td><input type="text" name="options" placeholder='e.g., {"channel": ..., "show": ...}'></td>
+      </tr>`;
+      $('#search-table tbody').append(html);
+    }
+    addRow();
+    $('#addRow').click(addRow);
+
+    function removeRow() {
+      if ($('#search-table tr').length > 2) {
+        $('#search-table tr:last').remove();
+      }
+    }
+    $('#removeRow').click(removeRow);
+
+    function search() {
+      let global_options_str = $.trim($('#global-options').val());
+      let global_options = global_options_str ? JSON.parse(global_options_str) : {};
+      let queries = [];
+      $('#search-table tr').each(function() {
+        if ($(this).attr('name')) {
+          let query_str = $.trim($(this).find("input[name='query']").val());
+          let local_options = $.trim($(this).find("input[name='options']").val());
+          if (query_str) {
+            let options = Object.assign({}, global_options);
+            queries.push({
+              color: $(this).attr('name'),
+              query_str: query_str,
+              options: Object.assign(options, local_options ? JSON.parse(local_options) : {})
+            });
+          }
+        }
+      });
+
+      let results = {};
+      var remaining = queries.length;
+      queries.forEach(query => {
+        var args = {query: query.query_str};
+        args = Object.assign(args, query.options);
+        $.ajax({
+          url: '/search',
+          type: 'get',
+          data: args,
+          success: resp => {
+            results[query.color] = {
+              query: query.query_str,
+              options: query.options,
+              data: resp
+            };
+            remaining--;
+            if (remaining <= 0) {
+              loadChart(global_options, results);
+            }
+          },
+          error: xhr => {
+            alert('Query failed...');
+            remaining--;
+            if (remaining <= 0) {
+              loadChart(global_options, results);
+            }
+          }
+        });
+      });
+    }
+    $('#search').click(search);
+
+    function loadChart(global_options, results) {
+      let window = _.get(global_options, 'window', 0);
+      let agg_results = Object.keys(results).flatMap(color => {
+        let data = results[color].data;
+        return Object.keys(data).map(
+          t => ({
+            time: t, color: color, query: results[color].query,
+            value: data[t].reduce((acc, x) => acc + x[1], 0)
+          })
+        );
+      })
+
+      let unit = window > 0 ? 'seconds' : 'mentions';
+      let vega_spec = {
+        $schema: 'https://vega.github.io/schema/vega-lite/v3.json',
+        description: `${window > 0 ? 'Keyword mentions' : 'Topic time'} over time`,
+        data: {
+          values: agg_results
+        },
+        mark: {
+          type: 'line',
+          point: true
+        },
+        encoding: {
+          x: {field: 'time', type: 'temporal', timeUnit: 'utcyearmonthdate'},
+          y: {field: 'value', type: 'quantitative', title: unit},
+          color: {field: 'color', type: 'nominal', scale: null},
+          tooltip: [
+            {field: 'time', type: 'temporal', timeUnit: 'utcyearmonthdate', title: 'time'},
+            {field: 'query', type: 'nominal'},
+            {field: 'value', type: 'quantitative', title: unit}
+          ]
+        },
+        width: 1200,
+        height: 500,
+        autosize: {
+          type: 'fit',
+          contains: 'padding'
+        }
+      }
+      vegaEmbed('#chart', vega_spec);
+    }
+  </script>
+
+  <script>
+    $('textarea').each(function () {
+      this.setAttribute('style', 'height:' + (this.scrollHeight) + 'px;overflow-y:hidden;');
+    }).on('input', function () {
+      this.style.height = 'auto';
+      this.style.height = (this.scrollHeight) + 'px';
+    });
+  </script>
+</body>
+</html>
