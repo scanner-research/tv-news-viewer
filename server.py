@@ -130,17 +130,6 @@ def get_aggregate_fn(agg):
     raise NotImplementedError()
 
 
-DEFAULT_QUERIES = [
-    'donald trump', 'hillary clinton', 'terrorism', 'isis', 'immigration',
-    'black lives | blacklivesmatter | blacklives', 'brexit',
-    'obamacare | affordable care act', 'irs | internal revenue service',
-    'socialism | socialist', 'hurricane irma', 'fifa', 'facebook',
-    'alternative facts | fake news', 'collusion', 'sean spicer & [resign]',
-    'global warming', 'arab spring', '787 | dreamliner', 'trayvon martin',
-    'north korea | dprk'
-]
-
-
 def build_app(videos, index, documents, lexicon):
     app = Flask(__name__)
 
@@ -155,7 +144,7 @@ def build_app(videos, index, documents, lexicon):
         end_date = format_date(max(v.date for v in videos.values()))
         return render_template(
             'home.html', start_date=start_date, end_date=end_date,
-            aggregate='month', default_queries=DEFAULT_QUERIES)
+            aggregate='month')
 
     @app.route('/search')
     def search():

@@ -85,7 +85,16 @@
       'purple', 'yellow', 'gray', 'brown'
     ];
 
-    const DEFAULT_QUERIES = {{ default_queries|safe }};
+    const DEFAULT_QUERIES = [
+        'donald trump', 'hillary clinton', 'terrorism', 'isis', 'immigration',
+        'black lives | blacklivesmatter | blacklives', 'brexit',
+        'obamacare | affordable care act', 'irs | internal revenue service',
+        'socialism | socialist', 'hurricane irma', 'fifa', 'facebook',
+        'alternative facts | fake news', 'collusion', 'sean spicer & [resign]',
+        'global warming', 'arab spring', '787 | dreamliner', 'trayvon martin',
+        'north korea | dprk', 'bernie sanders', 'nafta', 'ecoli', 'ebola',
+        'border wall | border fence', 'government shutdown'
+    ];
 
     function choice(arr) {
       return arr[Math.floor(Math.random() * arr.length)];
@@ -177,7 +186,7 @@
           t => ({
             time: t, color: color, query: results[color].query,
             value: data[t].reduce((acc, x) => acc + x[1], 0),
-            videos: data[t].map(x => x[0])
+            videos: data[t].map(x => x[0]), video_count: data[t].length
           })
         );
       })
@@ -201,7 +210,8 @@
               tooltip: [
                 {field: 'time', type: 'temporal', timeUnit: 'utcyearmonthdate', title: 'time'},
                 {field: 'query', type: 'nominal'},
-                {field: 'value', type: 'quantitative', title: unit}
+                {field: 'value', type: 'quantitative', title: unit},
+                {field: 'video_count', type: 'quantitative'}
               ],
               size: {
                 condition: {selection: {not: 'highlight'}, value: 2},
