@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Search</title>
+  <title>Keyword Search</title>
   <style>
     .container {
       width: auto;
@@ -16,13 +16,16 @@
       width: 600px;
       height: 25px;
       text-align: center;
+      margin: auto;
     }
     .search-table-container input[name=options] {
       width: 300px;
       height: 25px;
       text-align: center;
+      margin: auto;
     }
     .color-box {
+      margin: auto;
       width: 25px;
       height: 25px;
     }
@@ -61,7 +64,7 @@
     <div class="search-table-container">
       <table id="search-table">
         <tr>
-          <th>&nbsp;</th>
+          <th>Color</th>
           <th>Keyword Query <a href="https://github.com/scanner-research/caption-index/blob/master/captions/query.py" target="_blank">(grammar)</a></th>
           <th>Options</th>
         </tr>
@@ -181,13 +184,14 @@
     function loadChart(global_options, results) {
       let window = _.get(global_options, 'window', 0);
       let agg_results = Object.keys(results).flatMap(color => {
-        let data = results[color].data;
+        let result = results[color];
+        let data = result.data;
         return Object.keys(data).map(
           t => ({
-            time: t, color: color, query: results[color].query,
+            time: t, color: color, query: result.query,
             value: data[t].reduce((acc, x) => acc + x[1], 0),
             video_count: data[t].length,
-            video_href: `/videos?ids=${JSON.stringify(data[t].map(x => x[0]))}`
+            video_href: `/videos?ids=${JSON.stringify(data[t].map(x => x[0]))}&query=${result.query}&window=${window}`
           })
         );
       })
@@ -232,8 +236,11 @@
           type: 'fit',
           contains: 'padding'
         }
-      }
-      vegaEmbed('#chart', vega_spec);
+      };
+      vega_opts = {
+        loader: {'target': '_blank'}
+      };
+      vegaEmbed('#chart', vega_spec, vega_opts);
     }
   </script>
 
