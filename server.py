@@ -6,6 +6,7 @@ import os
 import math
 import json
 from collections import namedtuple
+from typing import Dict
 from flask import Flask, Response, jsonify, request, render_template
 from pathlib import Path
 
@@ -30,7 +31,7 @@ def get_args():
     return parser.parse_args()
 
 
-def load_json(file_path):
+def load_json(file_path: str):
     with open(file_path, 'rb') as f:
         return json.load(f)
 
@@ -40,15 +41,15 @@ Video = namedtuple('Video', [
 ])
 
 
-def parse_date(s):
+def parse_date(s: str):
     return datetime.strptime(s, '%Y-%m-%d') if s else None
 
 
-def format_date(d):
+def format_date(d: datetime):
     return d.strftime('%Y-%m-%d')
 
 
-def parse_int_set(s):
+def parse_int_set(s: str):
     if s is None or not s.strip():
         return None
     result = set()
@@ -63,11 +64,11 @@ def parse_int_set(s):
     return result if result else None
 
 
-def get_video_name(s):
+def get_video_name(s: str):
     return Path(s).name.split('.')[0]
 
 
-def load_video_data(data_dir):
+def load_video_data(data_dir: str):
     videos = {}
     for v in load_json(os.path.join(data_dir, 'videos.json')):
         id, name, show, channel, date, minute, duration = v
@@ -81,7 +82,7 @@ def load_video_data(data_dir):
     return videos
 
 
-def load_index(index_dir):
+def load_index(index_dir: str):
     print('Loading caption index: please wait...')
     documents = Documents.load(os.path.join(index_dir, 'docs.list'))
     lexicon = Lexicon.load(os.path.join(index_dir, 'words.lex'))
@@ -124,7 +125,7 @@ def get_video_filter():
         return None
 
 
-def get_aggregate_fn(agg):
+def get_aggregate_fn(agg: str):
     if agg is None or agg == 'day':
         return lambda d: d
     elif agg == 'month':
@@ -136,7 +137,8 @@ def get_aggregate_fn(agg):
     raise NotImplementedError()
 
 
-def build_app(videos, index, documents, lexicon):
+def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
+              documents: Documents, lexicon: Lexicon):
     app = Flask(__name__)
 
     # Make sure document name equals video name
@@ -146,8 +148,8 @@ def build_app(videos, index, documents, lexicon):
 
     @app.route('/')
     def root():
-        start_date = format_date(min(v.date for v in videos.values()))
-        end_date = format_date(max(v.date for v in videos.values()))
+        start_date = format_date(min(v.date for v in video_dict.values()))
+        end_date = format_date(max(v.date for v in video_dict.values()))
         return render_template(
             'home.html', start_date=start_date, end_date=end_date,
             aggregate='month')
@@ -169,7 +171,7 @@ def build_app(videos, index, documents, lexicon):
         totals_by_day = {}
         for result in query.execute(lexicon, index):
             document = documents[result.id]
-            video = videos.get(document.name)
+            video = video_dict.get(document.name)
             if video is None:
                 missing_videos += 1
                 continue
@@ -191,10 +193,10 @@ def build_app(videos, index, documents, lexicon):
                 totals_by_day[date_key] = []
             totals_by_day[date_key].append((video.id, total))
         print('  matched {} videos, {} filtered, {} missing'.format(
-            matched_videos, filtered_videos, missing_videos))
+              matched_videos, filtered_videos, missing_videos))
         return jsonify(totals_by_day)
 
-    video_name_by_id = {v.id: v.name for v in videos.values()}
+    video_name_by_id = {v.id: v.name for v in video_dict.values()}
 
     def video_name_or_id(v):
         try:
@@ -217,7 +219,7 @@ def build_app(videos, index, documents, lexicon):
             if window:
                 postings = PostingUtil.deoverlap(PostingUtil.dilate(
                     result.postings, window, video.duration))
-            segments.append(postings)
+            segments.extend(postings)
         return jsonify(segments)
 
     @app.route('/captions/<video>')
@@ -230,20 +232,62 @@ def build_app(videos, index, documents, lexicon):
         return response
 
     @app.route('/videos')
-    def get_video_names():
+    def show_videos():
         ids = request.args.get('ids', None)
-        if ids:
-            return jsonify(list(video_name_by_id[i] for i in json.loads(ids)))
-        else:
-            return jsonify(list(videos.keys()))
+        videos = list(video_name_by_id[i] for i in json.loads(ids))
 
-    @app.route('/videos/<video>')
+        segments_by_video = {}
+        query_str = request.args.get('query', None)
+        if query_str:
+            # Run the query on the selected videos
+            query = Query(query_str.upper())
+            window = request.args.get('window', type=int)
+
+            missing_videos = 0
+            matched_videos = 0
+            filtered_videos = 0
+            for result in query.execute(lexicon, index, [
+                documents[v] for v in videos if v in documents
+            ]):
+                document = documents[result.id]
+                video = video_dict.get(document.name)
+                if video is None:
+                    missing_videos += 1
+                    continue
+                else:
+                    matched_videos += 1
+
+                postings = result.postings
+                if window:
+                    postings = PostingUtil.deoverlap(PostingUtil.dilate(
+                        result.postings, window, video.duration))
+
+                # TODO: make this an intervallist
+                segments_by_video[video.name] = [
+                    (p.start, p.end) for p in postings]
+            print('  matched {} videos, {} missing'.format(
+                  matched_videos, missing_videos))
+        else:
+            # Return the entire video
+            for v in videos:
+                video = video_dict[v]
+                # TODO: make this an intervallist
+                segments_by_video[v] = [(0., video.duration)]
+
+        # TODO: serve vgrid widget
+        return jsonify(segments_by_video)
+
+    @app.route('/video-names')
+    def get_video_names():
+        return jsonify(list(video_dict.keys()))
+
+    @app.route('/video-info/<video>')
     def get_video_info(video):
         video = video_name_or_id(video)
-        return jsonify(videos[video])
+        return jsonify(video_dict[video])
 
     shows_by_channel = {}
-    for v in videos.values():
+    for v in video_dict.values():
         if v.channel not in shows_by_channel:
             shows_by_channel[v.channel] = set()
         shows_by_channel[v.channel].add(v.show)
@@ -258,9 +302,9 @@ def build_app(videos, index, documents, lexicon):
 
 
 def main(host, port, data_dir, index_dir, debug):
-    videos = load_video_data(data_dir)
+    video_dict = load_video_data(data_dir)
     index, documents, lexicon = load_index(index_dir)
-    app = build_app(videos, index, documents, lexicon)
+    app = build_app(video_dict, index, documents, lexicon)
     app.run(host=host, port=port, debug=debug)
 
 
