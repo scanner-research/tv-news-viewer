@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse
+import base64
 from datetime import datetime, timedelta
 import os
 import math
@@ -14,6 +15,9 @@ from captions import CaptionIndex, Documents, Lexicon
 from captions.util import PostingUtil
 from captions.query import Query
 from captions.vtt import get_vtt
+
+
+MIN_DATE = datetime(2009, 1, 1)
 
 
 def get_args():
@@ -148,12 +152,16 @@ def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
 
     @app.route('/')
     def root():
-        start_date = min(v.date for v in video_dict.values())
+        start_date = max(min(v.date for v in video_dict.values()), MIN_DATE)
         end_date = max(v.date for v in video_dict.values())
         return render_template(
-            'home.html', aggregate='month',
+            'home.html', host=request.host, aggregate='month',
             start_date=start_date.strftime('%m-%d-%Y'),
             end_date=end_date.strftime('%m-%d-%Y'))
+
+    @app.route('/embed')
+    def embed():
+        return render_template('embed.html')
 
     @app.route('/search')
     def search():
