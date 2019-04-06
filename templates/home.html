@@ -1,6 +1,17 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.11/lodash.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/backbone.js/1.4.0/backbone-min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/3.13.1/js-yaml.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vega@5.3.0"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vega-lite@3.0.0-rc15"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vega-embed@4.0.0-rc1"></script>
+
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+
   <title>Keyword Search</title>
   <style>
     .container {
@@ -12,52 +23,59 @@
       width: 850px;
       border-spacing: 0px;
     }
+    .search-table-container th {
+      text-align: center;
+    }
     .search-table-container input[name=query] {
       width: 600px;
-      height: 25px;
+      height: 40px;
       text-align: center;
       margin: auto;
     }
-    .search-table-container input[name=options] {
+    .search-table-container input[name=filters] {
       width: 300px;
-      height: 25px;
+      height: 40px;
       text-align: center;
       margin: auto;
     }
     .color-box {
       margin: auto;
-      width: 25px;
-      height: 25px;
+      width: 40px;
+      height: 40px;
     }
-    #global-options {
+    #chart-options {
       width: 300px;
       height: auto;
     }
+    #default-filters {
+      width: 300px;
+      height: auto;
+    }
+    #filters-help {
+      padding: 10px;
+      background-color: #F8F8F8;
+    }
+    #filters-help th {
+      text-align: center;
+    }
+    #filters-help td, th {
+      text-align: left;
+      padding-left: 10px;
+      padding-right: 10px;
+    }
   </style>
-
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.11/lodash.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/backbone.js/1.4.0/backbone-min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/vega@5.3.0"></script>
-  <script src="https://cdn.jsdelivr.net/npm/vega-lite@3.0.0-rc15"></script>
-  <script src="https://cdn.jsdelivr.net/npm/vega-embed@4.0.0-rc1"></script>
 </head>
 <body>
   <div class="container">
+    <p><b>Instructions:</b> Enter your queries below and hit search when ready.</p>
     <p>
-      <b>Global Options</b> - These options are applied across all queries.
-      For a list of shows by channel: <a href="/shows" target="_blank">shows</a>
+      <b>Chart options</b> - These are options to generate the chart (one per line).
+      <textarea id="chart-options">
+start_date: {{ start_date }}
+end_date: {{ end_date }}
+aggregate: {{ aggregate }}
+window: 0</textarea>
     </p>
-<textarea id="global-options">{
-  "start_date": "{{ start_date }}",
-  "end_date": "{{ end_date }}",
-  "channel": null,
-  "show": null,
-  "hours": "0-23",
-  "weekdays": "1-7",
-  "aggregate": "{{ aggregate }}",
-  "window": 0
-}</textarea>
   </div>
 
   <div class="container">
@@ -66,7 +84,7 @@
         <tr>
           <th>Color</th>
           <th>Keyword Query <a href="https://github.com/scanner-research/caption-index/blob/master/captions/query.py" target="_blank">(grammar)</a></th>
-          <th>Options</th>
+          <th>Filters (show usage: <input type="checkbox" id="showFiltersHelp" onclick="showFiltersHelp()">)</th>
         </tr>
       </table>
     </div>
@@ -77,6 +95,59 @@
     <button type="button" id='removeRow'>-</button>
     <button type="button" id='search'>Search</button>
   </div>
+
+  <div class="container" id="filters-help">
+    <p><b>Filters usage</b> - The following filters are supported (separated by ';'s).</p>
+    <div class="container">
+      <table>
+        <tr>
+          <th>Name</th>
+          <th>Description</th>
+          <th>Values</th>
+          <th>Default</th>
+          <th>Usage</th>
+        </tr>
+        <tr>
+          <td>channel</td>
+          <td>name of the channel</td>
+          <td>CNN, FOXNEWS, MSNBC</td>
+          <td></td>
+          <td>channel: CNN</td>
+        </tr>
+        <tr>
+          <td>show</td>
+          <td>name of the show</td>
+          <td><a href="/shows" target="_blank">list of shows</a></td>
+          <td></td>
+          <td>show: CNN Newsroom</td>
+        </tr>
+        <tr>
+          <td>hours</td>
+          <td>ranges of hours in 24h format</td>
+          <td>0-23 or 0, 1, 2, ...</td>
+          <td>0-23</td>
+          <td>hours: 9-17</td>
+        </tr>
+        <tr>
+          <td>weekdays</td>
+          <td>ranges of days; 1=Mon, 7=Sun</td>
+          <td>1-7 or 1, 2, ...</td>
+          <td>1-7</td>
+          <td>weekdays: 6-7</td>
+        </tr>
+      </table>
+    </div>
+  </div>
+  <script>
+    function showFiltersHelp() {
+      if ($('#showFiltersHelp').is(':checked')) {
+        $("#filters-help").show();
+      } else {
+        $("#filters-help").hide();
+      }
+    }
+    showFiltersHelp();
+  </script>
 
   <div class="container">
     <div id="chart"></div>
@@ -116,7 +187,7 @@
       let html = `<tr name='${color}'>
         <td><div class="color-box" style="background-color: ${color};"></div></td>
         <td><input type="text" name="query" value="${choice(DEFAULT_QUERIES)}"</td>
-        <td><input type="text" name="options" placeholder='e.g., {"channel": ..., "show": ...}'></td>
+        <td><input type="text" name="filters" placeholder='channel: none; show: none'></td>
       </tr>`;
       $('#search-table tbody').append(html);
     }
@@ -130,20 +201,51 @@
     }
     $('#removeRow').click(removeRow);
 
+    function getQueryOptions(chart_options, query_filters) {
+      let options = query_filters;
+      if (chart_options.start_date) {
+        options.start_date = chart_options.start_date.toISOString().split('T')[0];
+      }
+      if (chart_options.end_date) {
+        options.end_date = chart_options.end_date.toISOString().split('T')[0];
+      }
+      if (chart_options.aggregate) {
+        options.aggregate = chart_options.aggregate;
+      }
+      if (chart_options.window) {
+        options.window = chart_options.window;
+      }
+      return options;
+    }
+
+    function parseFilters(filter_str) {
+      let filters = {};
+      if (filter_str) {
+        filter_str.split(';').forEach(line => {
+          line = $.trim(line);
+          let i = line.indexOf(':');
+          let k = $.trim(line.substr(0, i));
+          let v = $.trim(line.substr(i + 1));
+          filters[k] = v;
+        });
+      }
+      return filters;
+    }
+
     function search() {
-      let global_options_str = $.trim($('#global-options').val());
-      let global_options = global_options_str ? JSON.parse(global_options_str) : {};
+      let chart_options_str = $.trim($('#chart-options').val());
+      let chart_options = chart_options_str ? jsyaml.safeLoad(chart_options_str) : {};
       let queries = [];
       $('#search-table tr').each(function() {
         if ($(this).attr('name')) {
           let query_str = $.trim($(this).find("input[name='query']").val());
-          let local_options = $.trim($(this).find("input[name='options']").val());
+          let query_filters_str = $.trim($(this).find("input[name='filters']").val());
           if (query_str) {
-            let options = Object.assign({}, global_options);
+            let query_options = getQueryOptions(chart_options, parseFilters(query_filters_str));
             queries.push({
               color: $(this).attr('name'),
               query_str: query_str,
-              options: Object.assign(options, local_options ? JSON.parse(local_options) : {})
+              options: query_options
             });
           }
         }
@@ -166,14 +268,14 @@
             };
             remaining--;
             if (remaining <= 0) {
-              loadChart(global_options, results);
+              loadChart(chart_options, results);
             }
           },
           error: xhr => {
             alert('Query failed...');
             remaining--;
             if (remaining <= 0) {
-              loadChart(global_options, results);
+              loadChart(chart_options, results);
             }
           }
         });
@@ -181,8 +283,8 @@
     }
     $('#search').click(search);
 
-    function loadChart(global_options, results) {
-      let window = _.get(global_options, 'window', 0);
+    function loadChart(chart_options, results) {
+      let window = _.get(chart_options, 'window', 0);
       let agg_results = Object.keys(results).flatMap(color => {
         let result = results[color];
         let data = result.data;
