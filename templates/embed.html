@@ -89,7 +89,7 @@
           };
           remaining--;
           if (remaining <= 0) {
-            loadChart('#chart', width, height, chart_options, search_results);
+            loadChart('#chart', chart_options, search_results, {width: width, height: height});
             renderText();
           }
         },
@@ -97,7 +97,7 @@
           alert('Query failed...');
           remaining--;
           if (remaining <= 0) {
-            loadChart('#chart', width, height, chart_options, search_results);
+            loadChart('#chart', chart_options, search_results, {width: width, height: height});
             renderText();
           }
         }

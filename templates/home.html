@@ -24,8 +24,6 @@
       padding: 10px;
     }
     .search-table-container table {
-      margin: auto;
-      width: 1050px;
       border-spacing: 0px;
     }
     .search-table-container th {
@@ -38,7 +36,7 @@
       margin: auto;
     }
     .search-table-container input[name=filters] {
-      width: 500px;
+      width: 400px;
       height: 40px;
       text-align: center;
       margin: auto;
@@ -173,6 +171,8 @@
   </div>
 
   <script>
+    const CHART_DIMS = {width: 1000, height: 400};
+
     const COLORS = [
       'red', 'blue', 'green',  'orange', 'cyan', 'magenta',
       'purple', 'yellow', 'gray', 'brown'
@@ -221,7 +221,7 @@
     $('#removeRow').click(removeRow);
 
     function getEmbedUrl(chart_options, queries) {
-      return 'http://{{ host }}/embed?width=800&height=400&data=' + btoa(JSON.stringify({options: chart_options, queries: queries}));
+      return `http://{{ host }}/embed?width=${CHART_DIMS.width}&height=${CHART_DIMS.height}&data=${btoa(JSON.stringify({options: chart_options, queries: queries}))}`;
     }
 
     function setEmbedString(url) {
@@ -271,7 +271,7 @@
             };
             remaining--;
             if (remaining <= 0) {
-              loadChart('#chart', 1200, 500, chart_options, search_results);
+              loadChart('#chart', chart_options, search_results, CHART_DIMS);
               setEmbedString(embed_url);
             }
           },
@@ -279,7 +279,7 @@
             alert('Query failed...');
             remaining--;
             if (remaining <= 0) {
-              loadChart('#chart', 1200, 500, chart_options, search_results);
+              loadChart('#chart', chart_options, search_results, CHART_DIMS);
               setEmbedString(embed_url);
             }
           }
