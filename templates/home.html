@@ -221,14 +221,14 @@
     $('#removeRow').click(removeRow);
 
     function getEmbedUrl(chart_options, queries) {
-      return 'http://{{ host }}/embed?data=' + btoa(JSON.stringify({options: chart_options, queries: queries}));
+      return 'http://{{ host }}/embed?width=800&height=400&data=' + btoa(JSON.stringify({options: chart_options, queries: queries}));
     }
 
     function setEmbedString(url) {
       if (url) {
         $('#embed-string').html(
           `<p><b>Share this chart:</b> <a href="${url}" target="_blank">${url}</a></p>
-           <p><b>Embed this chart:</b><textarea><iframe width="1400" height="700" src="${url}" /></iframe></textarea></p>`
+           <p><b>Embed this chart:</b> <textarea readonly rows="3"><iframe src="${url}"></iframe></textarea></p>`
         );
       } else {
         $('#embed-string').clear();
@@ -271,7 +271,7 @@
             };
             remaining--;
             if (remaining <= 0) {
-              loadChart('#chart', chart_options, search_results);
+              loadChart('#chart', 1200, 500, chart_options, search_results);
               setEmbedString(embed_url);
             }
           },
@@ -279,7 +279,7 @@
             alert('Query failed...');
             remaining--;
             if (remaining <= 0) {
-              loadChart('#chart', chart_options, search_results);
+              loadChart('#chart', 1200, 500, chart_options, search_results);
               setEmbedString(embed_url);
             }
           }

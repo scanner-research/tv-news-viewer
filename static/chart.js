@@ -1,6 +1,6 @@
 /* Embed a chart using vega-embed */
 
-function loadChart(div_id, chart_options, search_results) {
+function loadChart(div_id, width, height, chart_options, search_results) {
   let agg_search_results = Object.keys(search_results).flatMap(color => {
     let result = search_results[color];
     let data = result.data;
@@ -54,8 +54,8 @@ function loadChart(div_id, chart_options, search_results) {
         },
       }
     ],
-    width: 1200,
-    height: 500,
+    width: width,
+    height: height,
     autosize: {
       type: 'fit',
       contains: 'padding'
