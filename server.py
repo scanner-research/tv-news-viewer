@@ -148,11 +148,12 @@ def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
 
     @app.route('/')
     def root():
-        start_date = format_date(min(v.date for v in video_dict.values()))
-        end_date = format_date(max(v.date for v in video_dict.values()))
+        start_date = min(v.date for v in video_dict.values())
+        end_date = max(v.date for v in video_dict.values())
         return render_template(
-            'home.html', start_date=start_date, end_date=end_date,
-            aggregate='month')
+            'home.html', aggregate='month',
+            start_date=start_date.strftime('%m-%d-%Y'),
+            end_date=end_date.strftime('%m-%d-%Y'))
 
     @app.route('/search')
     def search():

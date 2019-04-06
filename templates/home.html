@@ -8,9 +8,15 @@
   <script src="https://cdn.jsdelivr.net/npm/vega@5.3.0"></script>
   <script src="https://cdn.jsdelivr.net/npm/vega-lite@3.0.0-rc15"></script>
   <script src="https://cdn.jsdelivr.net/npm/vega-embed@4.0.0-rc1"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.15.0/umd/popper.min.js"></script>
 
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-daterangepicker/3.0.3/daterangepicker.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-daterangepicker/3.0.3/daterangepicker.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.9/css/bootstrap-select.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.9/js/bootstrap-select.min.js"></script>
 
   <title>Keyword Search</title>
   <style>
@@ -20,7 +26,7 @@
       margin: 5px;
     }
     .search-table-container table {
-      width: 850px;
+      width: 1050px;
       border-spacing: 0px;
     }
     .search-table-container th {
@@ -33,7 +39,7 @@
       margin: auto;
     }
     .search-table-container input[name=filters] {
-      width: 300px;
+      width: 500px;
       height: 40px;
       text-align: center;
       margin: auto;
@@ -42,10 +48,6 @@
       margin: auto;
       width: 40px;
       height: 40px;
-    }
-    #chart-options {
-      width: 300px;
-      height: auto;
     }
     #default-filters {
       width: 300px;
@@ -63,19 +65,14 @@
       padding-left: 10px;
       padding-right: 10px;
     }
+    #chart-options input, select {
+      text-align: center;
+    }
   </style>
 </head>
 <body>
   <div class="container">
     <p><b>Instructions:</b> Enter your queries below and hit search when ready.</p>
-    <p>
-      <b>Chart options</b> - These are options to generate the chart (one per line).
-      <textarea id="chart-options">
-start_date: {{ start_date }}
-end_date: {{ end_date }}
-aggregate: {{ aggregate }}
-window: 0</textarea>
-    </p>
   </div>
 
   <div class="container">
@@ -90,11 +87,36 @@ window: 0</textarea>
     </div>
   </div>
 
-  <div class="container">
-    <button type="button" id='addRow'>+</button>
-    <button type="button" id='removeRow'>-</button>
-    <button type="button" id='search'>Search</button>
+  <div class="container" id="chart-options">
+    <button type="button" class="btn btn-secondary" id='addRow'>+</button>
+    <button type="button" class="btn btn-secondary" id='removeRow'>-</button>
+    &nbsp; | &nbsp; Plot results between
+    <input type="text" id="dateRange" value="{{ start_date }} - {{ end_date }}" />
+    &nbsp; aggregated by
+    <select class="selectpicker" id="aggregateBy" data-width="fit">
+      <option value="year">year</option>
+      <option value="month" selected="selected">month</option>
+      <option value="week">week</option>
+      <option value="day">day</option>
+    </select>
+    . &nbsp;
+    <button type="button" class="btn btn-primary" id='search'>Search the news!</button>
   </div>
+  <script>
+    $(function() {
+      $('#dateRange').daterangepicker({
+        opens: 'right'
+      });
+    });
+    function getChartOptions() {
+      return {
+        start_date: $('#dateRange').data('daterangepicker').startDate._d,
+        end_date: $('#dateRange').data('daterangepicker').endDate._d,
+        aggregate: $('#aggregateBy').val(),
+        window: 0
+      }
+    }
+  </script>
 
   <div class="container" id="filters-help">
     <p><b>Filters usage</b> - The following filters are supported (separated by ';'s).</p>
@@ -203,18 +225,10 @@ window: 0</textarea>
 
     function getQueryOptions(chart_options, query_filters) {
       let options = query_filters;
-      if (chart_options.start_date) {
-        options.start_date = chart_options.start_date.toISOString().split('T')[0];
-      }
-      if (chart_options.end_date) {
-        options.end_date = chart_options.end_date.toISOString().split('T')[0];
-      }
-      if (chart_options.aggregate) {
-        options.aggregate = chart_options.aggregate;
-      }
-      if (chart_options.window) {
-        options.window = chart_options.window;
-      }
+      options.start_date = chart_options.start_date.toISOString().split('T')[0];
+      options.end_date = chart_options.end_date.toISOString().split('T')[0];
+      options.aggregate = chart_options.aggregate;
+      options.window = chart_options.window;
       return options;
     }
 
@@ -233,8 +247,7 @@ window: 0</textarea>
     }
 
     function search() {
-      let chart_options_str = $.trim($('#chart-options').val());
-      let chart_options = chart_options_str ? jsyaml.safeLoad(chart_options_str) : {};
+      let chart_options = getChartOptions();
       let queries = [];
       $('#search-table tr').each(function() {
         if ($(this).attr('name')) {
