@@ -9,7 +9,7 @@ function loadChart(div_id, chart_options, search_results, dimensions) {
         time: t, color: color, query: result.query,
         value: data[t].reduce((acc, x) => acc + x[1], 0),
         video_count: data[t].length,
-        video_href: `/videos?ids=${JSON.stringify(data[t].map(x => x[0]))}&query=${result.query}&window=${window}`
+        video_href: `/videos?ids=${JSON.stringify(data[t].map(x => x[0]))}&query=${result.query}&window=${chart_options.window}`
       })
     );
   })
