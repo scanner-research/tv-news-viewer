@@ -78,6 +78,10 @@
       args = Object.assign(
         args, getQueryOptions(chart_options, parseFilters(query.filters))
       );
+      function displayResults() {
+        loadChart('#chart', chart_options, search_results, {width: width, height: height});
+        renderText();
+      };
       $.ajax({
         url: '/search',
         type: 'get',
@@ -89,16 +93,15 @@
           };
           remaining--;
           if (remaining <= 0) {
-            loadChart('#chart', chart_options, search_results, {width: width, height: height});
-            renderText();
+            displayResults();
           }
         },
         error: xhr => {
-          alert('Query failed...');
+          alert('Query failed. The chart may be incomplete.');
+          console.log('Failed:', query);
           remaining--;
           if (remaining <= 0) {
-            loadChart('#chart', chart_options, search_results, {width: width, height: height});
-            renderText();
+            displayResults();
           }
         }
       });

@@ -85,7 +85,7 @@
     <button type="button" class="btn btn-secondary" id='addRow'>+</button>
     <button type="button" class="btn btn-secondary" id='removeRow'>-</button>
     &nbsp; Plot results between
-    <input type="text" id="dateRange" value="{{ start_date }} - {{ end_date }}" />
+    <input type="text" id="dateRange" />
     &nbsp; aggregated by
     <select class="selectpicker" id="aggregateBy" data-width="fit">
       <option value="year">year</option>
@@ -97,11 +97,7 @@
     <button type="button" class="btn btn-primary" id='search'>Search the news!</button>
   </div>
   <script>
-    $(function() {
-      $('#dateRange').daterangepicker({
-        opens: 'right'
-      });
-    });
+
     function getChartOptions() {
       return {
         start_date: $('#dateRange').data('daterangepicker').startDate._d.toISOString().split('T')[0],
@@ -109,6 +105,23 @@
         aggregate: $('#aggregateBy').val(),
         window: 0
       }
+    }
+    function initChartOptions(chart_options) {
+      var start_date = '{{ start_date }}';
+      var end_date = '{{ end_date }}';
+      if (chart_options) {
+        start_date = chart_options.start_date;
+        end_date = chart_options.end_date;
+        $('#aggregateBy').val(chart_options.aggregate);
+        $('#window').val(chart_options.window);
+      }
+      $(function() {
+        $('#dateRange').daterangepicker({
+          opens: 'right',
+          startDate: moment(start_date, 'YYYY-MM-DD'),
+          endDate: moment(end_date, 'YYYY-MM-DD')
+        });
+      });
     }
   </script>
 
@@ -179,17 +192,35 @@
     ];
 
     const DEFAULT_QUERIES = [
-        'donald trump', 'hillary clinton', 'terrorism', 'isis', 'immigration',
-        'black lives | blacklivesmatter | blacklives', 'brexit',
-        'obamacare | affordable care act', 'irs | internal revenue service',
-        'socialism | socialist', 'hurricane irma', 'fifa', 'facebook',
-        'alternative facts | fake news', 'collusion', 'sean spicer & [resign]',
-        'global warming', 'arab spring', '787 | dreamliner', 'trayvon martin',
-        'north korea | dprk', 'bernie sanders', 'nafta', 'e coli | ecoli',
-        'ebola', 'border wall | border fence', 'government shutdown'
+        'donald trump',
+        'hillary clinton',
+        'terrorism',
+        'isis',
+        'immigration',
+        'black lives | blacklivesmatter | blacklives',
+        'brexit',
+        'obamacare | affordable care act',
+        'irs | internal revenue service',
+        'socialism | socialist',
+        'hurricane irma', 'fifa',
+        'facebook',
+        'alternative facts | fake news',
+        'collusion',
+        'sean spicer & [resign]',
+        'global warming',
+        'arab spring',
+        '787 | dreamliner',
+        'trayvon martin',
+        'north korea | dprk',
+        'bernie sanders',
+        'nafta',
+        'e coli | ecoli',
+        'ebola',
+        'border wall | border fence',
+        'government shutdown'
     ];
 
-    function choice(arr) {
+    function getRandomSample(arr) {
       return arr[Math.floor(Math.random() * arr.length)];
     }
 
@@ -201,16 +232,17 @@
       throw 'All colors used';
     }
 
-    function addRow() {
-      var color = getColor();
+    function addRow(query) {
+      let color = query ? query.color : getColor();
+      let query_str = query ? query.query : getRandomSample(DEFAULT_QUERIES);
+      let filters_str = query ? query.filters : '';
       let html = `<tr name='${color}'>
         <td><div class="color-box" style="background-color: ${color};"></div></td>
-        <td><input type="text" name="query" value="${choice(DEFAULT_QUERIES)}"</td>
-        <td><input type="text" name="filters" placeholder='channel: none; show: none'></td>
+        <td><input type="text" name="query" value="${query_str}"</td>
+        <td><input type="text" name="filters" value="${filters_str}" placeholder='channel: none; show: none'></td>
       </tr>`;
       $('#search-table tbody').append(html);
     }
-    addRow();
     $('#addRow').click(addRow);
 
     function removeRow() {
@@ -224,10 +256,14 @@
       return `http://{{ host }}/embed?width=${CHART_DIMS.width}&height=${CHART_DIMS.height}&data=${btoa(JSON.stringify({options: chart_options, queries: queries}))}`;
     }
 
-    function setEmbedString(url) {
-      if (url) {
+    function getShareUrl(chart_options, queries) {
+      return `http://{{ host }}/?data=${btoa(JSON.stringify({options: chart_options, queries: queries}))}`;
+    }
+
+    function setEmbedString(share_url, embed_url) {
+      if (embed_url && share_url) {
         $('#embed-string').html(
-          `<p><b><a href="${url}" target="_blank">Share</a> or embed this chart:</b> <textarea readonly rows="3"><iframe src="${url}"></iframe></textarea></p>`
+          `<p><b><a href="${share_url}" target="_blank">Share</a> or embed this chart:</b> <textarea readonly rows="3"><iframe src="${embed_url}"></iframe></textarea></p>`
         );
       } else {
         $('#embed-string').clear();
@@ -251,7 +287,13 @@
         }
       });
 
-      let embed_url = getEmbedUrl(chart_options, queries);
+      function displayResults() {
+        loadChart('#chart', chart_options, search_results, CHART_DIMS);
+        let embed_url = getEmbedUrl(chart_options, queries);
+        let share_url = getShareUrl(chart_options, queries);
+        setEmbedString(share_url, embed_url);
+      }
+
       let search_results = {};
       var remaining = queries.length;
       queries.forEach(query => {
@@ -270,22 +312,39 @@
             };
             remaining--;
             if (remaining <= 0) {
-              loadChart('#chart', chart_options, search_results, CHART_DIMS);
-              setEmbedString(embed_url);
+              displayResults();
             }
           },
           error: xhr => {
-            alert('Query failed...');
+            alert('Query failed. The chart may be incomplete.');
+            console.log('Failed:', query);
             remaining--;
             if (remaining <= 0) {
-              loadChart('#chart', chart_options, search_results, CHART_DIMS);
-              setEmbedString(embed_url);
+              displayResults();
             }
           }
         });
       });
     }
     $('#search').click(search);
+
+    /* Load initial plot */
+    let params = (new URL(document.location)).searchParams;
+    if (params.get('data')) {
+      let data = JSON.parse(atob(params.get('data')));
+      try {
+        data.queries.forEach(query => addRow(query));
+        initChartOptions(data.options);
+        // TODO: something about datepicker takes time to initialize
+        setTimeout(search, 100);
+      } catch (e) {
+        alert('Invalid data in url. Unable to load.');
+        console.log('Unable to load:', e);
+      }
+    } else {
+      initChartOptions();
+      addRow();
+    }
   </script>
 
   <script>

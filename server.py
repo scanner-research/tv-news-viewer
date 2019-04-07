@@ -156,8 +156,8 @@ def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
         end_date = max(v.date for v in video_dict.values())
         return render_template(
             'home.html', host=request.host, aggregate='month',
-            start_date=start_date.strftime('%m-%d-%Y'),
-            end_date=end_date.strftime('%m-%d-%Y'))
+            start_date=format_date(start_date),
+            end_date=format_date(end_date))
 
     @app.route('/embed')
     def embed():
