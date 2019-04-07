@@ -227,8 +227,7 @@
     function setEmbedString(url) {
       if (url) {
         $('#embed-string').html(
-          `<p><b>Share this chart:</b> <a href="${url}" target="_blank">${url}</a></p>
-           <p><b>Embed this chart:</b> <textarea readonly rows="3"><iframe src="${url}"></iframe></textarea></p>`
+          `<p><b><a href="${url}" target="_blank">Share</a> or embed this chart:</b> <textarea readonly rows="3"><iframe src="${url}"></iframe></textarea></p>`
         );
       } else {
         $('#embed-string').clear();
