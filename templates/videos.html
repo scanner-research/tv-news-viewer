@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.11/lodash.min.js"></script>
+
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+
+  <link rel="shortcut icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}" />
+
+  <title>Esper: Show Videos</title>
+
+  <style>
+    .container {
+      padding: 2px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div id="videos">
+      <pre id="json"></pre>
+    </div>
+  </div>
+  <script>
+    let params = (new URL(document.location)).searchParams;
+    let video_ids = params.get('ids');
+    let query = params.get('query');
+    let window_time = params.get('window');
+    $.ajax({
+      url: '/search-videos',
+      type: 'get',
+      data: {
+        ids: video_ids,
+        query: query,
+        window: window_time,
+      },
+      success: resp => {
+        $('#json').text(JSON.stringify(resp, null, 2));
+      },
+      error: xhr => {
+        alert('Search failed.');
+      }
+    });
+  </script>
+  <script src="./bundle.js"></script>
+</body>
+</html>

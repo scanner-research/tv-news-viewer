@@ -9,7 +9,7 @@ function loadChart(div_id, chart_options, search_results, dimensions) {
         time: t, color: color, query: result.query,
         value: data[t].reduce((acc, x) => acc + x[1], 0),
         video_count: data[t].length,
-        video_href: `/videos?ids=${JSON.stringify(data[t].map(x => x[0]))}&query=${result.query}&window=${chart_options.window}`
+        video_href: `/videos?query=${result.query}&window=${chart_options.window}&ids=${JSON.stringify(data[t].map(x => x[0]))}`
       })
     );
   })
@@ -22,10 +22,11 @@ function loadChart(div_id, chart_options, search_results, dimensions) {
       values: agg_search_results
     },
     layer: [{
-        selection: {
-          highlight: {type: 'single', on: 'mouseover', nearest: 'true', field: 'color'}
+        mark: {
+          type: 'point',
+          filled: true,
+          size: 30,
         },
-        mark: 'line',
         encoding: {
           x: {
             field: 'time', type: 'temporal', timeUnit: 'utcyearmonthdate',
@@ -42,16 +43,33 @@ function loadChart(div_id, chart_options, search_results, dimensions) {
             {field: 'value', type: 'quantitative', title: unit},
             {field: 'video_count', type: 'quantitative'}
           ],
-          size: {
-            condition: {selection: {not: 'highlight'}, value: 2},
-            value: 8
-          },
-          opacity: {
-            condition: {selection: {not: 'highlight'}, value: 0.8},
-            value: 1
-          },
           href: {field: 'video_href', type: 'nominal'}
         },
+      }, {
+        mark: 'line',
+        selection: {
+          highlight: {type: 'single', on: 'mouseover', nearest: true, field: 'color'}
+        },
+        encoding: {
+          x: {
+            field: 'time', type: 'temporal', timeUnit: 'utcyearmonthdate',
+            scale: {
+              domain: [chart_options.start_date, chart_options.end_date]
+            }
+          },
+          y: {field: 'value', type: 'quantitative'},
+          color: {field: 'color', type: 'nominal', scale: null},
+          size: {
+            condition: {selection: {not: 'highlight'}, value: 2},
+            value: 3
+          },
+          opacity: {
+            condition: {selection: {not: 'highlight'}, value: 0.5},
+            value: 1
+          },
+          tooltip: null,
+          href: null,
+        }
       }
     ],
     width: dimensions.width,

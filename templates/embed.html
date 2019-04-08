@@ -52,9 +52,9 @@
 
   <script>
     let params = (new URL(document.location)).searchParams;
-    let data = JSON.parse(atob(params.get("data")));
-    let width = params.get("width");
-    let height = params.get("height");
+    let data = JSON.parse(atob(params.get('data')));
+    let width = params.get('width');
+    let height = params.get('height');
     let queries = data.queries;
     let chart_options = data.options;
 

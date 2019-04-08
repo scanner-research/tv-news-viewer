@@ -17,7 +17,7 @@ from captions.query import Query
 from captions.vtt import get_vtt
 
 
-MIN_DATE = datetime(2009, 1, 1)
+MIN_DATE = datetime(2009, 7, 1)
 
 
 def get_args():
@@ -163,6 +163,10 @@ def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
     def embed():
         return render_template('embed.html')
 
+    @app.route('/videos')
+    def show_videos():
+        return render_template('videos.html')
+
     @app.route('/search')
     def search():
         query_str = request.args.get('query').upper()
@@ -214,34 +218,8 @@ def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
         except ValueError:
             return v
 
-    @app.route('/segments/<video>')
-    def get_segments(video):
-        video = video_name_or_id(video)
-        query_str = request.args.get('query').upper()
-        print('Searching (one video):', query_str)
-        query = Query(query_str)
-        window = request.args.get('window', type=int)
-
-        segments = []
-        for result in query.execute(lexicon, index, [documents[video].id]):
-            postings = result.postings
-            if window:
-                postings = PostingUtil.deoverlap(PostingUtil.dilate(
-                    result.postings, window, video.duration))
-            segments.extend(postings)
-        return jsonify(segments)
-
-    @app.route('/captions/<video>')
-    def get_captions(video):
-        video = video_name_or_id(video)
-        document = documents.prefix(video)[0]
-        vtt_str = get_vtt(index, lexicon, document)
-        response = Response(vtt_str, mimetype='text/vtt')
-        response.headers['Content-Type'] = 'text/vtt'
-        return response
-
-    @app.route('/videos')
-    def show_videos():
+    @app.route('/search-videos')
+    def search_videos():
         ids = request.args.get('ids', None)
         videos = list(video_name_by_id[i] for i in json.loads(ids))
 
@@ -273,7 +251,7 @@ def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
 
                 # TODO: make this an intervallist
                 segments_by_video[video.name] = [
-                    (p.start, p.end) for p in postings]
+                    (round(p.start, 1), round(p.end, 1)) for p in postings]
             print('  matched {} videos, {} missing'.format(
                   matched_videos, missing_videos))
         else:
@@ -285,6 +263,15 @@ def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
 
         # TODO: serve vgrid widget
         return jsonify(segments_by_video)
+
+    @app.route('/captions/<video>')
+    def get_captions(video):
+        video = video_name_or_id(video)
+        document = documents.prefix(video)[0]
+        vtt_str = get_vtt(index, lexicon, document)
+        response = Response(vtt_str, mimetype='text/vtt')
+        response.headers['Content-Type'] = 'text/vtt'
+        return response
 
     @app.route('/video-names')
     def get_video_names():
