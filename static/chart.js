@@ -55,7 +55,7 @@ function loadChart(div_id, chart_options, search_results, dimensions) {
       }
     ],
     width: dimensions.width,
-    height: dimensions.height
+    height: dimensions.height,
   };
   vega_opts = {
     loader: {'target': '_blank'},

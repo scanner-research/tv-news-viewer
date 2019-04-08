@@ -25,6 +25,7 @@
     }
     .search-table-container table {
       border-spacing: 0px;
+      width: 100%;
     }
     .search-table-container th {
       text-align: center;
@@ -76,11 +77,15 @@
       width: 100%;
       margin: auto;
     }
+    #chart {
+      width: 90%;
+      text-align: center;
+    }
   </style>
 </head>
 <body>
   <div class="container search-table-container">
-    <table width="100%" id="search-table">
+    <table id="search-table">
       <tr>
         <th>Color</th>
         <th width="55%">Keyword Query <a href="https://github.com/scanner-research/caption-index/blob/master/captions/query.py" target="_blank">(grammar)</a></th>
@@ -192,13 +197,13 @@
     showFiltersHelp();
   </script>
 
-  <div class="container">
+  <div class="container" id="chart-area">
     <div id="chart"></div>
     <div id="embed-string"></div>
   </div>
 
   <script>
-    const CHART_DIMS = {width: 1000, height: 400};
+    const EMBED_DIMS = {width: 1000, height: 400};
 
     const COLORS = [
       'red', 'blue', 'green',  'orange', 'cyan', 'magenta',
@@ -267,7 +272,7 @@
     $('#removeRow').click(removeRow);
 
     function getEmbedUrl(chart_options, queries) {
-      return `http://{{ host }}/embed?width=${CHART_DIMS.width}&height=${CHART_DIMS.height}&data=${btoa(JSON.stringify({options: chart_options, queries: queries}))}`;
+      return `http://{{ host }}/embed?width=${EMBED_DIMS.width}&height=${EMBED_DIMS.height}&data=${btoa(JSON.stringify({options: chart_options, queries: queries}))}`;
     }
 
     function getShareUrl(chart_options, queries) {
@@ -302,7 +307,7 @@
       });
 
       function displayResults() {
-        loadChart('#chart', chart_options, search_results, CHART_DIMS);
+        loadChart('#chart', chart_options, search_results, {width: $("#chart").width(), height: EMBED_DIMS.height});
         let embed_url = getEmbedUrl(chart_options, queries);
         let share_url = getShareUrl(chart_options, queries);
         setEmbedString(share_url, embed_url);
