@@ -30,13 +30,13 @@
       text-align: center;
     }
     .search-table-container input[name=query] {
-      width: 600px;
+      width: 100%;
       height: 40px;
       text-align: center;
       margin: auto;
     }
     .search-table-container input[name=filters] {
-      width: 400px;
+      width: 100%;
       height: 40px;
       text-align: center;
       margin: auto;
@@ -61,6 +61,14 @@
     #chart-options input, select {
       text-align: center;
     }
+    #extra-options {
+      padding: 10px;
+      background-color: #F4F4F4;
+      display: none;
+    }
+    #extra-options input {
+      text-align: center;
+    }
     #embed-string {
       word-wrap: break-word;
     }
@@ -72,11 +80,11 @@
 </head>
 <body>
   <div class="container search-table-container">
-    <table id="search-table">
+    <table width="100%" id="search-table">
       <tr>
         <th>Color</th>
-        <th>Keyword Query <a href="https://github.com/scanner-research/caption-index/blob/master/captions/query.py" target="_blank">(grammar)</a></th>
-        <th>Filters (show help: <input type="checkbox" id="showFiltersHelp" onclick="showFiltersHelp()">)</th>
+        <th width="55%">Keyword Query <a href="https://github.com/scanner-research/caption-index/blob/master/captions/query.py" target="_blank">(grammar)</a></th>
+        <th width="40%">Filters (show help: <input type="checkbox" id="showFiltersHelp" onclick="showFiltersHelp()">)</th>
       </tr>
     </table>
   </div>
@@ -86,7 +94,7 @@
     <button type="button" class="btn btn-secondary" id='removeRow'>-</button>
     &nbsp; Plot results between
     <input type="text" id="dateRange" />
-    &nbsp; aggregated by
+    aggregated by
     <select class="selectpicker" id="aggregateBy" data-width="fit">
       <option value="year">year</option>
       <option value="month" selected="selected">month</option>
@@ -96,16 +104,22 @@
     . &nbsp;
     <button type="button" class="btn btn-primary" id='search'>Search the news!</button>
   </div>
-  <script>
 
+  <div class="container" id="extra-options">
+    Dilation time window (in seconds):
+    <input type="number" id="timeWindow" value="0" min="0" max="300" style="width: 45px">
+  </div>
+
+  <script>
     function getChartOptions() {
       return {
         start_date: $('#dateRange').data('daterangepicker').startDate._d.toISOString().split('T')[0],
         end_date: $('#dateRange').data('daterangepicker').endDate._d.toISOString().split('T')[0],
         aggregate: $('#aggregateBy').val(),
-        window: 0
+        window: $('#timeWindow').val()
       }
     }
+
     function initChartOptions(chart_options) {
       var start_date = '{{ start_date }}';
       var end_date = '{{ end_date }}';
@@ -113,7 +127,7 @@
         start_date = chart_options.start_date;
         end_date = chart_options.end_date;
         $('#aggregateBy').val(chart_options.aggregate);
-        $('#window').val(chart_options.window);
+        $('#timeWindow').val(chart_options.window);
       }
       $(function() {
         $('#dateRange').daterangepicker({
@@ -239,7 +253,7 @@
       let html = `<tr name='${color}'>
         <td><div class="color-box" style="background-color: ${color};"></div></td>
         <td><input type="text" name="query" value="${query_str}"</td>
-        <td><input type="text" name="filters" value="${filters_str}" placeholder='channel: none; show: none'></td>
+        <td><input type="text" name="filters" value="${filters_str}" placeholder='NAME: VALUE ; ...'></td>
       </tr>`;
       $('#search-table tbody').append(html);
     }
@@ -330,6 +344,9 @@
 
     /* Load initial plot */
     let params = (new URL(document.location)).searchParams;
+    if (params.get("extras") == "1") {
+      $('#extra-options').show();
+    }
     if (params.get('data')) {
       let data = JSON.parse(atob(params.get('data')));
       try {
@@ -345,15 +362,6 @@
       initChartOptions();
       addRow();
     }
-  </script>
-
-  <script>
-    $('textarea').each(function () {
-      this.setAttribute('style', 'height:' + (this.scrollHeight) + 'px;overflow-y:hidden;');
-    }).on('input', function () {
-      this.style.height = 'auto';
-      this.style.height = (this.scrollHeight) + 'px';
-    });
   </script>
 </body>
 </html>
