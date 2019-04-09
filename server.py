@@ -265,9 +265,7 @@ def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
                 results.append({
                     'meta': video_to_dict(video),
                     'intervals': [
-                        (math.floor(video.fps * p.start),
-                         math.ceil(video.fps * p.end))
-                        for p in postings
+                        (p.start, p.end) for p in postings
                     ]
                 })
             print('  matched {} videos, {} missing'.format(
@@ -316,8 +314,12 @@ def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
         return jsonify(shows_by_channel)
 
     @app.route('/vgrid/bundle.js')
-    def get_vgrid():
+    def get_vgrid_bundle():
         return send_file('vgrid/dist/bundle.js', mimetype='text/javascript')
+
+    @app.route('/vgrid/index.css')
+    def get_vgrid_css():
+        return send_file('vgrid/dist/index.css', mimetype='text/css')
 
     return app
 

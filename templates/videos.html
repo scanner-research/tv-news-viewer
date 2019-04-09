@@ -9,19 +9,27 @@
 
   <link rel="shortcut icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}" />
 
+  <link rel="stylesheet" type="text/css" href="/vgrid/index.css" />
+
   <title>Esper: Show Videos</title>
 
   <style>
     .container {
-      padding: 2px;
+      padding: 10px;
+    }
+    #text-info {
+      text-align: center;
     }
   </style>
 </head>
 <body>
+  <div class="container" id="text-info"></div>
   <div class="container">
     <div id="videos"></div>
   </div>
   <script>
+    const MAX_VIDEOS = 10;
+
     function getVideoUrl(name) {
       return `https://storage.cloud.google.com/esper/tvnews/videos/${name}.mp4`;
     }
@@ -54,14 +62,22 @@
     }
 
     let params = (new URL(document.location)).searchParams;
-    let video_ids = params.get('ids');
+    var video_ids = JSON.parse(params.get('ids'));
+    let num_videos = video_ids.length;
+    if (video_ids.length > MAX_VIDEOS) {
+      video_ids = video_ids.slice(0, MAX_VIDEOS);
+    }
+    $("#text-info").html(
+      `<p>Showing ${video_ids.length} of ${num_videos} videos.</p>`
+    );
+
     let query = params.get('query');
     let window_time = params.get('window');
     $.ajax({
       url: '/search-videos',
       type: 'get',
       data: {
-        ids: video_ids,
+        ids: JSON.stringify(video_ids),
         query: query,
         window: window_time,
       },
