@@ -19,11 +19,40 @@
 </head>
 <body>
   <div class="container">
-    <div id="videos">
-      <pre id="json"></pre>
-    </div>
+    <div id="videos"></div>
   </div>
   <script>
+    function getVideoUrl(name) {
+      return `https://storage.cloud.google.com/esper/tvnews/videos/${name}.mp4`;
+    }
+
+    function showVideos(data) {
+      let videos = [];
+      let interval_blocks = [];
+      data.forEach(x => {
+        videos.push({
+          id: x.meta.id,
+          width: x.meta.width,
+          height: x.meta.height,
+          fps: x.meta.fps,
+          num_frames: x.meta.num_frames,
+          path: getVideoUrl(x.meta.name)
+        });
+        interval_blocks.push({
+          interval_dict: {
+            'results': x.intervals.map(i => ({
+              t: [i[0], i[1]], x: [0, 1], y: [0, 1],
+              payload: {draw_type: {type: 'DrawType_Bbox'}, metadata: {}}
+            }))
+          },
+          video_id: x.meta.id
+        });
+      });
+      console.log(videos);
+      console.log(interval_blocks);
+      renderVGrid(interval_blocks, {videos: videos}, {});
+    }
+
     let params = (new URL(document.location)).searchParams;
     let video_ids = params.get('ids');
     let query = params.get('query');
@@ -36,14 +65,12 @@
         query: query,
         window: window_time,
       },
-      success: resp => {
-        $('#json').text(JSON.stringify(resp, null, 2));
-      },
+      success: showVideos,
       error: xhr => {
         alert('Search failed.');
       }
     });
   </script>
-  <script src="./bundle.js"></script>
+  <script src="/vgrid/bundle.js"></script>
 </body>
 </html>

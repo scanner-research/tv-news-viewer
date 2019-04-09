@@ -1,3 +1,6 @@
 [submodule "deps/caption-index"]
 	path = deps/caption-index
 	url = https://github.com/scanner-research/caption-index.git
+[submodule "deps/vgrid"]
+	path = deps/vgrid
+	url = https://github.com/scanner-research/vgrid.git

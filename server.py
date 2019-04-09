@@ -8,7 +8,7 @@ import math
 import json
 from collections import namedtuple
 from typing import Dict
-from flask import Flask, Response, jsonify, request, render_template
+from flask import Flask, Response, jsonify, request, render_template, send_file
 from pathlib import Path
 
 from captions import CaptionIndex, Documents, Lexicon
@@ -41,7 +41,8 @@ def load_json(file_path: str):
 
 
 Video = namedtuple('Video', [
-    'id', 'name', 'show', 'channel', 'date', 'weekday', 'hour', 'duration'
+    'id', 'name', 'show', 'channel', 'date', 'weekday', 'hour', 'num_frames',
+    'fps', 'width', 'height'
 ])
 
 
@@ -75,14 +76,14 @@ def get_video_name(s: str):
 def load_video_data(data_dir: str):
     videos = {}
     for v in load_json(os.path.join(data_dir, 'videos.json')):
-        id, name, show, channel, date, minute, duration = v
+        id, name, show, channel, date, minute, num_frames, fps, width, height = v
         name = get_video_name(name)
         date = parse_date(date)
         weekday = date.isoweekday()  # Mon == 1, Sun == 7
         videos[name] = Video(
             id=id, name=name, show=show, channel=channel,
             date=date, weekday=weekday, hour=math.floor(minute / 60),
-            duration=duration)
+            num_frames=num_frames, fps=fps, width=width, height=height)
     return videos
 
 
@@ -115,7 +116,7 @@ def get_video_filter():
                 return False
             if hours:
                 video_start = video.hour
-                video_end = video.hour + round(video.duration / 3600)
+                video_end = video.hour + round(video.num_frames / video.fps / 3600)
                 for h in range(video_start, video_end + 1):
                     if h in hours:
                         break
@@ -198,7 +199,8 @@ def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
                 total = sum(
                     max(p.end - p.start, 0)
                     for p in PostingUtil.deoverlap(PostingUtil.dilate(
-                        result.postings, window, video.duration)))
+                        result.postings, window,
+                        video.num_frames / video.fps)))
             else:
                 total = len(result.postings)
             date_key = format_date(aggregate_fn(video.date))
@@ -218,12 +220,22 @@ def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
         except ValueError:
             return v
 
+    def video_to_dict(video):
+        return {
+            'id': video.id,
+            'name': video.name,
+            'width': video.width,
+            'height': video.height,
+            'fps': video.fps,
+            'num_frames': video.num_frames
+        }
+
     @app.route('/search-videos')
     def search_videos():
         ids = request.args.get('ids', None)
         videos = list(video_name_by_id[i] for i in json.loads(ids))
 
-        segments_by_video = {}
+        results = []
         query_str = request.args.get('query', None)
         if query_str:
             # Run the query on the selected videos
@@ -247,11 +259,17 @@ def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
                 postings = result.postings
                 if window:
                     postings = PostingUtil.deoverlap(PostingUtil.dilate(
-                        result.postings, window, video.duration))
+                        result.postings, window, video.num_frames / video.fps))
 
                 # TODO: make this an intervallist
-                segments_by_video[video.name] = [
-                    (round(p.start, 1), round(p.end, 1)) for p in postings]
+                results.append({
+                    'meta': video_to_dict(video),
+                    'intervals': [
+                        (math.floor(video.fps * p.start),
+                         math.ceil(video.fps * p.end))
+                        for p in postings
+                    ]
+                })
             print('  matched {} videos, {} missing'.format(
                   matched_videos, missing_videos))
         else:
@@ -259,10 +277,13 @@ def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
             for v in videos:
                 video = video_dict[v]
                 # TODO: make this an intervallist
-                segments_by_video[v] = [(0., video.duration)]
+                results.append({
+                    'meta': video_to_dict(video),
+                    'intervals': [(0, video.num_frames)]
+                })
 
         # TODO: serve vgrid widget
-        return jsonify(segments_by_video)
+        return jsonify(results)
 
     @app.route('/captions/<video>')
     def get_captions(video):
@@ -293,6 +314,10 @@ def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
     @app.route('/shows')
     def get_shows():
         return jsonify(shows_by_channel)
+
+    @app.route('/vgrid/bundle.js')
+    def get_vgrid():
+        return send_file('vgrid/dist/bundle.js', mimetype='text/javascript')
 
     return app
 
