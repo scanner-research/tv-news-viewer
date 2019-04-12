@@ -446,8 +446,7 @@ or <a href="#" onclick="setEmbedUrl('${embed_url}'); return false;">embed</a> ch
       try {
         data.queries.forEach(query => addRow(query));
         initChartOptions(data.options);
-        // TODO: something about datepicker takes time to initialize
-        setTimeout(search, 100);
+        search();
       } catch (e) {
         alert('Invalid data in url. Unable to load.');
         console.log('Unable to load:', e);
