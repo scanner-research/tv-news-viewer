@@ -332,6 +332,7 @@
 
     function removeRow(color) {
       $(`#search-table tr[name='${color}']`).remove();
+      $('#addRow').prop('disabled', false);
     }
 
     function addRow(query) {
@@ -347,6 +348,9 @@
         <td><input type="text" name="filters" value="${filters_str}" placeholder='channel: all; show: all'></td>
       </tr>`;
       $('#search-table tbody').append(html);
+      if ($('#search-table tr').length >= COLORS.length + 1) {
+        $('#addRow').prop('disabled', true);
+      }
     }
     $('#addRow').click(() => {addRow();});
 
