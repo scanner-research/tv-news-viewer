@@ -333,7 +333,13 @@ def main(host, port, data_dir, index_dir, debug):
     index, documents, lexicon = load_index(index_dir)
     app = build_app(video_dict, index, documents, lexicon,
                     0 if debug else 3600)
-    app.run(host=host, port=port, debug=debug)
+    kwargs = {
+        'host': host, 'port': port, 'debug': debug
+    }
+    if not debug:
+        kwargs['threaded'] = False
+        kwargs['processes'] = os.cpu_count()
+    app.run(**kwargs)
 
 
 if __name__ == '__main__':
