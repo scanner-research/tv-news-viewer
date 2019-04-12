@@ -11,8 +11,8 @@
 
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-daterangepicker/3.0.3/daterangepicker.min.css" />
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-daterangepicker/3.0.3/daterangepicker.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.8.0/css/bootstrap-datepicker.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.8.0/js/bootstrap-datepicker.min.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.9/css/bootstrap-select.min.css" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.9/js/bootstrap-select.min.js"></script>
 
@@ -64,6 +64,9 @@
     #chart-options input, select {
       text-align: center;
     }
+    #chart-options .datepicker {
+      width: 100px;
+    }
     #extra-options {
       padding: 10px;
       background-color: #F4F4F4;
@@ -97,8 +100,10 @@
 
   <div class="container" id="chart-options">
     <button type="button" class="btn btn-secondary" id='addRow'>Add query (+)</button>
-    &nbsp; Plot results between
-    <input type="text" id="dateRange" />
+    &nbsp; Between
+    <input type="text" class="datepicker" id="startDate">
+    and
+    <input type="text" class="datepicker" id="endDate">
     aggregated by
     <select class="selectpicker" id="aggregateBy" data-width="fit">
       <option value="year">year</option>
@@ -116,10 +121,25 @@
   </div>
 
   <script>
+    function fromDatepickerStr(s) {
+      let tokens = s.split('/');
+      return `${tokens[2]}-${tokens[0]}-${tokens[1]}`
+    }
+
+    function toDatepickerStr(s) {
+      let tokens = s.split('-');
+      return `${tokens[1]}/${tokens[2]}/${tokens[0]}`
+    }
+
     function getChartOptions() {
+      let start_date = fromDatepickerStr($('#startDate').val());
+      let end_date = fromDatepickerStr($('#endDate').val());
+      if (start_date > end_date) {
+        alertAndThrow('Start date cannot exceed end date.');
+      }
       return {
-        start_date: $('#dateRange').data('daterangepicker').startDate._d.toISOString().split('T')[0],
-        end_date: $('#dateRange').data('daterangepicker').endDate._d.toISOString().split('T')[0],
+        start_date: start_date,
+        end_date: end_date,
         aggregate: $('#aggregateBy').val(),
         window: $('#timeWindow').val()
       }
@@ -134,13 +154,20 @@
         $('#aggregateBy').val(chart_options.aggregate);
         $('#timeWindow').val(chart_options.window);
       }
-      $(function() {
-        $('#dateRange').daterangepicker({
-          opens: 'right',
-          startDate: moment(start_date, 'YYYY-MM-DD'),
-          endDate: moment(end_date, 'YYYY-MM-DD')
-        });
+      $('#startDate').datepicker({
+        format: 'mm/dd/yyyy',
+        forceParse: false,
+        startDate: toDatepickerStr(start_date),
+        endDate: toDatepickerStr(end_date)
       });
+      $('#startDate').val(toDatepickerStr(start_date));
+      $('#endDate').datepicker({
+        format: 'mm/dd/yyyy',
+        forceParse: false,
+        startDate: toDatepickerStr(start_date),
+        endDate: toDatepickerStr(end_date)
+      });
+      $('#endDate').val(toDatepickerStr(end_date));
     }
   </script>
 
@@ -159,14 +186,14 @@
           <td>channel</td>
           <td>name of the channel</td>
           <td>CNN, FOX, MSNBC</td>
-          <td>any</td>
+          <td>all</td>
           <td>channel: CNN</td>
         </tr>
         <tr>
           <td>show</td>
           <td>name of the show</td>
           <td><a href="/shows" target="_blank">list of shows</a></td>
-          <td>any</td>
+          <td>all</td>
           <td>show: CNN Newsroom</td>
         </tr>
         <tr>
@@ -303,7 +330,7 @@
         <td>${remove_btn}</td>
         <td><div class="color-box" style="background-color: ${color};"></div></td>
         <td><input type="text" name="query" value="${query_str}"</td>
-        <td><input type="text" name="filters" value="${filters_str}" placeholder='channel: any; show: any'></td>
+        <td><input type="text" name="filters" value="${filters_str}" placeholder='channel: all; show: all'></td>
       </tr>`;
       $('#search-table tbody').append(html);
     }
@@ -336,47 +363,6 @@
     function alertAndThrow(msg) {
       alert(msg);
       throw Error(msg);
-    }
-
-    function normalizeFilters(filters) {
-      let result = {};
-      Object.keys(filters).forEach(k => {
-        let v = filters[k];
-        let v_up = v.toUpperCase();
-        if (k == 'channel') {
-          if (v_up == 'ANY') {
-            // pass
-          } else if (v_up == 'FOX') {
-            result.channel = 'FOXNEWS';
-          } else if (v_up == 'CNN' || v_up == 'MSNBC' ||  v_up == 'FOXNEWS') {
-            result.channel = v_up;
-          } else {
-            throw Error(`Unknown channel: ${v}`);
-          }
-        } else if (k == 'show') {
-          if (v == 'ANY') {
-            // pass
-          } else {
-            var show = null;
-            for (var i in ALL_SHOWS) {
-              if (ALL_SHOWS[i].toUpperCase() == v_up) {
-                show = ALL_SHOWS[i];
-                break;
-              }
-            }
-            if (show) {
-              result.show = show;
-            } else {
-              throw Error(`'Unknown show: ${v}`);
-            }
-          }
-        } else if (k == 'dayofweek' || k == 'hours') {
-          result[k] = filters[k];
-        } else {
-          throw Error(`Unknown filter: ${k}`);
-        }
-      });
-      return result;
     }
 
     function search() {

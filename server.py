@@ -172,7 +172,7 @@ def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
 
     @app.route('/embed')
     def embed():
-        return render_template('embed.html')
+        return render_template('embed.html', shows=all_shows)
 
     @app.route('/videos')
     def show_videos():

@@ -52,6 +52,12 @@
   </div>
 
   <script>
+    const ALL_SHOWS = [
+      {% for show in shows %}
+      "{{ show }}",
+      {% endfor %}
+    ];
+
     let params = (new URL(document.location)).searchParams;
     let data = JSON.parse(atob(params.get('data')));
     let width = params.get('width');
@@ -83,7 +89,7 @@
     queries.forEach(query => {
       var args = {query: query.query};
       args = Object.assign(
-        args, getQueryOptions(chart_options, parseFilters(query.filters))
+        args, getQueryOptions(chart_options, normalizeFilters(parseFilters(query.filters)))
       );
       function displayResults() {
         loadChart('#chart', chart_options, search_results, {width: width, height: height});

@@ -41,8 +41,20 @@ const FILTER_REPLACE_REG_EXP = new RegExp('\\s*:\\s*');
 function loadChart(div_id, chart_options, search_results, dimensions) {
   let getSeriesName = (color) => {
     let result = search_results[color];
-    return `${result.query}${result.filters ? ' @ ' + result.filters.replace(FILTER_REPLACE_REG_EXP, '='): ''}`;
+    let query = result.query.replace('[', '').replace(']', '');
+    let filters = result.filters ? ' @ ' + result.filters.replace(FILTER_REPLACE_REG_EXP, '=') : '';
+    return `${query}${filters}`;
   };
+  let getDateFormat = (agg) => {
+    if (agg == 'year') {
+      return '%Y';
+    } else if (agg == 'month') {
+      return '%b `%y';
+    } else {
+      return '%b %d, %Y';
+    }
+  }
+
   let unit = chart_options.window > 0 ? 'seconds' : 'mentions';
   let point_data = Object.keys(search_results).flatMap(color => {
     let result = search_results[color];
@@ -91,9 +103,10 @@ function loadChart(div_id, chart_options, search_results, dimensions) {
           domain: [chart_options.start_date, chart_options.end_date]
         }
       },
-      tooltip: [
-        {field: 'time', type: 'temporal', timeUnit: 'utcyearmonthdate', title: 'date'}
-      ].concat(series.map(x => ({field: x.name, type: 'nominal'}))),
+      tooltip: [{
+        field: 'time', type: 'temporal', timeUnit: 'utcyearmonthdate',
+        title: 'time', format: getDateFormat(chart_options.aggregate)
+      }].concat(series.map(x => ({field: x.name, type: 'nominal'}))),
     },
     layer: [{
       data: {values: point_data},
@@ -137,7 +150,7 @@ function loadChart(div_id, chart_options, search_results, dimensions) {
           title: null,
           axis: {
             titleFontSize: 12, labelFontSize: 12, tickCount: 24,
-            format: '%m-%d-%Y', labelAngle: -10
+            format: getDateFormat(chart_options.aggregate), labelAngle: -10
           },
           scale: {
             domain: [chart_options.start_date, chart_options.end_date]
@@ -153,7 +166,7 @@ function loadChart(div_id, chart_options, search_results, dimensions) {
         size: {field: 'size', type: 'quantitative', scale: null},
         href: {field: 'video_href', type: 'nominal'},
         tooltip: [
-          {field: 'time', type: 'temporal', timeUnit: 'utcyearmonthdate', title: 'date'},
+          {field: 'time', type: 'temporal', timeUnit: 'utcyearmonthdate', title: 'time', format: getDateFormat(chart_options.aggregate)},
           {field: 'query', type: 'nominal'},
           {field: 'value', type: 'quantitative'}
         ]
@@ -193,4 +206,45 @@ function parseFilters(filter_str) {
     });
   }
   return filters;
+}
+
+function normalizeFilters(filters) {
+  let result = {};
+  Object.keys(filters).forEach(k => {
+    let v = filters[k];
+    let v_up = v.toUpperCase();
+    if (k == 'channel') {
+      if (v_up == 'ALL') {
+        // pass
+      } else if (v_up == 'FOX') {
+        result.channel = 'FOXNEWS';
+      } else if (v_up == 'CNN' || v_up == 'MSNBC' ||  v_up == 'FOXNEWS') {
+        result.channel = v_up;
+      } else {
+        throw Error(`Unknown channel: ${v}`);
+      }
+    } else if (k == 'show') {
+      if (v == 'ALL') {
+        // pass
+      } else {
+        var show = null;
+        for (var i in ALL_SHOWS) {
+          if (ALL_SHOWS[i].toUpperCase() == v_up) {
+            show = ALL_SHOWS[i];
+            break;
+          }
+        }
+        if (show) {
+          result.show = show;
+        } else {
+          throw Error(`'Unknown show: ${v}`);
+        }
+      }
+    } else if (k == 'dayofweek' || k == 'hours') {
+      result[k] = filters[k];
+    } else {
+      throw Error(`Unknown filter: ${k}`);
+    }
+  });
+  return result;
 }
