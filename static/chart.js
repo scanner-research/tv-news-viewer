@@ -124,7 +124,7 @@ function loadChart(div_id, chart_options, search_results, dimensions) {
         y: {field: 'value', type: 'quantitative'},
         color: {field: 'color', type: 'nominal', scale: null},
         size: {value: 2},
-        opacity: {value: 0.5}
+        opacity: {value: 0.6}
       }
     }, {
       mark: 'rule',
@@ -164,6 +164,7 @@ function loadChart(div_id, chart_options, search_results, dimensions) {
         },
         color: {field: 'color', type: 'nominal', scale: null},
         size: {field: 'size', type: 'quantitative', scale: null},
+        opacity: {value: 1},
         href: {field: 'video_href', type: 'nominal'},
         tooltip: [
           {field: 'time', type: 'temporal', timeUnit: 'utcyearmonthdate', title: 'time', format: getDateFormat(chart_options.aggregate)},
