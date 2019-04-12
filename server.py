@@ -18,6 +18,7 @@ from captions.vtt import get_vtt
 
 
 MIN_DATE = datetime(2010, 1, 1)
+MAX_DATE = datetime(2018, 4, 1)
 
 
 def get_args():
@@ -164,7 +165,7 @@ def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
     @app.route('/')
     def root():
         start_date = max(min(v.date for v in video_dict.values()), MIN_DATE)
-        end_date = max(v.date for v in video_dict.values())
+        end_date = min(max(v.date for v in video_dict.values()), MAX_DATE)
         return render_template(
             'home.html', host=request.host, aggregate='month',
             start_date=format_date(start_date),
