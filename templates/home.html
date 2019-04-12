@@ -84,6 +84,18 @@
       width: 90%;
       text-align: center;
     }
+    #shade {
+      background-color: #000000;
+      display: none;
+      opacity: 0.2;
+      height: 100%;
+      width: 100%;
+      position:fixed;
+      top: 0px;
+      right: 0px;
+      bottom:0px;
+      left:0px;
+    }
   </style>
 </head>
 <body>
@@ -233,6 +245,8 @@
     <p name="text"></p>
     <textarea readonly rows="3" name="embed"></textarea>
   </div>
+
+  <div id="shade">&nbsp;</div>
 
   <script>
     const EMBED_DIMS = {width: 1000, height: 400};
@@ -394,7 +408,7 @@ or <a href="#" onclick="setEmbedUrl('${embed_url}'); return false;">embed</a> ch
 
       let search_results = {};
       var remaining = queries.length;
-      queries.map(query => {
+      let parsed_queries = queries.map(query => {
         var filters;
         try {
           filters = normalizeFilters(parseFilters(query.filters));
@@ -407,7 +421,10 @@ or <a href="#" onclick="setEmbedUrl('${embed_url}'); return false;">embed</a> ch
             {query: query.query},
             getQueryOptions(chart_options, filters))
         };
-      }).forEach(query => {
+      });
+
+      $('#shade').show();
+      parsed_queries.forEach(query => {
         $.ajax({
           url: '/search',
           type: 'get',
@@ -420,6 +437,7 @@ or <a href="#" onclick="setEmbedUrl('${embed_url}'); return false;">embed</a> ch
             };
             remaining--;
             if (remaining <= 0) {
+              $('#shade').hide();
               displayResults();
             }
           },
@@ -428,6 +446,7 @@ or <a href="#" onclick="setEmbedUrl('${embed_url}'); return false;">embed</a> ch
             console.log('Failed:', query);
             remaining--;
             if (remaining <= 0) {
+              $('#shade').hide();
               displayResults();
             }
           }
