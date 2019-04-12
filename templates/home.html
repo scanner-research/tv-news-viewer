@@ -2,9 +2,10 @@
 <html>
 <head>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/vega@5.3.0"></script>
-  <script src="https://cdn.jsdelivr.net/npm/vega-lite@3.0.0-rc15"></script>
-  <script src="https://cdn.jsdelivr.net/npm/vega-embed@4.0.0-rc1"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.11/lodash.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vega@5.3.4"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vega-lite@3.1.0"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vega-embed@4.0.0"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.15.0/umd/popper.min.js"></script>
 
@@ -88,8 +89,8 @@
       <tr>
         <th></th>
         <th>Color</th>
-        <th width="55%">Keyword Query <a href="https://github.com/scanner-research/caption-index/blob/master/captions/query.py" target="_blank">(grammar)</a></th>
-        <th width="40%">Filters <a href="#" onclick="toggleFiltersHelp(); return false;" id="toggle-help">(show help)</a></th>
+        <th width="50%">Keyword Query <a href="https://github.com/scanner-research/caption-index/blob/master/captions/query.py" target="_blank">(grammar)</a></th>
+        <th width="45%">Filters <a href="#" onclick="toggleFiltersHelp(); return false;" id="toggle-help">(show help)</a></th>
       </tr>
     </table>
   </div>
@@ -415,7 +416,7 @@ or <a href="#" onclick="setEmbedUrl('${embed_url}'); return false;">embed</a> ch
           alertAndThrow(e.message);
         }
         return {
-          query: query.query, color: query.color,
+          color: query.color, query: query.query, filters: query.filters,
           args: Object.assign(
             {query: query.query},
             getQueryOptions(chart_options, filters))
@@ -428,6 +429,7 @@ or <a href="#" onclick="setEmbedUrl('${embed_url}'); return false;">embed</a> ch
           success: resp => {
             search_results[query.color] = {
               query: query.query,
+              filters: query.filters,
               data: resp
             };
             remaining--;

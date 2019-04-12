@@ -143,7 +143,7 @@ def get_aggregate_fn(agg: str):
 
 
 def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
-              documents: Documents, lexicon: Lexicon):
+              documents: Documents, lexicon: Lexicon, cache_seconds: int):
     app = Flask(__name__)
 
     # Make sure document name equals video name
@@ -219,7 +219,9 @@ def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
             totals_by_day[date_key].append((video.id, total))
         print('  matched {} videos, {} filtered, {} missing'.format(
               matched_videos, filtered_videos, missing_videos))
-        return jsonify(totals_by_day)
+        resp = jsonify(totals_by_day)
+        resp.cache_control.max_age = cache_seconds
+        return resp
 
     video_name_by_id = {v.id: v.name for v in video_dict.values()}
 
@@ -284,14 +286,14 @@ def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
             # Return the entire video
             for v in videos:
                 video = video_dict[v]
-                # TODO: make this an intervallist
                 results.append({
                     'meta': video_to_dict(video),
                     'intervals': [(0, video.num_frames)]
                 })
 
-        # TODO: serve vgrid widget
-        return jsonify(results)
+        resp = jsonify(results)
+        resp.cache_control.max_age = cache_seconds
+        return resp
 
     @app.route('/captions/<video>')
     def get_captions(video):
@@ -329,7 +331,8 @@ def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
 def main(host, port, data_dir, index_dir, debug):
     video_dict = load_video_data(data_dir)
     index, documents, lexicon = load_index(index_dir)
-    app = build_app(video_dict, index, documents, lexicon)
+    app = build_app(video_dict, index, documents, lexicon,
+                    0 if debug else 3600)
     app.run(host=host, port=port, debug=debug)
 
 
