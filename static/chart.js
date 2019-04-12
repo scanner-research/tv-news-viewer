@@ -96,10 +96,15 @@ function parseFilters(filter_str) {
   if (filter_str) {
     filter_str.split(';').forEach(line => {
       line = $.trim(line);
-      let i = line.indexOf(':');
-      let k = $.trim(line.substr(0, i));
-      let v = $.trim(line.substr(i + 1));
-      filters[k] = v;
+      if (line.length > 0) {
+        let i = line.indexOf(':');
+        if (i == -1) {
+          throw Error(`Invalid filter: ${line}`);
+        }
+        let k = $.trim(line.substr(0, i));
+        let v = $.trim(line.substr(i + 1));
+        filters[k] = v;
+      }
     });
   }
   return filters;

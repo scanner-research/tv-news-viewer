@@ -21,7 +21,7 @@
   <title>Esper: TV News Search</title>
   <style>
     .container {
-      padding: 10px;
+      padding: 4px;
     }
     .search-table-container table {
       border-spacing: 0px;
@@ -32,27 +32,28 @@
     }
     .search-table-container input[name=query] {
       width: 100%;
-      height: 40px;
+      height: 35px;
       text-align: center;
       margin: auto;
     }
     .search-table-container input[name=filters] {
       width: 100%;
-      height: 40px;
+      height: 35px;
       text-align: center;
       margin: auto;
     }
     .color-box {
       margin: auto;
-      width: 40px;
-      height: 40px;
+      width: 35px;
+      height: 35px;
     }
     #filters-help {
       padding: 10px;
       background-color: #F4F4F4;
+      display: none;
     }
     #filters-help th {
-      text-align: center;
+      text-align: left;
     }
     #filters-help td, th {
       text-align: left;
@@ -70,12 +71,10 @@
     #extra-options input {
       text-align: center;
     }
-    #embed-string {
-      word-wrap: break-word;
-    }
-    #embed-string textarea {
+    #embed-area textarea {
       width: 100%;
       margin: auto;
+      display: none;
     }
     #chart {
       width: 90%;
@@ -87,16 +86,16 @@
   <div class="container search-table-container">
     <table id="search-table">
       <tr>
+        <th></th>
         <th>Color</th>
         <th width="55%">Keyword Query <a href="https://github.com/scanner-research/caption-index/blob/master/captions/query.py" target="_blank">(grammar)</a></th>
-        <th width="40%">Filters (show help: <input type="checkbox" id="showFiltersHelp" onclick="showFiltersHelp()">)</th>
+        <th width="40%">Filters <a href="#" onclick="toggleFiltersHelp(); return false;" id="toggle-help">(show help)</a></th>
       </tr>
     </table>
   </div>
 
   <div class="container" id="chart-options">
-    <button type="button" class="btn btn-secondary" id='addRow'>+</button>
-    <button type="button" class="btn btn-secondary" id='removeRow'>-</button>
+    <button type="button" class="btn btn-secondary" id='addRow'>Add query (+)</button>
     &nbsp; Plot results between
     <input type="text" id="dateRange" />
     aggregated by
@@ -158,15 +157,15 @@
         <tr>
           <td>channel</td>
           <td>name of the channel</td>
-          <td>CNN, FOXNEWS, MSNBC</td>
-          <td></td>
+          <td>CNN, FOX, MSNBC</td>
+          <td>any</td>
           <td>channel: CNN</td>
         </tr>
         <tr>
           <td>show</td>
           <td>name of the show</td>
           <td><a href="/shows" target="_blank">list of shows</a></td>
-          <td></td>
+          <td>any</td>
           <td>show: CNN Newsroom</td>
         </tr>
         <tr>
@@ -177,66 +176,86 @@
           <td>hours: 9-17</td>
         </tr>
         <tr>
-          <td>weekdays</td>
+          <td>daysofweek</td>
           <td>ranges of days; 1=Mon, 7=Sun</td>
           <td>1-7 or 1, 2, ...</td>
           <td>1-7</td>
-          <td>weekdays: 6-7</td>
+          <td>daysofweek: 6-7</td>
         </tr>
       </table>
     </div>
   </div>
   <script>
-    function showFiltersHelp() {
-      if ($('#showFiltersHelp').is(':checked')) {
-        $("#filters-help").show();
+    function toggleFiltersHelp() {
+      if ($('#toggle-help').text().includes('show')) {
+        $('#filters-help').show();
+        $('#toggle-help').text('(hide help)');
       } else {
-        $("#filters-help").hide();
+        $('#filters-help').hide();
+        $('#toggle-help').text('(show help)');
       }
     }
-    showFiltersHelp();
   </script>
 
   <div class="container" id="chart-area">
     <div id="chart"></div>
-    <div id="embed-string"></div>
+  </div>
+
+  <div class="container" id="embed-area">
+    <p name="text"></p>
+    <textarea readonly rows="3" name="embed"></textarea>
   </div>
 
   <script>
     const EMBED_DIMS = {width: 1000, height: 400};
 
     const COLORS = [
-      'red', 'blue', 'green',  'orange', 'cyan', 'magenta',
-      'purple', 'yellow', 'gray', 'brown'
+      '#1F77B4', '#FF7F0E', '#2CA02C', '#D62728', '#9467BD', '#8C564B',
+      '#CFECF9', '#7F7F7F', '#BCBD22', '#17BECF'
     ];
 
-    const DEFAULT_QUERIES = [
-        'donald trump',
-        'hillary clinton',
-        'terrorism',
-        'isis',
-        'immigration',
-        'black lives | blacklivesmatter | blacklives',
-        'brexit',
-        'obamacare | affordable care act',
-        'irs | internal revenue service',
-        'socialism | socialist',
-        'hurricane irma', 'fifa',
-        'facebook',
-        'alternative facts | fake news',
-        'collusion',
-        'sean spicer & [resign]',
-        'global warming',
-        'arab spring',
-        '787 | dreamliner',
-        'trayvon martin',
-        'north korea | dprk',
-        'bernie sanders',
-        'nafta',
-        'e coli | ecoli',
-        'ebola',
-        'border wall | border fence',
-        'government shutdown'
+    function shuffle(a) {
+        for (let i = a.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [a[i], a[j]] = [a[j], a[i]];
+        }
+        return a;
+    }
+
+    const DEFAULT_QUERIES = shuffle([
+      'donald trump',
+      'hillary clinton',
+      'terrorism',
+      'isis',
+      'immigration',
+      'black lives | blacklivesmatter | blacklives',
+      'brexit',
+      'obamacare | affordable care act',
+      'irs | internal revenue service',
+      'socialism | socialist',
+      'hurricane irma',
+      'fifa',
+      'facebook',
+      'alternative facts | fake news',
+      'collusion',
+      'sean spicer & [resign]',
+      'global warming',
+      'arab spring',
+      '787 | dreamliner',
+      'trayvon martin',
+      'north korea | dprk',
+      'bernie sanders',
+      'nafta',
+      'e coli | ecoli',
+      'ebola',
+      'border wall | border fence',
+      'government shutdown'
+    ]);
+
+    const ALL_SHOWS = [
+      {% for show in shows %}
+      "{{ show }}",
+      {% endfor %}
     ];
 
     function getRandomSample(arr) {
@@ -245,31 +264,49 @@
 
     function getColor() {
       for (var i in COLORS) {
-        if ($(`#search-table tr[name='${COLORS[i]}']`).length == 0)
+        if ($(`#search-table tr[name='${COLORS[i]}']`).length == 0) {
           return COLORS[i];
+        }
       }
-      throw 'All colors used';
+      throw Error('All colors used');
+    }
+
+    function getDefaultQuery() {
+      for (var i in DEFAULT_QUERIES) {
+        if ($(`#search-table input[name='query'][value='${DEFAULT_QUERIES[i]}']`).length == 0) {
+          return DEFAULT_QUERIES[i];
+        }
+      }
+      throw Error('All default queries used');
+    }
+
+    function getDefaultFilter() {
+      if ($('#search-table tr').length > 1) {
+        return $('#search-table tr:last').find('input[name="filters"]').val();
+      } else {
+        return '';
+      }
+    }
+
+    function removeRow(color) {
+      $(`#search-table tr[name='${color}']`).remove();
     }
 
     function addRow(query) {
       let color = query ? query.color : getColor();
-      let query_str = query ? query.query : getRandomSample(DEFAULT_QUERIES);
-      let filters_str = query ? query.filters : '';
+      let query_str = query ? query.query : getDefaultQuery();
+      let filters_str = query ? query.filters : getDefaultFilter();
+      let remove_btn = $('#search-table tr').length > 1 ?
+        `<button type="button" class="btn btn-secondary" onclick="removeRow('${color}');">-</button>` : '';
       let html = `<tr name='${color}'>
+        <td>${remove_btn}</td>
         <td><div class="color-box" style="background-color: ${color};"></div></td>
         <td><input type="text" name="query" value="${query_str}"</td>
-        <td><input type="text" name="filters" value="${filters_str}" placeholder='name: value; ...'></td>
+        <td><input type="text" name="filters" value="${filters_str}" placeholder='channel: any; show: any'></td>
       </tr>`;
       $('#search-table tbody').append(html);
     }
     $('#addRow').click(() => {addRow();});
-
-    function removeRow() {
-      if ($('#search-table tr').length > 2) {
-        $('#search-table tr:last').remove();
-      }
-    }
-    $('#removeRow').click(removeRow);
 
     function getEmbedUrl(chart_options, queries) {
       return `http://{{ host }}/embed?width=${EMBED_DIMS.width}&height=${EMBED_DIMS.height}&data=${btoa(JSON.stringify({options: chart_options, queries: queries}))}`;
@@ -279,14 +316,66 @@
       return `http://{{ host }}/?data=${btoa(JSON.stringify({options: chart_options, queries: queries}))}`;
     }
 
-    function setEmbedString(share_url, embed_url) {
-      if (embed_url && share_url) {
-        $('#embed-string').html(
-          `<p><b><a href="${share_url}" target="_blank">Share</a> or embed this chart:</b> <textarea readonly rows="3"><iframe src="${embed_url}"></iframe></textarea></p>`
-        );
-      } else {
-        $('#embed-string').clear();
-      }
+    function setShareUrl(url) {
+      var dummy = document.createElement("input");
+      document.body.appendChild(dummy);
+      dummy.setAttribute('value', url);
+      dummy.select();
+      document.execCommand("copy");
+      document.body.removeChild(dummy);
+      alert(`Copied link to clipboard!`);
+    }
+
+    function setEmbedUrl(url) {
+      let x = $('#embed-area textarea[name="embed"]');
+      x.val(`<iframe src="${url}"></iframe>`);
+      x.toggle();
+    }
+
+    function alertAndThrow(msg) {
+      alert(msg);
+      throw Error(msg);
+    }
+
+    function normalizeFilters(filters) {
+      let result = {};
+      Object.keys(filters).forEach(k => {
+        let v = filters[k];
+        let v_up = v.toUpperCase();
+        if (k == 'channel') {
+          if (v_up == 'ANY') {
+            // pass
+          } else if (v_up == 'FOX') {
+            result.channel = 'FOXNEWS';
+          } else if (v_up == 'CNN' || v_up == 'MSNBC' ||  v_up == 'FOXNEWS') {
+            result.channel = v_up;
+          } else {
+            throw Error(`Unknown channel: ${v}`);
+          }
+        } else if (k == 'show') {
+          if (v == 'ANY') {
+            // pass
+          } else {
+            var show = null;
+            for (var i in ALL_SHOWS) {
+              if (ALL_SHOWS[i].toUpperCase() == v_up) {
+                show = ALL_SHOWS[i];
+                break;
+              }
+            }
+            if (show) {
+              result.show = show;
+            } else {
+              throw Error(`'Unknown show: ${v}`);
+            }
+          }
+        } else if (k == 'dayofweek' || k == 'hours') {
+          result[k] = filters[k];
+        } else {
+          throw Error(`Unknown filter: ${k}`);
+        }
+      });
+      return result;
     }
 
     function search() {
@@ -310,20 +399,32 @@
         loadChart('#chart', chart_options, search_results, {width: $("#chart").width(), height: EMBED_DIMS.height});
         let embed_url = getEmbedUrl(chart_options, queries);
         let share_url = getShareUrl(chart_options, queries);
-        setEmbedString(share_url, embed_url);
+        $('#embed-area p[name="text"]').html(
+`<a href="#" onclick="setShareUrl('${share_url}'); return false;">Share</a>
+or <a href="#" onclick="setEmbedUrl('${embed_url}'); return false;">embed</a> chart.`
+        );
       }
 
       let search_results = {};
       var remaining = queries.length;
-      queries.forEach(query => {
-        var args = {query: query.query};
-        args = Object.assign(
-          args, getQueryOptions(chart_options, parseFilters(query.filters))
-        );
+      queries.map(query => {
+        var filters;
+        try {
+          filters = normalizeFilters(parseFilters(query.filters));
+        } catch (e) {
+          alertAndThrow(e.message);
+        }
+        return {
+          query: query.query, color: query.color,
+          args: Object.assign(
+            {query: query.query},
+            getQueryOptions(chart_options, filters))
+        };
+      }).forEach(query => {
         $.ajax({
           url: '/search',
           type: 'get',
-          data: args,
+          data: query.args,
           success: resp => {
             search_results[query.color] = {
               query: query.query,

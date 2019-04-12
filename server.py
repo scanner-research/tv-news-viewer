@@ -17,7 +17,7 @@ from captions.query import Query
 from captions.vtt import get_vtt
 
 
-MIN_DATE = datetime(2009, 7, 1)
+MIN_DATE = datetime(2010, 1, 1)
 
 
 def get_args():
@@ -41,7 +41,7 @@ def load_json(file_path: str):
 
 
 Video = namedtuple('Video', [
-    'id', 'name', 'show', 'channel', 'date', 'weekday', 'hour', 'num_frames',
+    'id', 'name', 'show', 'channel', 'date', 'dayofweek', 'hour', 'num_frames',
     'fps', 'width', 'height'
 ])
 
@@ -79,10 +79,10 @@ def load_video_data(data_dir: str):
         id, name, show, channel, date, minute, num_frames, fps, width, height = v
         name = get_video_name(name)
         date = parse_date(date)
-        weekday = date.isoweekday()  # Mon == 1, Sun == 7
+        dayofweek = date.isoweekday()  # Mon == 1, Sun == 7
         videos[name] = Video(
             id=id, name=name, show=show, channel=channel,
-            date=date, weekday=weekday, hour=math.floor(minute / 60),
+            date=date, dayofweek=dayofweek, hour=math.floor(minute / 60),
             num_frames=num_frames, fps=fps, width=width, height=height)
     return videos
 
@@ -102,9 +102,9 @@ def get_video_filter():
     channel = request.args.get('channel', None)
     show = request.args.get('show', None)
     hours = parse_int_set(request.args.get('hours', None))
-    weekdays = parse_int_set(request.args.get('weekdays', None))
+    daysofweek = parse_int_set(request.args.get('daysofweek', None))
 
-    if start_date or end_date or channel or show or hours or weekdays:
+    if start_date or end_date or channel or show or hours or daysofweek:
         def video_filter(video):
             if start_date and video.date < start_date:
                 return False
@@ -122,7 +122,7 @@ def get_video_filter():
                         break
                 else:
                     return False
-            if weekdays and video.weekday not in weekdays:
+            if daysofweek and video.dayofweek not in daysofweek:
                 return False
             return True
         return video_filter
@@ -151,6 +151,16 @@ def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
         d._replace(name=get_video_name(d.name))
         for d in documents])
 
+    shows_by_channel = {}
+    all_shows = set()
+    for v in video_dict.values():
+        if v.channel not in shows_by_channel:
+            shows_by_channel[v.channel] = set()
+        shows_by_channel[v.channel].add(v.show)
+        all_shows.add(v.show)
+    shows_by_channel = {k: list(sorted(v))
+                        for k, v in shows_by_channel.items()}
+
     @app.route('/')
     def root():
         start_date = max(min(v.date for v in video_dict.values()), MIN_DATE)
@@ -158,7 +168,7 @@ def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
         return render_template(
             'home.html', host=request.host, aggregate='month',
             start_date=format_date(start_date),
-            end_date=format_date(end_date))
+            end_date=format_date(end_date), shows=all_shows)
 
     @app.route('/embed')
     def embed():
@@ -300,14 +310,6 @@ def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
     def get_video_info(video):
         video = video_name_or_id(video)
         return jsonify(video_dict[video])
-
-    shows_by_channel = {}
-    for v in video_dict.values():
-        if v.channel not in shows_by_channel:
-            shows_by_channel[v.channel] = set()
-        shows_by_channel[v.channel].add(v.show)
-    shows_by_channel = {k: list(sorted(v))
-                        for k, v in shows_by_channel.items()}
 
     @app.route('/shows')
     def get_shows():
