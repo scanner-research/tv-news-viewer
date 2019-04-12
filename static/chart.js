@@ -55,6 +55,12 @@ function loadChart(div_id, chart_options, search_results, dimensions) {
     }
   }
 
+  let year_span = (
+    new Date(chart_options.end_date).getUTCFullYear() -
+    new Date(chart_options.start_date).getUTCFullYear()
+  );
+  let x_tick_count = chart_options.aggregate == 'year' ? year_span + 1 : 24;
+
   let unit = chart_options.window > 0 ? 'seconds' : 'mentions';
   let point_data = Object.keys(search_results).flatMap(color => {
     let result = search_results[color];
@@ -149,7 +155,7 @@ function loadChart(div_id, chart_options, search_results, dimensions) {
           field: 'time', type: 'temporal', timeUnit: 'utcyearmonthdate',
           title: null,
           axis: {
-            titleFontSize: 12, labelFontSize: 12, tickCount: 24,
+            titleFontSize: 12, labelFontSize: 12, tickCount: x_tick_count,
             format: getDateFormat(chart_options.aggregate), labelAngle: -10
           },
           scale: {
