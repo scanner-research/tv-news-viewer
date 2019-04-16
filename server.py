@@ -274,7 +274,6 @@ def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
                     postings = PostingUtil.deoverlap(PostingUtil.dilate(
                         result.postings, window, video.num_frames / video.fps))
 
-                # TODO: make this an intervallist
                 results.append({
                     'meta': video_to_dict(video),
                     'intervals': [
