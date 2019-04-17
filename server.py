@@ -181,43 +181,69 @@ def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
 
     @app.route('/search')
     def search():
-        query_str = request.args.get('query').upper()
-        print('Searching:', query_str)
-        query = Query(query_str)
-
+        # Parse video filters
         video_filter = get_video_filter()
         window = request.args.get('window', None, type=int)
         aggregate_fn = get_aggregate_fn(request.args.get(
             'aggregate', None, type=str))
 
+        # Parse the query
+        query_str = request.args.get('query', '').strip()
+        print('Searching:', query_str)
+
+        totals_by_day = {}
         missing_videos = 0
         matched_videos = 0
         filtered_videos = 0
-        totals_by_day = {}
-        for result in query.execute(lexicon, index):
-            document = documents[result.id]
-            video = video_dict.get(document.name)
-            if video is None:
-                missing_videos += 1
-                continue
-            else:
-                matched_videos += 1
-            if video_filter is not None and not video_filter(video):
-                filtered_videos += 1
-                continue
 
-            if window:
-                total = sum(
-                    max(p.end - p.start, 0)
-                    for p in PostingUtil.deoverlap(PostingUtil.dilate(
-                        result.postings, window,
-                        video.num_frames / video.fps)))
-            else:
-                total = len(result.postings)
-            date_key = format_date(aggregate_fn(video.date))
+        def accumulate(date, video_id, value):
+            nonlocal totals_by_day
+            date_key = format_date(aggregate_fn(date))
             if date_key not in totals_by_day:
                 totals_by_day[date_key] = []
-            totals_by_day[date_key].append((video.id, total))
+            totals_by_day[date_key].append((video_id, value))
+
+        if query_str:
+            query = Query(query_str.upper())
+            for result in query.execute(lexicon, index):
+                document = documents[result.id]
+                video = video_dict.get(document.name)
+                if video is None:
+                    missing_videos += 1
+                    continue
+                else:
+                    matched_videos += 1
+                if video_filter is not None and not video_filter(video):
+                    filtered_videos += 1
+                    continue
+
+                if window:
+                    total = sum(
+                        max(p.end - p.start, 0)
+                        for p in PostingUtil.deoverlap(PostingUtil.dilate(
+                            result.postings, window,
+                            video.num_frames / video.fps)))
+                else:
+                    total = len(result.postings)
+                accumulate(video.date, video.id, total)
+        else:
+            for document in documents:
+                video = video_dict.get(document.name)
+                if video is None:
+                    missing_videos += 1
+                    continue
+                else:
+                    matched_videos += 1
+                if video_filter is not None and not video_filter(video):
+                    filtered_videos += 1
+                    continue
+
+                if window:
+                    total = video.num_frames / video.fps
+                else:
+                    total = index.document_length(document)
+                accumulate(video.date, video.id, total)
+
         print('  matched {} videos, {} filtered, {} missing'.format(
               matched_videos, filtered_videos, missing_videos))
         resp = jsonify(totals_by_day)
@@ -249,7 +275,7 @@ def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
         videos = list(video_name_by_id[i] for i in json.loads(ids))
 
         results = []
-        query_str = request.args.get('query', None)
+        query_str = request.args.get('query', '')
         if query_str:
             # Run the query on the selected videos
             query = Query(query_str.upper())

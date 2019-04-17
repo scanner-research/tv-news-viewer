@@ -390,13 +390,11 @@
         if ($(this).attr('name')) {
           let query_str = $.trim($(this).find("input[name='query']").val());
           let query_filters_str = $.trim($(this).find("input[name='filters']").val());
-          if (query_str) {
-            queries.push({
-              color: $(this).attr('name'),
-              query: query_str,
-              filters: query_filters_str
-            });
-          }
+          queries.push({
+            color: $(this).attr('name'),
+            query: query_str,
+            filters: query_filters_str
+          });
         }
       });
 
