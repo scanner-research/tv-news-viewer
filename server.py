@@ -43,8 +43,11 @@ def load_json(file_path: str):
 
 Video = namedtuple('Video', [
     'id', 'name', 'show', 'channel', 'date', 'dayofweek', 'hour', 'num_frames',
-    'fps', 'width', 'height'
+    'fps', 'width', 'height', 'commercials'
 ])
+
+
+Commercial = namedtuple('Commercial', ['min_frame', 'max_frame'])
 
 
 def parse_date(s: str):
@@ -77,14 +80,27 @@ def get_video_name(s: str):
 def load_video_data(data_dir: str):
     videos = {}
     for v in load_json(os.path.join(data_dir, 'videos.json')):
-        id, name, show, channel, date, minute, num_frames, fps, width, height = v
+        (
+            id,
+            name,
+            show,
+            channel,
+            date,
+            minute,
+            num_frames,
+            fps,
+            width,
+            height,
+            commercials
+        ) = v
         name = get_video_name(name)
         date = parse_date(date)
         dayofweek = date.isoweekday()  # Mon == 1, Sun == 7
         videos[name] = Video(
             id=id, name=name, show=show, channel=channel,
             date=date, dayofweek=dayofweek, hour=math.floor(minute / 60),
-            num_frames=num_frames, fps=fps, width=width, height=height)
+            num_frames=num_frames, fps=fps, width=width, height=height,
+            commercials=[Commercial(*c) for c in commercials])
     return videos
 
 
@@ -186,6 +202,7 @@ def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
         window = request.args.get('window', None, type=int)
         aggregate_fn = get_aggregate_fn(request.args.get(
             'aggregate', None, type=str))
+        excl_comms = request.args.get('exclude_commercials', 1, type=int) == 1
 
         # Parse the query
         query_str = request.args.get('query', '').strip()
@@ -218,13 +235,27 @@ def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
                     continue
 
                 if window:
-                    total = sum(
-                        max(p.end - p.start, 0)
-                        for p in PostingUtil.deoverlap(PostingUtil.dilate(
-                            result.postings, window,
-                            video.num_frames / video.fps)))
+                    postings = PostingUtil.deoverlap(PostingUtil.dilate(
+                        result.postings, window,
+                        video.num_frames / video.fps))
+                    if excl_comms:
+                        raise NotImplementedError(
+                            'Not implemented: window and exclude_commercials')
+                    total = sum(max(p.end - p.start, 0) for p in postings)
                 else:
-                    total = len(result.postings)
+                    postings = result.postings
+                    if excl_comms:
+                        def in_commercial(p):
+                            for c in video.commercials:
+                                if 0 <= (
+                                    min(p.end, c.max_frame / video.fps) -
+                                    max(p.start, c.min_frame / video.fps)
+                                ):
+                                    return 1
+                            return 0
+                        total = sum(1 - in_commercial(p) for p in postings)
+                    else:
+                        total = len(postings)
                 accumulate(video.date, video.id, total)
         else:
             for document in documents:
@@ -240,8 +271,20 @@ def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
 
                 if window:
                     total = video.num_frames / video.fps
+                    if excl_comms:
+                        total = max(
+                            0,
+                            total - sum((c.max_frame - c.min_frame) / video.fps
+                                        for c in video.commercials))
                 else:
                     total = index.document_length(document)
+                    if excl_comms:
+                        for c in video.commercials:
+                            min_idx = index.position(
+                                document.id, c.min_frame / video.fps)
+                            max_idx = index.position(
+                                document.id, c.max_frame / video.fps)
+                            total -= max(0, max_idx - min_idx)
                 accumulate(video.date, video.id, total)
 
         print('  matched {} videos, {} filtered, {} missing'.format(

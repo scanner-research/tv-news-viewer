@@ -249,6 +249,8 @@ function normalizeFilters(filters) {
       }
     } else if (k == 'dayofweek' || k == 'hours') {
       result[k] = filters[k];
+    } else if (k == 'exclude_commercials') {
+      result[k] = filters[k];
     } else {
       throw Error(`Unknown filter: ${k}`);
     }
