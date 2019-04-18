@@ -222,7 +222,7 @@ function parseBool(s) {
   } else if (s == 'FALSE') {
     return false;
   } else {
-    throw Error(`${} is neither true or false`);
+    throw Error(`${s} is neither true or false`);
   }
 }
 
