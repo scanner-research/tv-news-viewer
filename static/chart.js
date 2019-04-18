@@ -215,6 +215,17 @@ function parseFilters(filter_str) {
   return filters;
 }
 
+function parseBool(s) {
+  s = s.toUpperCase();
+  if (s == 'TRUE') {
+    return true;
+  } else if (s == 'FALSE') {
+    return false;
+  } else {
+    throw Error(`${} is neither true or false`);
+  }
+}
+
 function normalizeFilters(filters) {
   let result = {};
   Object.keys(filters).forEach(k => {
@@ -244,13 +255,13 @@ function normalizeFilters(filters) {
         if (show) {
           result.show = show;
         } else {
-          throw Error(`'Unknown show: ${v}`);
+          throw Error(`Unknown show: ${v}`);
         }
       }
     } else if (k == 'dayofweek' || k == 'hours') {
       result[k] = filters[k];
     } else if (k == 'exclude_commercials') {
-      result[k] = filters[k];
+      result[k] = parseBool(filters[k]);
     } else {
       throw Error(`Unknown filter: ${k}`);
     }

@@ -202,7 +202,7 @@ def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
         window = request.args.get('window', None, type=int)
         aggregate_fn = get_aggregate_fn(request.args.get(
             'aggregate', None, type=str))
-        excl_comms = request.args.get('exclude_commercials', 1, type=int) == 1
+        excl_comms = request.args.get('exclude_commercials', 'true', type=str) == 'true'
 
         # Parse the query
         query_str = request.args.get('query', '').strip()
@@ -280,11 +280,13 @@ def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
                     total = index.document_length(document)
                     if excl_comms:
                         for c in video.commercials:
+                            assert c.max_frame >= c.min_frame
                             min_idx = index.position(
                                 document.id, c.min_frame / video.fps)
                             max_idx = index.position(
                                 document.id, c.max_frame / video.fps)
-                            total -= max(0, max_idx - min_idx)
+                            if max_idx > min_idx:
+                                total -= max(0, max_idx - min_idx)
                 accumulate(video.date, video.id, total)
 
         print('  matched {} videos, {} filtered, {} missing'.format(
