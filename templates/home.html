@@ -471,7 +471,7 @@ or <a href="#" onclick="setEmbedUrl('${embed_url}'); return false;">embed</a> ch
             }
           },
           error: xhr => {
-            alert('Query failed. The chart may be incomplete.');
+            alert(`Query failed. The chart may be incomplete.\n\n"${JSON.parse(xhr.responseText).message}"`);
             console.log('Failed:', query);
             remaining--;
             if (remaining <= 0) {

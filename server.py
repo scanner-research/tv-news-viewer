@@ -56,6 +56,22 @@ FaceIntervals = namedtuple('FaceIntervals', [
 ])
 
 
+class InvalidUsage(Exception):
+    status_code = 400
+
+    def __init__(self, message, status_code=None, payload=None):
+        Exception.__init__(self)
+        self.message = message
+        if status_code is not None:
+            self.status_code = status_code
+        self.payload = payload
+
+    def to_dict(self):
+        rv = dict(self.payload or ())
+        rv['message'] = self.message
+        return rv
+
+
 def parse_date(s: str):
     return datetime.strptime(s, '%Y-%m-%d') if s else None
 
@@ -186,7 +202,7 @@ def get_aggregate_fn(agg: str):
         return lambda d: d - timedelta(days=d.isoweekday() - 1)
     elif agg == 'year':
         return lambda d: datetime(d.year, 1, 1)
-    raise NotImplementedError()
+    raise InvalidUsage('invalid aggregation parameter: {}'.format(agg))
 
 
 def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
@@ -210,6 +226,12 @@ def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
         all_shows.add(v.show)
     shows_by_channel = {k: list(sorted(v))
                         for k, v in shows_by_channel.items()}
+
+    @app.errorhandler(InvalidUsage)
+    def handle_invalid_usage(error):
+        response = jsonify(error.to_dict())
+        response.status_code = error.status_code
+        return response
 
     @app.route('/')
     def root():
@@ -330,13 +352,13 @@ def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
                         result.postings, window,
                         video.num_frames / video.fps))
                     if person_filter:
-                        raise NotImplementedError(
+                        raise InvalidUsage(
                             'Not implemented: window and person filter')
                     if face_filter:
-                        raise NotImplementedError(
+                        raise InvalidUsage(
                             'Not implemented: window and face filter')
                     if excl_comms:
-                        raise NotImplementedError(
+                        raise InvalidUsage(
                             'Not implemented: window and exclude_commercials')
                     total = sum(max(p.end - p.start, 0) for p in postings)
                 else:
@@ -377,10 +399,10 @@ def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
                     continue
 
                 if person_filter:
-                    raise NotImplementedError(
+                    raise InvalidUsage(
                         'Not implemented: blank query and person filter')
                 if face_filter:
-                    raise NotImplementedError(
+                    raise InvalidUsage(
                         'Not implemented: blank query and face filter')
 
                 if window:
