@@ -260,6 +260,8 @@ function normalizeFilters(filters) {
       }
     } else if (k == 'dayofweek' || k == 'hours') {
       result[k] = filters[k];
+    } else if (k == 'face') {
+      result[k] = filters[k];
     } else if (k == 'exclude_commercials') {
       result[k] = parseBool(filters[k]);
     } else {

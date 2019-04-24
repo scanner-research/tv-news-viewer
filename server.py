@@ -15,6 +15,7 @@ from captions import CaptionIndex, Documents, Lexicon
 from captions.util import PostingUtil
 from captions.query import Query
 from captions.vtt import get_vtt
+from rs_intervalset import MmapIntervalSetMapping
 
 
 MIN_DATE = datetime(2010, 1, 1)
@@ -50,6 +51,11 @@ Video = namedtuple('Video', [
 Commercial = namedtuple('Commercial', ['min_frame', 'max_frame'])
 
 
+FaceIntervals = namedtuple('FaceIntervals', [
+    'man_host', 'man_nonhost', 'woman_host', 'woman_nonhost'
+])
+
+
 def parse_date(s: str):
     return datetime.strptime(s, '%Y-%m-%d') if s else None
 
@@ -73,11 +79,16 @@ def parse_int_set(s: str):
     return result if result else None
 
 
+def milliseconds(s):
+    return int(s * 1000)
+
+
 def get_video_name(s: str):
     return Path(s).name.split('.')[0]
 
 
 def load_video_data(data_dir: str):
+    print('Loading video data: please wait...')
     videos = {}
     for v in load_json(os.path.join(data_dir, 'videos.json')):
         (
@@ -101,7 +112,16 @@ def load_video_data(data_dir: str):
             date=date, dayofweek=dayofweek, hour=math.floor(minute / 60),
             num_frames=num_frames, fps=fps, width=width, height=height,
             commercials=[Commercial(*c) for c in commercials])
-    return videos
+    face_intervals = FaceIntervals(
+        man_host=MmapIntervalSetMapping(
+            os.path.join(data_dir, 'male_host.bin')),
+        woman_host=MmapIntervalSetMapping(
+            os.path.join(data_dir, 'female_host.bin')),
+        man_nonhost=MmapIntervalSetMapping(
+            os.path.join(data_dir, 'male_nonhost.bin')),
+        woman_nonhost=MmapIntervalSetMapping(
+            os.path.join(data_dir, 'female_nonhost.bin')))
+    return videos, face_intervals
 
 
 def load_index(index_dir: str):
@@ -160,7 +180,8 @@ def get_aggregate_fn(agg: str):
 
 
 def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
-              documents: Documents, lexicon: Lexicon, cache_seconds: int):
+              documents: Documents, lexicon: Lexicon,
+              face_intervals: FaceIntervals, cache_seconds: int):
     app = Flask(__name__)
 
     # Make sure document name equals video name
@@ -195,14 +216,56 @@ def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
     def show_videos():
         return render_template('videos.html')
 
+    def get_face_filter():
+        filter_str = request.args.get('face', '', type=str).strip().lower()
+        if not filter_str:
+            f = None
+        elif filter_str == 'man':
+            def f(v, t):
+                return (
+                    face_intervals.man_host.is_contained(v, t, True) or
+                    face_intervals.man_nonhost.is_contained(v, t, True))
+        elif filter_str == 'woman':
+            def f(v, t):
+                return (
+                    face_intervals.woman_host.is_contained(v, t, True) or
+                    face_intervals.woman_nonhost.is_contained(v, t, True))
+        elif filter_str == 'host':
+            def f(v, t):
+                return (
+                    face_intervals.man_host.is_contained(v, t, True) or
+                    face_intervals.woman_host.is_contained(v, t, True))
+        elif filter_str == 'guest':
+            def f(v, t):
+                return (
+                    face_intervals.man_nonhost.is_contained(v, t, True) or
+                    face_intervals.woman_nonhost.is_contained(v, t, True))
+        elif filter_str == 'man_host':
+            def f(v, t):
+                return face_intervals.man_host.is_contained(v, t, True)
+        elif filter_str == 'woman_host':
+            def f(v, t):
+                return face_intervals.woman_host.is_contained(v, t, True)
+        elif filter_str == 'man_guest':
+            def f(v, t):
+                return face_intervals.man_nonhost.is_contained(v, t, True)
+        elif filter_str == 'woman_guest':
+            def f(v, t):
+                return face_intervals.woman_nonhost.is_contained(v, t, True)
+        else:
+            f = None
+        return f
+
     @app.route('/search')
     def search():
         # Parse video filters
         video_filter = get_video_filter()
+        face_filter = get_face_filter()
         window = request.args.get('window', None, type=int)
         aggregate_fn = get_aggregate_fn(request.args.get(
             'aggregate', None, type=str))
-        excl_comms = request.args.get('exclude_commercials', 'true', type=str) == 'true'
+        excl_comms = request.args.get(
+            'exclude_commercials', 'true', type=str) == 'true'
 
         # Parse the query
         query_str = request.args.get('query', '').strip()
@@ -238,12 +301,20 @@ def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
                     postings = PostingUtil.deoverlap(PostingUtil.dilate(
                         result.postings, window,
                         video.num_frames / video.fps))
+                    if face_filter:
+                        raise NotImplementedError(
+                            'Not implemented: window and face filter')
                     if excl_comms:
                         raise NotImplementedError(
                             'Not implemented: window and exclude_commercials')
                     total = sum(max(p.end - p.start, 0) for p in postings)
                 else:
                     postings = result.postings
+                    if face_filter:
+                        postings = [
+                            p for p in postings
+                            if face_filter(
+                                video.id, milliseconds((p.start + p.end) / 2))]
                     if excl_comms:
                         def in_commercial(p):
                             for c in video.commercials:
@@ -268,6 +339,10 @@ def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
                 if video_filter is not None and not video_filter(video):
                     filtered_videos += 1
                     continue
+
+                if face_filter:
+                    raise NotImplementedError(
+                        'Not implemented: blank query and face filter')
 
                 if window:
                     total = video.num_frames / video.fps
@@ -400,9 +475,9 @@ def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
 
 
 def main(host, port, data_dir, index_dir, debug):
-    video_dict = load_video_data(data_dir)
+    video_dict, face_intervals = load_video_data(data_dir)
     index, documents, lexicon = load_index(index_dir)
-    app = build_app(video_dict, index, documents, lexicon,
+    app = build_app(video_dict, index, documents, lexicon, face_intervals,
                     0 if debug else 3600)
     kwargs = {
         'host': host, 'port': port, 'debug': debug

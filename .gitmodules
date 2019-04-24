@@ -4,3 +4,6 @@
 [submodule "deps/vgrid"]
 	path = deps/vgrid
 	url = https://github.com/scanner-research/vgrid.git
+[submodule "deps/rs-intervalset"]
+	path = deps/rs-intervalset
+	url = https://github.com/scanner-research/rs-intervalset.git
