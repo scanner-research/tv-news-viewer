@@ -220,6 +220,13 @@ def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
         filter_str = request.args.get('face', '', type=str).strip().lower()
         if not filter_str:
             f = None
+        elif filter_str == 'any':
+            def f(v, t):
+                return (
+                    face_intervals.man_host.is_contained(v, t, True) or
+                    face_intervals.man_nonhost.is_contained(v, t, True) or
+                    face_intervals.woman_host.is_contained(v, t, True) or
+                    face_intervals.woman_nonhost.is_contained(v, t, True))
         elif filter_str == 'man':
             def f(v, t):
                 return (
