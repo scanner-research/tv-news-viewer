@@ -260,9 +260,9 @@ function normalizeFilters(filters) {
       }
     } else if (k == 'dayofweek' || k == 'hours') {
       result[k] = filters[k];
-    } else if (k == 'face') {
+    } else if (k == 'face' || k == 'person') {
       result[k] = filters[k];
-    } else if (k == 'exclude_commercials') {
+    } else if (k == 'nocomms') {
       result[k] = parseBool(filters[k]);
     } else {
       throw Error(`Unknown filter: ${k}`);

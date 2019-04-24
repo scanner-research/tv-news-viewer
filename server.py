@@ -121,7 +121,17 @@ def load_video_data(data_dir: str):
             os.path.join(data_dir, 'male_nonhost.bin')),
         woman_nonhost=MmapIntervalSetMapping(
             os.path.join(data_dir, 'female_nonhost.bin')))
-    return videos, face_intervals
+
+    def parse_person_name(fname):
+        return fname.split('.', 1)[0]
+
+    person_dir = os.path.join(data_dir, 'people')
+    person_intervals = {
+        parse_person_name(person_file): MmapIntervalSetMapping(
+            os.path.join(person_dir, person_file))
+        for person_file in os.listdir(person_dir)
+    }
+    return videos, face_intervals, person_intervals
 
 
 def load_index(index_dir: str):
@@ -181,7 +191,9 @@ def get_aggregate_fn(agg: str):
 
 def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
               documents: Documents, lexicon: Lexicon,
-              face_intervals: FaceIntervals, cache_seconds: int):
+              face_intervals: FaceIntervals,
+              person_intervals: Dict[int, MmapIntervalSetMapping],
+              cache_seconds: int):
     app = Flask(__name__)
 
     # Make sure document name equals video name
@@ -263,16 +275,25 @@ def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
             f = None
         return f
 
+    def get_person_filter():
+        filter_str = request.args.get('person', '', type=str).strip().lower()
+        if not filter_str:
+            return None
+        intervals = person_intervals.get(filter_str, None)
+        if intervals is None:
+            raise KeyError('{} is not a valid person'.format(filter_str))
+        return lambda v, t: intervals.is_contained(v, t, True)
+
     @app.route('/search')
     def search():
         # Parse video filters
         video_filter = get_video_filter()
         face_filter = get_face_filter()
+        person_filter = get_person_filter()
         window = request.args.get('window', None, type=int)
         aggregate_fn = get_aggregate_fn(request.args.get(
             'aggregate', None, type=str))
-        excl_comms = request.args.get(
-            'exclude_commercials', 'true', type=str) == 'true'
+        excl_comms = request.args.get('nocomms', 'true', type=str) == 'true'
 
         # Parse the query
         query_str = request.args.get('query', '').strip()
@@ -308,6 +329,9 @@ def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
                     postings = PostingUtil.deoverlap(PostingUtil.dilate(
                         result.postings, window,
                         video.num_frames / video.fps))
+                    if person_filter:
+                        raise NotImplementedError(
+                            'Not implemented: window and person filter')
                     if face_filter:
                         raise NotImplementedError(
                             'Not implemented: window and face filter')
@@ -317,6 +341,11 @@ def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
                     total = sum(max(p.end - p.start, 0) for p in postings)
                 else:
                     postings = result.postings
+                    if person_filter:
+                        postings = [
+                            p for p in postings
+                            if person_filter(
+                                video.id, milliseconds((p.start + p.end) / 2))]
                     if face_filter:
                         postings = [
                             p for p in postings
@@ -347,6 +376,9 @@ def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
                     filtered_videos += 1
                     continue
 
+                if person_filter:
+                    raise NotImplementedError(
+                        'Not implemented: blank query and person filter')
                 if face_filter:
                     raise NotImplementedError(
                         'Not implemented: blank query and face filter')
@@ -470,6 +502,10 @@ def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
     def get_shows():
         return jsonify(shows_by_channel)
 
+    @app.route('/people')
+    def get_people():
+        return jsonify(sorted(person_intervals.keys()))
+
     @app.route('/vgrid/bundle.js')
     def get_vgrid_bundle():
         return send_file('vgrid/dist/bundle.js', mimetype='text/javascript')
@@ -482,10 +518,10 @@ def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
 
 
 def main(host, port, data_dir, index_dir, debug):
-    video_dict, face_intervals = load_video_data(data_dir)
+    video_dict, face_intervals, person_intervals = load_video_data(data_dir)
     index, documents, lexicon = load_index(index_dir)
     app = build_app(video_dict, index, documents, lexicon, face_intervals,
-                    0 if debug else 3600)
+                    person_intervals, 0 if debug else 3600)
     kwargs = {
         'host': host, 'port': port, 'debug': debug
     }
