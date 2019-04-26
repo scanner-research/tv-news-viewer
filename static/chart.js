@@ -36,14 +36,18 @@ function fillZeros(data, unit, start, end, default_value) {
   return data;
 }
 
-const FILTER_REPLACE_REG_EXP = new RegExp('\\s*:\\s*');
+String.prototype.replaceAll = function(search, replacement) {
+    var target = this;
+    return target.split(search).join(replacement);
+};
 
 function loadChart(div_id, chart_options, search_results, dimensions) {
+  // TODO: fix escaping characters
   let getSeriesName = (color) => {
     let result = search_results[color];
-    let query = result.query.replace('[', '').replace(']', '');
-    let filters = result.filters ? ' @ ' + result.filters.replace(FILTER_REPLACE_REG_EXP, '=') : '';
-    return `${query}${filters}`;
+    let query = result.query.replaceAll('[', '').replaceAll(']', '').replaceAll('"', '').replaceAll('.', '');
+    console.log(query);
+    return query;
   };
   let getDateFormat = (agg) => {
     if (agg == 'year') {
@@ -69,14 +73,14 @@ function loadChart(div_id, chart_options, search_results, dimensions) {
       chart_options.end_date, []);
     return Object.keys(data).map(
       t => {
-        var link_href = null;
-        if (data[t].length > 0) {
-          link_href = `/videos?query=${result.query}&window=${chart_options.window}&ids=${JSON.stringify(data[t].map(x => x[0]))}`;
-        }
+        // var link_href = null;
+        // if (data[t].length > 0) {
+        //   link_href = `/videos?text-query=${result.query}&window=${chart_options.window}&ids=${JSON.stringify(data[t].map(x => x[0]))}`;
+        // }
         return {
           time: t, color: color, query: getSeriesName(color),
           value: data[t].reduce((acc, x) => acc + x[1], 0),
-          video_href: link_href,
+          // video_href: link_href,
           size: data[t].length > 0 ? 30 : 0
         };
       }
@@ -171,7 +175,7 @@ function loadChart(div_id, chart_options, search_results, dimensions) {
         color: {field: 'color', type: 'nominal', scale: null},
         size: {field: 'size', type: 'quantitative', scale: null},
         opacity: {value: 1},
-        href: {field: 'video_href', type: 'nominal'},
+        // href: {field: 'video_href', type: 'nominal'},
         tooltip: [
           {field: 'time', type: 'temporal', timeUnit: 'utcyearmonthdate', title: 'time', format: getDateFormat(chart_options.aggregate)},
           {field: 'query', type: 'nominal'},
@@ -202,12 +206,15 @@ function parseFilters(filter_str) {
     filter_str.split(';').forEach(line => {
       line = $.trim(line);
       if (line.length > 0) {
-        let i = line.indexOf(':');
+        let i = line.indexOf('=');
         if (i == -1) {
           throw Error(`Invalid filter: ${line}`);
         }
         let k = $.trim(line.substr(0, i));
-        let v = $.trim(line.substr(i + 1));
+        var v = $.trim(line.substr(i + 1));
+        if (v[0] == '"' && v[v.length - 1] == '"') {
+          v = v.substr(1, v.length - 2);
+        }
         filters[k] = v;
       }
     });
@@ -231,7 +238,9 @@ function normalizeFilters(filters) {
   Object.keys(filters).forEach(k => {
     let v = filters[k];
     let v_up = v.toUpperCase();
-    if (k == 'channel') {
+    if (k == 'text') {
+      result[k] = filters[k];
+    } else if (k == 'channel') {
       if (v_up == 'ALL') {
         // pass
       } else if (v_up == 'FOX') {
@@ -260,7 +269,7 @@ function normalizeFilters(filters) {
       }
     } else if (k == 'dayofweek' || k == 'hours') {
       result[k] = filters[k];
-    } else if (k == 'face' || k == 'person') {
+    } else if (k == 'onscreen.face' || k == 'onscreen.id') {
       result[k] = filters[k];
     } else if (k == 'nocomms') {
       result[k] = parseBool(filters[k]);

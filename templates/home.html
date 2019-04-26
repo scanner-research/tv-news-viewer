@@ -37,26 +37,20 @@
       text-align: center;
       margin: auto;
     }
-    .search-table-container input[name=filters] {
-      width: 100%;
-      height: 35px;
-      text-align: center;
-      margin: auto;
-    }
     .color-box {
       margin: auto;
       width: 35px;
       height: 35px;
     }
-    #filters-help {
+    #query-help {
       padding: 10px;
       background-color: #F4F4F4;
       display: none;
     }
-    #filters-help th {
+    #query-help th {
       text-align: left;
     }
-    #filters-help td, th {
+    #query-help td, th {
       text-align: left;
       padding-left: 10px;
       padding-right: 10px;
@@ -104,15 +98,18 @@
       <tr>
         <th></th>
         <th>Color</th>
-        <th width="50%">Keyword Query <a href="https://github.com/scanner-research/caption-index/blob/master/captions/query.py" target="_blank">(grammar)</a></th>
-        <th width="45%">Filters <a href="#" onclick="toggleFiltersHelp(); return false;" id="toggle-help">(show help)</a></th>
+        <th width="95%">Query <a href="#" onclick="toggleQueryHelp(); return false;" id="toggle-help">(show help)</a></th>
       </tr>
     </table>
   </div>
 
   <div class="container" id="chart-options">
     <button type="button" class="btn btn-secondary" id='addRow'>Add query (+)</button>
-    &nbsp; Between
+    &nbsp; Count
+    <select class="selectpicker" id="countBy" data-width="fit">
+      <option value="mentions" selected="selected">mentions</option>
+    </select>
+    between
     <input type="text" class="datepicker" id="startDate">
     and
     <input type="text" class="datepicker" id="endDate">
@@ -183,8 +180,8 @@
     }
   </script>
 
-  <div class="container" id="filters-help">
-    <p><b>Filters usage</b> - The following filters are supported (separated by ';'s).</p>
+  <div class="container" id="query-help">
+    <p><b>Query usage</b> - The following options are supported (separated by ';'s).</p>
     <div class="container">
       <table>
         <tr>
@@ -195,67 +192,74 @@
           <th>Example</th>
         </tr>
         <tr>
+          <td>text</td>
+          <td>text to count mentions for</td>
+          <td><a href="https://github.com/scanner-research/caption-index/blob/master/captions/query.py" target="_blank">grammar</a></td>
+          <td>n/a</td>
+          <td>text=donald trump</td>
+        </tr>
+        <tr>
           <td>channel</td>
           <td>name of the channel</td>
           <td>CNN, FOX, MSNBC</td>
           <td>all</td>
-          <td>channel: CNN</td>
+          <td>channel=CNN</td>
         </tr>
         <tr>
           <td>show</td>
           <td>name of the show</td>
           <td><a href="/shows" target="_blank">list of shows</a></td>
           <td>all</td>
-          <td>show: CNN Newsroom</td>
+          <td>show="CNN Newsroom"</td>
         </tr>
         <tr>
           <td>hours</td>
           <td>ranges of hours in 24h format</td>
           <td>0-23 or 0, 1, 2, ...</td>
           <td>0-23</td>
-          <td>hours: 9-17</td>
+          <td>hours=9-17</td>
         </tr>
         <tr>
           <td>daysofweek</td>
           <td>ranges of days; 1=Mon, 7=Sun</td>
           <td>1-7 or 1, 2, ...</td>
           <td>1-7</td>
-          <td>daysofweek: 6-7</td>
+          <td>daysofweek=6-7</td>
         </tr>
         <tr>
-          <td>face</td>
+          <td>onscreen.face</td>
           <td>face is on screen (height >= 20%)</td>
           <td>
             any, man, woman, host, guest <br>
             {man,woman}_{host,guest}
           </td>
           <td>n/a</td>
-          <td>face: man_host</td>
+          <td>onscreen.face=man_host</td>
         </tr>
         <tr>
-          <td>person</td>
+          <td>onscreen.id</td>
           <td>person is on screen (height >= 20%)</td>
           <td><a href="/people" target="_blank">list of people</a></td>
           <td>n/a</td>
-          <td>person: barack obama</td>
+          <td>onscreen.id="barack obama"</td>
         </tr>
         <tr>
           <td>nocomms</td>
           <td>exclude mentions in commercials</td>
           <td>true, false</td>
           <td>true</td>
-          <td>nocomms: true</td>
+          <td>nocomms=true</td>
         </tr>
       </table>
     </div>
   </div>
   <script>
-    function toggleFiltersHelp() {
+    function toggleQueryHelp() {
       if ($('#toggle-help').text().includes('show')) {
-        $('#filters-help').show();
+        $('#query-help').show();
         $('#toggle-help').text('(hide help)');
       } else {
-        $('#filters-help').hide();
+        $('#query-help').hide();
         $('#toggle-help').text('(show help)');
       }
     }
@@ -288,7 +292,7 @@
       return a;
     }
 
-    const DEFAULT_QUERIES = shuffle([
+    const DEFAULT_PHRASES = shuffle([
       'donald trump',
       'hillary clinton',
       'terrorism',
@@ -337,21 +341,13 @@
       throw Error('All colors used');
     }
 
-    function getDefaultQuery() {
-      for (var i in DEFAULT_QUERIES) {
-        if ($(`#search-table input[name='query'][value='${DEFAULT_QUERIES[i]}']`).length == 0) {
-          return DEFAULT_QUERIES[i];
+    function getDefaultPhraseQuery() {
+      for (var i in DEFAULT_PHRASES) {
+        if ($(`#search-table input[name='query'][value*='${DEFAULT_PHRASES[i]}']`).length == 0) {
+          return DEFAULT_PHRASES[i];
         }
       }
       throw Error('All default queries used');
-    }
-
-    function getDefaultFilter() {
-      if ($('#search-table tr').length > 1) {
-        return $('#search-table tr:last').find('input[name="filters"]').val();
-      } else {
-        return '';
-      }
     }
 
     function removeRow(color) {
@@ -361,15 +357,13 @@
 
     function addRow(query) {
       let color = query ? query.color : getColor();
-      let query_str = query ? query.query : getDefaultQuery();
-      let filters_str = query ? query.filters : getDefaultFilter();
+      let text_str = query ? query.query : getDefaultPhraseQuery();
       let remove_btn = $('#search-table tr').length > 1 ?
         `<button type="button" class="btn btn-secondary" onclick="removeRow('${color}');">-</button>` : '';
       let html = `<tr name='${color}'>
         <td>${remove_btn}</td>
         <td><div class="color-box" style="background-color: ${color};"></div></td>
-        <td><input type="text" name="query" value="${query_str}"</td>
-        <td><input type="text" name="filters" value="${filters_str}" placeholder='channel: all; show: all'></td>
+        <td><input type="text" name="query" value='text="${text_str}"'</td>
       </tr>`;
       $('#search-table tbody').append(html);
       if ($('#search-table tr').length >= COLORS.length + 1) {
@@ -412,18 +406,18 @@
       let queries = [];
       $('#search-table tr').each(function() {
         if ($(this).attr('name')) {
-          let query_str = $.trim($(this).find("input[name='query']").val());
-          let query_filters_str = $.trim($(this).find("input[name='filters']").val());
+          let query = $.trim($(this).find("input[name='query']").val());
           queries.push({
             color: $(this).attr('name'),
-            query: query_str,
-            filters: query_filters_str
+            query: query
           });
         }
       });
 
       function displayResults() {
-        loadChart('#chart', chart_options, search_results, {width: $("#chart").width(), height: EMBED_DIMS.height});
+        loadChart('#chart', chart_options, search_results, {
+          width: $("#chart").width(), height: EMBED_DIMS.height
+        });
         let embed_url = getEmbedUrl(chart_options, queries);
         let share_url = getShareUrl(chart_options, queries);
         $('#embed-area p[name="text"]').html(
@@ -435,15 +429,13 @@ or <a href="#" onclick="setEmbedUrl('${embed_url}'); return false;">embed</a> ch
       let parsed_queries = queries.map(query => {
         var filters;
         try {
-          filters = normalizeFilters(parseFilters(query.filters));
+          filters = normalizeFilters(parseFilters(query.query));
         } catch (e) {
           alertAndThrow(e.message);
         }
         return {
-          color: query.color, query: query.query, filters: query.filters,
-          args: Object.assign(
-            {query: query.query},
-            getQueryOptions(chart_options, filters))
+          color: query.color, query: query.query,
+          args: getQueryOptions(chart_options, filters)
         };
       });
 
@@ -454,15 +446,11 @@ or <a href="#" onclick="setEmbedUrl('${embed_url}'); return false;">embed</a> ch
       $('#search').prop('disabled', true);
       parsed_queries.forEach(query => {
         $.ajax({
-          url: '/search',
+          url: '/text-search',
           type: 'get',
           data: query.args,
           success: resp => {
-            search_results[query.color] = {
-              query: query.query,
-              filters: query.filters,
-              data: resp
-            };
+            search_results[query.color] = {query: query.query, data: resp};
             remaining--;
             if (remaining <= 0) {
               $('#shade').hide();
@@ -471,7 +459,8 @@ or <a href="#" onclick="setEmbedUrl('${embed_url}'); return false;">embed</a> ch
             }
           },
           error: xhr => {
-            alert(`Query failed. The chart may be incomplete.\n\n"${JSON.parse(xhr.responseText).message}"`);
+            alert(`Query failed. The chart may be incomplete.\n\n"${
+                  JSON.parse(xhr.responseText).message}"`);
             console.log('Failed:', query);
             remaining--;
             if (remaining <= 0) {

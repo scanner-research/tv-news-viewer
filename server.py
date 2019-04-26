@@ -251,7 +251,7 @@ def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
         return render_template('videos.html')
 
     def get_face_filter():
-        filter_str = request.args.get('face', '', type=str).strip().lower()
+        filter_str = request.args.get('onscreen.face', '', type=str).strip().lower()
         if not filter_str:
             f = None
         elif filter_str == 'any':
@@ -298,7 +298,7 @@ def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
         return f
 
     def get_person_filter():
-        filter_str = request.args.get('person', '', type=str).strip().lower()
+        filter_str = request.args.get('onscreen.id', '', type=str).strip().lower()
         if not filter_str:
             return None
         intervals = person_intervals.get(filter_str, None)
@@ -306,8 +306,8 @@ def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
             raise KeyError('{} is not a valid person'.format(filter_str))
         return lambda v, t: intervals.is_contained(v, t, True)
 
-    @app.route('/search')
-    def search():
+    @app.route('/text-search')
+    def text_search():
         # Parse video filters
         video_filter = get_video_filter()
         face_filter = get_face_filter()
@@ -318,8 +318,8 @@ def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
         excl_comms = request.args.get('nocomms', 'true', type=str) == 'true'
 
         # Parse the query
-        query_str = request.args.get('query', '').strip()
-        print('Searching:', query_str)
+        text_query_str = request.args.get('text', '').strip()
+        print('Searching:', text_query_str)
 
         totals_by_day = {}
         missing_videos = 0
@@ -333,9 +333,9 @@ def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
                 totals_by_day[date_key] = []
             totals_by_day[date_key].append((video_id, value))
 
-        if query_str:
-            query = Query(query_str.upper())
-            for result in query.execute(lexicon, index):
+        if text_query_str:
+            text_query = Query(text_query_str.upper())
+            for result in text_query.execute(lexicon, index):
                 document = documents[result.id]
                 video = video_dict.get(document.name)
                 if video is None:
@@ -450,22 +450,22 @@ def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
             'num_frames': video.num_frames
         }
 
-    @app.route('/search-videos')
-    def search_videos():
+    @app.route('/text-search/videos')
+    def text_search_videos():
         ids = request.args.get('ids', None)
         videos = list(video_name_by_id[i] for i in json.loads(ids))
 
         results = []
-        query_str = request.args.get('query', '')
-        if query_str:
+        text_query_str = request.args.get('text', '')
+        if text_query_str:
             # Run the query on the selected videos
-            query = Query(query_str.upper())
+            text_query = Query(text_query_str.upper())
             window = request.args.get('window', type=int)
 
             missing_videos = 0
             matched_videos = 0
             filtered_videos = 0
-            for result in query.execute(lexicon, index, [
+            for result in text_query.execute(lexicon, index, [
                 documents[v] for v in videos if v in documents
             ]):
                 document = documents[result.id]
