@@ -46,7 +46,6 @@ function loadChart(div_id, chart_options, search_results, dimensions) {
   let getSeriesName = (color) => {
     let result = search_results[color];
     let query = result.query.replaceAll('[', '').replaceAll(']', '').replaceAll('"', '').replaceAll('.', '');
-    console.log(query);
     return query;
   };
   let getDateFormat = (agg) => {
