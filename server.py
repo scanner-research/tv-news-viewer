@@ -175,12 +175,12 @@ def load_video_data(data_dir: str):
         return fname.split('.', 1)[0]
 
     person_dir = os.path.join(data_dir, 'people')
-    person_intervals = {
+    id_intervals = {
         parse_person_name(person_file): MmapIntervalSetMapping(
             os.path.join(person_dir, person_file))
         for person_file in os.listdir(person_dir)
     }
-    return videos, face_intervals, person_intervals
+    return videos, face_intervals, id_intervals
 
 
 def load_index(index_dir: str):
@@ -241,7 +241,7 @@ def get_aggregate_fn(agg: str):
 def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
               documents: Documents, lexicon: Lexicon,
               face_intervals: FaceIntervals,
-              person_intervals: Dict[int, MmapIntervalSetMapping],
+              id_intervals: Dict[int, MmapIntervalSetMapping],
               cache_seconds: int):
     app = Flask(__name__)
 
@@ -334,9 +334,9 @@ def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
         filter_str = request.args.get('onscreen.id', '', type=str).strip().lower()
         if not filter_str:
             return None
-        intervals = person_intervals.get(filter_str, None)
+        intervals = id_intervals.get(filter_str, None)
         if intervals is None:
-            raise KeyError('{} is not a valid person'.format(filter_str))
+            raise InvalidUsage('{} is not a valid person'.format(filter_str))
         return lambda v, t: intervals.is_contained(v, t, True)
 
     @app.route('/text-search')
@@ -559,7 +559,7 @@ def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
 
     @app.route('/people')
     def get_people():
-        return jsonify(sorted(person_intervals.keys()))
+        return jsonify(sorted(id_intervals.keys()))
 
     @app.route('/vgrid/bundle.js')
     def get_vgrid_bundle():
@@ -573,10 +573,10 @@ def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
 
 
 def main(host, port, data_dir, index_dir, debug):
-    video_dict, face_intervals, person_intervals = load_video_data(data_dir)
+    video_dict, face_intervals, id_intervals = load_video_data(data_dir)
     index, documents, lexicon = load_index(index_dir)
     app = build_app(video_dict, index, documents, lexicon, face_intervals,
-                    person_intervals, 0 if debug else 3600)
+                    id_intervals, 0 if debug else 3600)
     kwargs = {
         'host': host, 'port': port, 'debug': debug
     }

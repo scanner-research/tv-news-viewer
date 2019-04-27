@@ -358,13 +358,13 @@
 
     function addRow(query) {
       let color = query ? query.color : getColor();
-      let text_str = query ? query.query : getDefaultPhraseQuery();
+      let query_str = query ? query.query : `text="${getDefaultPhraseQuery()}"`;
       let remove_btn = $('#search-table tr').length > 1 ?
         `<button type="button" class="btn btn-secondary" onclick="removeRow('${color}');">-</button>` : '';
       let html = `<tr name='${color}'>
         <td>${remove_btn}</td>
         <td><div class="color-box" style="background-color: ${color};"></div></td>
-        <td><input type="text" name="query" value='text="${text_str}"'</td>
+        <td><input type="text" name="query" value='${query_str}'</td>
       </tr>`;
       $('#search-table tbody').append(html);
       if ($('#search-table tr').length >= COLORS.length + 1) {
@@ -377,18 +377,18 @@
       return `http://{{ host }}/embed?width=${EMBED_DIMS.width}&height=${EMBED_DIMS.height}&data=${btoa(JSON.stringify({options: chart_options, queries: queries}))}`;
     }
 
-    function getShareUrl(chart_options, queries) {
-      return `http://{{ host }}/?data=${btoa(JSON.stringify({options: chart_options, queries: queries}))}`;
+    function getChartPath(chart_options, queries) {
+      return `/?data=${btoa(JSON.stringify({options: chart_options, queries: queries}))}`;
     }
 
-    function setShareUrl(url) {
-      var dummy = document.createElement("input");
+    function setShareUrl(path) {
+      var dummy = document.createElement('input');
       document.body.appendChild(dummy);
-      dummy.setAttribute('value', url);
+      dummy.setAttribute('value', 'http://{{ host }}' + path);
       dummy.select();
       document.execCommand("copy");
       document.body.removeChild(dummy);
-      alert(`Copied link to clipboard!`);
+      alert('Copied link to clipboard!');
     }
 
     function setEmbedUrl(url) {
@@ -420,11 +420,12 @@
           width: $("#chart").width(), height: EMBED_DIMS.height
         });
         let embed_url = getEmbedUrl(chart_options, queries);
-        let share_url = getShareUrl(chart_options, queries);
+        let chart_path = getChartPath(chart_options, queries);
         $('#embed-area p[name="text"]').html(
-`<a href="#" onclick="setShareUrl('${share_url}'); return false;">Share</a>
+`<a href="#" onclick="setShareUrl('${chart_path}'); return false;">Share</a>
 or <a href="#" onclick="setEmbedUrl('${embed_url}'); return false;">embed</a> chart.`
         );
+        window.history.pushState(null, '', chart_path)
       }
 
       let parsed_queries = queries.map(query => {
