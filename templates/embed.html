@@ -42,8 +42,7 @@
     <table id="search-table">
       <tr>
         <th>Color</th>
-        <th>Keyword Query <a href="https://github.com/scanner-research/caption-index/blob/master/captions/query.py" target="_blank">(grammar)</a></th>
-        <th>Filters</th>
+        <th>Query</th>
       </tr>
     </table>
   </div>
@@ -72,7 +71,6 @@
         let html = `<tr name='${query.color}'>
           <td><div class="color-box" style="background-color: ${query.color};"></div></td>
           <td>${query.query}</td>
-          <td>${query.filters ? query.filters : 'none'}</td>
         </tr>`;
         $('#search-table tbody').append(html);
       });
@@ -88,22 +86,18 @@
     let search_results = {};
     var remaining = queries.length;
     queries.forEach(query => {
-      var args = {query: query.query};
-      args = Object.assign(
-        args, getQueryOptions(chart_options, normalizeFilters(parseFilters(query.filters)))
-      );
+      let args = getQueryOptions(chart_options, normalizeFilters(parseFilters(query.query)));
       function displayResults() {
         loadChart('#chart', chart_options, search_results, {width: width, height: height});
         renderText();
       };
       $.ajax({
-        url: '/search',
+        url: '/text-search',
         type: 'get',
         data: args,
         success: resp => {
           search_results[query.color] = {
             query: query.query,
-            filters: query.filters,
             data: resp
           };
           remaining--;
