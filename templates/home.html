@@ -76,7 +76,7 @@
       display: none;
     }
     #chart {
-      width: 90%;
+      width: 100%;
       text-align: center;
     }
     #shade {
@@ -417,7 +417,7 @@
 
       function displayResults() {
         loadChart('#chart', chart_options, search_results, {
-          width: $("#chart").width(), height: EMBED_DIMS.height
+          width: $("#chart-area").width(), height: EMBED_DIMS.height
         });
         let embed_url = getEmbedUrl(chart_options, queries);
         let chart_path = getChartPath(chart_options, queries);

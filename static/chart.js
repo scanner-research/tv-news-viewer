@@ -103,6 +103,7 @@ function loadChart(div_id, chart_options, search_results, dimensions) {
     $schema: 'https://vega.github.io/schema/vega-lite/v3.json',
     width: dimensions.width,
     height: dimensions.height,
+    autosize: {type: 'fit', resize: true, contains: 'padding'},
     description: `${chart_options.window  > 0 ? 'Keyword mentions' : 'Topic time'} over time`,
     data: {values: tooltip_data},
     encoding: {
