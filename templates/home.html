@@ -18,6 +18,7 @@
 
   <link rel="shortcut icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}" />
   <script src="{{ url_for('static', filename='chart.js') }}" /></script>
+  <script src="{{ url_for('static', filename='query.js') }}" /></script>
 
   <title>Esper: TV News Search</title>
   <style>
@@ -104,8 +105,7 @@
   </div>
 
   <div class="container" id="chart-options">
-    <button type="button" class="btn btn-secondary" id='addRow'>Add query (+)</button>
-    &nbsp; Count
+    Count
     <select class="selectpicker" id="countBy" data-width="fit">
       <option value="mentions" selected="selected">mentions</option>
     </select>
@@ -121,6 +121,7 @@
       <option value="day">day</option>
     </select>
     . &nbsp;
+    <button type="button" class="btn btn-secondary" id='addRow'>Add query (+)</button>
     <button type="button" class="btn btn-primary" id="search">Search the news!</button>
   </div>
 
@@ -213,18 +214,18 @@
           <td>show="CNN Newsroom"</td>
         </tr>
         <tr>
-          <td>hours</td>
+          <td>hour</td>
           <td>ranges of hours in 24h format</td>
           <td>0-23 or 0, 1, 2, ...</td>
           <td>0-23</td>
-          <td>hours=9-17</td>
+          <td>hour=9-17</td>
         </tr>
         <tr>
           <td>daysofweek</td>
-          <td>ranges of days; 1=Mon, 7=Sun</td>
-          <td>1-7 or 1, 2, ...</td>
-          <td>1-7</td>
-          <td>daysofweek=6-7</td>
+          <td>range or list of days</td>
+          <td>mon-sun or mon, tue, ...</td>
+          <td>all</td>
+          <td>daysofweek=sat-sun</td>
         </tr>
         <tr>
           <td>onscreen.face</td>

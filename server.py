@@ -80,7 +80,7 @@ def format_date(d: datetime):
     return d.strftime('%Y-%m-%d')
 
 
-def parse_int_set(s: str):
+def parse_hour_set(s: str):
     if s is None or not s.strip():
         return None
     result = set()
@@ -89,9 +89,42 @@ def parse_int_set(s: str):
             continue
         elif '-' in t:
             t0, t1 = t.split('-', 1)
-            result.update(range(int(t0), int(t1) + 1))
+            t0 = int(t0)
+            t1 = int(t1)
+            if t0 >= 0 and t0 <= 23 and t1 >= 0 and t1 <= 23:
+                result.update(range(t0, t1 + 1))
+            else:
+                raise InvalidUsage('invalid hour range: {}'.format(t))
         else:
-            result.add(int(t))
+            t0 = int(t)
+            if t0 >= 0 and t0 <= 23:
+                result.add(t0)
+            else:
+                raise InvalidUsage('invalid hour: {}'.format(t))
+    return result if result else None
+
+
+DAYS_OF_WEEK = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']
+
+
+def parse_day_of_week_set(s: str):
+    if s is None or not s.strip():
+        return None
+    result = set()
+    for t in s.strip().split(','):
+        t_low = t.lower()
+        try:
+            if t_low == '':
+                continue
+            elif '-' in t:
+                t0, t1 = t_low.split('-', 1)
+                result.update(range(
+                    DAYS_OF_WEEK.index(t0) + 1,
+                    DAYS_OF_WEEK.index(t1) + 2))
+            else:
+                result.add(DAYS_OF_WEEK.index(t_low) + 1)
+        except ValueError:
+            raise InvalidUsage('invalid day of week: {}'.format(t))
     return result if result else None
 
 
@@ -164,8 +197,8 @@ def get_video_filter():
     end_date = parse_date(request.args.get('end_date', None))
     channel = request.args.get('channel', None)
     show = request.args.get('show', None)
-    hours = parse_int_set(request.args.get('hours', None))
-    daysofweek = parse_int_set(request.args.get('daysofweek', None))
+    hours = parse_hour_set(request.args.get('hour', None))
+    daysofweek = parse_day_of_week_set(request.args.get('dayofweek', None))
 
     if start_date or end_date or channel or show or hours or daysofweek:
         def video_filter(video):
@@ -297,7 +330,7 @@ def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
             f = None
         return f
 
-    def get_person_filter():
+    def get_id_filter():
         filter_str = request.args.get('onscreen.id', '', type=str).strip().lower()
         if not filter_str:
             return None
@@ -311,7 +344,7 @@ def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
         # Parse video filters
         video_filter = get_video_filter()
         face_filter = get_face_filter()
-        person_filter = get_person_filter()
+        id_filter = get_id_filter()
         window = request.args.get('window', None, type=int)
         aggregate_fn = get_aggregate_fn(request.args.get(
             'aggregate', None, type=str))
@@ -351,7 +384,7 @@ def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
                     postings = PostingUtil.deoverlap(PostingUtil.dilate(
                         result.postings, window,
                         video.num_frames / video.fps))
-                    if person_filter:
+                    if id_filter:
                         raise InvalidUsage(
                             'Not implemented: window and person filter')
                     if face_filter:
@@ -363,10 +396,10 @@ def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
                     total = sum(max(p.end - p.start, 0) for p in postings)
                 else:
                     postings = result.postings
-                    if person_filter:
+                    if id_filter:
                         postings = [
                             p for p in postings
-                            if person_filter(
+                            if id_filter(
                                 video.id, milliseconds((p.start + p.end) / 2))]
                     if face_filter:
                         postings = [
@@ -398,7 +431,7 @@ def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
                     filtered_videos += 1
                     continue
 
-                if person_filter:
+                if id_filter:
                     raise InvalidUsage(
                         'Not implemented: blank query and person filter')
                 if face_filter:
