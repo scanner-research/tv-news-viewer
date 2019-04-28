@@ -151,7 +151,8 @@
         start_date: start_date,
         end_date: end_date,
         aggregate: $('#aggregateBy').val(),
-        window: $('#timeWindow').val()
+        window: $('#timeWindow').val(),
+        enable_playback: true
       }
     }
 
@@ -231,8 +232,8 @@
           <td>onscreen.face</td>
           <td>face is on screen (height >= 20%)</td>
           <td>
-            any, man, woman, host, guest <br>
-            {man,woman}_{host,guest}
+            any, man, woman, host, nonhost <br>
+            {man,woman}+{host,nonhost}
           </td>
           <td>n/a</td>
           <td>onscreen.face=man_host</td>
@@ -284,14 +285,6 @@
       '#4E79A7', '#F28E2B', '#E15759', '#76B7B2', '#59A14F',
       '#EDC948', '#B07AA1', '#FF9DA7', '#9C755F', '#BAB0AC'
     ];
-
-    function shuffle(a) {
-      for (let i = a.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [a[i], a[j]] = [a[j], a[i]];
-      }
-      return a;
-    }
 
     const DEFAULT_PHRASES = shuffle([
       'donald trump',
@@ -374,11 +367,11 @@
     $('#addRow').click(() => {addRow();});
 
     function getEmbedUrl(chart_options, queries) {
-      return `http://{{ host }}/embed?width=${EMBED_DIMS.width}&height=${EMBED_DIMS.height}&data=${btoa(JSON.stringify({options: chart_options, queries: queries}))}`;
+      return `http://{{ host }}/embed?width=${EMBED_DIMS.width}&height=${EMBED_DIMS.height}&data=${JSON.stringify({options: chart_options, queries: queries})}`;
     }
 
     function getChartPath(chart_options, queries) {
-      return `/?data=${btoa(JSON.stringify({options: chart_options, queries: queries}))}`;
+      return `/?data=${encodeURIComponent(JSON.stringify({options: chart_options, queries: queries}))}`;
     }
 
     function setShareUrl(path) {
@@ -482,7 +475,7 @@ or <a href="#" onclick="setEmbedUrl('${embed_url}'); return false;">embed</a> ch
       $('#extra-options').show();
     }
     if (params.get('data')) {
-      let data = JSON.parse(atob(params.get('data')));
+      let data = JSON.parse(decodeURIComponent(params.get('data')));
       try {
         data.queries.forEach(query => addRow(query));
         initChartOptions(data.options);

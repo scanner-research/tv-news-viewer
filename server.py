@@ -309,21 +309,21 @@ def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
                 return (
                     face_intervals.man_host.is_contained(v, t, True) or
                     face_intervals.woman_host.is_contained(v, t, True))
-        elif filter_str == 'guest':
+        elif filter_str == 'nonhost':
             def f(v, t):
                 return (
                     face_intervals.man_nonhost.is_contained(v, t, True) or
                     face_intervals.woman_nonhost.is_contained(v, t, True))
-        elif filter_str == 'man_host':
+        elif filter_str == 'man+host':
             def f(v, t):
                 return face_intervals.man_host.is_contained(v, t, True)
-        elif filter_str == 'woman_host':
+        elif filter_str == 'woman+host':
             def f(v, t):
                 return face_intervals.woman_host.is_contained(v, t, True)
-        elif filter_str == 'man_guest':
+        elif filter_str == 'man+nonhost':
             def f(v, t):
                 return face_intervals.man_nonhost.is_contained(v, t, True)
-        elif filter_str == 'woman_guest':
+        elif filter_str == 'woman+nonhost':
             def f(v, t):
                 return face_intervals.woman_nonhost.is_contained(v, t, True)
         else:
@@ -563,11 +563,11 @@ def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
 
     @app.route('/vgrid/bundle.js')
     def get_vgrid_bundle():
-        return send_file('vgrid/dist/bundle.js', mimetype='text/javascript')
+        return send_file('vgrid-widget/dist/bundle.js', mimetype='text/javascript')
 
     @app.route('/vgrid/index.css')
     def get_vgrid_css():
-        return send_file('vgrid/dist/index.css', mimetype='text/css')
+        return send_file('vgrid-widget/dist/index.css', mimetype='text/css')
 
     return app
 

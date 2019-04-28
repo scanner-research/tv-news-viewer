@@ -11,6 +11,8 @@
 
   <link rel="stylesheet" type="text/css" href="/vgrid/index.css" />
 
+  <script src="{{ url_for('static', filename='query.js') }}" /></script>
+
   <title>Esper: Show Videos</title>
 
   <style>
@@ -24,9 +26,11 @@
 </head>
 <body>
   <div class="container" id="text-info"></div>
+
   <div class="container">
     <div id="videos"></div>
   </div>
+
   <script>
     const MAX_VIDEOS = 10;
 
@@ -59,32 +63,30 @@
       renderVGrid(interval_blocks, {videos: videos}, {});
     }
 
-    let params = (new URL(document.location)).searchParams;
-    var video_ids = JSON.parse(params.get('ids'));
-    let num_videos = video_ids.length;
+    let params = JSON.parse(decodeURIComponent((new URL(document.location)).searchParams.get('params')));
+    var video_ids = params.video_ids;
     if (video_ids.length > MAX_VIDEOS) {
       video_ids = video_ids.slice(0, MAX_VIDEOS);
     }
+
     $("#text-info").html(
-      `<p>Showing ${video_ids.length} of ${num_videos} videos.</p>`
+      `<p>Showing ${video_ids.length} of ${params.video_ids.length} videos.</p>`
     );
 
-    let query = params.get('query');
-    let window_time = params.get('window');
+    let args = normalizeFilters(parseFilters(params.query));
+    args.window = params.window;
+    args.ids = video_ids;
+
     $.ajax({
       url: '/search-videos',
       type: 'get',
-      data: {
-        ids: JSON.stringify(video_ids),
-        query: query,
-        window: window_time,
-      },
+      data: args,
       success: showVideos,
       error: xhr => {
         alert('Search failed.');
       }
     });
   </script>
-  <script src="/vgrid/bundle.js"></script>
+  <!-- <script src="/vgrid/bundle.js"></script> -->
 </body>
 </html>

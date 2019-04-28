@@ -56,7 +56,7 @@ function loadChart(div_id, chart_options, search_results, dimensions) {
     } else {
       return '%b %d, %Y';
     }
-  }
+  };
 
   let year_span = (
     new Date(chart_options.end_date).getUTCFullYear() -
@@ -72,14 +72,20 @@ function loadChart(div_id, chart_options, search_results, dimensions) {
       chart_options.end_date, []);
     return Object.keys(data).map(
       t => {
-        // var link_href = null;
-        // if (data[t].length > 0) {
-        //   link_href = `/videos?text-query=${result.query}&window=${chart_options.window}&ids=${JSON.stringify(data[t].map(x => x[0]))}`;
-        // }
+        var link_href = null;
+        if (chart_options.enable_playback && data[t].length > 0) {
+          // Enable embedded player
+          let params = {
+            query: result.query,
+            window: chart_options.window,
+            video_ids: data[t].map(x => x[0])
+          };
+          link_href = `/videos?params=${encodeURIComponent(JSON.stringify(params))}`;
+        }
         return {
           time: t, color: color, query: getSeriesName(color),
           value: data[t].reduce((acc, x) => acc + x[1], 0),
-          // video_href: link_href,
+          video_href: link_href,
           size: data[t].length > 0 ? 30 : 0
         };
       }
@@ -175,7 +181,7 @@ function loadChart(div_id, chart_options, search_results, dimensions) {
         color: {field: 'color', type: 'nominal', scale: null},
         size: {field: 'size', type: 'quantitative', scale: null},
         opacity: {value: 1},
-        // href: {field: 'video_href', type: 'nominal'},
+        href: chart_options.enable_playback ? {field: 'video_href', type: 'nominal'} : null,
         tooltip: [
           {field: 'time', type: 'temporal', timeUnit: 'utcyearmonthdate', title: 'time', format: getDateFormat(chart_options.aggregate)},
           {field: 'query', type: 'nominal'},

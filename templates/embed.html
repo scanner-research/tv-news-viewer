@@ -59,13 +59,13 @@
     ];
 
     let params = (new URL(document.location)).searchParams;
-    let data = JSON.parse(atob(params.get('data')));
+    let data = JSON.parse(decodeURIComponent(params.get('data')));
     let width = params.get('width');
     let height = params.get('height');
     let queries = data.queries;
     let chart_options = data.options;
 
-    function renderText() {
+    function renderText() {?data=eyJvcHRpb25zIjp7InN0YXJ0X2RhdGUiOiIyMDEwLTAxLTAxIiwiZW5kX2RhdGUiOiIyMDE4LTA0LTAxIiwiYWdncmVnYXRlIjoibW9udGgiLCJ3aW5kb3ciOiIwIiwiZW5hYmxlX3BsYXliYWNrIjp0cnVlfSwicXVlcmllcyI6W3siY29sb3IiOiIjNEU3OUE3IiwicXVlcnkiOiJ0ZXh0PVwiZG9uYWxkIHRydW1wXCIifV19
       // TODO: XSS attack here
       queries.forEach(query => {
         let html = `<tr name='${query.color}'>
