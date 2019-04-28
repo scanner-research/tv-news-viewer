@@ -418,7 +418,8 @@ def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
                         total = sum(1 - in_commercial(p) for p in postings)
                     else:
                         total = len(postings)
-                accumulate(video.date, video.id, total)
+                if total > 0:
+                    accumulate(video.date, video.id, total)
         else:
             for document in documents:
                 video = video_dict.get(document.name)
@@ -456,7 +457,8 @@ def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
                                 document.id, c.max_frame / video.fps)
                             if max_idx > min_idx:
                                 total -= max(0, max_idx - min_idx)
-                accumulate(video.date, video.id, total)
+                if total > 0:
+                    accumulate(video.date, video.id, total)
 
         print('  matched {} videos, {} filtered, {} missing'.format(
               matched_videos, filtered_videos, missing_videos))
@@ -544,6 +546,9 @@ def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
                                 return True
                         return False
                     postings = [p for p in postings if not in_commercial(p)]
+
+                if len(postings) == 0:
+                    print('Warning: no intervals found video_id={}'.format(video.id))
 
                 results.append({
                     'meta': video_to_dict(video),
