@@ -13,7 +13,7 @@
 
   <script src="{{ url_for('static', filename='query.js') }}" /></script>
 
-  <title>Esper: Show Videos</title>
+  <title>Esper: Videos</title>
 
   <style>
     .container {
@@ -75,10 +75,10 @@
 
     let args = normalizeFilters(parseFilters(params.query));
     args.window = params.window;
-    args.ids = video_ids;
+    args.ids = JSON.stringify(video_ids);
 
     $.ajax({
-      url: '/search-videos',
+      url: '/text-search/videos',
       type: 'get',
       data: args,
       success: showVideos,
@@ -87,6 +87,6 @@
       }
     });
   </script>
-  <!-- <script src="/vgrid/bundle.js"></script> -->
+  <script src="/vgrid/bundle.js"></script>
 </body>
 </html>

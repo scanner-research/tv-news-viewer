@@ -386,7 +386,7 @@ def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
                         video.num_frames / video.fps))
                     if id_filter:
                         raise InvalidUsage(
-                            'Not implemented: window and person filter')
+                            'Not implemented: window and id filter')
                     if face_filter:
                         raise InvalidUsage(
                             'Not implemented: window and face filter')
@@ -433,10 +433,10 @@ def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
 
                 if id_filter:
                     raise InvalidUsage(
-                        'Not implemented: blank query and person filter')
+                        'Not implemented: empty text and id filter')
                 if face_filter:
                     raise InvalidUsage(
-                        'Not implemented: blank query and face filter')
+                        'Not implemented: empty text and face filter')
 
                 if window:
                     total = video.num_frames / video.fps
@@ -486,20 +486,24 @@ def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
     @app.route('/text-search/videos')
     def text_search_videos():
         ids = request.args.get('ids', None)
-        videos = list(video_name_by_id[i] for i in json.loads(ids))
+        video_ids = list(video_name_by_id[i] for i in json.loads(ids))
+
+        face_filter = get_face_filter()
+        id_filter = get_id_filter()
+        window = request.args.get('window', 0, type=int)
+        excl_comms = request.args.get('nocomms', 'true', type=str) == 'true'
 
         results = []
         text_query_str = request.args.get('text', '')
         if text_query_str:
             # Run the query on the selected videos
             text_query = Query(text_query_str.upper())
-            window = request.args.get('window', type=int)
 
             missing_videos = 0
             matched_videos = 0
             filtered_videos = 0
             for result in text_query.execute(lexicon, index, [
-                documents[v] for v in videos if v in documents
+                documents[v] for v in video_ids if v in documents
             ]):
                 document = documents[result.id]
                 video = video_dict.get(document.name)
@@ -510,9 +514,36 @@ def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
                     matched_videos += 1
 
                 postings = result.postings
-                if window:
+                if window > 0:
+                    if face_filter:
+                        raise InvalidUsage('not implemented: window and face filter')
+                    if id_filter:
+                        raise InvalidUsage('not implemented: window and id filter')
+                    if excl_comms:
+                        raise InvalidUsage('not implemented: window and exclude_commercials')
                     postings = PostingUtil.deoverlap(PostingUtil.dilate(
                         result.postings, window, video.num_frames / video.fps))
+
+                if id_filter:
+                    postings = [
+                        p for p in postings
+                        if id_filter(
+                            video.id, milliseconds((p.start + p.end) / 2))]
+                if face_filter:
+                    postings = [
+                        p for p in postings
+                        if face_filter(
+                            video.id, milliseconds((p.start + p.end) / 2))]
+                if excl_comms:
+                    def in_commercial(p):
+                        for c in video.commercials:
+                            if 0 <= (
+                                min(p.end, c.max_frame / video.fps) -
+                                max(p.start, c.min_frame / video.fps)
+                            ):
+                                return True
+                        return False
+                    postings = [p for p in postings if not in_commercial(p)]
 
                 results.append({
                     'meta': video_to_dict(video),
@@ -523,6 +554,13 @@ def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
             print('  matched {} videos, {} missing'.format(
                   matched_videos, missing_videos))
         else:
+            if face_filter:
+                raise InvalidUsage('not implemented: empty text and face filter')
+            if id_filter:
+                raise InvalidUsage('not implemented: empty text and id filter')
+            if window > 0:
+                raise InvalidUsage('not implemented: empty text and window != 0')
+
             # Return the entire video
             for v in videos:
                 video = video_dict[v]
