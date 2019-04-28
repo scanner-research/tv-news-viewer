@@ -32,7 +32,7 @@
   </div>
 
   <script>
-    const MAX_VIDEOS = 30;
+    const MAX_VIDEOS = 25;
     const INTERVAL_PADDING = 10;
 
     function showVideos(data) {
@@ -73,7 +73,7 @@
     }
 
     let params = JSON.parse(decodeURIComponent((new URL(document.location)).searchParams.get('params')));
-    var video_ids = params.video_ids;
+    var video_ids = shuffle(params.video_ids);
     if (video_ids.length > MAX_VIDEOS) {
       video_ids = video_ids.slice(0, MAX_VIDEOS);
     }
