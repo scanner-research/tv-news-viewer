@@ -33,27 +33,37 @@
 
   <script>
     const MAX_VIDEOS = 30;
+    const INTERVAL_PADDING = 10;
 
     function showVideos(data) {
       let videos = [];
       let interval_blocks = [];
       data.forEach(x => {
         videos.push({
-          id: x.meta.id,
-          width: x.meta.width,
-          height: x.meta.height,
-          fps: x.meta.fps,
-          num_frames: x.meta.num_frames,
-          path: x.meta.name + '.mp4'
+          id: x.metadata.id,
+          width: x.metadata.width,
+          height: x.metadata.height,
+          fps: x.metadata.fps,
+          num_frames: x.metadata.num_frames,
+          path: x.metadata.name + '.mp4'
         });
         interval_blocks.push({
           interval_dict: {
             'results': x.intervals.map(i => ({
-              t: [i[0], i[1]], x: [0, 1], y: [0, 1],
+              t: [i[0], Math.max(i[1], i[0] + INTERVAL_PADDING)],
+              x: [0, 1], y: [0, 1],
               payload: {draw_type: {type: 'DrawType_Bbox'}, metadata: {}}
+            })),
+            '_captions': x.captions.map(l => ({
+              t: [l[0], l[1]], x: [0, 1], y: [0, 1],
+              payload: {
+                metadata: {}, draw_type: {
+                  type: 'DrawType_Caption', args: {text: l[2]}
+                }
+              }
             }))
           },
-          video_id: x.meta.id
+          video_id: x.metadata.id
         });
       });
       let vgrid_settings = {

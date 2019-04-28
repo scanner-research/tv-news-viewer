@@ -14,7 +14,6 @@ from pathlib import Path
 from captions import CaptionIndex, Documents, Lexicon
 from captions.util import PostingUtil
 from captions.query import Query
-from captions.vtt import get_vtt
 from rs_intervalset import MmapIntervalSetMapping
 
 
@@ -128,7 +127,7 @@ def parse_day_of_week_set(s: str):
     return result if result else None
 
 
-def milliseconds(s):
+def milliseconds(s: float):
     return int(s * 1000)
 
 
@@ -475,7 +474,7 @@ def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
         except ValueError:
             return v
 
-    def video_to_dict(video):
+    def video_to_dict(video: Video):
         return {
             'id': video.id,
             'name': video.name,
@@ -484,6 +483,16 @@ def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
             'fps': video.fps,
             'num_frames': video.num_frames
         }
+
+    def get_captions(document: Documents.Document):
+        lines = []
+        for p in index.intervals(document):
+            if p.len > 0:
+                tokens = [lexicon.decode(t)
+                          for t in index.tokens(document, p.idx, p.len)]
+                lines.append((round(p.start, 1), round(p.end, 1),
+                              ' '.join(tokens)))
+        return lines
 
     @app.route('/text-search/videos')
     def text_search_videos():
@@ -549,13 +558,14 @@ def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
 
                 if len(postings) == 0:
                     print('Warning: no intervals found video_id={}'.format(video.id))
-
-                results.append({
-                    'meta': video_to_dict(video),
-                    'intervals': [
-                        (p.start, p.end) for p in postings
-                    ]
-                })
+                else:
+                    results.append({
+                        'metadata': video_to_dict(video),
+                        'intervals': [
+                            (p.start, p.end) for p in postings
+                        ],
+                        'captions': get_captions(document)
+                    })
             print('  matched {} videos, {} missing'.format(
                   matched_videos, missing_videos))
         else:
@@ -577,15 +587,6 @@ def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
         resp = jsonify(results)
         resp.cache_control.max_age = cache_seconds
         return resp
-
-    @app.route('/captions/<video>')
-    def get_captions(video):
-        video = video_name_or_id(video)
-        document = documents.prefix(video)[0]
-        vtt_str = get_vtt(index, lexicon, document)
-        response = Response(vtt_str, mimetype='text/vtt')
-        response.headers['Content-Type'] = 'text/vtt'
-        return response
 
     @app.route('/video-names')
     def get_video_names():
