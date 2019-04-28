@@ -1,3 +1,6 @@
+const QUERY_DELIM = 'AND';
+const QUERY_ASSIGN = '=';
+
 function getQueryOptions(chart_options, query_filters) {
   let options = query_filters;
   options.start_date = chart_options.start_date;
@@ -10,10 +13,10 @@ function getQueryOptions(chart_options, query_filters) {
 function parseFilters(filter_str) {
   let filters = {};
   if (filter_str) {
-    filter_str.split(';').forEach(line => {
+    filter_str.split(QUERY_DELIM).forEach(line => {
       line = $.trim(line);
       if (line.length > 0) {
-        let i = line.indexOf('=');
+        let i = line.indexOf(QUERY_ASSIGN);
         if (i == -1) {
           throw Error(`Invalid filter: ${line}`);
         }
