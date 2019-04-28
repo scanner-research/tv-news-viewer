@@ -32,11 +32,7 @@
   </div>
 
   <script>
-    const MAX_VIDEOS = 10;
-
-    function getVideoUrl(name) {
-      return `https://storage.cloud.google.com/esper/tvnews/videos/${name}.mp4`;
-    }
+    const MAX_VIDEOS = 30;
 
     function showVideos(data) {
       let videos = [];
@@ -48,7 +44,7 @@
           height: x.meta.height,
           fps: x.meta.fps,
           num_frames: x.meta.num_frames,
-          path: getVideoUrl(x.meta.name)
+          path: x.meta.name + '.mp4'
         });
         interval_blocks.push({
           interval_dict: {
@@ -60,7 +56,10 @@
           video_id: x.meta.id
         });
       });
-      renderVGrid(interval_blocks, {videos: videos}, {});
+      let vgrid_settings = {
+        video_endpoint: 'https://storage.cloud.google.com/esper/tvnews/videos'
+      };
+      renderVGrid(interval_blocks, {videos: videos}, vgrid_settings);
     }
 
     let params = JSON.parse(decodeURIComponent((new URL(document.location)).searchParams.get('params')));
