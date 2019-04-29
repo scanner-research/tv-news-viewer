@@ -52,16 +52,26 @@
             'results': x.intervals.map(i => ({
               t: [i[0], Math.max(i[1], i[0] + INTERVAL_PADDING)],
               x: [0, 1], y: [0, 1],
-              payload: {draw_type: {type: 'DrawType_Bbox'}, metadata: {}}
+              payload: {spatial_type: {type: 'SpatialType_Bbox'}, metadata: {}}
             })),
             '_captions': x.captions.map(l => ({
               t: [l[0], l[1]], x: [0, 1], y: [0, 1],
               payload: {
-                metadata: {}, draw_type: {
-                  type: 'DrawType_Caption', args: {text: l[2]}
+                metadata: {}, spatial_type: {
+                  type: 'SpatialType_Caption', args: {text: l[2]}
                 }
               }
-            }))
+            })),
+            '_metadata': [{
+              t: [0, x.metadata.num_frames / x.metadata.fps],
+              x: [0, 1], y: [0, 1],
+              payload: {
+                metadata: {
+                  video: {type: 'Metadata_Generic', args: {data: x.metadata.name}}
+                },
+                spatial_type: {type: 'SpatialType_Bbox'}
+              }
+            }]
           },
           video_id: x.metadata.id
         });
