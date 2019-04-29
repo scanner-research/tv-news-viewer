@@ -236,7 +236,7 @@
             {man,woman}+{host,nonhost}
           </td>
           <td>n/a</td>
-          <td>onscreen.face=man_host</td>
+          <td>onscreen.face=man+host</td>
         </tr>
         <tr>
           <td>onscreen.id</td>
@@ -367,7 +367,7 @@
     $('#addRow').click(() => {addRow();});
 
     function getEmbedUrl(chart_options, queries) {
-      return `http://{{ host }}/embed?width=${EMBED_DIMS.width}&height=${EMBED_DIMS.height}&data=${JSON.stringify({options: chart_options, queries: queries})}`;
+      return `http://{{ host }}/embed?width=${EMBED_DIMS.width}&height=${EMBED_DIMS.height}&data=${encodeURIComponent(JSON.stringify({options: chart_options, queries: queries}))}`;
     }
 
     function getChartPath(chart_options, queries) {

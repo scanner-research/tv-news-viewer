@@ -41,6 +41,12 @@ String.prototype.replaceAll = function(search, replacement) {
     return target.split(search).join(replacement);
 };
 
+function chartHrefHandler(b64json) {
+  let params = JSON.parse(atob(b64json));
+  console.log('Click params:', params);
+  window.open(`/videos?params=${encodeURIComponent(JSON.stringify(params))}`, '_blank');
+}
+
 function loadChart(div_id, chart_options, search_results, dimensions) {
   // TODO: fix escaping characters
   let getSeriesName = (color) => {
@@ -80,7 +86,7 @@ function loadChart(div_id, chart_options, search_results, dimensions) {
             window: chart_options.window,
             video_ids: data[t].map(x => x[0])
           };
-          link_href = `/videos?params=${encodeURIComponent(JSON.stringify(params))}`;
+          link_href = `javascript:chartHrefHandler("${btoa(JSON.stringify(params))}")`;
         }
         return {
           time: t, color: color, query: getSeriesName(color),
@@ -191,7 +197,6 @@ function loadChart(div_id, chart_options, search_results, dimensions) {
     }]
   };
   vega_opts = {
-    loader: {'target': '_blank'},
     actions: false
   };
   vegaEmbed(div_id, vega_spec, vega_opts);

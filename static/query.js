@@ -22,7 +22,8 @@ function parseFilters(filter_str) {
         }
         let k = $.trim(line.substr(0, i));
         var v = $.trim(line.substr(i + 1));
-        if (v[0] == '"' && v[v.length - 1] == '"') {
+        if ((v[0] == '"' && v[v.length - 1] == '"') ||
+            (v[0] == '\'' && v[v.length - 1] == '\'')) {
           v = v.substr(1, v.length - 2);
         }
         filters[k] = v;

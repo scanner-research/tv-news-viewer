@@ -65,7 +65,7 @@
     let queries = data.queries;
     let chart_options = data.options;
 
-    function renderText() {?data=eyJvcHRpb25zIjp7InN0YXJ0X2RhdGUiOiIyMDEwLTAxLTAxIiwiZW5kX2RhdGUiOiIyMDE4LTA0LTAxIiwiYWdncmVnYXRlIjoibW9udGgiLCJ3aW5kb3ciOiIwIiwiZW5hYmxlX3BsYXliYWNrIjp0cnVlfSwicXVlcmllcyI6W3siY29sb3IiOiIjNEU3OUE3IiwicXVlcnkiOiJ0ZXh0PVwiZG9uYWxkIHRydW1wXCIifV19
+    function renderText() {
       // TODO: XSS attack here
       queries.forEach(query => {
         let html = `<tr name='${query.color}'>
