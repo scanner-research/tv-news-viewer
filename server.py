@@ -31,6 +31,8 @@ def get_args():
                         help='Directory of video metadata. Default: data')
     parser.add_argument('--index', dest='index_dir', default='index',
                         help='Directory of caption index. Default: index')
+    parser.add_argument('--frameserver', dest='frameserver_endpoint', type=str,
+                        help='Frameserver URL and path')
     parser.add_argument('-d', '--debug', action='store_true',
                         help='Run in debug mode with server auto-reload')
     return parser.parse_args()
@@ -241,6 +243,7 @@ def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
               documents: Documents, lexicon: Lexicon,
               face_intervals: FaceIntervals,
               id_intervals: Dict[int, MmapIntervalSetMapping],
+              frameserver_endpoint: str,
               cache_seconds: int):
     app = Flask(__name__)
 
@@ -280,7 +283,7 @@ def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
 
     @app.route('/videos')
     def show_videos():
-        return render_template('videos.html')
+        return render_template('videos.html', frameserver_endpoint=frameserver_endpoint)
 
     def get_face_filter():
         filter_str = request.args.get('onscreen.face', '', type=str).strip().lower()
@@ -616,11 +619,11 @@ def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
     return app
 
 
-def main(host, port, data_dir, index_dir, debug):
+def main(host, port, data_dir, index_dir, frameserver_endpoint, debug):
     video_dict, face_intervals, id_intervals = load_video_data(data_dir)
     index, documents, lexicon = load_index(index_dir)
     app = build_app(video_dict, index, documents, lexicon, face_intervals,
-                    id_intervals, 0 if debug else 3600)
+                    id_intervals, frameserver_endpoint,  0 if debug else 3600)
     kwargs = {
         'host': host, 'port': port, 'debug': debug
     }

@@ -45,7 +45,7 @@
           height: x.metadata.height,
           fps: x.metadata.fps,
           num_frames: x.metadata.num_frames,
-          path: x.metadata.name + '.mp4'
+          path: `tvnews/videos/${x.metadata.name}.mp4`
         });
         interval_blocks.push({
           interval_dict: {
@@ -67,7 +67,11 @@
         });
       });
       let vgrid_settings = {
-        video_endpoint: 'https://storage.cloud.google.com/esper/tvnews/videos'
+        {% if frameserver_endpoint is not none %}
+        frameserver_endpoint: '{{ frameserver_endpoint }}',
+        use_frameserver: true,
+        {% endif %}
+        video_endpoint: 'https://storage.cloud.google.com/esper'
       };
       renderVGrid(interval_blocks, {videos: videos}, vgrid_settings);
     }
