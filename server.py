@@ -383,9 +383,6 @@ def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
                     continue
 
                 if window:
-                    postings = PostingUtil.deoverlap(PostingUtil.dilate(
-                        result.postings, window,
-                        video.num_frames / video.fps))
                     if id_filter:
                         raise InvalidUsage(
                             'Not implemented: window and id filter')
@@ -395,6 +392,9 @@ def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
                     if excl_comms:
                         raise InvalidUsage(
                             'Not implemented: window and exclude_commercials')
+                    postings = PostingUtil.deoverlap(PostingUtil.dilate(
+                        result.postings, window,
+                        video.num_frames / video.fps))
                     total = sum(max(p.end - p.start, 0) for p in postings)
                 else:
                     postings = result.postings

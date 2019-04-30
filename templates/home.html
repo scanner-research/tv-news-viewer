@@ -46,7 +46,11 @@
     #query-help {
       padding: 10px;
       background-color: #F4F4F4;
+      border-spacing: 5px;
       display: none;
+    }
+    #query-help table {
+      width: 100%;
     }
     #query-help th {
       text-align: left;
@@ -55,6 +59,9 @@
       text-align: left;
       padding-left: 10px;
       padding-right: 10px;
+    }
+    #query-help tr:nth-child(odd) {
+      background-color: #FCFCFC;
     }
     #chart-options input, select {
       text-align: center;
@@ -198,7 +205,7 @@
           <td>text to count mentions for</td>
           <td><a href="https://github.com/scanner-research/caption-index/blob/master/captions/query.py" target="_blank">grammar</a></td>
           <td>n/a</td>
-          <td>text=donald trump</td>
+          <td>text="donald trump"</td>
         </tr>
         <tr>
           <td>channel</td>
@@ -229,6 +236,14 @@
           <td>daysofweek=sat-sun</td>
         </tr>
         <tr>
+          <td>nocomms</td>
+          <td>exclude mentions in commercials</td>
+          <td>true, false</td>
+          <td>true</td>
+          <td>nocomms=true</td>
+        </tr>
+
+        <tr>
           <td>onscreen.face</td>
           <td>face is on screen (height >= 20%)</td>
           <td>
@@ -236,7 +251,7 @@
             {man,woman}+{host,nonhost}
           </td>
           <td>n/a</td>
-          <td>onscreen.face=man+host</td>
+          <td>onscreen.face="man+host"</td>
         </tr>
         <tr>
           <td>onscreen.id</td>
@@ -244,13 +259,6 @@
           <td><a href="/people" target="_blank">list of people</a></td>
           <td>n/a</td>
           <td>onscreen.id="barack obama"</td>
-        </tr>
-        <tr>
-          <td>nocomms</td>
-          <td>exclude mentions in commercials</td>
-          <td>true, false</td>
-          <td>true</td>
-          <td>nocomms=true</td>
         </tr>
       </table>
     </div>
