@@ -113,8 +113,9 @@
 
   <div class="container" id="chart-options">
     Count
-    <select class="selectpicker" id="countBy" data-width="fit">
+    <select class="selectpicker" id="countVar" data-width="fit">
       <option value="mentions" selected="selected">mentions</option>
+      <option value="frames">frames</option>
     </select>
     between
     <input type="text" class="datepicker" id="startDate">
@@ -157,6 +158,7 @@
       return {
         start_date: start_date,
         end_date: end_date,
+        count: $('#countVar').val(),
         aggregate: $('#aggregateBy').val(),
         window: $('#timeWindow').val(),
         enable_playback: true
@@ -169,6 +171,7 @@
       if (chart_options) {
         start_date = chart_options.start_date;
         end_date = chart_options.end_date;
+        $('#countVar').val(chart_options.count);
         $('#aggregateBy').val(chart_options.aggregate);
         $('#timeWindow').val(chart_options.window);
       }
@@ -449,7 +452,7 @@ or <a href="#" onclick="setEmbedUrl('${embed_url}'); return false;">embed</a> ch
       $('#search').prop('disabled', true);
       parsed_queries.forEach(query => {
         $.ajax({
-          url: '/text-search',
+          url: '/search',
           type: 'get',
           data: query.args,
           success: resp => {

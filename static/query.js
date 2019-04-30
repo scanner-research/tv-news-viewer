@@ -5,6 +5,7 @@ function getQueryOptions(chart_options, query_filters) {
   let options = query_filters;
   options.start_date = chart_options.start_date;
   options.end_date = chart_options.end_date;
+  options.count = chart_options.count;
   options.aggregate = chart_options.aggregate;
   options.window = chart_options.window;
   return options;

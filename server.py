@@ -239,6 +239,81 @@ def get_aggregate_fn(agg: str):
     raise InvalidUsage('invalid aggregation parameter: {}'.format(agg))
 
 
+def get_onscreen_face_filter(face_intervals):
+    filter_str = request.args.get('onscreen.face', '', type=str).strip().lower()
+    if not filter_str:
+        f = None
+    elif filter_str == 'any':
+        def f(v, t):
+            return (
+                face_intervals.man_host.is_contained(v, t, True) or
+                face_intervals.man_nonhost.is_contained(v, t, True) or
+                face_intervals.woman_host.is_contained(v, t, True) or
+                face_intervals.woman_nonhost.is_contained(v, t, True))
+    elif filter_str == 'man':
+        def f(v, t):
+            return (
+                face_intervals.man_host.is_contained(v, t, True) or
+                face_intervals.man_nonhost.is_contained(v, t, True))
+    elif filter_str == 'woman':
+        def f(v, t):
+            return (
+                face_intervals.woman_host.is_contained(v, t, True) or
+                face_intervals.woman_nonhost.is_contained(v, t, True))
+    elif filter_str == 'host':
+        def f(v, t):
+            return (
+                face_intervals.man_host.is_contained(v, t, True) or
+                face_intervals.woman_host.is_contained(v, t, True))
+    elif filter_str == 'nonhost':
+        def f(v, t):
+            return (
+                face_intervals.man_nonhost.is_contained(v, t, True) or
+                face_intervals.woman_nonhost.is_contained(v, t, True))
+    elif filter_str == 'man+host':
+        def f(v, t):
+            return face_intervals.man_host.is_contained(v, t, True)
+    elif filter_str == 'woman+host':
+        def f(v, t):
+            return face_intervals.woman_host.is_contained(v, t, True)
+    elif filter_str == 'man+nonhost':
+        def f(v, t):
+            return face_intervals.man_nonhost.is_contained(v, t, True)
+    elif filter_str == 'woman+nonhost':
+        def f(v, t):
+            return face_intervals.woman_nonhost.is_contained(v, t, True)
+    else:
+        f = None
+    return f
+
+
+def get_onscreen_id_filter(id_intervals):
+    filter_str = request.args.get('onscreen.id', '', type=str).strip().lower()
+    if not filter_str:
+        return None
+    intervals = id_intervals.get(filter_str, None)
+    if intervals is None:
+        raise InvalidUsage('{} is not a valid person'.format(filter_str))
+    return lambda v, t: intervals.is_contained(v, t, True)
+
+
+class DateAccumulator(object):
+
+    def __init__(self, aggregate_fn):
+        self._totals = {}
+        self._aggregate_fn = aggregate_fn
+
+    def add(self, date, video_id, value):
+        if value > 0:
+            key = format_date(self._aggregate_fn(date))
+            if key not in self._totals:
+                self._totals[key] = []
+            self._totals[key].append((video_id, value))
+
+    def get(self):
+        return self._totals
+
+
 def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
               documents: Documents, lexicon: Lexicon,
               face_intervals: FaceIntervals,
@@ -263,7 +338,7 @@ def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
                         for k, v in shows_by_channel.items()}
 
     @app.errorhandler(InvalidUsage)
-    def handle_invalid_usage(error):
+    def _handle_invalid_usage(error):
         response = jsonify(error.to_dict())
         response.status_code = error.status_code
         return response
@@ -285,88 +360,13 @@ def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
     def show_videos():
         return render_template('videos.html', frameserver_endpoint=frameserver_endpoint)
 
-    def get_face_filter():
-        filter_str = request.args.get('onscreen.face', '', type=str).strip().lower()
-        if not filter_str:
-            f = None
-        elif filter_str == 'any':
-            def f(v, t):
-                return (
-                    face_intervals.man_host.is_contained(v, t, True) or
-                    face_intervals.man_nonhost.is_contained(v, t, True) or
-                    face_intervals.woman_host.is_contained(v, t, True) or
-                    face_intervals.woman_nonhost.is_contained(v, t, True))
-        elif filter_str == 'man':
-            def f(v, t):
-                return (
-                    face_intervals.man_host.is_contained(v, t, True) or
-                    face_intervals.man_nonhost.is_contained(v, t, True))
-        elif filter_str == 'woman':
-            def f(v, t):
-                return (
-                    face_intervals.woman_host.is_contained(v, t, True) or
-                    face_intervals.woman_nonhost.is_contained(v, t, True))
-        elif filter_str == 'host':
-            def f(v, t):
-                return (
-                    face_intervals.man_host.is_contained(v, t, True) or
-                    face_intervals.woman_host.is_contained(v, t, True))
-        elif filter_str == 'nonhost':
-            def f(v, t):
-                return (
-                    face_intervals.man_nonhost.is_contained(v, t, True) or
-                    face_intervals.woman_nonhost.is_contained(v, t, True))
-        elif filter_str == 'man+host':
-            def f(v, t):
-                return face_intervals.man_host.is_contained(v, t, True)
-        elif filter_str == 'woman+host':
-            def f(v, t):
-                return face_intervals.woman_host.is_contained(v, t, True)
-        elif filter_str == 'man+nonhost':
-            def f(v, t):
-                return face_intervals.man_nonhost.is_contained(v, t, True)
-        elif filter_str == 'woman+nonhost':
-            def f(v, t):
-                return face_intervals.woman_nonhost.is_contained(v, t, True)
-        else:
-            f = None
-        return f
-
-    def get_id_filter():
-        filter_str = request.args.get('onscreen.id', '', type=str).strip().lower()
-        if not filter_str:
-            return None
-        intervals = id_intervals.get(filter_str, None)
-        if intervals is None:
-            raise InvalidUsage('{} is not a valid person'.format(filter_str))
-        return lambda v, t: intervals.is_contained(v, t, True)
-
-    @app.route('/text-search')
-    def text_search():
-        # Parse video filters
-        video_filter = get_video_filter()
-        face_filter = get_face_filter()
-        id_filter = get_id_filter()
-        window = request.args.get('window', None, type=int)
-        aggregate_fn = get_aggregate_fn(request.args.get(
-            'aggregate', None, type=str))
-        excl_comms = request.args.get('nocomms', 'true', type=str) == 'true'
-
-        # Parse the query
-        text_query_str = request.args.get('text', '').strip()
-        print('Searching:', text_query_str)
-
-        totals_by_day = {}
+    def _search_text(accumulator: DateAccumulator,
+                     text_query_str: str, window: int, exclude_commercials: bool,
+                     video_filter, face_filter, id_filter):
+        print('Counting mentions:', text_query_str)
         missing_videos = 0
         matched_videos = 0
         filtered_videos = 0
-
-        def accumulate(date, video_id, value):
-            nonlocal totals_by_day
-            date_key = format_date(aggregate_fn(date))
-            if date_key not in totals_by_day:
-                totals_by_day[date_key] = []
-            totals_by_day[date_key].append((video_id, value))
 
         if text_query_str:
             text_query = Query(text_query_str.upper())
@@ -389,7 +389,7 @@ def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
                     if face_filter:
                         raise InvalidUsage(
                             'Not implemented: window and face filter')
-                    if excl_comms:
+                    if exclude_commercials:
                         raise InvalidUsage(
                             'Not implemented: window and exclude_commercials')
                     postings = PostingUtil.deoverlap(PostingUtil.dilate(
@@ -408,7 +408,7 @@ def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
                             p for p in postings
                             if face_filter(
                                 video.id, milliseconds((p.start + p.end) / 2))]
-                    if excl_comms:
+                    if exclude_commercials:
                         def in_commercial(p):
                             for c in video.commercials:
                                 if 0 <= (
@@ -420,8 +420,7 @@ def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
                         total = sum(1 - in_commercial(p) for p in postings)
                     else:
                         total = len(postings)
-                if total > 0:
-                    accumulate(video.date, video.id, total)
+                accumulator.add(video.date, video.id, total)
         else:
             for document in documents:
                 video = video_dict.get(document.name)
@@ -443,14 +442,14 @@ def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
 
                 if window:
                     total = video.num_frames / video.fps
-                    if excl_comms:
+                    if exclude_commercials:
                         total = max(
                             0,
                             total - sum((c.max_frame - c.min_frame) / video.fps
                                         for c in video.commercials))
                 else:
                     total = index.document_length(document)
-                    if excl_comms:
+                    if exclude_commercials:
                         for c in video.commercials:
                             assert c.max_frame >= c.min_frame
                             min_idx = index.position(
@@ -459,25 +458,48 @@ def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
                                 document.id, c.max_frame / video.fps)
                             if max_idx > min_idx:
                                 total -= max(0, max_idx - min_idx)
-                if total > 0:
-                    accumulate(video.date, video.id, total)
+                accumulator.add(video.date, video.id, total)
 
-        print('  matched {} videos, {} filtered, {} missing'.format(
+        print('Matched {} videos, {} filtered, {} missing'.format(
               matched_videos, filtered_videos, missing_videos))
-        resp = jsonify(totals_by_day)
+
+    @app.route('/search')
+    def search():
+        video_filter = get_video_filter()
+        face_filter = get_onscreen_face_filter(face_intervals)
+        id_filter = get_onscreen_id_filter(id_intervals)
+        window = request.args.get('window', None, type=int)
+        count_var = request.args.get('count', None, type=str)
+        aggregate_fn = get_aggregate_fn(request.args.get(
+            'aggregate', None, type=str))
+        exclude_commercials = request.args.get('nocomms', 'true', type=str) == 'true'
+
+        accumulator = DateAccumulator(aggregate_fn)
+        if count_var == 'mentions':
+            _search_text(
+                accumulator,
+                request.args.get('text', '').strip(),
+                window, exclude_commercials,
+                video_filter, face_filter, id_filter)
+        elif count_var == 'frames':
+            pass
+        else:
+            raise NotImplementedError(count_var)
+
+        resp = jsonify(accumulator.get())
         resp.cache_control.max_age = cache_seconds
         return resp
 
     video_name_by_id = {v.id: v.name for v in video_dict.values()}
 
-    def video_name_or_id(v):
+    def _video_name_or_id(v):
         try:
             v_id = int(v)
             return video_name_by_id[v_id].name
         except ValueError:
             return v
 
-    def video_to_dict(video: Video):
+    def _video_to_dict(video: Video):
         return {
             'id': video.id,
             'name': video.name,
@@ -487,7 +509,7 @@ def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
             'num_frames': video.num_frames
         }
 
-    def get_captions(document: Documents.Document):
+    def _get_captions(document: Documents.Document):
         lines = []
         for p in index.intervals(document):
             if p.len > 0:
@@ -502,10 +524,10 @@ def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
         ids = request.args.get('ids', None)
         video_ids = list(video_name_by_id[i] for i in json.loads(ids))
 
-        face_filter = get_face_filter()
-        id_filter = get_id_filter()
+        face_filter = get_onscreen_face_filter(face_intervals)
+        id_filter = get_onscreen_id_filter(id_intervals)
         window = request.args.get('window', 0, type=int)
-        excl_comms = request.args.get('nocomms', 'true', type=str) == 'true'
+        exclude_commercials = request.args.get('nocomms', 'true', type=str) == 'true'
 
         results = []
         text_query_str = request.args.get('text', '')
@@ -533,7 +555,7 @@ def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
                         raise InvalidUsage('not implemented: window and face filter')
                     if id_filter:
                         raise InvalidUsage('not implemented: window and id filter')
-                    if excl_comms:
+                    if exclude_commercials:
                         raise InvalidUsage('not implemented: window and exclude_commercials')
                     postings = PostingUtil.deoverlap(PostingUtil.dilate(
                         result.postings, window, video.num_frames / video.fps))
@@ -548,7 +570,7 @@ def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
                         p for p in postings
                         if face_filter(
                             video.id, milliseconds((p.start + p.end) / 2))]
-                if excl_comms:
+                if exclude_commercials:
                     def in_commercial(p):
                         for c in video.commercials:
                             if 0 <= (
@@ -563,11 +585,11 @@ def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
                     print('Warning: no intervals found video_id={}'.format(video.id))
                 else:
                     results.append({
-                        'metadata': video_to_dict(video),
+                        'metadata': _video_to_dict(video),
                         'intervals': [
                             (p.start, p.end) for p in postings
                         ],
-                        'captions': get_captions(document)
+                        'captions': _get_captions(document)
                     })
             print('  matched {} videos, {} missing'.format(
                   matched_videos, missing_videos))
@@ -583,7 +605,7 @@ def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
             for v in videos:
                 video = video_dict[v]
                 results.append({
-                    'meta': video_to_dict(video),
+                    'meta': _video_to_dict(video),
                     'intervals': [(0, video.num_frames)]
                 })
 
@@ -597,7 +619,7 @@ def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
 
     @app.route('/video-info/<video>')
     def get_video_info(video):
-        video = video_name_or_id(video)
+        video = _video_name_or_id(video)
         return jsonify(video_dict[video])
 
     @app.route('/shows')
