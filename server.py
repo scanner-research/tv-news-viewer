@@ -46,11 +46,8 @@ def load_json(file_path: str):
 
 Video = namedtuple('Video', [
     'id', 'name', 'show', 'channel', 'date', 'dayofweek', 'hour', 'num_frames',
-    'fps', 'width', 'height', 'commercials'
+    'fps', 'width', 'height'
 ])
-
-
-Commercial = namedtuple('Commercial', ['min_frame', 'max_frame'])
 
 
 FaceIntervals = namedtuple('FaceIntervals', [
@@ -153,8 +150,7 @@ def load_video_data(data_dir: str):
             num_frames,
             fps,
             width,
-            height,
-            commercials
+            height
         ) = v
         name = get_video_name(name)
         date = parse_date(date)
@@ -162,8 +158,9 @@ def load_video_data(data_dir: str):
         videos[name] = Video(
             id=id, name=name, show=show, channel=channel,
             date=date, dayofweek=dayofweek, hour=math.floor(minute / 60),
-            num_frames=num_frames, fps=fps, width=width, height=height,
-            commercials=[Commercial(*c) for c in sorted(commercials)])
+            num_frames=num_frames, fps=fps, width=width, height=height)
+
+    commercials = MmapIntervalSetMapping(path.join(data_dir, 'commercials.bin'))
 
     face_dir = path.join(data_dir, 'face')
     face_intervals = FaceIntervals(
@@ -172,8 +169,7 @@ def load_video_data(data_dir: str):
         woman=MmapIntervalSetMapping(path.join(face_dir, 'female.bin')),
         host=MmapIntervalSetMapping(path.join(face_dir, 'host.bin')),
         nonhost=MmapIntervalSetMapping(path.join(face_dir, 'nonhost.bin')),
-        man_host=MmapIntervalSetMapping(
-            path.join(face_dir, 'male_host.bin')),
+        man_host=MmapIntervalSetMapping(path.join(face_dir, 'male_host.bin')),
         woman_host=MmapIntervalSetMapping(
             path.join(face_dir, 'female_host.bin')),
         man_nonhost=MmapIntervalSetMapping(
@@ -190,7 +186,7 @@ def load_video_data(data_dir: str):
             path.join(person_dir, person_file))
         for person_file in os.listdir(person_dir)
     }
-    return videos, face_intervals, id_intervals
+    return videos, commercials, face_intervals, id_intervals
 
 
 def load_index(index_dir: str):
@@ -252,7 +248,7 @@ def get_onscreen_face_isetmap(face_intervals: FaceIntervals):
     filter_str = request.args.get('onscreen.face', '', type=str).strip().lower()
     if not filter_str:
         return None
-    if filter_str == 'any':
+    if filter_str == 'all':
         isetmap = face_intervals.all
     elif filter_str == 'man':
         isetmap = face_intervals.man
@@ -299,29 +295,6 @@ def get_onscreen_id_filter(id_intervals: Dict[str, MmapIntervalSetMapping]):
     return lambda v, t: intervals.is_contained(v, t, True)
 
 
-def get_commercial_overlap(video: Video, intervals: List):
-    overlap = 0
-    i = 0
-    for c in video.commercials:
-        c_start = c.min_frame / video.fps * 1000
-        c_end = c.max_frame / video.fps * 1000
-        while i < len(intervals):
-            a, b = intervals[i]
-            if b <= c_start:
-                i += 1
-                continue
-            if a > c_end:
-                break
-            else:
-                overlap += max(0, min(b, c_end) - max(a, c_start))
-                if c_end < b:
-                    break
-                else:
-                    i += 1
-                    continue
-    return overlap / 1000
-
-
 class DateAccumulator(object):
 
     def __init__(self, aggregate_fn):
@@ -341,6 +314,7 @@ class DateAccumulator(object):
 
 def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
               documents: Documents, lexicon: Lexicon,
+              commercial_isetmap: MmapIntervalSetMapping,
               face_intervals: FaceIntervals,
               id_intervals: Dict[int, MmapIntervalSetMapping],
               frameserver_endpoint: str,
@@ -440,13 +414,10 @@ def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
                                 video.id, milliseconds((p.start + p.end) / 2))]
                     if exclude_commercials:
                         def in_commercial(p):
-                            for c in video.commercials:
-                                if 0 <= (
-                                    min(p.end, c.max_frame / video.fps) -
-                                    max(p.start, c.min_frame / video.fps)
-                                ):
-                                    return 1
-                            return 0
+                            return 1 if commercial_isetmap.is_contained(
+                                video.id, int((p.start + p.end) / 2 * 1000),
+                                True
+                            ) else 0
                         total = sum(1 - in_commercial(p) for p in postings)
                     else:
                         total = len(postings)
@@ -473,19 +444,19 @@ def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
                 if window:
                     total = video.num_frames / video.fps
                     if exclude_commercials:
-                        total = max(
-                            0,
-                            total - sum((c.max_frame - c.min_frame) / video.fps
-                                        for c in video.commercials))
+                        commercial_time = sum(
+                            (b - a) / 1000 for a, b in
+                            commercial_isetmap.get_intervals(video.id, True))
+                        total -= commercial_time
                 else:
                     total = index.document_length(document)
                     if exclude_commercials:
-                        for c in video.commercials:
-                            assert c.max_frame >= c.min_frame
-                            min_idx = index.position(
-                                document.id, c.min_frame / video.fps)
-                            max_idx = index.position(
-                                document.id, c.max_frame / video.fps)
+                        for a, b in commercial_isetmap.get_intervals(
+                            video.id, True
+                        ):
+                            assert b >= a
+                            min_idx = index.position(document.id, a)
+                            max_idx = index.position(document.id, b)
                             if max_idx > min_idx:
                                 total -= max(0, max_idx - min_idx)
                 accumulator.add(video.date, video.id, total)
@@ -518,18 +489,20 @@ def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
                     intervals = face_isetmap.intersect(video.id, intervals, True)
                 if len(intervals) == 0:
                     return
+            if exclude_commercials:
+                if intervals is None:
+                    intervals = [(0, int(video.num_frames / video.fps * 1000))]
+                intervals = commercial_isetmap.minus(video_id, intervals, True)
+                if len(intervals) == 0:
+                    return
 
             if intervals is not None:
-                total_seconds = sum(i[1] - i[0] for i in intervals) / 1000
-                if exclude_commercials:
-                    total_seconds -= get_commercial_overlap(video, intervals)
-                accumulator.add(video.date, video.id, total_seconds)
+                accumulator.add(
+                    video.date, video.id,
+                    sum(i[1] - i[0] for i in intervals) / 1000)
             else:
-                total_frames = video.num_frames
-                if exclude_commercials:
-                    total_frames -= sum(
-                        c.max_frame - c.min_frame for c in video.commercials)
-                accumulator.add(video.date, video.id, total_frames / video.fps)
+                accumulator.add(video.date, video.id,
+                                video.num_frames / video.fps)
 
         if text_query_str:
             # TODO: make thi configurable
@@ -677,13 +650,8 @@ def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
                             video.id, milliseconds((p.start + p.end) / 2))]
                 if exclude_commercials:
                     def in_commercial(p):
-                        for c in video.commercials:
-                            if 0 <= (
-                                min(p.end, c.max_frame / video.fps) -
-                                max(p.start, c.min_frame / video.fps)
-                            ):
-                                return True
-                        return False
+                        return commercial_isetmap.is_contained(
+                            video.id, int((p.start + p.end) / 2 * 1000), True)
                     postings = [p for p in postings if not in_commercial(p)]
 
                 if len(postings) == 0:
@@ -732,8 +700,9 @@ def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
                 if len(intervals) == 0:
                     return
             if exclude_commercials:
-                pass
-                # TODO: interval subtract
+                if intervals is None:
+                    intervals = [(0, int(video.num_frames / video.fps * 1000))]
+                intervals = commercial_isetmap.minus(video_id, intervals, True)
 
             if intervals is not None:
                 document = document_by_name.get(v.name)
@@ -813,10 +782,12 @@ def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
 
 
 def main(host, port, data_dir, index_dir, frameserver_endpoint, debug):
-    video_dict, face_intervals, id_intervals = load_video_data(data_dir)
+    video_dict, commercial_isetmap, face_intervals, id_intervals = load_video_data(data_dir)
     index, documents, lexicon = load_index(index_dir)
-    app = build_app(video_dict, index, documents, lexicon, face_intervals,
-                    id_intervals, frameserver_endpoint,  0 if debug else 3600)
+    app = build_app(video_dict, index, documents, lexicon,
+                    commercial_isetmap, face_intervals,
+                    id_intervals, frameserver_endpoint,
+                    0 if debug else 3600)
     kwargs = {
         'host': host, 'port': port, 'debug': debug
     }
