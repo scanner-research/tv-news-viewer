@@ -70,7 +70,7 @@ function loadChart(div_id, chart_options, search_results, dimensions) {
   );
   let x_tick_count = chart_options.aggregate == 'year' ? year_span + 1 : 24;
 
-  let unit = chart_options.window > 0 ? 'seconds' : 'mentions';
+  let unit = chart_options.count == 'mentions' && chart_options.window == 0 ? 'mentions' : 'seconds';
   let point_data = Object.keys(search_results).flatMap(color => {
     let result = search_results[color];
     let data = fillZeros(
@@ -82,6 +82,7 @@ function loadChart(div_id, chart_options, search_results, dimensions) {
         if (chart_options.enable_playback && data[t].length > 0) {
           // Enable embedded player
           let params = {
+            count: chart_options.count,
             query: result.query,
             window: chart_options.window,
             video_ids: data[t].map(x => x[0])
@@ -105,7 +106,7 @@ function loadChart(div_id, chart_options, search_results, dimensions) {
     Object.keys(search_results).forEach(color => {
       let series_name = getSeriesName(color);
       let videos = _.get(search_results[color].data, t, []);
-      let value = videos.reduce((acc, x) => acc + x[1], 0);
+      let value = Math.round(videos.reduce((acc, x) => acc + x[1], 0));
       point[series_name] = `${value} ${unit} in ${videos.length} videos`;
     });
     return point;

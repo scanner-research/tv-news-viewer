@@ -97,11 +97,12 @@
     );
 
     let args = normalizeFilters(parseFilters(params.query));
+    args.count = params.count;
     args.window = params.window;
     args.ids = JSON.stringify(video_ids);
 
     $.ajax({
-      url: '/text-search/videos',
+      url: '/search/videos',
       type: 'get',
       data: args,
       success: showVideos,
