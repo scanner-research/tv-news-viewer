@@ -492,7 +492,7 @@ def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
             if exclude_commercials:
                 if intervals is None:
                     intervals = [(0, int(video.num_frames / video.fps * 1000))]
-                intervals = commercial_isetmap.minus(video_id, intervals, True)
+                intervals = commercial_isetmap.minus(video.id, intervals, True)
                 if len(intervals) == 0:
                     return
 
@@ -702,7 +702,7 @@ def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
             if exclude_commercials:
                 if intervals is None:
                     intervals = [(0, int(video.num_frames / video.fps * 1000))]
-                intervals = commercial_isetmap.minus(video_id, intervals, True)
+                intervals = commercial_isetmap.minus(video.id, intervals, True)
 
             if intervals is not None:
                 document = document_by_name.get(v.name)
