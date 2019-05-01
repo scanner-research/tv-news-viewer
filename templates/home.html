@@ -16,16 +16,16 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.9/css/bootstrap-select.min.css" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.9/js/bootstrap-select.min.js"></script>
 
+  <link href="https://fonts.googleapis.com/css?family=Source+Serif+Pro" rel="stylesheet">
+
   <link rel="shortcut icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
   <script src="{{ url_for('static', filename='chart.js') }}" /></script>
   <script src="{{ url_for('static', filename='query.js') }}" /></script>
   <script src="{{ url_for('static', filename='default.js') }}" /></script>
 
-  <title>Esper: TV News Search</title>
+  <title>Stanford TV News Viewer</title>
   <style>
-    .container {
-      padding: 4px;
-    }
     #search-table {
       width: 100%;
       border-collapse: separate;
@@ -91,7 +91,10 @@
       padding-right: 10px;
     }
     #query-help tr:nth-child(odd) {
-      background-color: #FCFCFC;
+      background-color: #DAD7CB;
+    }
+    #query-help tr:nth-child(even) {
+      background-color: #F9F6EF;
     }
     #embed-area textarea {
       width: 100%;
@@ -117,9 +120,15 @@
   </style>
 </head>
 <body>
+  <div class="top-header">
+    <div class="container">
+      <img src="{{ url_for('static', filename='stanford.png') }}"
+           alt="Stanford University"><p>TV News Viewer</p>
+    </div>
+  </div>
   <div class="container">
     <table id="search-table">
-      <tr name="header">
+      <tr class="header">
         <th></th>
         <th>Color</th>
         <th width="95%">Query <a href="#" onclick="toggleQueryHelp(); return false;" id="toggle-help">(show syntax)</a></th>

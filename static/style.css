@@ -1,0 +1,18 @@
+.container {
+  padding: 4px;
+}
+.top-header {
+  width: 100%;
+  background-color: #8C1515;
+}
+.top-header img {
+  height: 44px;
+  vertical-align: bottom;
+}
+.top-header p {
+  font-family: 'Source Serif Pro', serif;
+  font-size: 28px;
+  color: #F4F4F4;
+  display: inline;
+  vertical-align: bottom;
+}

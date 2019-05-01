@@ -14,7 +14,7 @@
   <script src="{{ url_for('static', filename='chart.js') }}" /></script>
   <script src="{{ url_for('static', filename='query.js') }}" /></script>
 
-  <title>Esper: Embeded Chart</title>
+  <title>Stanford TV News Viewer</title>
   <style>
     .container {
       padding: 2px;
@@ -86,7 +86,7 @@
         renderText();
       };
       $.ajax({
-        url: '/text-search',
+        url: '/search',
         type: 'get',
         data: args,
         success: resp => {

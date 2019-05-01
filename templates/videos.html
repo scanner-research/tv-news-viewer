@@ -11,20 +11,26 @@
 
   <link rel="stylesheet" type="text/css" href="/vgrid/index.css" />
 
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
   <script src="{{ url_for('static', filename='query.js') }}" /></script>
 
-  <title>Esper: Videos</title>
+  <title>TV News: Videos</title>
 
   <style>
-    .container {
-      padding: 10px;
-    }
     #text-info {
+      padding-top: 25px;
       text-align: center;
     }
   </style>
 </head>
 <body>
+  <div class="top-header">
+    <div class="container">
+      <img src="{{ url_for('static', filename='stanford.png') }}"
+           alt="Stanford University"><p>TV News Viewer</p>
+    </div>
+  </div>
+
   <div class="container" id="text-info"></div>
 
   <div class="container">
@@ -93,7 +99,7 @@
     }
 
     $("#text-info").html(
-      `<p>Showing ${video_ids.length} of ${params.video_ids.length} videos.</p>`
+      `<p>Showing results from ${video_ids.length} of ${params.video_ids.length} videos.</p>`
     );
 
     let args = normalizeFilters(parseFilters(params.query));
