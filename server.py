@@ -1,28 +1,27 @@
 #!/usr/bin/env python3
 
 import argparse
-import base64
 from datetime import datetime, timedelta
 import os
-from os import path
-import math
 import json
-from collections import namedtuple
-from typing import Dict, List
 from flask import Flask, Response, jsonify, request, render_template, send_file
-from pathlib import Path
+from typing import Dict, List, Set, Tuple, Optional
 
-from captions import CaptionIndex, Documents, Lexicon
-from captions.util import PostingUtil
-from captions.query import Query
-from rs_intervalset import MmapIntervalSetMapping
+from captions import CaptionIndex, Documents, Lexicon   # type: ignore
+from captions.util import PostingUtil                   # type: ignore
+from captions.query import Query                        # type: ignore
+from rs_intervalset import MmapIntervalSetMapping       # type: ignore
 
+from app.types import *
+from app.error import InvalidUsage
+from app.parsing import *
+from app.load import get_video_name, load_video_data, load_index
 
 MIN_DATE = datetime(2010, 1, 1)
 MAX_DATE = datetime(2018, 4, 1)
 
 
-def get_args():
+def get_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument('--host', default='localhost',
                         help='Host interface. Default: localhost')
@@ -39,175 +38,21 @@ def get_args():
     return parser.parse_args()
 
 
-def load_json(file_path: str):
-    with open(file_path, 'rb') as f:
-        return json.load(f)
-
-
-Video = namedtuple('Video', [
-    'id', 'name', 'show', 'channel', 'date', 'dayofweek', 'hour', 'num_frames',
-    'fps', 'width', 'height'
-])
-
-
-FaceIntervals = namedtuple('FaceIntervals', [
-    'all', 'man', 'woman', 'host', 'nonhost',
-    'man_host', 'man_nonhost', 'woman_host', 'woman_nonhost',
-])
-
-
-class InvalidUsage(Exception):
-    status_code = 400
-
-    def __init__(self, message, status_code=None, payload=None):
-        Exception.__init__(self)
-        self.message = message
-        if status_code is not None:
-            self.status_code = status_code
-        self.payload = payload
-
-    def to_dict(self):
-        rv = dict(self.payload or ())
-        rv['message'] = self.message
-        return rv
-
-
-def parse_date(s: str):
-    return datetime.strptime(s, '%Y-%m-%d') if s else None
-
-
-def format_date(d: datetime):
-    return d.strftime('%Y-%m-%d')
-
-
-def parse_hour_set(s: str):
-    if s is None or not s.strip():
-        return None
-    result = set()
-    for t in s.strip().split(','):
-        if t == '':
-            continue
-        elif '-' in t:
-            t0, t1 = t.split('-', 1)
-            t0 = int(t0)
-            t1 = int(t1)
-            if t0 >= 0 and t0 <= 23 and t1 >= 0 and t1 <= 23:
-                result.update(range(t0, t1 + 1))
-            else:
-                raise InvalidUsage('invalid hour range: {}'.format(t))
-        else:
-            t0 = int(t)
-            if t0 >= 0 and t0 <= 23:
-                result.add(t0)
-            else:
-                raise InvalidUsage('invalid hour: {}'.format(t))
-    return result if result else None
-
-
-DAYS_OF_WEEK = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']
-
-
-def parse_day_of_week_set(s: str):
-    if s is None or not s.strip():
-        return None
-    result = set()
-    for t in s.strip().split(','):
-        t_low = t.lower()
-        try:
-            if t_low == '':
-                continue
-            elif '-' in t:
-                t0, t1 = t_low.split('-', 1)
-                result.update(range(
-                    DAYS_OF_WEEK.index(t0) + 1,
-                    DAYS_OF_WEEK.index(t1) + 2))
-            else:
-                result.add(DAYS_OF_WEEK.index(t_low) + 1)
-        except ValueError:
-            raise InvalidUsage('invalid day of week: {}'.format(t))
-    return result if result else None
-
-
-def milliseconds(s: float):
+def milliseconds(s: float) -> int:
     return int(s * 1000)
 
 
-def get_video_name(s: str):
-    return Path(s).name.split('.')[0]
-
-
-def load_video_data(data_dir: str):
-    print('Loading video data: please wait...')
-    videos = {}
-    for v in load_json(path.join(data_dir, 'videos.json')):
-        (
-            id,
-            name,
-            show,
-            channel,
-            date,
-            minute,
-            num_frames,
-            fps,
-            width,
-            height
-        ) = v
-        name = get_video_name(name)
-        date = parse_date(date)
-        dayofweek = date.isoweekday()  # Mon == 1, Sun == 7
-        videos[name] = Video(
-            id=id, name=name, show=show, channel=channel,
-            date=date, dayofweek=dayofweek, hour=math.floor(minute / 60),
-            num_frames=num_frames, fps=fps, width=width, height=height)
-
-    commercials = MmapIntervalSetMapping(path.join(data_dir, 'commercials.bin'))
-
-    face_dir = path.join(data_dir, 'face')
-    face_intervals = FaceIntervals(
-        all=MmapIntervalSetMapping(path.join(face_dir, 'all.bin')),
-        man=MmapIntervalSetMapping(path.join(face_dir, 'male.bin')),
-        woman=MmapIntervalSetMapping(path.join(face_dir, 'female.bin')),
-        host=MmapIntervalSetMapping(path.join(face_dir, 'host.bin')),
-        nonhost=MmapIntervalSetMapping(path.join(face_dir, 'nonhost.bin')),
-        man_host=MmapIntervalSetMapping(path.join(face_dir, 'male_host.bin')),
-        woman_host=MmapIntervalSetMapping(
-            path.join(face_dir, 'female_host.bin')),
-        man_nonhost=MmapIntervalSetMapping(
-            path.join(face_dir, 'male_nonhost.bin')),
-        woman_nonhost=MmapIntervalSetMapping(
-            path.join(face_dir, 'female_nonhost.bin')))
-
-    def parse_person_name(fname):
-        return fname.split('.', 1)[0]
-
-    person_dir = path.join(data_dir, 'people')
-    id_intervals = {
-        parse_person_name(person_file): MmapIntervalSetMapping(
-            path.join(person_dir, person_file))
-        for person_file in os.listdir(person_dir)
-    }
-    return videos, commercials, face_intervals, id_intervals
-
-
-def load_index(index_dir: str):
-    print('Loading caption index: please wait...')
-    documents = Documents.load(path.join(index_dir, 'docs.list'))
-    lexicon = Lexicon.load(path.join(index_dir, 'words.lex'))
-    index = CaptionIndex(path.join(index_dir, 'index.bin'),
-                         lexicon, documents)
-    return index, documents, lexicon
-
-
-def get_video_filter():
-    start_date = parse_date(request.args.get('start_date', None))
-    end_date = parse_date(request.args.get('end_date', None))
-    channel = request.args.get('channel', None)
-    show = request.args.get('show', None)
-    hours = parse_hour_set(request.args.get('hour', None))
-    daysofweek = parse_day_of_week_set(request.args.get('dayofweek', None))
+def get_video_filter() -> Optional[VideoFilterFn]:
+    start_date = parse_date(request.args.get('start_date', None, type=str))
+    end_date = parse_date(request.args.get('end_date', None, type=str))
+    channel = request.args.get('channel', None, type=str)
+    show = request.args.get('show', None, type=str)
+    hours = parse_hour_set(request.args.get('hour', None, type=str))
+    daysofweek = parse_day_of_week_set(
+        request.args.get('dayofweek', None, type=str))
 
     if start_date or end_date or channel or show or hours or daysofweek:
-        def video_filter(video):
+        def video_filter(video: Video) -> bool:
             if start_date and video.date < start_date:
                 return False
             if end_date and video.date > end_date:
@@ -218,7 +63,8 @@ def get_video_filter():
                 return False
             if hours:
                 video_start = video.hour
-                video_end = video.hour + round(video.num_frames / video.fps / 3600)
+                video_end = video.hour + round(video.num_frames / video.fps
+                                               / 3600)
                 for h in range(video_start, video_end + 1):
                     if h in hours:
                         break
@@ -232,7 +78,7 @@ def get_video_filter():
         return None
 
 
-def get_aggregate_fn(agg: str):
+def get_aggregate_fn(agg: Optional[str]) -> AggregateFn:
     if agg is None or agg == 'day':
         return lambda d: d
     elif agg == 'month':
@@ -244,7 +90,9 @@ def get_aggregate_fn(agg: str):
     raise InvalidUsage('invalid aggregation parameter: {}'.format(agg))
 
 
-def get_onscreen_face_isetmap(face_intervals: FaceIntervals):
+def get_onscreen_face_isetmap(
+    face_intervals: FaceIntervals
+) -> MmapIntervalSetMapping:
     filter_str = request.args.get('onscreen.face', '', type=str).strip().lower()
     if not filter_str:
         return None
@@ -271,14 +119,18 @@ def get_onscreen_face_isetmap(face_intervals: FaceIntervals):
     return isetmap
 
 
-def get_onscreen_face_filter(face_intervals: FaceIntervals):
+def get_onscreen_face_filter(
+    face_intervals: FaceIntervals
+) -> Optional[OnScreenFilterFn]:
     isetmap = get_onscreen_face_isetmap(face_intervals)
     if isetmap is None:
         return None
     return lambda v, t: isetmap.is_contained(v, t, True)
 
 
-def get_onscreen_id_isetmap(id_intervals: Dict[str, MmapIntervalSetMapping]):
+def get_onscreen_id_isetmap(
+    id_intervals: IdIntervals
+) -> MmapIntervalSetMapping:
     filter_str = request.args.get('onscreen.id', '', type=str).strip().lower()
     if not filter_str:
         return None
@@ -288,7 +140,9 @@ def get_onscreen_id_isetmap(id_intervals: Dict[str, MmapIntervalSetMapping]):
     return intervals
 
 
-def get_onscreen_id_filter(id_intervals: Dict[str, MmapIntervalSetMapping]):
+def get_onscreen_id_filter(
+    id_intervals: IdIntervals
+) -> Optional[OnScreenFilterFn]:
     intervals = get_onscreen_id_isetmap(id_intervals)
     if intervals is None:
         return None
@@ -296,29 +150,40 @@ def get_onscreen_id_filter(id_intervals: Dict[str, MmapIntervalSetMapping]):
 
 
 class DateAccumulator(object):
+    Value = Tuple[int, Number]
 
-    def __init__(self, aggregate_fn):
-        self._totals = {}
+    def __init__(self, aggregate_fn: AggregateFn):
+        self._totals: Dict[str, List['DateAccumulator.Value']] = {}
         self._aggregate_fn = aggregate_fn
 
-    def add(self, date, video_id, value):
+    def add(self, date: datetime, video_id: int,
+            value: Number) -> None:
         if value > 0:
             key = format_date(self._aggregate_fn(date))
             if key not in self._totals:
                 self._totals[key] = []
             self._totals[key].append((video_id, value))
 
-    def get(self):
+    def get(self) -> Dict[str, List['DateAccumulator.Value']]:
         return self._totals
 
 
-def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
-              documents: Documents, lexicon: Lexicon,
-              commercial_isetmap: MmapIntervalSetMapping,
-              face_intervals: FaceIntervals,
-              id_intervals: Dict[int, MmapIntervalSetMapping],
-              frameserver_endpoint: str,
-              cache_seconds: int):
+def get_shows_by_channel(video_dict: Dict[str, Video]) -> Dict[str, List[str]]:
+    tmp_shows_by_channel: Dict[str, Set[str]] = {}
+    for v in video_dict.values():
+        if v.channel not in tmp_shows_by_channel:
+            tmp_shows_by_channel[v.channel] = set()
+        tmp_shows_by_channel[v.channel].add(v.show)
+    return {k: list(sorted(v)) for k, v in tmp_shows_by_channel.items()}
+
+
+def build_app(
+    video_dict: Dict[str, Video], index: CaptionIndex,
+    documents: Documents, lexicon: Lexicon,
+    commercial_isetmap: MmapIntervalSetMapping,
+    face_intervals: FaceIntervals, id_intervals: IdIntervals,
+    frameserver_endpoint: str, cache_seconds: int
+) -> Flask:
     app = Flask(__name__)
 
     # Make sure document name equals video name
@@ -326,21 +191,20 @@ def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
         d._replace(name=get_video_name(d.name))
         for d in documents])
 
-    video_by_id = {v.id: v for v in video_dict.values()}
-    document_by_name = {d.name: d for d in documents}
+    video_by_id: Dict[int, Video] = {
+        v.id: v for v in video_dict.values()
+    }
+    document_by_name: Dict[str, Documents.Document] = {
+        d.name: d for d in documents
+    }
 
-    shows_by_channel = {}
-    all_shows = set()
-    for v in video_dict.values():
-        if v.channel not in shows_by_channel:
-            shows_by_channel[v.channel] = set()
-        shows_by_channel[v.channel].add(v.show)
-        all_shows.add(v.show)
-    shows_by_channel = {k: list(sorted(v))
-                        for k, v in shows_by_channel.items()}
+    shows_by_channel = get_shows_by_channel(video_dict)
+    all_shows: Set[str] = set()
+    for shows in shows_by_channel.values():
+        all_shows.update(shows)
 
     @app.errorhandler(InvalidUsage)
-    def _handle_invalid_usage(error):
+    def _handle_invalid_usage(error: InvalidUsage):
         response = jsonify(error.to_dict())
         response.status_code = error.status_code
         return response
@@ -363,10 +227,14 @@ def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
         return render_template('videos.html',
                                frameserver_endpoint=frameserver_endpoint)
 
-    def _search_text(accumulator: DateAccumulator,
-                     text_query_str: str, window: int,
-                     exclude_commercials: bool,
-                     video_filter, face_filter, id_filter):
+    def _search_text(
+        accumulator: DateAccumulator,
+        text_query_str: str, window: int,
+        exclude_commercials: bool,
+        video_filter: Optional[VideoFilterFn],
+        face_filter: Optional[OnScreenFilterFn],
+        id_filter: Optional[OnScreenFilterFn]
+    ) -> None:
         print('Counting mentions:', text_query_str)
         missing_videos = 0
         matched_videos = 0
@@ -412,6 +280,7 @@ def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
                             p for p in postings
                             if face_filter(
                                 video.id, milliseconds((p.start + p.end) / 2))]
+
                     if exclude_commercials:
                         def in_commercial(p):
                             return 1 if commercial_isetmap.is_contained(
@@ -454,7 +323,6 @@ def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
                         for a, b in commercial_isetmap.get_intervals(
                             video.id, True
                         ):
-                            assert b >= a
                             min_idx = index.position(document.id, a)
                             max_idx = index.position(document.id, b)
                             if max_idx > min_idx:
@@ -464,17 +332,21 @@ def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
         print('Matched {} videos, {} filtered, {} missing'.format(
               matched_videos, filtered_videos, missing_videos))
 
-    def _search_video(accumulator: DateAccumulator,
-                      text_query_str: str,
-                      window: int, exclude_commercials: bool,
-                      face_isetmap: MmapIntervalSetMapping,
-                      id_isetmap: MmapIntervalSetMapping,
-                      video_filter):
+    def _search_video(
+        accumulator: DateAccumulator,
+        text_query_str: str,
+        window: int, exclude_commercials: bool,
+        face_isetmap: MmapIntervalSetMapping,
+        id_isetmap: MmapIntervalSetMapping,
+        video_filter: Optional[VideoFilterFn]
+    ) -> None:
         missing_videos = 0
         matched_videos = 0
         filtered_videos = 0
 
-        def helper(video, intervals=None):
+        def helper(
+            video: Video, intervals: Optional[List[Interval]] = None
+        ) -> None:
             if id_isetmap:
                 if intervals is None:
                     intervals = id_isetmap.get_intervals(video.id, True)
@@ -486,7 +358,8 @@ def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
                 if intervals is None:
                     intervals = face_isetmap.get_intervals(video.id, True)
                 else:
-                    intervals = face_isetmap.intersect(video.id, intervals, True)
+                    intervals = face_isetmap.intersect(video.id, intervals,
+                                                       True)
                 if len(intervals) == 0:
                     return
             if exclude_commercials:
@@ -505,7 +378,7 @@ def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
                                 video.num_frames / video.fps)
 
         if text_query_str:
-            # TODO: make thi configurable
+            # TODO: make this configurable
             window = max(window, 30)
             text_query = Query(text_query_str.upper())
             for result in text_query.execute(lexicon, index):
@@ -544,8 +417,9 @@ def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
         window = request.args.get('window', 0, type=int)
         aggregate_fn = get_aggregate_fn(request.args.get(
             'aggregate', None, type=str))
-        exclude_commercials = request.args.get('nocomms', 'true', type=str) == 'true'
-        text_query = request.args.get('text', '').strip()
+        exclude_commercials = (
+            request.args.get('nocomms', 'true', type=str) == 'true')
+        text_query = request.args.get('text', '', type=str).strip()
 
         accumulator = DateAccumulator(aggregate_fn)
         if count_var == 'mentions':
@@ -569,14 +443,14 @@ def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
         resp.cache_control.max_age = cache_seconds
         return resp
 
-    def _video_name_or_id(v):
+    def _video_name_or_id(v: str) -> str:
         try:
             v_id = int(v)
             return video_by_id[v_id].name
         except ValueError:
             return v
 
-    def _video_to_dict(video: Video):
+    def _video_to_dict(video: Video) -> JsonObject:
         return {
             'id': video.id,
             'name': video.name,
@@ -586,17 +460,19 @@ def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
             'num_frames': video.num_frames
         }
 
-    def _get_captions(document: Documents.Document):
+    def _get_captions(document: Documents.Document) -> List[Caption]:
         lines = []
         for p in index.intervals(document):
             if p.len > 0:
-                tokens = [lexicon.decode(t)
-                          for t in index.tokens(document, p.idx, p.len)]
-                lines.append((round(p.start, 1), round(p.end, 1),
-                              ' '.join(tokens)))
+                tokens: List[str] = [
+                    lexicon.decode(t)
+                    for t in index.tokens(document, p.idx, p.len)]
+                start: float = round(p.start, 1)
+                end: float = round(p.end, 1)
+                lines.append((start, end, ' '.join(tokens)))
         return lines
 
-    def _get_entire_video(video: Video):
+    def _get_entire_video(video: Video) -> JsonObject:
         document = document_by_name.get(video.name)
         return {
             'metadata': _video_to_dict(video),
@@ -604,37 +480,34 @@ def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
             'captions': _get_captions(document) if document else []
         }
 
-    def _search_text_videos(videos: List[Video], text_query_str: str,
-                            window: int, exclude_commercials: bool,
-                            face_filter, id_filter):
+    def _search_text_videos(
+        videos: List[Video], text_query_str: str,
+        window: int, exclude_commercials: bool,
+        face_filter: Optional[OnScreenFilterFn],
+        id_filter: Optional[OnScreenFilterFn]
+    ) -> List[JsonObject]:
         results = []
-        text_query_str = request.args.get('text', '')
+        text_query_str = request.args.get('text', '', type=str)
         if text_query_str:
             # Run the query on the selected videos
             text_query = Query(text_query_str.upper())
-
-            missing_videos = 0
-            matched_videos = 0
-            filtered_videos = 0
             for result in text_query.execute(lexicon, index, [
                 documents[v.name] for v in videos if v.name in documents
             ]):
                 document = documents[result.id]
-                video = video_dict.get(document.name)
-                if video is None:
-                    missing_videos += 1
-                    continue
-                else:
-                    matched_videos += 1
+                video = video_dict[document.name]
 
                 postings = result.postings
                 if window > 0:
                     if face_filter:
-                        raise InvalidUsage('not implemented: window and face filter')
+                        raise InvalidUsage(
+                            'not implemented: window and face filter')
                     if id_filter:
-                        raise InvalidUsage('not implemented: window and id filter')
+                        raise InvalidUsage(
+                            'not implemented: window and id filter')
                     if exclude_commercials:
-                        raise InvalidUsage('not implemented: window and exclude_commercials')
+                        raise InvalidUsage(
+                            'not implemented: window and exclude_commercials')
                     postings = PostingUtil.deoverlap(PostingUtil.dilate(
                         postings, window, video.num_frames / video.fps))
 
@@ -655,7 +528,8 @@ def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
                     postings = [p for p in postings if not in_commercial(p)]
 
                 if len(postings) == 0:
-                    print('Warning: no intervals found video_id={}'.format(video.id))
+                    print('Warning: no intervals found video_id={}'.format(
+                          video.id))
                 else:
                     results.append({
                         'metadata': _video_to_dict(video),
@@ -664,27 +538,34 @@ def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
                         ],
                         'captions': _get_captions(document)
                     })
-            print('  matched {} videos, {} missing'.format(
-                  matched_videos, missing_videos))
         else:
             if face_filter:
-                raise InvalidUsage('not implemented: empty text and face filter')
+                raise InvalidUsage(
+                    'not implemented: empty text and face filter')
             if id_filter:
-                raise InvalidUsage('not implemented: empty text and id filter')
+                raise InvalidUsage(
+                    'not implemented: empty text and id filter')
             if window > 0:
-                raise InvalidUsage('not implemented: empty text and window != 0')
+                raise InvalidUsage(
+                    'not implemented: empty text and window != 0')
 
             # Return the entire video
             for v in videos:
-                result.append(_get_entire_video(v))
+                results.append(_get_entire_video(v))
         return results
 
-    def _search_video_videos(videos: List[Video], text_query_str: str,
-                             window: int, exclude_commercials: bool,
-                             face_isetmap, id_isetmap):
+    def _search_video_videos(
+        videos: List[Video], text_query_str: str,
+        window: int, exclude_commercials: bool,
+        face_isetmap: MmapIntervalSetMapping,
+        id_isetmap: MmapIntervalSetMapping
+    ) -> List[JsonObject]:
         results = []
 
-        def helper(video, intervals=None):
+        def helper(
+            video: Video,
+            intervals: Optional[List[Interval]] = None
+        ) -> None:
             if id_isetmap:
                 if intervals is None:
                     intervals = id_isetmap.get_intervals(video.id, True)
@@ -696,7 +577,8 @@ def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
                 if intervals is None:
                     intervals = face_isetmap.get_intervals(video.id, True)
                 else:
-                    intervals = face_isetmap.intersect(video.id, intervals, True)
+                    intervals = face_isetmap.intersect(video.id, intervals,
+                                                       True)
                 if len(intervals) == 0:
                     return
             if exclude_commercials:
@@ -714,10 +596,22 @@ def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
                     'captions': _get_captions(document) if document else []
                 })
             else:
-                result.append(_get_entire_video(video))
+                results.append(_get_entire_video(video))
 
         if text_query_str:
-            raise NotImplementedError()
+            # Run the query on the selected videos
+            text_query = Query(text_query_str.upper())
+            for result in text_query.execute(lexicon, index, [
+                documents[v.name] for v in videos if v.name in documents
+            ]):
+                document = documents[result.id]
+                video = video_dict[document.name]
+                postings = result.postings
+                if window > 0:
+                    postings = PostingUtil.deoverlap(PostingUtil.dilate(
+                        postings, window, video.num_frames / video.fps))
+                helper(video, [(int(p.start * 1000), int(p.end * 1000))
+                               for p in postings])
         else:
             for v in videos:
                 helper(v)
@@ -725,14 +619,15 @@ def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
 
     @app.route('/search/videos')
     def search_videos():
-        ids = request.args.get('ids', None)
+        ids = request.args.get('ids', None, type=str)
         if not ids:
             raise InvalidUsage('must specify video ids')
         videos = [video_by_id[i] for i in json.loads(ids)]
         count_var = request.args.get('count', None, type=str)
         window = request.args.get('window', 0, type=int)
-        exclude_commercials = request.args.get('nocomms', 'true', type=str) == 'true'
-        text_query = request.args.get('text', '').strip()
+        exclude_commercials = (
+            request.args.get('nocomms', 'true', type=str) == 'true')
+        text_query = request.args.get('text', '', type=str).strip()
 
         if count_var == 'mentions':
             results = _search_text_videos(
@@ -772,7 +667,8 @@ def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
 
     @app.route('/vgrid/bundle.js')
     def get_vgrid_bundle():
-        return send_file('vgrid-widget/dist/bundle.js', mimetype='text/javascript')
+        return send_file('vgrid-widget/dist/bundle.js',
+                         mimetype='text/javascript')
 
     @app.route('/vgrid/index.css')
     def get_vgrid_css():
@@ -781,13 +677,18 @@ def build_app(video_dict: Dict[str, Video], index: CaptionIndex,
     return app
 
 
-def main(host, port, data_dir, index_dir, frameserver_endpoint, debug):
-    video_dict, commercial_isetmap, face_intervals, id_intervals = load_video_data(data_dir)
+def main(
+    host: str, port: int, data_dir: str, index_dir: str,
+    frameserver_endpoint: Optional[str], debug: bool
+) -> None:
+    video_dict, commercial_isetmap, face_intervals, id_intervals = \
+        load_video_data(data_dir)
     index, documents, lexicon = load_index(index_dir)
-    app = build_app(video_dict, index, documents, lexicon,
-                    commercial_isetmap, face_intervals,
-                    id_intervals, frameserver_endpoint,
-                    0 if debug else 3600)
+    app = build_app(
+        video_dict, index, documents, lexicon,
+        commercial_isetmap, face_intervals,
+        id_intervals, frameserver_endpoint,
+        0 if debug else 3600)
     kwargs = {
         'host': host, 'port': port, 'debug': debug
     }

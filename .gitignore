@@ -3,3 +3,4 @@
 /vgrid-widget/dist
 /vgrid-widget/node_modules
 /vgrid-widget/package-lock.json
+*.pyc
