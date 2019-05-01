@@ -98,7 +98,6 @@
 
     let args = normalizeFilters(parseFilters(params.query));
     args.count = params.count;
-    args.window = params.window;
     args.ids = JSON.stringify(video_ids);
 
     $.ajax({

@@ -70,7 +70,7 @@ function loadChart(div_id, chart_options, search_results, dimensions) {
   );
   let x_tick_count = chart_options.aggregate == 'year' ? year_span + 1 : 24;
 
-  let unit = chart_options.count == 'mentions' && chart_options.window == 0 ? 'mentions' : 'seconds';
+  let unit = chart_options.count == 'mentions' ? 'mentions' : 'seconds';
   let point_data = Object.keys(search_results).flatMap(color => {
     let result = search_results[color];
     let data = fillZeros(
@@ -84,7 +84,6 @@ function loadChart(div_id, chart_options, search_results, dimensions) {
           let params = {
             count: chart_options.count,
             query: result.query,
-            window: chart_options.window,
             video_ids: data[t].map(x => x[0])
           };
           link_href = `javascript:chartHrefHandler("${btoa(JSON.stringify(params))}")`;
@@ -117,7 +116,7 @@ function loadChart(div_id, chart_options, search_results, dimensions) {
     width: dimensions.width,
     height: dimensions.height,
     autosize: {type: 'fit', resize: true, contains: 'padding'},
-    description: `${chart_options.window  > 0 ? 'Keyword mentions' : 'Topic time'} over time`,
+    description: `${chart_options.count == 'mentions' ? 'Keyword mentions' : 'Video time'} over time`,
     data: {values: tooltip_data},
     encoding: {
       x: {

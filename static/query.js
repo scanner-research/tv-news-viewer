@@ -7,7 +7,6 @@ function getQueryOptions(chart_options, query_filters) {
   options.end_date = chart_options.end_date;
   options.count = chart_options.count;
   options.aggregate = chart_options.aggregate;
-  options.window = chart_options.window;
   return options;
 }
 
@@ -45,6 +44,7 @@ function parseBool(s) {
   }
 }
 
+
 function normalizeFilters(filters) {
   let result = {};
   Object.keys(filters).forEach(k => {
@@ -52,6 +52,8 @@ function normalizeFilters(filters) {
     let v_up = v.toUpperCase();
     if (k == 'text') {
       result[k] = v;
+    } else if (k == 'text.window') {
+      result[k] = parseInt(v);
     } else if (k == 'channel') {
       if (v_up == 'ALL') {
         // pass
@@ -87,7 +89,7 @@ function normalizeFilters(filters) {
       }
     } else if (k == 'onscreen.face' || k == 'onscreen.id') {
       result[k] = v;
-    } else if (k == 'nocomms') {
+    } else if (k == 'commercial.none') {
       result[k] = parseBool(v);
     } else {
       throw Error(`Unknown filter: ${k}`);

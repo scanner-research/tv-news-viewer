@@ -19,6 +19,7 @@
   <link rel="shortcut icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}" />
   <script src="{{ url_for('static', filename='chart.js') }}" /></script>
   <script src="{{ url_for('static', filename='query.js') }}" /></script>
+  <script src="{{ url_for('static', filename='default.js') }}" /></script>
 
   <title>Esper: TV News Search</title>
   <style>
@@ -68,14 +69,6 @@
     }
     #chart-options .datepicker {
       width: 100px;
-    }
-    #extra-options {
-      padding: 10px;
-      background-color: #F4F4F4;
-      display: none;
-    }
-    #extra-options input {
-      text-align: center;
     }
     #embed-area textarea {
       width: 100%;
@@ -133,11 +126,6 @@
     <button type="button" class="btn btn-primary" id="search">Search the news!</button>
   </div>
 
-  <div class="container" id="extra-options">
-    Dilation time window (in seconds):
-    <input type="number" id="timeWindow" value="0" min="0" max="300" style="width: 45px">
-  </div>
-
   <script>
     function fromDatepickerStr(s) {
       let tokens = s.split('/');
@@ -160,7 +148,6 @@
         end_date: end_date,
         count: $('#countVar').val(),
         aggregate: $('#aggregateBy').val(),
-        window: $('#timeWindow').val(),
         enable_playback: true
       }
     }
@@ -173,7 +160,6 @@
         end_date = chart_options.end_date;
         $('#countVar').val(chart_options.count);
         $('#aggregateBy').val(chart_options.aggregate);
-        $('#timeWindow').val(chart_options.window);
       }
       $('#startDate').datepicker({
         format: 'mm/dd/yyyy',
@@ -239,14 +225,6 @@
           <td>dayofweek=sat-sun</td>
         </tr>
         <tr>
-          <td>nocomms</td>
-          <td>exclude mentions in commercials</td>
-          <td>true, false</td>
-          <td>true</td>
-          <td>nocomms=true</td>
-        </tr>
-
-        <tr>
           <td>onscreen.face</td>
           <td>face is on screen (height >= 20%)</td>
           <td>
@@ -262,6 +240,20 @@
           <td><a href="/people" target="_blank">list of people</a></td>
           <td>n/a</td>
           <td>onscreen.id="barack obama"</td>
+        </tr>
+        <tr>
+          <td>text.window</td>
+          <td>threshold (in seconds) for nearby text,<br> when counting by video time</td>
+          <td>non-negative integer</td>
+          <td>{{ default_text_window }}</td>
+          <td>text.window={{ default_text_window }}</td>
+        </tr>
+        <tr>
+          <td>commercial.none</td>
+          <td>exclude commercials</td>
+          <td>true, false</td>
+          <td>{{ default_exclude_commercials }}</td>
+          <td>commercial.none={{ default_exclude_commercials }}</td>
         </tr>
       </table>
     </div>
@@ -292,41 +284,6 @@
   <script>
     const EMBED_DIMS = {width: 1000, height: 400};
 
-    const COLORS = [
-      '#4E79A7', '#F28E2B', '#E15759', '#76B7B2', '#59A14F',
-      '#EDC948', '#B07AA1', '#FF9DA7', '#9C755F', '#BAB0AC'
-    ];
-
-    const DEFAULT_PHRASES = shuffle([
-      'donald trump',
-      'hillary clinton',
-      'terrorism',
-      'isis',
-      'immigration',
-      'black lives | blacklivesmatter | blacklives',
-      'brexit',
-      'obamacare | affordable care act',
-      'irs | internal revenue service',
-      'socialism | socialist',
-      'hurricane irma',
-      'fifa',
-      'facebook',
-      'alternative facts | fake news',
-      'collusion',
-      'sean spicer & [resign]',
-      'global warming',
-      'arab spring',
-      '787 | dreamliner',
-      'trayvon martin',
-      'north korea | dprk',
-      'bernie sanders',
-      'nafta',
-      'e coli | ecoli',
-      'ebola',
-      'border wall | border fence',
-      'government shutdown'
-    ]);
-
     const ALL_SHOWS = [
       {% for show in shows %}
       "{{ show }}",
@@ -338,9 +295,9 @@
     }
 
     function getColor() {
-      for (var i in COLORS) {
-        if ($(`#search-table tr[name='${COLORS[i]}']`).length == 0) {
-          return COLORS[i];
+      for (var i in DEFAULT_COLORS) {
+        if ($(`#search-table tr[name='${DEFAULT_COLORS[i]}']`).length == 0) {
+          return DEFAULT_COLORS[i];
         }
       }
       throw Error('All colors used');
@@ -371,7 +328,7 @@
         <td><input type="text" name="query" value='${query_str}'</td>
       </tr>`;
       $('#search-table tbody').append(html);
-      if ($('#search-table tr').length >= COLORS.length + 1) {
+      if ($('#search-table tr').length >= DEFAULT_COLORS.length + 1) {
         $('#addRow').prop('disabled', true);
       }
     }
@@ -482,9 +439,6 @@ or <a href="#" onclick="setEmbedUrl('${embed_url}'); return false;">embed</a> ch
 
     /* Load initial plot */
     let params = (new URL(document.location)).searchParams;
-    if (params.get("extras") == "1") {
-      $('#extra-options').show();
-    }
     if (params.get('data')) {
       let data = JSON.parse(decodeURIComponent(params.get('data')));
       try {

@@ -19,6 +19,8 @@ from app.load import get_video_name, load_video_data, load_index
 
 MIN_DATE = datetime(2010, 1, 1)
 MAX_DATE = datetime(2018, 4, 1)
+DEFAULT_TEXT_WINDOW = 30
+DEFAULT_EXCLUDE_COMMERCIALS = str(True).lower()
 
 
 def get_args() -> argparse.Namespace:
@@ -182,7 +184,7 @@ def build_app(
     documents: Documents, lexicon: Lexicon,
     commercial_isetmap: MmapIntervalSetMapping,
     face_intervals: FaceIntervals, id_intervals: IdIntervals,
-    frameserver_endpoint: str, cache_seconds: int
+    frameserver_endpoint: Optional[str], cache_seconds: int
 ) -> Flask:
     app = Flask(__name__)
 
@@ -216,7 +218,9 @@ def build_app(
         return render_template(
             'home.html', host=request.host, aggregate='month',
             start_date=format_date(start_date),
-            end_date=format_date(end_date), shows=all_shows)
+            end_date=format_date(end_date), shows=all_shows,
+            default_text_window=DEFAULT_TEXT_WINDOW,
+            default_exclude_commercials=DEFAULT_EXCLUDE_COMMERCIALS)
 
     @app.route('/embed')
     def embed():
@@ -227,15 +231,13 @@ def build_app(
         return render_template('videos.html',
                                frameserver_endpoint=frameserver_endpoint)
 
-    def _search_text(
+    def _count_mentions(
         accumulator: DateAccumulator,
-        text_query_str: str, window: int,
-        exclude_commercials: bool,
+        text_query_str: str, exclude_commercials: bool,
         video_filter: Optional[VideoFilterFn],
         face_filter: Optional[OnScreenFilterFn],
         id_filter: Optional[OnScreenFilterFn]
     ) -> None:
-        print('Counting mentions:', text_query_str)
         missing_videos = 0
         matched_videos = 0
         filtered_videos = 0
@@ -254,42 +256,27 @@ def build_app(
                     filtered_videos += 1
                     continue
 
-                if window:
-                    if id_filter:
-                        raise InvalidUsage(
-                            'Not implemented: window and id filter')
-                    if face_filter:
-                        raise InvalidUsage(
-                            'Not implemented: window and face filter')
-                    if exclude_commercials:
-                        raise InvalidUsage(
-                            'Not implemented: window and exclude_commercials')
-                    postings = PostingUtil.deoverlap(PostingUtil.dilate(
-                        result.postings, window,
-                        video.num_frames / video.fps))
-                    total = sum(max(p.end - p.start, 0) for p in postings)
-                else:
-                    postings = result.postings
-                    if id_filter:
-                        postings = [
-                            p for p in postings
-                            if id_filter(
-                                video.id, milliseconds((p.start + p.end) / 2))]
-                    if face_filter:
-                        postings = [
-                            p for p in postings
-                            if face_filter(
-                                video.id, milliseconds((p.start + p.end) / 2))]
+                postings = result.postings
+                if id_filter:
+                    postings = [
+                        p for p in postings
+                        if id_filter(
+                            video.id, milliseconds((p.start + p.end) / 2))]
+                if face_filter:
+                    postings = [
+                        p for p in postings
+                        if face_filter(
+                            video.id, milliseconds((p.start + p.end) / 2))]
 
-                    if exclude_commercials:
-                        def in_commercial(p):
-                            return 1 if commercial_isetmap.is_contained(
-                                video.id, int((p.start + p.end) / 2 * 1000),
-                                True
-                            ) else 0
-                        total = sum(1 - in_commercial(p) for p in postings)
-                    else:
-                        total = len(postings)
+                if exclude_commercials:
+                    def in_commercial(p: CaptionIndex.Posting) -> int:
+                        return 1 if commercial_isetmap.is_contained(
+                            video.id, int((p.start + p.end) / 2 * 1000),
+                            True
+                        ) else 0
+                    total = sum(1 - in_commercial(p) for p in postings)
+                else:
+                    total = len(postings)
                 accumulator.add(video.date, video.id, total)
         else:
             for document in documents:
@@ -310,35 +297,27 @@ def build_app(
                     raise InvalidUsage(
                         'Not implemented: empty text and face filter')
 
-                if window:
-                    total = video.num_frames / video.fps
-                    if exclude_commercials:
-                        commercial_time = sum(
-                            (b - a) / 1000 for a, b in
-                            commercial_isetmap.get_intervals(video.id, True))
-                        total -= commercial_time
-                else:
-                    total = index.document_length(document)
-                    if exclude_commercials:
-                        for a, b in commercial_isetmap.get_intervals(
-                            video.id, True
-                        ):
-                            min_idx = index.position(document.id, a)
-                            max_idx = index.position(document.id, b)
-                            if max_idx > min_idx:
-                                total -= max(0, max_idx - min_idx)
+                total = index.document_length(document)
+                if exclude_commercials:
+                    for a, b in commercial_isetmap.get_intervals(
+                        video.id, True
+                    ):
+                        min_idx = index.position(document.id, a)
+                        max_idx = index.position(document.id, b)
+                        if max_idx > min_idx:
+                            total -= max(0, max_idx - min_idx)
                 accumulator.add(video.date, video.id, total)
 
         print('Matched {} videos, {} filtered, {} missing'.format(
               matched_videos, filtered_videos, missing_videos))
 
-    def _search_video(
+    def _count_video_time(
         accumulator: DateAccumulator,
-        text_query_str: str,
-        window: int, exclude_commercials: bool,
+        text_query_str: str, text_window: int,
+        exclude_commercials: bool,
+        video_filter: Optional[VideoFilterFn],
         face_isetmap: MmapIntervalSetMapping,
-        id_isetmap: MmapIntervalSetMapping,
-        video_filter: Optional[VideoFilterFn]
+        id_isetmap: MmapIntervalSetMapping
     ) -> None:
         missing_videos = 0
         matched_videos = 0
@@ -378,8 +357,6 @@ def build_app(
                                 video.num_frames / video.fps)
 
         if text_query_str:
-            # TODO: make this configurable
-            window = max(window, 30)
             text_query = Query(text_query_str.upper())
             for result in text_query.execute(lexicon, index):
                 document = documents[result.id]
@@ -394,9 +371,9 @@ def build_app(
                     continue
 
                 postings = result.postings
-                if window > 0:
+                if text_window > 0:
                     postings = PostingUtil.deoverlap(PostingUtil.dilate(
-                        postings, window, video.num_frames / video.fps))
+                        postings, text_window, video.num_frames / video.fps))
                 helper(video, [(int(p.start * 1000), int(p.end * 1000))
                                for p in postings])
         else:
@@ -414,28 +391,31 @@ def build_app(
     def search():
         video_filter = get_video_filter()
         count_var = request.args.get('count', None, type=str)
-        window = request.args.get('window', 0, type=int)
         aggregate_fn = get_aggregate_fn(request.args.get(
             'aggregate', None, type=str))
         exclude_commercials = (
-            request.args.get('nocomms', 'true', type=str) == 'true')
+            request.args.get('commercial.none', 'true', type=str) == 'true')
         text_query = request.args.get('text', '', type=str).strip()
 
         accumulator = DateAccumulator(aggregate_fn)
         if count_var == 'mentions':
-            _search_text(
+            if 'text.window' in request.args:
+                raise InvalidUsage(
+                    'text.window cannot be used when counting mentions')
+            _count_mentions(
                 accumulator,
-                text_query, window, exclude_commercials,
-                video_filter,
+                text_query, exclude_commercials, video_filter,
                 get_onscreen_face_filter(face_intervals),
                 get_onscreen_id_filter(id_intervals))
         elif count_var == 'videotime':
-            _search_video(
+            text_window = request.args.get('text.window', DEFAULT_TEXT_WINDOW,
+                                           type=int)
+            _count_video_time(
                 accumulator,
-                text_query, window, exclude_commercials,
+                text_query, text_window, exclude_commercials,
+                video_filter,
                 get_onscreen_face_isetmap(face_intervals),
-                get_onscreen_id_isetmap(id_intervals),
-                video_filter)
+                get_onscreen_id_isetmap(id_intervals))
         else:
             raise NotImplementedError(count_var)
 
@@ -480,14 +460,14 @@ def build_app(
             'captions': _get_captions(document) if document else []
         }
 
-    def _search_text_videos(
-        videos: List[Video], text_query_str: str,
-        window: int, exclude_commercials: bool,
+    def _count_mentions_in_videos(
+        videos: List[Video],
+        text_query_str: str,
+        exclude_commercials: bool,
         face_filter: Optional[OnScreenFilterFn],
         id_filter: Optional[OnScreenFilterFn]
     ) -> List[JsonObject]:
         results = []
-        text_query_str = request.args.get('text', '', type=str)
         if text_query_str:
             # Run the query on the selected videos
             text_query = Query(text_query_str.upper())
@@ -498,19 +478,6 @@ def build_app(
                 video = video_dict[document.name]
 
                 postings = result.postings
-                if window > 0:
-                    if face_filter:
-                        raise InvalidUsage(
-                            'not implemented: window and face filter')
-                    if id_filter:
-                        raise InvalidUsage(
-                            'not implemented: window and id filter')
-                    if exclude_commercials:
-                        raise InvalidUsage(
-                            'not implemented: window and exclude_commercials')
-                    postings = PostingUtil.deoverlap(PostingUtil.dilate(
-                        postings, window, video.num_frames / video.fps))
-
                 if id_filter:
                     postings = [
                         p for p in postings
@@ -522,7 +489,7 @@ def build_app(
                         if face_filter(
                             video.id, milliseconds((p.start + p.end) / 2))]
                 if exclude_commercials:
-                    def in_commercial(p):
+                    def in_commercial(p: CaptionIndex.Posting) -> bool:
                         return commercial_isetmap.is_contained(
                             video.id, int((p.start + p.end) / 2 * 1000), True)
                     postings = [p for p in postings if not in_commercial(p)]
@@ -545,18 +512,19 @@ def build_app(
             if id_filter:
                 raise InvalidUsage(
                     'not implemented: empty text and id filter')
-            if window > 0:
+            if exclude_commercials:
                 raise InvalidUsage(
-                    'not implemented: empty text and window != 0')
+                    'not implemented: empty text and commercial filter')
 
             # Return the entire video
             for v in videos:
                 results.append(_get_entire_video(v))
         return results
 
-    def _search_video_videos(
-        videos: List[Video], text_query_str: str,
-        window: int, exclude_commercials: bool,
+    def _count_video_time_in_videos(
+        videos: List[Video],
+        text_query_str: str, text_window: int,
+        exclude_commercials: bool,
         face_isetmap: MmapIntervalSetMapping,
         id_isetmap: MmapIntervalSetMapping
     ) -> List[JsonObject]:
@@ -607,9 +575,9 @@ def build_app(
                 document = documents[result.id]
                 video = video_dict[document.name]
                 postings = result.postings
-                if window > 0:
+                if text_window > 0:
                     postings = PostingUtil.deoverlap(PostingUtil.dilate(
-                        postings, window, video.num_frames / video.fps))
+                        postings, text_window, video.num_frames / video.fps))
                 helper(video, [(int(p.start * 1000), int(p.end * 1000))
                                for p in postings])
         else:
@@ -626,19 +594,21 @@ def build_app(
         count_var = request.args.get('count', None, type=str)
         window = request.args.get('window', 0, type=int)
         exclude_commercials = (
-            request.args.get('nocomms', 'true', type=str) == 'true')
+            request.args.get('commercial.none', 'true', type=str) == 'true')
         text_query = request.args.get('text', '', type=str).strip()
 
         if count_var == 'mentions':
-            results = _search_text_videos(
-                videos, text_query,
-                window, exclude_commercials,
+            text_window = request.args.get('text.window', DEFAULT_TEXT_WINDOW,
+                                           type=int)
+            results = _count_mentions_in_videos(
+                videos, text_query, exclude_commercials,
                 get_onscreen_face_filter(face_intervals),
                 get_onscreen_id_filter(id_intervals))
         elif count_var == 'videotime':
-            results = _search_video_videos(
-                videos, text_query,
-                window, exclude_commercials,
+            text_window = request.args.get('text.window', DEFAULT_TEXT_WINDOW,
+                                           type=int)
+            results = _count_video_time_in_videos(
+                videos, text_query, text_window, exclude_commercials,
                 get_onscreen_face_isetmap(face_intervals),
                 get_onscreen_id_isetmap(id_intervals))
         else:
