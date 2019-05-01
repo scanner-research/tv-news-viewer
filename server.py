@@ -95,27 +95,29 @@ def get_aggregate_fn(agg: Optional[str]) -> AggregateFn:
 def get_onscreen_face_isetmap(
     face_intervals: FaceIntervals
 ) -> MmapIntervalSetMapping:
-    filter_str = request.args.get('onscreen.face', '', type=str).strip().lower()
+    filter_str = request.args.get(
+        'onscreen.face', '', type=str
+    ).strip().lower()
     if not filter_str:
         return None
     if filter_str == 'all':
         isetmap = face_intervals.all
-    elif filter_str == 'man':
-        isetmap = face_intervals.man
-    elif filter_str == 'woman':
-        isetmap = face_intervals.woman
+    elif filter_str == 'male':
+        isetmap = face_intervals.male
+    elif filter_str == 'female':
+        isetmap = face_intervals.female
     elif filter_str == 'host':
         isetmap = face_intervals.host
     elif filter_str == 'nonhost':
         isetmap = face_intervals.nonhost
-    elif filter_str == 'man+host':
-        isetmap = face_intervals.man_host
-    elif filter_str == 'woman+host':
-        isetmap = face_intervals.woman_host
-    elif filter_str == 'man+nonhost':
-        isetmap = face_intervals.man_nonhost
-    elif filter_str == 'woman+nonhost':
-        isetmap = face_intervals.woman_nonhost
+    elif filter_str == 'male+host':
+        isetmap = face_intervals.male_host
+    elif filter_str == 'female+host':
+        isetmap = face_intervals.female_host
+    elif filter_str == 'male+nonhost':
+        isetmap = face_intervals.male_nonhost
+    elif filter_str == 'female+nonhost':
+        isetmap = face_intervals.female_nonhost
     else:
         raise InvalidUsage('{} is not a valid face filter'.format(filter_str))
     return isetmap
@@ -130,22 +132,22 @@ def get_onscreen_face_filter(
     return lambda v, t: isetmap.is_contained(v, t, True)
 
 
-def get_onscreen_id_isetmap(
-    id_intervals: IdIntervals
+def get_onscreen_person_isetmap(
+    person_intervals: PersonIntervals
 ) -> MmapIntervalSetMapping:
     filter_str = request.args.get('onscreen.id', '', type=str).strip().lower()
     if not filter_str:
         return None
-    intervals = id_intervals.get(filter_str, None)
+    intervals = person_intervals.get(filter_str, None)
     if intervals is None:
         raise InvalidUsage('{} is not a valid person'.format(filter_str))
     return intervals
 
 
-def get_onscreen_id_filter(
-    id_intervals: IdIntervals
+def get_onscreen_person_filter(
+    person_intervals: PersonIntervals
 ) -> Optional[OnScreenFilterFn]:
-    intervals = get_onscreen_id_isetmap(id_intervals)
+    intervals = get_onscreen_person_isetmap(person_intervals)
     if intervals is None:
         return None
     return lambda v, t: intervals.is_contained(v, t, True)
@@ -183,7 +185,7 @@ def build_app(
     video_dict: Dict[str, Video], index: CaptionIndex,
     documents: Documents, lexicon: Lexicon,
     commercial_isetmap: MmapIntervalSetMapping,
-    face_intervals: FaceIntervals, id_intervals: IdIntervals,
+    face_intervals: FaceIntervals, person_intervals: PersonIntervals,
     frameserver_endpoint: Optional[str], cache_seconds: int
 ) -> Flask:
     app = Flask(__name__)
@@ -212,7 +214,7 @@ def build_app(
         return response
 
     @app.route('/')
-    def root():
+    def root() -> Response:
         start_date = max(min(v.date for v in video_dict.values()), MIN_DATE)
         end_date = min(max(v.date for v in video_dict.values()), MAX_DATE)
         return render_template(
@@ -223,11 +225,11 @@ def build_app(
             default_exclude_commercials=DEFAULT_EXCLUDE_COMMERCIALS)
 
     @app.route('/embed')
-    def embed():
+    def embed() -> Response:
         return render_template('embed.html', shows=all_shows)
 
     @app.route('/videos')
-    def show_videos():
+    def show_videos() -> Response:
         return render_template('videos.html',
                                frameserver_endpoint=frameserver_endpoint)
 
@@ -236,7 +238,7 @@ def build_app(
         text_query_str: str, exclude_commercials: bool,
         video_filter: Optional[VideoFilterFn],
         face_filter: Optional[OnScreenFilterFn],
-        id_filter: Optional[OnScreenFilterFn]
+        person_filter: Optional[OnScreenFilterFn]
     ) -> None:
         missing_videos = 0
         matched_videos = 0
@@ -257,10 +259,10 @@ def build_app(
                     continue
 
                 postings = result.postings
-                if id_filter:
+                if person_filter:
                     postings = [
                         p for p in postings
-                        if id_filter(
+                        if person_filter(
                             video.id, milliseconds((p.start + p.end) / 2))]
                 if face_filter:
                     postings = [
@@ -271,8 +273,7 @@ def build_app(
                 if exclude_commercials:
                     def in_commercial(p: CaptionIndex.Posting) -> int:
                         return 1 if commercial_isetmap.is_contained(
-                            video.id, int((p.start + p.end) / 2 * 1000),
-                            True
+                            video.id, int((p.start + p.end) / 2 * 1000), True
                         ) else 0
                     total = sum(1 - in_commercial(p) for p in postings)
                 else:
@@ -290,7 +291,7 @@ def build_app(
                     filtered_videos += 1
                     continue
 
-                if id_filter:
+                if person_filter:
                     raise InvalidUsage(
                         'Not implemented: empty text and id filter')
                 if face_filter:
@@ -317,7 +318,7 @@ def build_app(
         exclude_commercials: bool,
         video_filter: Optional[VideoFilterFn],
         face_isetmap: MmapIntervalSetMapping,
-        id_isetmap: MmapIntervalSetMapping
+        person_isetmap: MmapIntervalSetMapping
     ) -> None:
         missing_videos = 0
         matched_videos = 0
@@ -326,19 +327,20 @@ def build_app(
         def helper(
             video: Video, intervals: Optional[List[Interval]] = None
         ) -> None:
-            if id_isetmap:
+            if person_isetmap:
                 if intervals is None:
-                    intervals = id_isetmap.get_intervals(video.id, True)
+                    intervals = person_isetmap.get_intervals(video.id, True)
                 else:
-                    intervals = id_isetmap.intersect(video.id, intervals, True)
+                    intervals = person_isetmap.intersect(
+                        video.id, intervals, True)
                 if len(intervals) == 0:
                     return
             if face_isetmap:
                 if intervals is None:
                     intervals = face_isetmap.get_intervals(video.id, True)
                 else:
-                    intervals = face_isetmap.intersect(video.id, intervals,
-                                                       True)
+                    intervals = face_isetmap.intersect(
+                        video.id, intervals, True)
                 if len(intervals) == 0:
                     return
             if exclude_commercials:
@@ -388,7 +390,7 @@ def build_app(
               matched_videos, filtered_videos, missing_videos))
 
     @app.route('/search')
-    def search():
+    def search() -> Response:
         video_filter = get_video_filter()
         count_var = request.args.get('count', None, type=str)
         aggregate_fn = get_aggregate_fn(request.args.get(
@@ -406,7 +408,7 @@ def build_app(
                 accumulator,
                 text_query, exclude_commercials, video_filter,
                 get_onscreen_face_filter(face_intervals),
-                get_onscreen_id_filter(id_intervals))
+                get_onscreen_person_filter(person_intervals))
         elif count_var == 'videotime':
             text_window = request.args.get('text.window', DEFAULT_TEXT_WINDOW,
                                            type=int)
@@ -415,7 +417,7 @@ def build_app(
                 text_query, text_window, exclude_commercials,
                 video_filter,
                 get_onscreen_face_isetmap(face_intervals),
-                get_onscreen_id_isetmap(id_intervals))
+                get_onscreen_person_isetmap(person_intervals))
         else:
             raise NotImplementedError(count_var)
 
@@ -465,7 +467,7 @@ def build_app(
         text_query_str: str,
         exclude_commercials: bool,
         face_filter: Optional[OnScreenFilterFn],
-        id_filter: Optional[OnScreenFilterFn]
+        person_filter: Optional[OnScreenFilterFn]
     ) -> List[JsonObject]:
         results = []
         if text_query_str:
@@ -478,10 +480,10 @@ def build_app(
                 video = video_dict[document.name]
 
                 postings = result.postings
-                if id_filter:
+                if person_filter:
                     postings = [
                         p for p in postings
-                        if id_filter(
+                        if person_filter(
                             video.id, milliseconds((p.start + p.end) / 2))]
                 if face_filter:
                     postings = [
@@ -509,7 +511,7 @@ def build_app(
             if face_filter:
                 raise InvalidUsage(
                     'not implemented: empty text and face filter')
-            if id_filter:
+            if person_filter:
                 raise InvalidUsage(
                     'not implemented: empty text and id filter')
             if exclude_commercials:
@@ -526,7 +528,7 @@ def build_app(
         text_query_str: str, text_window: int,
         exclude_commercials: bool,
         face_isetmap: MmapIntervalSetMapping,
-        id_isetmap: MmapIntervalSetMapping
+        person_isetmap: MmapIntervalSetMapping
     ) -> List[JsonObject]:
         results = []
 
@@ -534,11 +536,12 @@ def build_app(
             video: Video,
             intervals: Optional[List[Interval]] = None
         ) -> None:
-            if id_isetmap:
+            if person_isetmap:
                 if intervals is None:
-                    intervals = id_isetmap.get_intervals(video.id, True)
+                    intervals = person_isetmap.get_intervals(video.id, True)
                 else:
-                    intervals = id_isetmap.intersect(video.id, intervals, True)
+                    intervals = person_isetmap.intersect(
+                        video.id, intervals, True)
                 if len(intervals) == 0:
                     return
             if face_isetmap:
@@ -586,7 +589,7 @@ def build_app(
         return results
 
     @app.route('/search/videos')
-    def search_videos():
+    def search_videos() -> Response:
         ids = request.args.get('ids', None, type=str)
         if not ids:
             raise InvalidUsage('must specify video ids')
@@ -603,14 +606,14 @@ def build_app(
             results = _count_mentions_in_videos(
                 videos, text_query, exclude_commercials,
                 get_onscreen_face_filter(face_intervals),
-                get_onscreen_id_filter(id_intervals))
+                get_onscreen_person_filter(person_intervals))
         elif count_var == 'videotime':
             text_window = request.args.get('text.window', DEFAULT_TEXT_WINDOW,
                                            type=int)
             results = _count_video_time_in_videos(
                 videos, text_query, text_window, exclude_commercials,
                 get_onscreen_face_isetmap(face_intervals),
-                get_onscreen_id_isetmap(id_intervals))
+                get_onscreen_person_isetmap(person_intervals))
         else:
             raise NotImplementedError(count_var)
 
@@ -619,29 +622,29 @@ def build_app(
         return resp
 
     @app.route('/video-names')
-    def get_video_names():
+    def get_video_names() -> Response:
         return jsonify(list(video_dict.keys()))
 
     @app.route('/video-info/<video>')
-    def get_video_info(video):
+    def get_video_info(video: str) -> Response:
         video = _video_name_or_id(video)
         return jsonify(video_dict[video])
 
     @app.route('/shows')
-    def get_shows():
+    def get_shows() -> Response:
         return jsonify(shows_by_channel)
 
     @app.route('/people')
-    def get_people():
-        return jsonify(sorted(id_intervals.keys()))
+    def get_people() -> Response:
+        return jsonify(sorted(person_intervals.keys()))
 
     @app.route('/vgrid/bundle.js')
-    def get_vgrid_bundle():
+    def get_vgrid_bundle() -> Response:
         return send_file('vgrid-widget/dist/bundle.js',
                          mimetype='text/javascript')
 
     @app.route('/vgrid/index.css')
-    def get_vgrid_css():
+    def get_vgrid_css() -> Response:
         return send_file('vgrid-widget/dist/index.css', mimetype='text/css')
 
     return app
@@ -651,13 +654,13 @@ def main(
     host: str, port: int, data_dir: str, index_dir: str,
     frameserver_endpoint: Optional[str], debug: bool
 ) -> None:
-    video_dict, commercial_isetmap, face_intervals, id_intervals = \
+    video_dict, commercial_isetmap, face_intervals, person_intervals = \
         load_video_data(data_dir)
     index, documents, lexicon = load_index(index_dir)
     app = build_app(
         video_dict, index, documents, lexicon,
         commercial_isetmap, face_intervals,
-        id_intervals, frameserver_endpoint,
+        person_intervals, frameserver_endpoint,
         0 if debug else 3600)
     kwargs = {
         'host': host, 'port': port, 'debug': debug

@@ -26,23 +26,51 @@
     .container {
       padding: 4px;
     }
-    .search-table-container table {
-      border-spacing: 0px;
+    #search-table {
       width: 100%;
+      border-collapse: separate;
+      border-spacing: 0px 4px;
     }
-    .search-table-container th {
+    #search-table th {
       text-align: center;
     }
-    .search-table-container input[name=query] {
+    #search-table input[name=query] {
       width: 100%;
-      height: 35px;
+      height: 30px;
       text-align: center;
+      font-size: 14px;
       margin: auto;
     }
-    .color-box {
+    #search-table .color-box {
       margin: auto;
+      width: 40px;
+      height: 30px;
+    }
+    #search-table .remove-row-btn {
       width: 35px;
-      height: 35px;
+      height: 30px;
+      text-align: center;
+      font-size: 14px;
+    }
+    #add-row-btn {
+      width: 35px;
+      height: 30px;
+      text-align: center;
+      font-size: 14px;
+    }
+    #chart-options {
+      text-align: center;
+      font-size: 14px;
+    }
+    #chart-options input, select, .filter-option {
+      text-align: center;
+      font-size: 14px;
+    }
+    #chart-options .datepicker {
+      width: 100px;
+    }
+    #search {
+      font-size: 14px;
     }
     #query-help {
       padding: 10px;
@@ -52,6 +80,7 @@
     }
     #query-help table {
       width: 100%;
+      border-spacing: 5px;
     }
     #query-help th {
       text-align: left;
@@ -63,12 +92,6 @@
     }
     #query-help tr:nth-child(odd) {
       background-color: #FCFCFC;
-    }
-    #chart-options input, select {
-      text-align: center;
-    }
-    #chart-options .datepicker {
-      width: 100px;
     }
     #embed-area textarea {
       width: 100%;
@@ -94,36 +117,40 @@
   </style>
 </head>
 <body>
-  <div class="container search-table-container">
+  <div class="container">
     <table id="search-table">
-      <tr>
+      <tr name="header">
         <th></th>
         <th>Color</th>
-        <th width="95%">Query <a href="#" onclick="toggleQueryHelp(); return false;" id="toggle-help">(show help)</a></th>
+        <th width="95%">Query <a href="#" onclick="toggleQueryHelp(); return false;" id="toggle-help">(show syntax)</a></th>
+      </tr>
+      <tr name="controls" id="chart-options">
+        <td>
+          <button type="button" class="btn btn-secondary" id='add-row-btn'>+</button>
+        </td>
+        <td>&nbsp;</td>
+        <td>
+          Count
+          <select class="selectpicker" id="countVar" data-width="fit">
+            <option value="mentions" selected="selected">mentions</option>
+            <option value="videotime">video time</option>
+          </select>
+          of the above between
+          <input type="text" class="datepicker" id="startDate">
+          and
+          <input type="text" class="datepicker" id="endDate">
+          aggregated by
+          <select class="selectpicker" id="aggregateBy" data-width="fit">
+            <option value="year">year</option>
+            <option value="month" selected="selected">month</option>
+            <option value="week">week</option>
+            <option value="day">day</option>
+          </select>
+          . &nbsp;
+          <button type="button" class="btn btn-primary" id="search">Search the news!</button>
+        </td>
       </tr>
     </table>
-  </div>
-
-  <div class="container" id="chart-options">
-    Count
-    <select class="selectpicker" id="countVar" data-width="fit">
-      <option value="mentions" selected="selected">mentions</option>
-      <option value="videotime">video time</option>
-    </select>
-    between
-    <input type="text" class="datepicker" id="startDate">
-    and
-    <input type="text" class="datepicker" id="endDate">
-    aggregated by
-    <select class="selectpicker" id="aggregateBy" data-width="fit">
-      <option value="year">year</option>
-      <option value="month" selected="selected">month</option>
-      <option value="week">week</option>
-      <option value="day">day</option>
-    </select>
-    . &nbsp;
-    <button type="button" class="btn btn-secondary" id='addRow'>Add query (+)</button>
-    <button type="button" class="btn btn-primary" id="search">Search the news!</button>
   </div>
 
   <script>
@@ -219,7 +246,7 @@
         </tr>
         <tr>
           <td>dayofweek</td>
-          <td>range or list of days</td>
+          <td>range or list of days of the week</td>
           <td>mon-sun or mon, tue, ...</td>
           <td>all</td>
           <td>dayofweek=sat-sun</td>
@@ -228,18 +255,18 @@
           <td>onscreen.face</td>
           <td>face is on screen (height >= 20%)</td>
           <td>
-            all, man, woman, host, nonhost <br>
-            {man,woman}+{host,nonhost}
+            all, male, female, host, nonhost <br>
+            {male,female}+{host,nonhost}
           </td>
           <td>n/a</td>
           <td>onscreen.face="man+host"</td>
         </tr>
         <tr>
-          <td>onscreen.id</td>
+          <td>onscreen.person</td>
           <td>person is on screen (height >= 20%)</td>
           <td><a href="/people" target="_blank">list of people</a></td>
           <td>n/a</td>
-          <td>onscreen.id="barack obama"</td>
+          <td>onscreen.person="barack obama"</td>
         </tr>
         <tr>
           <td>text.window</td>
@@ -262,10 +289,10 @@
     function toggleQueryHelp() {
       if ($('#toggle-help').text().includes('show')) {
         $('#query-help').show();
-        $('#toggle-help').text('(hide help)');
+        $('#toggle-help').text('(hide syntax)');
       } else {
         $('#query-help').hide();
-        $('#toggle-help').text('(show help)');
+        $('#toggle-help').text('(show syntax)');
       }
     }
   </script>
@@ -296,7 +323,7 @@
 
     function getColor() {
       for (var i in DEFAULT_COLORS) {
-        if ($(`#search-table tr[name='${DEFAULT_COLORS[i]}']`).length == 0) {
+        if ($(`#search-table tr[data-color='${DEFAULT_COLORS[i]}']`).length == 0) {
           return DEFAULT_COLORS[i];
         }
       }
@@ -312,27 +339,37 @@
       throw Error('All default queries used');
     }
 
+    function setRemoveButtonsState() {
+      let state = $('#search-table tr[name="query"]').length < 2;
+      $('#search-table td').find('button.remove-row-btn').each(function() {
+        this.disabled = state;
+      });
+    }
+
     function removeRow(color) {
-      $(`#search-table tr[name='${color}']`).remove();
-      $('#addRow').prop('disabled', false);
+      $(`#search-table tr[data-color="${color}"]`).remove();
+      $('#add-row-btn').prop('disabled', false);
+      setRemoveButtonsState();
     }
 
     function addRow(query) {
       let color = query ? query.color : getColor();
       let query_str = query ? query.query : `text="${getDefaultPhraseQuery()}"`;
-      let remove_btn = $('#search-table tr').length > 1 ?
-        `<button type="button" class="btn btn-secondary" onclick="removeRow('${color}');">-</button>` : '';
-      let html = `<tr name='${color}'>
-        <td>${remove_btn}</td>
+
+      let html = `<tr name="query" data-color="${color}">
+        <td><button type="button" class="btn btn-secondary remove-row-btn" onclick="removeRow('${color}');">-</button></td>
         <td><div class="color-box" style="background-color: ${color};"></div></td>
         <td><input type="text" name="query" value='${query_str}'</td>
       </tr>`;
-      $('#search-table tbody').append(html);
+      $('#search-table > tbody > tr').eq(
+        $('#search-table tr[name="query"]').length
+      ).after(html);
       if ($('#search-table tr').length >= DEFAULT_COLORS.length + 1) {
-        $('#addRow').prop('disabled', true);
+        $('#add-row-btn').prop('disabled', true);
       }
+      setRemoveButtonsState();
     }
-    $('#addRow').click(() => {addRow();});
+    $('#add-row-btn').click(() => {addRow();});
 
     function getEmbedUrl(chart_options, queries) {
       return `http://{{ host }}/embed?width=${EMBED_DIMS.width}&height=${EMBED_DIMS.height}&data=${encodeURIComponent(JSON.stringify({options: chart_options, queries: queries}))}`;
@@ -366,11 +403,11 @@
     function search() {
       let chart_options = getChartOptions();
       let queries = [];
-      $('#search-table tr').each(function() {
+      $('#search-table tr[name="query"]').each(function() {
         if ($(this).attr('name')) {
           let query = $.trim($(this).find("input[name='query']").val());
           queries.push({
-            color: $(this).attr('name'),
+            color: $(this).attr('data-color'),
             query: query
           });
         }

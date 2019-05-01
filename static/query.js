@@ -87,7 +87,7 @@ function normalizeFilters(filters) {
       } else {
         result[k] = v;
       }
-    } else if (k == 'onscreen.face' || k == 'onscreen.id') {
+    } else if (k == 'onscreen.face' || k == 'onscreen.person') {
       result[k] = v;
     } else if (k == 'commercial.none') {
       result[k] = parseBool(v);

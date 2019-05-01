@@ -20,14 +20,17 @@ class Video(NamedTuple):
 
 class FaceIntervals(NamedTuple):
     all: MmapIntervalSetMapping
-    man: MmapIntervalSetMapping
-    woman: MmapIntervalSetMapping
+    male: MmapIntervalSetMapping
+    female: MmapIntervalSetMapping
     host: MmapIntervalSetMapping
     nonhost: MmapIntervalSetMapping
-    man_host: MmapIntervalSetMapping
-    man_nonhost: MmapIntervalSetMapping
-    woman_host: MmapIntervalSetMapping
-    woman_nonhost: MmapIntervalSetMapping
+    male_host: MmapIntervalSetMapping
+    male_nonhost: MmapIntervalSetMapping
+    female_host: MmapIntervalSetMapping
+    female_nonhost: MmapIntervalSetMapping
+
+
+PersonIntervals = Dict[str, MmapIntervalSetMapping]
 
 
 VideoFilterFn = Callable[[Video], bool]
@@ -37,4 +40,3 @@ Number = Union[int, float]
 Interval = Tuple[Number, Number]
 Caption = Tuple[float, float, str]
 JsonObject = Dict[str, object]
-IdIntervals = Dict[str, MmapIntervalSetMapping]
