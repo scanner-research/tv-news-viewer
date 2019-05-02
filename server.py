@@ -237,8 +237,8 @@ def build_app(
         accumulator: DateAccumulator,
         text_query_str: str, exclude_commercials: bool,
         video_filter: Optional[VideoFilterFn],
-        face_filter: Optional[OnScreenFilterFn],
-        person_filter: Optional[OnScreenFilterFn]
+        onscreen_face_filter: Optional[OnScreenFilterFn],
+        onscreen_person_filter: Optional[OnScreenFilterFn]
     ) -> None:
         missing_videos = 0
         matched_videos = 0
@@ -259,15 +259,15 @@ def build_app(
                     continue
 
                 postings = result.postings
-                if person_filter:
+                if onscreen_person_filter:
                     postings = [
                         p for p in postings
-                        if person_filter(
+                        if onscreen_person_filter(
                             video.id, milliseconds((p.start + p.end) / 2))]
-                if face_filter:
+                if onscreen_face_filter:
                     postings = [
                         p for p in postings
-                        if face_filter(
+                        if onscreen_face_filter(
                             video.id, milliseconds((p.start + p.end) / 2))]
 
                 if exclude_commercials:
@@ -291,10 +291,10 @@ def build_app(
                     filtered_videos += 1
                     continue
 
-                if person_filter:
+                if onscreen_person_filter:
                     raise InvalidUsage(
                         'Not implemented: empty text and id filter')
-                if face_filter:
+                if onscreen_face_filter:
                     raise InvalidUsage(
                         'Not implemented: empty text and face filter')
 
@@ -317,8 +317,8 @@ def build_app(
         text_query_str: str, text_window: int,
         exclude_commercials: bool,
         video_filter: Optional[VideoFilterFn],
-        face_isetmap: MmapIntervalSetMapping,
-        person_isetmap: MmapIntervalSetMapping
+        onscreen_face_isetmap: MmapIntervalSetMapping,
+        onscreen_person_isetmap: MmapIntervalSetMapping
     ) -> None:
         missing_videos = 0
         matched_videos = 0
@@ -327,26 +327,28 @@ def build_app(
         def helper(
             video: Video, intervals: Optional[List[Interval]] = None
         ) -> None:
-            if person_isetmap:
-                if intervals is None:
-                    intervals = person_isetmap.get_intervals(video.id, True)
-                else:
-                    intervals = person_isetmap.intersect(
-                        video.id, intervals, True)
-                if len(intervals) == 0:
-                    return
-            if face_isetmap:
-                if intervals is None:
-                    intervals = face_isetmap.get_intervals(video.id, True)
-                else:
-                    intervals = face_isetmap.intersect(
-                        video.id, intervals, True)
-                if len(intervals) == 0:
-                    return
             if exclude_commercials:
                 if intervals is None:
                     intervals = [(0, int(video.num_frames / video.fps * 1000))]
                 intervals = commercial_isetmap.minus(video.id, intervals, True)
+                if len(intervals) == 0:
+                    return
+            if onscreen_person_isetmap:
+                if intervals is None:
+                    intervals = onscreen_person_isetmap.get_intervals(
+                        video.id, True)
+                else:
+                    intervals = onscreen_person_isetmap.intersect(
+                        video.id, intervals, True)
+                if len(intervals) == 0:
+                    return
+            if onscreen_face_isetmap:
+                if intervals is None:
+                    intervals = onscreen_face_isetmap.get_intervals(
+                        video.id, True)
+                else:
+                    intervals = onscreen_face_isetmap.intersect(
+                        video.id, intervals, True)
                 if len(intervals) == 0:
                     return
 
@@ -466,8 +468,8 @@ def build_app(
         videos: List[Video],
         text_query_str: str,
         exclude_commercials: bool,
-        face_filter: Optional[OnScreenFilterFn],
-        person_filter: Optional[OnScreenFilterFn]
+        onscreen_face_filter: Optional[OnScreenFilterFn],
+        onscreen_person_filter: Optional[OnScreenFilterFn]
     ) -> List[JsonObject]:
         results = []
         if text_query_str:
@@ -480,15 +482,15 @@ def build_app(
                 video = video_dict[document.name]
 
                 postings = result.postings
-                if person_filter:
+                if onscreen_person_filter:
                     postings = [
                         p for p in postings
-                        if person_filter(
+                        if onscreen_person_filter(
                             video.id, milliseconds((p.start + p.end) / 2))]
-                if face_filter:
+                if onscreen_face_filter:
                     postings = [
                         p for p in postings
-                        if face_filter(
+                        if onscreen_face_filter(
                             video.id, milliseconds((p.start + p.end) / 2))]
                 if exclude_commercials:
                     def in_commercial(p: CaptionIndex.Posting) -> bool:
@@ -508,10 +510,10 @@ def build_app(
                         'captions': _get_captions(document)
                     })
         else:
-            if face_filter:
+            if onscreen_face_filter:
                 raise InvalidUsage(
                     'not implemented: empty text and face filter')
-            if person_filter:
+            if onscreen_person_filter:
                 raise InvalidUsage(
                     'not implemented: empty text and id filter')
             if exclude_commercials:
@@ -527,8 +529,8 @@ def build_app(
         videos: List[Video],
         text_query_str: str, text_window: int,
         exclude_commercials: bool,
-        face_isetmap: MmapIntervalSetMapping,
-        person_isetmap: MmapIntervalSetMapping
+        onscreen_face_isetmap: MmapIntervalSetMapping,
+        onscreen_person_isetmap: MmapIntervalSetMapping
     ) -> List[JsonObject]:
         results = []
 
@@ -536,26 +538,28 @@ def build_app(
             video: Video,
             intervals: Optional[List[Interval]] = None
         ) -> None:
-            if person_isetmap:
-                if intervals is None:
-                    intervals = person_isetmap.get_intervals(video.id, True)
-                else:
-                    intervals = person_isetmap.intersect(
-                        video.id, intervals, True)
-                if len(intervals) == 0:
-                    return
-            if face_isetmap:
-                if intervals is None:
-                    intervals = face_isetmap.get_intervals(video.id, True)
-                else:
-                    intervals = face_isetmap.intersect(video.id, intervals,
-                                                       True)
-                if len(intervals) == 0:
-                    return
             if exclude_commercials:
                 if intervals is None:
                     intervals = [(0, int(video.num_frames / video.fps * 1000))]
                 intervals = commercial_isetmap.minus(video.id, intervals, True)
+            if onscreen_person_isetmap:
+                if intervals is None:
+                    intervals = onscreen_person_isetmap.get_intervals(
+                        video.id, True)
+                else:
+                    intervals = onscreen_person_isetmap.intersect(
+                        video.id, intervals, True)
+                if len(intervals) == 0:
+                    return
+            if onscreen_face_isetmap:
+                if intervals is None:
+                    intervals = onscreen_face_isetmap.get_intervals(
+                        video.id, True)
+                else:
+                    intervals = onscreen_face_isetmap.intersect(
+                        video.id, intervals, True)
+                if len(intervals) == 0:
+                    return
 
             if intervals is not None:
                 document = document_by_name.get(v.name)
@@ -601,15 +605,15 @@ def build_app(
         text_query = request.args.get('text', '', type=str).strip()
 
         if count_var == 'mentions':
-            text_window = request.args.get('text.window', DEFAULT_TEXT_WINDOW,
-                                           type=int)
+            text_window = request.args.get(
+                'text.window', DEFAULT_TEXT_WINDOW, type=int)
             results = _count_mentions_in_videos(
                 videos, text_query, exclude_commercials,
                 get_onscreen_face_filter(face_intervals),
                 get_onscreen_person_filter(person_intervals))
         elif count_var == 'videotime':
-            text_window = request.args.get('text.window', DEFAULT_TEXT_WINDOW,
-                                           type=int)
+            text_window = request.args.get(
+                'text.window', DEFAULT_TEXT_WINDOW, type=int)
             results = _count_video_time_in_videos(
                 videos, text_query, text_window, exclude_commercials,
                 get_onscreen_face_isetmap(face_intervals),
