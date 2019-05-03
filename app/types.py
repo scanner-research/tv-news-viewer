@@ -1,7 +1,14 @@
 from datetime import datetime
+from enum import Enum
 from typing import Callable, Dict, List, Set, Tuple, NamedTuple, Union
 
 from rs_intervalset import MmapIntervalSetMapping       # type: ignore
+
+
+class Countable(Enum):
+    MENTIONS = 'mentions'
+    FACE_TIME = 'face time'
+    VIDEO_TIME = 'video time'
 
 
 class Video(NamedTuple):
@@ -36,6 +43,8 @@ Number = Union[int, float]
 Interval = Tuple[Number, Number]
 Caption = Tuple[float, float, str]
 JsonObject = Dict[str, object]
+
+FaceTimeFilter = Tuple[int, int]
 
 VideoFilterFn = Callable[[Video], bool]
 AggregateFn = Callable[[datetime], datetime]
