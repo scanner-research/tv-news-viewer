@@ -735,15 +735,6 @@ def build_app(
     def get_people() -> Response:
         return jsonify(sorted(person_intervals.keys()))
 
-    @app.route('/vgrid/bundle.js')
-    def get_vgrid_bundle() -> Response:
-        return send_file('vgrid-widget/dist/bundle.js',
-                         mimetype='text/javascript')
-
-    @app.route('/vgrid/index.css')
-    def get_vgrid_css() -> Response:
-        return send_file('vgrid-widget/dist/index.css', mimetype='text/css')
-
     return app
 
 

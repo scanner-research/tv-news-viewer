@@ -20,12 +20,12 @@ module.exports = {
    extensions: ['*', '.js', '.jsx', '.ts', '.tsx']
   },
   output: {
-    path: __dirname + '/dist',
+    path: __dirname + '/../static/vgrid',
     publicPath: '/',
     filename: 'bundle.js'
   },
   devServer: {
-    contentBase: './dist'
+    contentBase: './../static/vgrid'
   },
   plugins
 };

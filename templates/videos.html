@@ -9,8 +9,7 @@
 
   <link rel="shortcut icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}" />
 
-  <link rel="stylesheet" type="text/css" href="/vgrid/index.css" />
-
+  <link rel="stylesheet" href="{{ url_for('static', filename='vgrid/index.css') }}" />
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
   <script src="{{ url_for('static', filename='query.js') }}" /></script>
 
@@ -116,6 +115,6 @@
       }
     });
   </script>
-  <script src="/vgrid/bundle.js"></script>
+  <script src="{{ url_for('static', filename='vgrid/bundle.js') }}"></script>
 </body>
 </html>

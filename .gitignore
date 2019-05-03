@@ -1,6 +1,6 @@
 /data
 /index*
-/vgrid-widget/dist
+/static/vgrid
 /vgrid-widget/node_modules
 /vgrid-widget/package-lock.json
 *.pyc
