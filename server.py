@@ -36,8 +36,6 @@ def get_args() -> argparse.Namespace:
                         help='Directory of caption index. Default: index')
     parser.add_argument('--frameserver', dest='frameserver_endpoint', type=str,
                         help='Frameserver URL and path')
-    parser.add_argument('-d', '--debug', action='store_true',
-                        help='Run in debug mode with server auto-reload')
     return parser.parse_args()
 
 
@@ -751,14 +749,11 @@ def build_app(
 
 def main(
     host: str, port: int, data_dir: str, index_dir: str,
-    frameserver_endpoint: Optional[str], debug: bool
+    frameserver_endpoint: Optional[str]
 ) -> None:
-    app = build_app(data_dir, index_dir, frameserver_endpoint,
-                    0 if debug else 24 * 3600)
-    kwargs = {
-        'host': host, 'port': port, 'debug': debug
-    }
-    app.run(**kwargs)
+    """Run a debugging server"""
+    app = build_app(data_dir, index_dir, frameserver_endpoint, 0)
+    app.run(host=host, port=port, debug=True)
 
 
 if __name__ == '__main__':
