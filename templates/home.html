@@ -142,8 +142,8 @@
           Count
           <select class="selectpicker" id="countVar" data-width="fit">
             <option value="mentions" selected="selected">mentions</option>
-            <option value="video time">video time</option>
             <option value="face time">face time</option>
+            <option value="video time">video time</option>
           </select>
           of the above between
           <input type="text" class="datepicker" id="startDate">
@@ -525,7 +525,7 @@ or <a href="#" onclick="setEmbedUrl('${embed_url}'); return false;">embed</a> ch
             } catch {
               msg = 'Unknown server error';
             }
-            alert(`Query failed. The chart may be incomplete.\n\n"${msg}"`);
+            alert(`[Query failed. The chart may be incomplete.]\n\n${msg}`);
             console.log('Failed:', query);
             remaining--;
             if (remaining <= 0) {

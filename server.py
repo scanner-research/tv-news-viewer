@@ -45,10 +45,13 @@ def milliseconds(s: float) -> int:
     return int(s * 1000)
 
 
-def assert_option_not_set(option: str, count_var: str) -> None:
+def assert_option_not_set(
+    option: str, count_var: str, suggested_var: str
+) -> None:
     if option in request.args:
         raise InvalidUsage(
-            '{} cannot be used when counting {}'.format(option, count_var))
+            '"{}" cannot be used when counting "{}". Try counting "{}" instead.'.format(
+                option, count_var, suggested_var))
 
 
 def get_video_filter() -> Optional[VideoFilterFn]:
@@ -218,13 +221,15 @@ def get_entire_video_ms_interval(video: Video) -> List[Interval]:
 
 
 def build_app(
-    video_dict: Dict[str, Video], index: CaptionIndex,
-    documents: Documents, lexicon: Lexicon,
-    commercial_isetmap: MmapIntervalSetMapping,
-    all_faces_ilistmap: MmapIntervalListMapping,
-    face_intervals: FaceIntervals, person_intervals: PersonIntervals,
-    frameserver_endpoint: Optional[str], cache_seconds: int
+    data_dir: str, index_dir: str, frameserver_endpoint: Optional[str],
+    cache_seconds: int
 ) -> Flask:
+    (
+        video_dict, commercial_isetmap, all_faces_ilistmap,
+        face_intervals, person_intervals
+    ) = load_video_data(data_dir)
+    index, documents, lexicon = load_index(index_dir)
+
     app = Flask(__name__)
 
     # Make sure document name equals video name
@@ -452,10 +457,13 @@ def build_app(
 
         accumulator = DateAccumulator(aggregate_fn)
         if count_var == Countable.MENTIONS.value:
-            assert_option_not_set('text.window', count_var)
-            assert_option_not_set('gender', count_var)
-            assert_option_not_set('role', count_var)
-            assert_option_not_set('person', count_var)
+            assert_option_not_set(
+                'text.window', count_var, Countable.FACE_TIME.value + ' or '
+                + Countable.VIDEO_TIME.value)
+            assert_option_not_set(
+                'gender', count_var, Countable.FACE_TIME.value)
+            assert_option_not_set(
+                'role', count_var, Countable.FACE_TIME.value)
 
             _count_mentions(
                 accumulator,
@@ -466,9 +474,10 @@ def build_app(
               or count_var == Countable.FACE_TIME.value):
 
             if count_var == Countable.VIDEO_TIME.value:
-                assert_option_not_set('gender', count_var)
-                assert_option_not_set('role', count_var)
-                assert_option_not_set('person', count_var)
+                assert_option_not_set(
+                    'gender', count_var, Countable.FACE_TIME.value)
+                assert_option_not_set(
+                    'role', count_var, Countable.FACE_TIME.value)
 
             text_window = request.args.get(
                 'text.window', DEFAULT_TEXT_WINDOW, type=int)
@@ -676,10 +685,13 @@ def build_app(
         text_query = request.args.get('text', '', type=str).strip()
 
         if count_var == Countable.MENTIONS.value:
-            assert_option_not_set('text.window', count_var)
-            assert_option_not_set('gender', count_var)
-            assert_option_not_set('role', count_var)
-            assert_option_not_set('person', count_var)
+            assert_option_not_set(
+                'text.window', count_var, Countable.FACE_TIME.value + ' or '
+                + Countable.VIDEO_TIME.value)
+            assert_option_not_set(
+                'gender', count_var, Countable.FACE_TIME.value)
+            assert_option_not_set(
+                'role', count_var, Countable.FACE_TIME.value)
 
             results = _count_mentions_in_videos(
                 videos, text_query, exclude_commercials,
@@ -688,9 +700,10 @@ def build_app(
         elif (count_var == Countable.VIDEO_TIME.value
               or count_var == Countable.FACE_TIME.value):
             if count_var == Countable.VIDEO_TIME.value:
-                assert_option_not_set('gender', count_var)
-                assert_option_not_set('role', count_var)
-                assert_option_not_set('person', count_var)
+                assert_option_not_set(
+                    'gender', count_var, Countable.FACE_TIME.value)
+                assert_option_not_set(
+                    'role', count_var, Countable.FACE_TIME.value)
 
             text_window = request.args.get(
                 'text.window', DEFAULT_TEXT_WINDOW, type=int)
@@ -740,20 +753,11 @@ def main(
     host: str, port: int, data_dir: str, index_dir: str,
     frameserver_endpoint: Optional[str], debug: bool
 ) -> None:
-    (video_dict, commercial_isetmap, all_faces_ilistmap, face_intervals,
-        person_intervals) = load_video_data(data_dir)
-    index, documents, lexicon = load_index(index_dir)
-    app = build_app(
-        video_dict, index, documents, lexicon,
-        commercial_isetmap, all_faces_ilistmap, face_intervals,
-        person_intervals, frameserver_endpoint,
-        0 if debug else 3600)
+    app = build_app(data_dir, index_dir, frameserver_endpoint,
+                    0 if debug else 24 * 3600)
     kwargs = {
         'host': host, 'port': port, 'debug': debug
     }
-    if not debug:
-        kwargs['threaded'] = False
-        kwargs['processes'] = os.cpu_count()
     app.run(**kwargs)
 
 

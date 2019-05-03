@@ -1,0 +1,6 @@
+{
+  "data_dir": "data",
+  "index_dir": "index10a",
+  "frameserver_endpoint": null,
+  "cache_seconds": 2592000
+}
