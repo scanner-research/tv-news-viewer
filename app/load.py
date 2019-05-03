@@ -4,7 +4,8 @@ from os import path
 from pathlib import Path
 
 from captions import CaptionIndex, Documents, Lexicon   # type: ignore
-from rs_intervalset import MmapIntervalSetMapping       # type: ignore
+from rs_intervalset import (                            # type: ignore
+    MmapIntervalSetMapping, MmapIntervalListMapping)
 
 from .types import *
 from .parsing import *
@@ -17,6 +18,7 @@ def get_video_name(s: str) -> str:
 def load_video_data(data_dir: str) -> Tuple[
     Dict[str, Video],
     MmapIntervalSetMapping,
+    MmapIntervalListMapping,
     FaceIntervals,
     PersonIntervals
 ]:
@@ -44,7 +46,10 @@ def load_video_data(data_dir: str) -> Tuple[
             num_frames=num_frames, fps=fps, width=width, height=height
         )
 
-    commercials = MmapIntervalSetMapping(path.join(data_dir, 'commercials.bin'))
+    commercials = MmapIntervalSetMapping(
+        path.join(data_dir, 'commercials.bin'))
+
+    all_faces = MmapIntervalListMapping(path.join(data_dir, 'faces.bin'), 1)
 
     face_dir = path.join(data_dir, 'face')
     face_intervals = FaceIntervals(
@@ -70,7 +75,7 @@ def load_video_data(data_dir: str) -> Tuple[
             path.join(person_dir, person_file))
         for person_file in os.listdir(person_dir)
     }
-    return videos, commercials, face_intervals, person_intervals
+    return videos, commercials, all_faces, face_intervals, person_intervals
 
 
 def load_index(index_dir: str) -> Tuple[CaptionIndex, Documents, Lexicon]:

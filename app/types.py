@@ -32,11 +32,12 @@ class FaceIntervals(NamedTuple):
 
 PersonIntervals = Dict[str, MmapIntervalSetMapping]
 
-
-VideoFilterFn = Callable[[Video], bool]
-AggregateFn = Callable[[datetime], datetime]
-OnScreenFilterFn = Callable[[int, int], bool]
 Number = Union[int, float]
 Interval = Tuple[Number, Number]
 Caption = Tuple[float, float, str]
 JsonObject = Dict[str, object]
+
+VideoFilterFn = Callable[[Video], bool]
+AggregateFn = Callable[[datetime], datetime]
+OnScreenFilterFn = Callable[[int, int], bool]
+FaceTimeFn = Callable[[Video, List[Interval]], int]

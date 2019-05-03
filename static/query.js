@@ -89,6 +89,10 @@ function normalizeFilters(filters) {
       }
     } else if (k == 'onscreen.face' || k == 'onscreen.person') {
       result[k] = v;
+    } else if (k == 'role' || k == 'gender') {
+      if (v_up != 'ALL') {
+        result[k] = v;
+      }
     } else if (k == 'commercial.none') {
       result[k] = parseBool(v);
     } else {

@@ -10,7 +10,8 @@ from typing import Dict, List, Set, Tuple, Optional
 from captions import CaptionIndex, Documents, Lexicon   # type: ignore
 from captions.util import PostingUtil                   # type: ignore
 from captions.query import Query                        # type: ignore
-from rs_intervalset import MmapIntervalSetMapping       # type: ignore
+from rs_intervalset import (                            # type: ignore
+    MmapIntervalSetMapping, MmapIntervalListMapping)
 
 from app.types import *
 from app.error import InvalidUsage
@@ -42,6 +43,12 @@ def get_args() -> argparse.Namespace:
 
 def milliseconds(s: float) -> int:
     return int(s * 1000)
+
+
+def assert_option_not_set(option: str, count_var: str) -> None:
+    if option in request.args:
+        raise InvalidUsage(
+            '{} cannot be used when counting {}'.format(option, count_var))
 
 
 def get_video_filter() -> Optional[VideoFilterFn]:
@@ -138,19 +145,51 @@ def get_onscreen_person_isetmap(
     filter_str = request.args.get('onscreen.id', '', type=str).strip().lower()
     if not filter_str:
         return None
-    intervals = person_intervals.get(filter_str, None)
-    if intervals is None:
+    isetmap = person_intervals.get(filter_str, None)
+    if isetmap is None:
         raise InvalidUsage('{} is not a valid person'.format(filter_str))
-    return intervals
+    return isetmap
 
 
 def get_onscreen_person_filter(
     person_intervals: PersonIntervals
 ) -> Optional[OnScreenFilterFn]:
-    intervals = get_onscreen_person_isetmap(person_intervals)
-    if intervals is None:
+    isetmap = get_onscreen_person_isetmap(person_intervals)
+    if isetmap is None:
         return None
-    return lambda v, t: intervals.is_contained(v, t, True)
+    return lambda v, t: isetmap.is_contained(v, t, True)
+
+
+def get_face_time_fn(
+    face_ilistmap: MmapIntervalListMapping,
+) -> FaceTimeFn:
+    gender = request.args.get('gender', '', type=str).strip().lower()
+    role = request.args.get('role', '', type=str).strip().lower()
+
+    payload_value = 0
+    payload_mask = 0
+    if gender and gender != 'all':
+        payload_mask |= 0b1
+        if gender == 'male':
+            payload_value |= 0b1;
+        elif gender == 'female':
+            pass
+        else:
+            raise InvalidUsage('{} is not a valid gender'.format(gender))
+    if role and role != 'all':
+        payload_mask |= 0b10
+        if role == 'host':
+            payload_value |= 0b10;
+        elif role == 'nonhost':
+            pass
+        else:
+            raise InvalidUsage('{} is not a valid role'.format(role))
+
+    def f(video: Video, intervals: List[Interval]) -> int:
+        return face_ilistmap.intersect_sum(
+            video.id, intervals, payload_mask, payload_value, True)
+
+    return f
 
 
 class DateAccumulator(object):
@@ -181,10 +220,15 @@ def get_shows_by_channel(video_dict: Dict[str, Video]) -> Dict[str, List[str]]:
     return {k: list(sorted(v)) for k, v in tmp_shows_by_channel.items()}
 
 
+def get_entire_video_ms_interval(video: Video) -> List[Interval]:
+    return [(0, int(video.num_frames / video.fps * 1000))]
+
+
 def build_app(
     video_dict: Dict[str, Video], index: CaptionIndex,
     documents: Documents, lexicon: Lexicon,
     commercial_isetmap: MmapIntervalSetMapping,
+    all_faces: MmapIntervalListMapping,
     face_intervals: FaceIntervals, person_intervals: PersonIntervals,
     frameserver_endpoint: Optional[str], cache_seconds: int
 ) -> Flask:
@@ -312,8 +356,9 @@ def build_app(
         print('Matched {} videos, {} filtered, {} missing'.format(
               matched_videos, filtered_videos, missing_videos))
 
-    def _count_video_time(
+    def _count_face_or_video_time(
         accumulator: DateAccumulator,
+        face_time_fn: Optional[FaceTimeFn],
         text_query_str: str, text_window: int,
         exclude_commercials: bool,
         video_filter: Optional[VideoFilterFn],
@@ -329,7 +374,7 @@ def build_app(
         ) -> None:
             if exclude_commercials:
                 if intervals is None:
-                    intervals = [(0, int(video.num_frames / video.fps * 1000))]
+                    intervals = get_entire_video_ms_interval(video)
                 intervals = commercial_isetmap.minus(video.id, intervals, True)
                 if len(intervals) == 0:
                     return
@@ -352,13 +397,21 @@ def build_app(
                 if len(intervals) == 0:
                     return
 
-            if intervals is not None:
+            if face_time_fn:
                 accumulator.add(
                     video.date, video.id,
-                    sum(i[1] - i[0] for i in intervals) / 1000)
+                    face_time_fn(
+                        video, intervals if intervals else
+                        get_entire_video_ms_interval(video)
+                    ) / 1000)
             else:
-                accumulator.add(video.date, video.id,
-                                video.num_frames / video.fps)
+                if intervals is not None:
+                    accumulator.add(
+                        video.date, video.id,
+                        sum(i[1] - i[0] for i in intervals) / 1000)
+                else:
+                    accumulator.add(video.date, video.id,
+                                    video.num_frames / video.fps)
 
         if text_query_str:
             text_query = Query(text_query_str.upper())
@@ -403,19 +456,28 @@ def build_app(
 
         accumulator = DateAccumulator(aggregate_fn)
         if count_var == 'mentions':
-            if 'text.window' in request.args:
-                raise InvalidUsage(
-                    'text.window cannot be used when counting mentions')
+            assert_option_not_set('text.window', 'mentions')
+            assert_option_not_set('gender', 'mentions')
+            assert_option_not_set('role', 'mentions')
+            assert_option_not_set('person', 'mentions')
+
             _count_mentions(
                 accumulator,
                 text_query, exclude_commercials, video_filter,
                 get_onscreen_face_filter(face_intervals),
                 get_onscreen_person_filter(person_intervals))
-        elif count_var == 'videotime':
-            text_window = request.args.get('text.window', DEFAULT_TEXT_WINDOW,
-                                           type=int)
-            _count_video_time(
+        elif count_var == 'videotime' or count_var == 'facetime':
+            if count_var == 'videotime':
+                assert_option_not_set('gender', 'video time')
+                assert_option_not_set('role', 'video time')
+                assert_option_not_set('person', 'video time')
+
+            text_window = request.args.get(
+                'text.window', DEFAULT_TEXT_WINDOW, type=int)
+            _count_face_or_video_time(
                 accumulator,
+                None if count_var == 'videotime'
+                else get_face_time_fn(all_faces),
                 text_query, text_window, exclude_commercials,
                 video_filter,
                 get_onscreen_face_isetmap(face_intervals),
@@ -525,7 +587,7 @@ def build_app(
                 results.append(_get_entire_video(v))
         return results
 
-    def _count_video_time_in_videos(
+    def _count_face_or_video_time_in_videos(
         videos: List[Video],
         text_query_str: str, text_window: int,
         exclude_commercials: bool,
@@ -614,7 +676,7 @@ def build_app(
         elif count_var == 'videotime':
             text_window = request.args.get(
                 'text.window', DEFAULT_TEXT_WINDOW, type=int)
-            results = _count_video_time_in_videos(
+            results = _count_face_or_video_time_in_videos(
                 videos, text_query, text_window, exclude_commercials,
                 get_onscreen_face_isetmap(face_intervals),
                 get_onscreen_person_isetmap(person_intervals))
@@ -658,12 +720,12 @@ def main(
     host: str, port: int, data_dir: str, index_dir: str,
     frameserver_endpoint: Optional[str], debug: bool
 ) -> None:
-    video_dict, commercial_isetmap, face_intervals, person_intervals = \
-        load_video_data(data_dir)
+    (video_dict, commercial_isetmap, all_faces, face_intervals,
+        person_intervals) = load_video_data(data_dir)
     index, documents, lexicon = load_index(index_dir)
     app = build_app(
         video_dict, index, documents, lexicon,
-        commercial_isetmap, face_intervals,
+        commercial_isetmap, all_faces, face_intervals,
         person_intervals, frameserver_endpoint,
         0 if debug else 3600)
     kwargs = {

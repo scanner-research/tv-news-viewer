@@ -143,6 +143,7 @@
           <select class="selectpicker" id="countVar" data-width="fit">
             <option value="mentions" selected="selected">mentions</option>
             <option value="videotime">video time</option>
+            <option value="facetime">face time</option>
           </select>
           of the above between
           <input type="text" class="datepicker" id="startDate">
@@ -216,10 +217,13 @@
 
   <div class="container" id="query-help">
     <p><b>Query usage</b> - The following options are supported (separated by <b>AND</b>).</p>
+
     <div class="container">
+      <b>Countables</b>
       <table>
         <tr>
           <th>Name</th>
+          <th>Valid for counting</th>
           <th>Description</th>
           <th>Values</th>
           <th>Default</th>
@@ -227,10 +231,40 @@
         </tr>
         <tr>
           <td>text</td>
-          <td>text to count mentions for</td>
+          <td>mentions</td>
+          <td>text mentions in the captions</td>
           <td><a href="https://github.com/scanner-research/caption-index/blob/master/captions/query.py" target="_blank">grammar</a></td>
           <td>n/a</td>
-          <td>text="donald trump"</td>
+          <td>text="affordable care act"</td>
+        </tr>
+        <tr>
+          <td>gender</td>
+          <td>face time</td>
+          <td>gender face time (height >= 20%)</td>
+          <td>all, male, female</td>
+          <td>all</td>
+          <td>gender=male</td>
+        </tr>
+        <tr>
+          <td>role</td>
+          <td>face time</td>
+          <td>host face time (height >= 20%)</td>
+          <td>all, host, nonhost</td>
+          <td>all</td>
+          <td>role=host</td>
+        </tr>
+      </table>
+    </div>
+
+    <div class="container">
+      <b>Video Options</b>
+      <table>
+        <tr>
+          <th>Name</th>
+          <th>Description</th>
+          <th>Values</th>
+          <th>Default</th>
+          <th>Example</th>
         </tr>
         <tr>
           <td>channel</td>
@@ -260,6 +294,26 @@
           <td>all</td>
           <td>dayofweek=sat-sun</td>
         </tr>
+      </table>
+    </div>
+
+    <div class="container">
+      <b>Interval Options</b>
+      <table>
+        <tr>
+          <th>Name</th>
+          <th>Description</th>
+          <th>Values</th>
+          <th>Default</th>
+          <th>Example</th>
+        </tr>
+        <tr>
+          <td>commercial.none</td>
+          <td>exclude commercials</td>
+          <td>true, false</td>
+          <td>{{ default_exclude_commercials }}</td>
+          <td>commercial.none={{ default_exclude_commercials }}</td>
+        </tr>
         <tr>
           <td>onscreen.face</td>
           <td>face is on screen (height >= 20%)</td>
@@ -268,7 +322,7 @@
             {male,female}+{host,nonhost}
           </td>
           <td>n/a</td>
-          <td>onscreen.face="man+host"</td>
+          <td>onscreen.face="male+host"</td>
         </tr>
         <tr>
           <td>onscreen.person</td>
@@ -277,19 +331,18 @@
           <td>n/a</td>
           <td>onscreen.person="barack obama"</td>
         </tr>
+          <td>text</td>
+          <td>text mentions in the captions</td>
+          <td><a href="https://github.com/scanner-research/caption-index/blob/master/captions/query.py" target="_blank">grammar</a></td>
+          <td>n/a</td>
+          <td>text="affordable care act"</td>
+        </tr>
         <tr>
           <td>text.window</td>
           <td>threshold (in seconds) for nearby text,<br> when counting by video time</td>
           <td>non-negative integer</td>
           <td>{{ default_text_window }}</td>
           <td>text.window={{ default_text_window }}</td>
-        </tr>
-        <tr>
-          <td>commercial.none</td>
-          <td>exclude commercials</td>
-          <td>true, false</td>
-          <td>{{ default_exclude_commercials }}</td>
-          <td>commercial.none={{ default_exclude_commercials }}</td>
         </tr>
       </table>
     </div>
@@ -321,9 +374,7 @@
     const EMBED_DIMS = {width: 1000, height: 400};
 
     const ALL_SHOWS = [
-      {% for show in shows %}
-      "{{ show }}",
-      {% endfor %}
+      {% for show in shows %}"{{ show }}",{% endfor %}
     ];
 
     function getRandomSample(arr) {
@@ -468,8 +519,13 @@ or <a href="#" onclick="setEmbedUrl('${embed_url}'); return false;">embed</a> ch
             }
           },
           error: xhr => {
-            alert(`Query failed. The chart may be incomplete.\n\n"${
-                  JSON.parse(xhr.responseText).message}"`);
+            var msg;
+            try {
+              msg = JSON.parse(xhr.responseText).message;
+            } catch {
+              msg = 'Unknown server error';
+            }
+            alert(`Query failed. The chart may be incomplete.\n\n"${msg}"`);
             console.log('Failed:', query);
             remaining--;
             if (remaining <= 0) {
