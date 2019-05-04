@@ -6,6 +6,7 @@ function getQueryOptions(chart_options, query_filters) {
   options.start_date = chart_options.start_date;
   options.end_date = chart_options.end_date;
   options.count = chart_options.count;
+  options.normalize = chart_options.normalize;
   options.aggregate = chart_options.aggregate;
   return options;
 }

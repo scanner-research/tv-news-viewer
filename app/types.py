@@ -6,9 +6,9 @@ from rs_intervalset import MmapIntervalSetMapping       # type: ignore
 
 
 class Countable(Enum):
-    MENTIONS = 'mentions'
-    FACE_TIME = 'face time'
-    VIDEO_TIME = 'video time'
+    mentions = 'mentions'
+    facetime = 'face time'
+    videotime = 'video time'
 
 
 class Video(NamedTuple):

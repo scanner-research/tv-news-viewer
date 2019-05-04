@@ -142,11 +142,14 @@
         <td>
           Count
           <select class="selectpicker" id="countVar" data-width="fit">
-            <option value="mentions" selected="selected">mentions</option>
-            <option value="face time">face time</option>
-            <option value="video time">video time</option>
+            <option value="raw:mentions" selected="selected">mentions</option>
+            <option value="raw:facetime">face time</option>
+            <option value="raw:videotime">video time</option>
+            <option value="norm:mentions">normalized mentions</option>
+            <option value="norm:facetime">normalized face time</option>
+            <option value="norm:videotime">normalized video time</option>
           </select>
-          of the above between
+          between
           <input type="text" class="datepicker" id="startDate">
           and
           <input type="text" class="datepicker" id="endDate">
@@ -181,10 +184,12 @@
       if (start_date > end_date) {
         alertAndThrow('Start date cannot exceed end date.');
       }
+      let count_options = $('#countVar').val().split(':');
       return {
         start_date: start_date,
         end_date: end_date,
-        count: $('#countVar').val(),
+        count: count_options[1],
+        normalize: count_options[0] == 'norm',
         aggregate: $('#aggregateBy').val(),
         enable_playback: true
       }
@@ -196,7 +201,8 @@
       if (chart_options) {
         start_date = chart_options.start_date;
         end_date = chart_options.end_date;
-        $('#countVar').val(chart_options.count);
+        let normalize = chart_options.normalize ? 'norm' : 'raw';
+        $('#countVar').val(normalize + ':' + chart_options.count);
         $('#aggregateBy').val(chart_options.aggregate);
       }
       $('#startDate').datepicker({
@@ -336,7 +342,8 @@
         </tr>
         <tr>
           <td>text.window</td>
-          <td>threshold (in seconds) for nearby text,<br> when counting by video time</td>
+          <td>threshold (in seconds) for nearby text,<br>
+              when counting by video time</td>
           <td>non-negative integer</td>
           <td>{{ default_text_window }}</td>
           <td>text.window={{ default_text_window }}</td>

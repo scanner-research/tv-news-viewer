@@ -75,28 +75,36 @@ function loadChart(div_id, chart_options, search_results, dimensions) {
   let unit = chart_options.count == 'mentions' ? 'mentions' : 'seconds';
   let point_data = Object.keys(search_results).flatMap(color => {
     let result = search_results[color];
-    let data = fillZeros(
-      result.data, chart_options.aggregate, chart_options.start_date,
+    let totals = result.data.totals;
+    let values = fillZeros(
+      result.data.values, chart_options.aggregate, chart_options.start_date,
       chart_options.end_date, []);
-    return Object.keys(data).map(
+    return Object.keys(values).map(
       t => {
         var link_href = null;
-        if (chart_options.enable_playback && data[t].length > 0) {
+        if (chart_options.enable_playback && values[t].length > 0) {
           // Enable embedded player
-          let video_ids = shuffle(data[t].map(x => x[0]));
+          let video_ids = shuffle(values[t].map(x => x[0]));
           let params = {
             count: chart_options.count,
             query: result.query,
             video_ids: video_ids.slice(0, MAX_DISPLAY_VIDEOS),
-            video_count: data[t].length
+            video_count: values[t].length
           };
           link_href = `javascript:chartHrefHandler("${btoa(JSON.stringify(params))}")`;
         }
+        var value = values[t].reduce((acc, x) => acc + x[1], 0);
+        if (chart_options.normalize) {
+          value /= _.get(totals, t, 1.);
+          value *= 100;
+          value_str = `${value} %`;
+        } else {
+          value_str = `${value} ${unit}`;
+        }
         return {
           time: t, color: color, query: getSeriesName(color),
-          value: data[t].reduce((acc, x) => acc + x[1], 0),
-          video_href: link_href,
-          size: data[t].length > 0 ? 30 : 0
+          value: value, value_str: value_str,
+          video_href: link_href, size: values[t].length > 0 ? 30 : 0
         };
       }
     );
@@ -104,23 +112,28 @@ function loadChart(div_id, chart_options, search_results, dimensions) {
   let series = Object.keys(search_results).map(
     color => ({name: getSeriesName(color), color: color})
   );
-  let tooltip_data = Array.from(new Set(point_data.map(x => x.time))).map(t => {
+  let tooltip_data = Array.from(
+    new Set(point_data.map(x => x.time))
+  ).map(t => {
     let point = {time: t};
     Object.keys(search_results).forEach(color => {
       let series_name = getSeriesName(color);
-      let videos = _.get(search_results[color].data, t, []);
+      let videos = _.get(search_results[color].data.values, t, []);
       let value = Math.round(videos.reduce((acc, x) => acc + x[1], 0));
       point[series_name] = `${value} ${unit} in ${videos.length} videos`;
     });
     return point;
   });
-
+  let chart_description = (
+    chart_options.count == 'mentions' ? 'Keyword mentions' : (
+      chart_options.count == 'videotime' ? 'Video time' : 'Face time'
+    ));
   let vega_spec = {
     $schema: 'https://vega.github.io/schema/vega-lite/v3.json',
     width: dimensions.width,
     height: dimensions.height,
     autosize: {type: 'fit', resize: true, contains: 'padding'},
-    description: `${chart_options.count == 'mentions' ? 'Keyword mentions' : 'Video time'} over time`,
+    description: `${chart_description} over time`,
     data: {values: tooltip_data},
     encoding: {
       x: {
@@ -183,7 +196,7 @@ function loadChart(div_id, chart_options, search_results, dimensions) {
           }
         },
         y: {
-          field: 'value', type: 'quantitative', title: `# of ${unit}s`,
+          field: 'value', type: 'quantitative', title: `${chart_options.normalize ? '%' : '#'} of ${unit}s`,
           axis: {
             titleFontSize: 12, labelFontSize: 12, tickCount: 5
           }
@@ -191,11 +204,14 @@ function loadChart(div_id, chart_options, search_results, dimensions) {
         color: {field: 'color', type: 'nominal', scale: null},
         size: {field: 'size', type: 'quantitative', scale: null},
         opacity: {value: 1},
-        href: chart_options.enable_playback ? {field: 'video_href', type: 'nominal'} : null,
+        href: chart_options.enable_playback ? {
+          field: 'video_href', type: 'nominal'
+        } : null,
         tooltip: [
-          {field: 'time', type: 'temporal', timeUnit: 'utcyearmonthdate', title: 'time', format: getDateFormat(chart_options.aggregate)},
+          {field: 'time', type: 'temporal', timeUnit: 'utcyearmonthdate',
+           title: 'time', format: getDateFormat(chart_options.aggregate)},
           {field: 'query', type: 'nominal'},
-          {field: 'value', type: 'quantitative'}
+          {field: 'value_str', type: 'nominal', title: 'value'}
         ]
       }
     }]
