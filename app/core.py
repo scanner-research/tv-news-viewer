@@ -1,6 +1,7 @@
-#!/usr/bin/env python3
+"""
+Main application code
+"""
 
-import argparse
 from datetime import datetime, timedelta
 import os
 import json
@@ -13,30 +14,21 @@ from captions.query import Query                        # type: ignore
 from rs_intervalset import (                            # type: ignore
     MmapIntervalSetMapping, MmapIntervalListMapping)
 
-from app.types import *
-from app.error import InvalidUsage
-from app.parsing import *
-from app.load import get_video_name, load_video_data, load_index
+from .types import *
+from .error import InvalidUsage
+from .parsing import *
+from .load import get_video_name, load_video_data, load_index
+
+
+FILE_DIR = os.path.dirname(os.path.realpath(__file__))
+TEMPLATE_DIR = os.path.join(FILE_DIR, '..', 'templates')
+STATIC_DIR = os.path.join(FILE_DIR, '..', 'static')
+
 
 MIN_DATE = datetime(2010, 1, 1)
 MAX_DATE = datetime(2018, 4, 1)
 DEFAULT_TEXT_WINDOW = 30
 DEFAULT_EXCLUDE_COMMERCIALS = str(True).lower()
-
-
-def get_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--host', default='localhost',
-                        help='Host interface. Default: localhost')
-    parser.add_argument('-p', '--port', default=8080,
-                        help='Server port. Default: 8080')
-    parser.add_argument('--data', dest='data_dir', default='data',
-                        help='Directory of video metadata. Default: data')
-    parser.add_argument('--index', dest='index_dir', default='index',
-                        help='Directory of caption index. Default: index')
-    parser.add_argument('--frameserver', dest='frameserver_endpoint', type=str,
-                        help='Frameserver URL and path')
-    return parser.parse_args()
 
 
 def milliseconds(s: float) -> int:
@@ -228,7 +220,9 @@ def build_app(
     ) = load_video_data(data_dir)
     index, documents, lexicon = load_index(index_dir)
 
-    app = Flask(__name__)
+
+    app = Flask(__name__, template_folder=TEMPLATE_DIR,
+                static_folder=STATIC_DIR)
 
     # Make sure document name equals video name
     documents = Documents([
@@ -736,16 +730,3 @@ def build_app(
         return jsonify(sorted(person_intervals.keys()))
 
     return app
-
-
-def main(
-    host: str, port: int, data_dir: str, index_dir: str,
-    frameserver_endpoint: Optional[str]
-) -> None:
-    """Run a debugging server"""
-    app = build_app(data_dir, index_dir, frameserver_endpoint, 0)
-    app.run(host=host, port=port, debug=True)
-
-
-if __name__ == '__main__':
-    main(**vars(get_args()))

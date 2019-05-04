@@ -7,7 +7,7 @@ Example use:
 """
 
 import json
-from server import build_app
+from app.core import build_app
 
 CONFIG_FILE = 'config.json'
 
