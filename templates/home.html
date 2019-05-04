@@ -80,7 +80,8 @@
     }
     #query-help table {
       width: 100%;
-      border-spacing: 5px;
+      border-spacing: 2px;
+      table-layout: auto;
     }
     #query-help th {
       text-align: left;
@@ -232,7 +233,9 @@
         <tr>
           <td>text</td>
           <td>mentions</td>
-          <td>text mentions in the captions</td>
+          <td>text mentions in the captions. In count face or video time mode, <br>
+              "text.window" sets a threshold for nearness to a text mention.
+          </td>
           <td><a href="https://github.com/scanner-research/caption-index/blob/master/captions/query.py" target="_blank">grammar</a></td>
           <td>n/a</td>
           <td>text="affordable care act"</td>
@@ -316,9 +319,9 @@
         </tr>
         <tr>
           <td>onscreen.face</td>
-          <td>face is on screen (height >= 20%)</td>
+          <td>face is on screen (height &ge; 20%)</td>
           <td>
-            all, male, female, host, nonhost <br>
+            all, male, female, host, nonhost,<br>
             {male,female}+{host,nonhost}
           </td>
           <td>n/a</td>
@@ -326,16 +329,10 @@
         </tr>
         <tr>
           <td>onscreen.person</td>
-          <td>person is on screen (height >= 20%)</td>
+          <td>person is on screen (height &ge; 20%)</td>
           <td><a href="/people" target="_blank">list of people</a></td>
           <td>n/a</td>
           <td>onscreen.person="barack obama"</td>
-        </tr>
-          <td>text</td>
-          <td>text mentions in the captions</td>
-          <td><a href="https://github.com/scanner-research/caption-index/blob/master/captions/query.py" target="_blank">grammar</a></td>
-          <td>n/a</td>
-          <td>text="affordable care act"</td>
         </tr>
         <tr>
           <td>text.window</td>
