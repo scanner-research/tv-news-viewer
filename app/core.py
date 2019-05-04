@@ -220,7 +220,6 @@ def build_app(
     ) = load_video_data(data_dir)
     index, documents, lexicon = load_index(index_dir)
 
-
     app = Flask(__name__, template_folder=TEMPLATE_DIR,
                 static_folder=STATIC_DIR)
 
@@ -242,7 +241,7 @@ def build_app(
         all_shows.update(shows)
 
     @app.errorhandler(InvalidUsage)
-    def _handle_invalid_usage(error: InvalidUsage):
+    def _handle_invalid_usage(error: InvalidUsage) -> Response:
         response = jsonify(error.to_dict())
         response.status_code = error.status_code
         return response
