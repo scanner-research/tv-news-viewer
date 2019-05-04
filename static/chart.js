@@ -1,5 +1,7 @@
 /* Embed a chart using vega-embed */
 
+const MAX_DISPLAY_VIDEOS = 25;
+
 function fillZeros(data, unit, start, end, default_value) {
   let all_ts = new Set(Object.keys(data));
   Object.keys(data).forEach(t_curr_str => {
@@ -81,10 +83,12 @@ function loadChart(div_id, chart_options, search_results, dimensions) {
         var link_href = null;
         if (chart_options.enable_playback && data[t].length > 0) {
           // Enable embedded player
+          let video_ids = shuffle(data[t].map(x => x[0]));
           let params = {
             count: chart_options.count,
             query: result.query,
-            video_ids: data[t].map(x => x[0])
+            video_ids: video_ids.slice(0, MAX_DISPLAY_VIDEOS),
+            video_count: data[t].length
           };
           link_href = `javascript:chartHrefHandler("${btoa(JSON.stringify(params))}")`;
         }

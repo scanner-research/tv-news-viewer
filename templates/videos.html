@@ -37,7 +37,6 @@
   </div>
 
   <script>
-    const MAX_VIDEOS = 10;
     const INTERVAL_PADDING = 10;
 
     function showVideos(data) {
@@ -92,13 +91,10 @@
     }
 
     let params = JSON.parse(decodeURIComponent((new URL(document.location)).searchParams.get('params')));
-    var video_ids = shuffle(params.video_ids);
-    if (video_ids.length > MAX_VIDEOS) {
-      video_ids = video_ids.slice(0, MAX_VIDEOS);
-    }
+    var video_ids = params.video_ids;
 
     $("#text-info").html(
-      `<p>Showing results from ${video_ids.length} of ${params.video_ids.length} videos.</p>`
+      `<p>Showing results from ${video_ids.length} of ${params.video_count} videos.</p>`
     );
 
     let args = normalizeFilters(parseFilters(params.query));
