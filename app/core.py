@@ -680,7 +680,7 @@ def build_app(
 
             if intervals is not None:
                 assert len(intervals) > 0
-                document = document_by_name.get(v.name)
+                document = document_by_name.get(video.name)
                 results.append({
                     'metadata': _video_to_dict(video),
                     'intervals': [

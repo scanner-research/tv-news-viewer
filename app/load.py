@@ -39,6 +39,7 @@ def load_video_data(data_dir: str) -> Tuple[
         ) = v
         name = get_video_name(name)
         date = parse_date(date_str)
+        assert date is not None
         dayofweek = date.isoweekday()  # Mon == 1, Sun == 7
         videos[name] = Video(
             id=id, name=name, show=show, channel=channel,
