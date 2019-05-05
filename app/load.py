@@ -81,7 +81,8 @@ def load_video_data(data_dir: str) -> Tuple[
 def load_index(index_dir: str) -> Tuple[CaptionIndex, Documents, Lexicon]:
     print('Loading caption index: please wait...')
     documents = Documents.load(path.join(index_dir, 'docs.list'))
-    lexicon = Lexicon.load(path.join(index_dir, 'words.lex'))
+    lexicon = Lexicon.load(path.join(index_dir, 'words.lex'),
+                           lazy_lemmas=False)
     index = CaptionIndex(path.join(index_dir, 'index.bin'),
                          lexicon, documents)
     return index, documents, lexicon
