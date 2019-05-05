@@ -758,15 +758,6 @@ def build_app(
         resp.cache_control.max_age = cache_seconds
         return resp
 
-    @app.route('/video-names')
-    def get_video_names() -> Response:
-        return jsonify(list(video_dict.keys()))
-
-    @app.route('/video-info/<video>')
-    def get_video_info(video: str) -> Response:
-        video = _video_name_or_id(video)
-        return jsonify(video_dict[video])
-
     @app.route('/shows')
     def get_shows() -> Response:
         return jsonify(shows_by_channel)

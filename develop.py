@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+"""
+Run a development server
+"""
 
 import argparse
 from typing import Optional

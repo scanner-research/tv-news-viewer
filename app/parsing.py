@@ -23,12 +23,13 @@ def parse_hour_set(s: Optional[str]) -> Optional[Set[int]]:
         return None
     result: Set[int] = set()
     for t in s.strip().split(','):
+        t = t.strip()
         if t == '':
             continue
         elif '-' in t:
             t0_str, t1_str = t.split('-', 1)
-            t0 = int(t0_str)
-            t1 = int(t1_str)
+            t0 = int(t0_str.strip())
+            t1 = int(t1_str.strip())
             if t0 >= 0 and t0 <= 23 and t1 >= 0 and t1 <= 23:
                 result.update(range(t0, t1 + 1))
             else:
@@ -50,6 +51,7 @@ def parse_day_of_week_set(s: Optional[str]) -> Optional[Set[int]]:
         return None
     result: Set[int] = set()
     for t in s.strip().split(','):
+        t = t.strip()
         t_low = t.lower()
         try:
             if t_low == '':
@@ -57,8 +59,8 @@ def parse_day_of_week_set(s: Optional[str]) -> Optional[Set[int]]:
             elif '-' in t:
                 t0, t1 = t_low.split('-', 1)
                 result.update(range(
-                    DAYS_OF_WEEK.index(t0) + 1,
-                    DAYS_OF_WEEK.index(t1) + 2))
+                    DAYS_OF_WEEK.index(t0.strip()) + 1,
+                    DAYS_OF_WEEK.index(t1.strip()) + 2))
             else:
                 result.add(DAYS_OF_WEEK.index(t_low) + 1)
         except ValueError:
