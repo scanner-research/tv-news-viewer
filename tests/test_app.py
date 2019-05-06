@@ -68,22 +68,30 @@ def _search(client: FlaskClient, params: Dict[str, Optional[str]]) -> None:
     query_str = '/search?' + param_str
     print('GET', query_str)
     assert client.get(query_str).status_code == 200, \
-        'Failed: {}'.format(repr(params))
+        'Query failed: {}'.format(repr(params))
 
 
-def _comibination_search(
-    client: FlaskClient, n: int,
-    param_options: Dict[str, List[Optional[str]]],
+def _combination_search(
+    client: FlaskClient, param_options: Dict[str, List[Optional[str]]],
+    n: Optional[int] = None
 ) -> None:
     """Enumerate combinations of params_options"""
     num_combos = 1
     for v in param_options.values():
         num_combos *= len(v)
 
-    print('Testing {} of {} possible combinations'.format(n, num_combos))
+    if n is None:
+        print('Testing {} possible combinations'.format(num_combos))
+    else:
+        print('Testing {} of {} possible combinations'.format(
+              min(n, num_combos), num_combos))
+
     keys = list(sorted(param_options))
     params = {}
-    for i in random.sample(range(num_combos), min(n, num_combos)):
+    for i in (
+        range(num_combos) if n is None
+        else random.sample(range(num_combos), min(n, num_combos))
+    ):
         for k in keys:
             idx = i % len(param_options[k])
             params[k] = param_options[k][idx]
@@ -93,64 +101,88 @@ def _comibination_search(
 
 
 def test_count_mentions(client: FlaskClient) -> None:
-    _comibination_search(client, 100, {
-        'count': ['mentions'],
-        # General options
-        'start_date': [None, '2017-01-01'],
-        'end_date': [None, '2018-01-01'],
-        'normalize': ['true', 'false'],
-        'aggregate': ['year', 'month', 'week', 'day'],
-        'text': ['united states of america'],
-        'channel': [None, 'CNN', 'FOXNEWS', 'MSNBC'],
-        'show': [None, 'The Situaton Room'],
-        'hour': [None, '9-5', '5', '5,6', '5-6,7-8'],
-        'dayofweek': [None, 'mon-wed', 'sat', 'sat-sun', 'sat,sun'],
-        'commercial.none': [None, 'false', 'true'],
-        'onscreen.face': [None, 'female+host', 'female', 'all'],
-        'onscreen.person': [None, 'wolf blitzer']
-    })
+    _combination_search(
+        client, {
+            'count': ['mentions'],
+            # General options
+            'start_date': [None, '2017-01-01'],
+            'end_date': [None, '2018-01-01'],
+            'normalize': ['true', 'false'],
+            'aggregate': ['year', 'month', 'week', 'day'],
+            'text': ['united states of america'],
+            'channel': [None, 'CNN', 'FOXNEWS', 'MSNBC'],
+            'show': [None, 'The Situaton Room'],
+            'hour': [None, '9-5', '5', '5,6', '5-6,7'],
+            'dayofweek': [None, 'mon-wed,thu,fri', 'sat', 'sat-sun', 'sat,sun'],
+            'commercial.none': [None, 'false', 'true'],
+            'onscreen.face': [None, 'female+host', 'female', 'all'],
+            'onscreen.person': [None, 'wolf blitzer']
+        },
+        n=100)
+    _combination_search(
+        client, {
+            'count': ['mentions'],
+            'normalize': ['true'],
+            'aggregate': ['year', 'month', 'week', 'day'],
+        })
 
 
 def test_count_face_time(client: FlaskClient) -> None:
-    _comibination_search(client, 100, {
-        'count': ['facetime'],
-        'gender': [None, 'female'],
-        'role': [None, 'host'],
-        # General options
-        'start_date': [None, '2017-01-01'],
-        'end_date': [None, '2018-01-01'],
-        'normalize': ['true', 'false'],
-        'aggregate': ['year', 'month', 'week', 'day'],
-        'text': [None, 'united states of america'],
-        'channel': [None, 'CNN', 'FOXNEWS', 'MSNBC'],
-        'show': [None, 'The Situaton Room'],
-        'hour': [None, '9-5', '5', '5,6', '5-6,7-8'],
-        'dayofweek': [None, 'mon-wed', 'sat', 'sat-sun', 'sat,sun'],
-        'commercial.none': [None, 'false', 'true'],
-        'onscreen.face': [None, 'female+host', 'female', 'all'],
-        'onscreen.person': [None, 'wolf blitzer'],
-        'text.window': [None, '0', '15']
-    })
+    _combination_search(
+        client, {
+            'count': ['facetime'],
+            'gender': [None, 'female'],
+            'role': [None, 'host'],
+            # General options
+            'start_date': [None, '2017-01-01'],
+            'end_date': [None, '2018-01-01'],
+            'normalize': ['true', 'false'],
+            'aggregate': ['year', 'month', 'week', 'day'],
+            'text': [None, 'united states of america'],
+            'channel': [None, 'CNN', 'FOXNEWS', 'MSNBC'],
+            'show': [None, 'The Situaton Room'],
+            'hour': [None, '9-5', '5', '5,6', '5-6,7'],
+            'dayofweek': [None, 'mon-wed,thu,fri', 'sat', 'sat-sun', 'sat,sun'],
+            'commercial.none': [None, 'false', 'true'],
+            'onscreen.face': [None, 'female+host', 'female', 'all'],
+            'onscreen.person': [None, 'wolf blitzer'],
+            'text.window': [None, '0', '15']
+        },
+        n=100)
+    _combination_search(
+        client, {
+            'count': ['facetime'],
+            'normalize': ['true'],
+            'aggregate': ['year', 'month', 'week', 'day'],
+        })
 
 
 def test_count_video_time(client: FlaskClient) -> None:
-    _comibination_search(client, 100, {
-        'count': ['videotime'],
-        # General options
-        'start_date': [None, '2017-01-01'],
-        'end_date': [None, '2018-01-01'],
-        'normalize': ['true', 'false'],
-        'aggregate': ['year', 'month', 'week', 'day'],
-        'text': [None, 'united states of america'],
-        'channel': [None, 'CNN', 'FOXNEWS', 'MSNBC'],
-        'show': [None, 'The Situaton Room'],
-        'hour': [None, '9-5', '5', '5,6', '5-6,7-8'],
-        'dayofweek': [None, 'mon-wed', 'sat', 'sat-sun', 'sat,sun'],
-        'commercial.none': [None, 'false', 'true'],
-        'onscreen.face': [None, 'female+host', 'female', 'all'],
-        'onscreen.person': [None, 'wolf blitzer'],
-        'text.window': [None, '0', '15']
-    })
+    _combination_search(
+        client, {
+            'count': ['videotime'],
+            # General options
+            'start_date': [None, '2017-01-01'],
+            'end_date': [None, '2018-01-01'],
+            'normalize': ['true', 'false'],
+            'aggregate': ['year', 'month', 'week', 'day'],
+            'text': [None, 'united states of america'],
+            'channel': [None, 'CNN', 'FOXNEWS', 'MSNBC'],
+            'show': [None, 'The Situaton Room'],
+            'hour': [None, '9-5', '5', '5,6', '5-6,7'],
+            'dayofweek': [None, 'mon-wed,thu,fri', 'sat', 'sat-sun', 'sat,sun'],
+            'commercial.none': [None, 'false', 'true'],
+            'onscreen.face': [None, 'female+host', 'female', 'all'],
+            'onscreen.person': [None, 'wolf blitzer'],
+            'text.window': [None, '0', '15']
+        },
+        n=100)
+    _combination_search(
+        client, {
+            'count': ['videotime'],
+            'normalize': ['true'],
+            'aggregate': ['year', 'month', 'week', 'day'],
+        })
 
 
 # Search within a video tests
