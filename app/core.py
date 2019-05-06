@@ -604,10 +604,7 @@ def build_app(
                             video.id, int((p.start + p.end) / 2 * 1000), True)
                     postings = [p for p in postings if not in_commercial(p)]
 
-                if len(postings) == 0:
-                    print('Warning: no intervals found video_id={}'.format(
-                          video.id))
-                else:
+                if len(postings) > 0:
                     results.append({
                         'metadata': _video_to_dict(video),
                         'intervals': [
@@ -710,14 +707,13 @@ def build_app(
                 helper(v)
         return results
 
-    @app.route('/search/videos')
+    @app.route('/search-videos')
     def search_videos() -> Response:
         ids = request.args.get('ids', None, type=str)
         if not ids:
             raise InvalidUsage('must specify video ids')
         videos = [video_by_id[i] for i in json.loads(ids)]
         count_var = request.args.get('count', None, type=str)
-        window = request.args.get('window', 0, type=int)
         exclude_commercials = (
             request.args.get('commercial.none', 'true', type=str) == 'true')
         text_query = request.args.get('text', '', type=str).strip()

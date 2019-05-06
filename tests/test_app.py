@@ -7,7 +7,7 @@ import os
 import pytest
 import random
 from urllib.parse import urlencode
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Callable
 from flask import Response
 from flask.testing import FlaskClient
 
@@ -62,18 +62,25 @@ def test_get_data(client: FlaskClient) -> None:
 
 # Search tests
 
+ResponseFn = Callable[[Response, Dict[str, Optional[str]]], None]
 
-def _search(client: FlaskClient, params: Dict[str, Optional[str]]) -> None:
+
+def _test_get(
+    client: FlaskClient, path: str, params: Dict[str, Optional[str]],
+    response_fn: ResponseFn
+) -> None:
     param_str = urlencode({k: v for k, v in params.items() if v is not None})
-    query_str = '/search?' + param_str
+    query_str = path + '?' + param_str
     print('GET', query_str)
-    assert client.get(query_str).status_code == 200, \
-        'Query failed: {}'.format(repr(params))
+    response = client.get(query_str)
+    response_fn(response, params)
 
 
-def _combination_search(
-    client: FlaskClient, param_options: Dict[str, List[Optional[str]]],
-    n: Optional[int] = None
+def _combination_test_get(
+    client: FlaskClient, path: str,
+    param_options: Dict[str, List[Optional[str]]],
+    response_fn: ResponseFn,
+    n: Optional[int] = None,
 ) -> None:
     """Enumerate combinations of params_options"""
     num_combos = 1
@@ -97,104 +104,178 @@ def _combination_search(
             params[k] = param_options[k][idx]
             i = int(i / len(param_options[k]))
         assert i == 0
-        _search(client, params)
+        _test_get(client, path, params, response_fn)
+
+
+TEST_NORMALIZE_OPTIONS = ['true', 'false']
+TEST_AGGREGATE_OPTIONS = ['year', 'month', 'week', 'day']
+TEST_SHOW_OPTIONS = [None, 'The Situaton Room']
+TEST_CHANNEL_OPTIONS = [None, 'CNN', 'FOXNEWS', 'MSNBC']
+TEST_HOUR_OPTIONS = [None, '9-5', '5', '5,6', '5-6,7']
+TEST_DAYOFWEEK_OPTIONS = [None, 'mon-wed,thu,fri', 'sat', 'sat-sun', 'sat,sun']
+TEST_COMMERCIAL_OPTIONS = [None, 'false', 'true']
+TEST_ONSCREEN_FACE_OPTIONS = [None, 'female+host', 'female', 'all']
+TEST_ONSCREEN_PERSON_OPTIONS = [None, 'wolf blitzer']
+TEST_TEXT_WINDOW_OPTIONS = [None, '0', '15', '120']
+
+
+def _check_count_result(
+    response: Response, params: Dict[str, Optional[str]]
+) -> None:
+    assert response.status_code == 200, 'Query failed: {}'.format(repr(params))
+    assert response.is_json, str(response.data)
+    json_body = response.get_json()
+    assert 'totals' in json_body
+    if params.get('normalize', None) != 'false' and not params.get('show'):
+        assert len(json_body['totals']) > 0
+    assert 'values' in json_body
 
 
 def test_count_mentions(client: FlaskClient) -> None:
-    _combination_search(
-        client, {
+    _combination_test_get(
+        client, '/search', {
             'count': ['mentions'],
             # General options
             'start_date': [None, '2017-01-01'],
             'end_date': [None, '2018-01-01'],
-            'normalize': ['true', 'false'],
-            'aggregate': ['year', 'month', 'week', 'day'],
+            'normalize': TEST_NORMALIZE_OPTIONS,
+            'aggregate': TEST_AGGREGATE_OPTIONS,
             'text': ['united states of america'],
-            'channel': [None, 'CNN', 'FOXNEWS', 'MSNBC'],
-            'show': [None, 'The Situaton Room'],
-            'hour': [None, '9-5', '5', '5,6', '5-6,7'],
-            'dayofweek': [None, 'mon-wed,thu,fri', 'sat', 'sat-sun', 'sat,sun'],
-            'commercial.none': [None, 'false', 'true'],
-            'onscreen.face': [None, 'female+host', 'female', 'all'],
-            'onscreen.person': [None, 'wolf blitzer']
-        },
-        n=100)
-    _combination_search(
-        client, {
+            'channel': TEST_CHANNEL_OPTIONS,
+            'show': TEST_SHOW_OPTIONS,
+            'hour': TEST_HOUR_OPTIONS,
+            'dayofweek': TEST_DAYOFWEEK_OPTIONS,
+            'commercial.none': TEST_COMMERCIAL_OPTIONS,
+            'onscreen.face': TEST_ONSCREEN_FACE_OPTIONS,
+            'onscreen.person': TEST_ONSCREEN_PERSON_OPTIONS
+        }, _check_count_result, n=100)
+    _combination_test_get(
+        client, '/search', {
             'count': ['mentions'],
             'normalize': ['true'],
-            'aggregate': ['year', 'month', 'week', 'day'],
-        })
+            'aggregate': TEST_AGGREGATE_OPTIONS,
+        }, _check_count_result)
 
 
 def test_count_face_time(client: FlaskClient) -> None:
-    _combination_search(
-        client, {
+    _combination_test_get(
+        client, '/search', {
             'count': ['facetime'],
             'gender': [None, 'female'],
             'role': [None, 'host'],
             # General options
             'start_date': [None, '2017-01-01'],
             'end_date': [None, '2018-01-01'],
-            'normalize': ['true', 'false'],
-            'aggregate': ['year', 'month', 'week', 'day'],
-            'text': [None, 'united states of america'],
-            'channel': [None, 'CNN', 'FOXNEWS', 'MSNBC'],
-            'show': [None, 'The Situaton Room'],
-            'hour': [None, '9-5', '5', '5,6', '5-6,7'],
-            'dayofweek': [None, 'mon-wed,thu,fri', 'sat', 'sat-sun', 'sat,sun'],
-            'commercial.none': [None, 'false', 'true'],
-            'onscreen.face': [None, 'female+host', 'female', 'all'],
-            'onscreen.person': [None, 'wolf blitzer'],
-            'text.window': [None, '0', '15']
-        },
-        n=100)
-    _combination_search(
-        client, {
+            'normalize': TEST_NORMALIZE_OPTIONS,
+            'aggregate': TEST_AGGREGATE_OPTIONS,
+            'text': [None, 'united states'],
+            'channel': TEST_CHANNEL_OPTIONS,
+            'show': TEST_SHOW_OPTIONS,
+            'hour': TEST_HOUR_OPTIONS,
+            'dayofweek': TEST_DAYOFWEEK_OPTIONS,
+            'commercial.none': TEST_COMMERCIAL_OPTIONS,
+            'onscreen.face': TEST_ONSCREEN_FACE_OPTIONS,
+            'onscreen.person': TEST_ONSCREEN_PERSON_OPTIONS,
+            'text.window': TEST_TEXT_WINDOW_OPTIONS
+        }, _check_count_result, n=100)
+    _combination_test_get(
+        client, '/search', {
             'count': ['facetime'],
             'normalize': ['true'],
-            'aggregate': ['year', 'month', 'week', 'day'],
-        })
+            'aggregate': TEST_AGGREGATE_OPTIONS,
+        }, _check_count_result)
 
 
 def test_count_video_time(client: FlaskClient) -> None:
-    _combination_search(
-        client, {
+    _combination_test_get(
+        client, '/search', {
             'count': ['videotime'],
             # General options
             'start_date': [None, '2017-01-01'],
             'end_date': [None, '2018-01-01'],
-            'normalize': ['true', 'false'],
-            'aggregate': ['year', 'month', 'week', 'day'],
+            'normalize': TEST_NORMALIZE_OPTIONS,
+            'aggregate': TEST_AGGREGATE_OPTIONS,
             'text': [None, 'united states of america'],
-            'channel': [None, 'CNN', 'FOXNEWS', 'MSNBC'],
-            'show': [None, 'The Situaton Room'],
-            'hour': [None, '9-5', '5', '5,6', '5-6,7'],
-            'dayofweek': [None, 'mon-wed,thu,fri', 'sat', 'sat-sun', 'sat,sun'],
-            'commercial.none': [None, 'false', 'true'],
-            'onscreen.face': [None, 'female+host', 'female', 'all'],
-            'onscreen.person': [None, 'wolf blitzer'],
-            'text.window': [None, '0', '15']
-        },
-        n=100)
-    _combination_search(
-        client, {
+            'channel': TEST_CHANNEL_OPTIONS,
+            'show': TEST_SHOW_OPTIONS,
+            'hour': TEST_HOUR_OPTIONS,
+            'dayofweek': TEST_DAYOFWEEK_OPTIONS,
+            'commercial.none': TEST_COMMERCIAL_OPTIONS,
+            'onscreen.face': TEST_ONSCREEN_FACE_OPTIONS,
+            'onscreen.person': TEST_ONSCREEN_PERSON_OPTIONS,
+            'text.window': TEST_TEXT_WINDOW_OPTIONS
+        }, _check_count_result, n=100)
+    _combination_test_get(
+        client, '/search', {
             'count': ['videotime'],
             'normalize': ['true'],
-            'aggregate': ['year', 'month', 'week', 'day'],
-        })
+            'aggregate': TEST_AGGREGATE_OPTIONS,
+        }, _check_count_result)
 
 
 # Search within a video tests
 
 
-def test_search_video_mentions(client: FlaskClient) -> None:
-    raise NotImplementedError()
+TEST_VIDEO_IDS = [json.dumps(list(range(10000, 10010)))]
+TEST_COMMON_TEXT_OPTIONS = ['the']  # Use a common token
 
 
-def test_search_video_face_time(client: FlaskClient) -> None:
-    raise NotImplementedError()
+def _check_search_in_video_result(
+    response: Response, params: Dict[str, Optional[str]]
+) -> None:
+    assert response.status_code == 200, 'Query failed: {}'.format(repr(params))
+    assert response.is_json, str(response.data)
+    json_body = response.get_json()
+    ids_str = params['ids']
+    assert ids_str is not None
+    ids = json.loads(ids_str)
+    for v in json_body:
+        assert 'metadata' in v
+        assert 'intervals' in v
+        assert 'captions' in v
 
 
-def test_search_video_video_time(client: FlaskClient) -> None:
-    raise NotImplementedError()
+def test_search_mentions_in_videos(client: FlaskClient) -> None:
+    _combination_test_get(
+        client, '/search-videos', {
+            'ids': TEST_VIDEO_IDS,
+            # Count options
+            'count': ['mentions'],
+            # General options
+            'text': TEST_COMMON_TEXT_OPTIONS,
+            'commercial.none': TEST_COMMERCIAL_OPTIONS,
+            'onscreen.face': TEST_ONSCREEN_FACE_OPTIONS,
+            'onscreen.person': TEST_ONSCREEN_PERSON_OPTIONS
+        }, _check_search_in_video_result)
+
+
+def test_search_face_time_in_videos(client: FlaskClient) -> None:
+    _combination_test_get(
+        client, '/search-videos', {
+            'ids': TEST_VIDEO_IDS,
+            # Count options
+            'count': ['facetime'],
+            'gender': [None, 'female'],
+            'role': [None, 'host'],
+            # General options
+            'text': [None] + TEST_COMMON_TEXT_OPTIONS,
+            'commercial.none': TEST_COMMERCIAL_OPTIONS,
+            'onscreen.face': TEST_ONSCREEN_FACE_OPTIONS,
+            'onscreen.person': TEST_ONSCREEN_PERSON_OPTIONS,
+            'text.window': TEST_TEXT_WINDOW_OPTIONS
+        }, _check_search_in_video_result, n=100)
+
+
+def test_search_time_in_videos(client: FlaskClient) -> None:
+    _combination_test_get(
+        client, '/search-videos', {
+            'ids': TEST_VIDEO_IDS,
+            # Count options
+            'count': ['videotime'],
+            # General options
+            'text': [None] + TEST_COMMON_TEXT_OPTIONS,
+            'commercial.none': TEST_COMMERCIAL_OPTIONS,
+            'onscreen.face': TEST_ONSCREEN_FACE_OPTIONS,
+            'onscreen.person': TEST_ONSCREEN_PERSON_OPTIONS,
+            'text.window': TEST_TEXT_WINDOW_OPTIONS
+        }, _check_search_in_video_result)

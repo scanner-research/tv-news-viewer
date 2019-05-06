@@ -102,7 +102,7 @@
     args.ids = JSON.stringify(video_ids);
 
     $.ajax({
-      url: '/search/videos',
+      url: '/search-videos',
       type: 'get',
       data: args,
       success: showVideos,
