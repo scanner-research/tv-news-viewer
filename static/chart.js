@@ -73,6 +73,12 @@ function loadChart(div_id, chart_options, search_results, dimensions) {
   let x_tick_count = chart_options.aggregate == 'year' ? year_span + 1 : 24;
 
   let unit = chart_options.count == 'mentions' ? 'mentions' : 'seconds';
+  var y_axis_title;
+  if (chart_options.count == 'mentions' && chart_options.normalize) {
+    y_axis_title = `# of ${unit}s / # of text tokens`;
+  } else {
+    y_axis_title = `${chart_options.normalize ? '%' : '#'} of ${unit}s`;
+  }
   let point_data = Object.keys(search_results).flatMap(color => {
     let result = search_results[color];
     let totals = result.data.totals;
@@ -196,7 +202,7 @@ function loadChart(div_id, chart_options, search_results, dimensions) {
           }
         },
         y: {
-          field: 'value', type: 'quantitative', title: `${chart_options.normalize ? '%' : '#'} of ${unit}s`,
+          field: 'value', type: 'quantitative', title: y_axis_title,
           axis: {
             titleFontSize: 12, labelFontSize: 12, tickCount: 5
           }
