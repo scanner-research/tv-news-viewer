@@ -200,7 +200,7 @@
       if (chart_options) {
         start_date = chart_options.start_date;
         end_date = chart_options.end_date;
-        let normalize = chart_options.normalize ? 'norm' : 'raw';
+        let normalize = chart_options.normalize == 'true' ? 'norm' : 'raw';
         $('#countVar').val(normalize + ':' + chart_options.count);
         $('#aggregateBy').val(chart_options.aggregate);
       }
@@ -374,7 +374,7 @@
         <tr>
           <td>face&nbsp;time</td>
           <td>gender="female" AND role="host" AND channel=FOX</td>
-          <td><i>screen time of female hosts on FOXNEWS</i></td>
+          <td><i>screen time of female hosts on FOX News</i></td>
         </tr>
         <tr>
           <td>video&nbsp;time</td>

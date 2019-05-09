@@ -87,13 +87,13 @@ def get_video_filter() -> Optional[VideoFilterFn]:
 
 
 def get_aggregate_fn(agg: Optional[str]) -> AggregateFn:
-    if agg is None or agg == 'day':
+    if agg is None or agg == Aggregate.day.name:
         return lambda d: d
-    elif agg == 'month':
+    elif agg == Aggregate.month.name:
         return lambda d: datetime(d.year, d.month, 1)
-    elif agg == 'week':
+    elif agg == Aggregate.week.name:
         return lambda d: d - timedelta(days=d.isoweekday() - 1)
-    elif agg == 'year':
+    elif agg == Aggregate.year.name:
         return lambda d: datetime(d.year, 1, 1)
     raise InvalidUsage('invalid aggregation parameter: {}'.format(agg))
 

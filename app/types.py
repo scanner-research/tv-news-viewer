@@ -5,6 +5,13 @@ from typing import Callable, Dict, List, Set, Tuple, NamedTuple, Union
 from rs_intervalset import MmapIntervalSetMapping       # type: ignore
 
 
+class Aggregate(Enum):
+    day = 'day'
+    week = 'week'
+    month = 'month'
+    year = 'year'
+
+
 class Countable(Enum):
     mentions = 'mentions'
     facetime = 'face time'
