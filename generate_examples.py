@@ -50,7 +50,7 @@ class WidgetView(NamedTuple):
 # Count mentions views
 MENTION_VIEWS = [
     WidgetView(
-        'Plot number of words over time',
+        'Plot number of words spoken over time',
         Countable.mentions,
         ['']
     ),
@@ -58,6 +58,11 @@ MENTION_VIEWS = [
         'Plot mentions of Hillary Clinton vs Donald Trump',
         Countable.mentions,
         ['text="Donald Trump"', 'text="Hillary Clinton"']
+    ),
+    WidgetView(
+        'Plot net number of mentions of Hillary Clinton vs Donald Trump',
+        Countable.mentions,
+        ['text="Hillary Clinton" MINUS text="Donald Trump"']
     ),
     WidgetView(
         'Plot mentions of "Donald Trump" by channel',
@@ -110,12 +115,12 @@ MENTION_VIEWS = [
 
 FACE_TIME_VIEWS = [
     WidgetView(
-        'Plot face screen time over time (and broken by channel)',
+        'Plot face screen time over time (by channel)',
         Countable.facetime,
         ['', 'channel=CNN', 'channel=FOX', 'channel=MSNBC']
     ),
     WidgetView(
-        'Plot proportion of face screen time of hosts over time (and broken by channel)',
+        'Plot proportion of face screen time of hosts over time (by channel)',
         Countable.facetime,
         [
             'role="host" NORMALIZE',
@@ -125,7 +130,7 @@ FACE_TIME_VIEWS = [
         ]
     ),
     WidgetView(
-        'Plot proportion of face time of women (and broken by channel)',
+        'Plot proportion of face time of women (by channel)',
         Countable.facetime,
         [
             'gender="female" NORMALIZE',
@@ -195,27 +200,22 @@ FACE_TIME_VIEWS = [
 
 VIDEO_TIME_VIEWS = [
     WidgetView(
-        'Plot amount of video (and broken by channel)',
+        'Plot amount of video (by channel)',
         Countable.videotime,
         ['', 'channel=CNN', 'channel=FOX', 'channel=MSNBC']
     ),
     WidgetView(
-        'Plot amount of video with and without commercials',
-        Countable.videotime,
-        ['', 'commercials=true']
-    ),
-    WidgetView(
-        'Plot amount of video when there is a face on screen (and broken by channel)',
+        'Plot proportion of video that is not commercials (by channel)',
         Countable.videotime,
         [
-            'onscreen.face=all',
-            'onscreen.face=all AND channel=CNN',
-            'onscreen.face=all AND channel=FOX',
-            'onscreen.face=all AND channel=MSNBC'
-        ]
+            'commercials=false NORMALIZE commercials=true',
+            'channel=CNN AND commercials=false NORMALIZE channel=CNN AND commercials=true',
+            'channel=FOX AND commercials=false NORMALIZE channel=FOX AND commercials=true',
+            'channel=MSNBC AND commercials=false NORMALIZE channel=MSNBC AND commercials=true'
+        ],
     ),
     WidgetView(
-        'Plot proportion of video when there is a face on screen (and broken by channel)',
+        'Plot proportion of video when there is a face on screen (by channel)',
         Countable.videotime,
         [
             'onscreen.face=all NORMALIZE',
@@ -225,7 +225,17 @@ VIDEO_TIME_VIEWS = [
         ]
     ),
     WidgetView(
-        'Plot proportion of video when there is a female host on screen (and broken by channel)',
+        'Plot proportion of video when there is a face on screen (by channel)',
+        Countable.videotime,
+        [
+            'onscreen.face=all NORMALIZE',
+            'onscreen.face=all AND channel=CNN NORMALIZE channel=CNN',
+            'onscreen.face=all AND channel=FOX NORMALIZE channel=FOX',
+            'onscreen.face=all AND channel=MSNBC NORMALIZE channel=MSNBC'
+        ]
+    ),
+    WidgetView(
+        'Plot proportion of video when there is a female host on screen (by channel)',
         Countable.videotime,
         [
             'onscreen.face=female+host NORMALIZE',
