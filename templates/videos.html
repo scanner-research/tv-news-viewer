@@ -97,7 +97,7 @@
       `<p>Showing results from ${video_ids.length} of ${params.video_count} videos.</p>`
     );
 
-    let args = normalizeFilters(parseFilters(params.query));
+    let args = parseQueryString(params.query).main_query;
     args.count = params.count;
     args.ids = JSON.stringify(video_ids);
 
