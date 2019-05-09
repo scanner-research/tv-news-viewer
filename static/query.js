@@ -51,9 +51,9 @@ function normalizeFilters(filters) {
   Object.keys(filters).forEach(k => {
     let v = filters[k];
     let v_up = v.toUpperCase();
-    if (k == 'text') {
+    if (k == 'text' || k == 'captions.text') {
       result[k] = v;
-    } else if (k == 'text.window') {
+    } else if (k == 'captions.window') {
       result[k] = parseInt(v);
     } else if (k == 'channel') {
       if (v_up == 'ALL') {
@@ -94,7 +94,7 @@ function normalizeFilters(filters) {
       if (v_up != 'ALL') {
         result[k] = v;
       }
-    } else if (k == 'commercial.none') {
+    } else if (k == 'commercials') {
       result[k] = parseBool(v);
     } else {
       throw Error(`Unknown filter: ${k}`);

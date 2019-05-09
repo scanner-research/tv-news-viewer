@@ -75,7 +75,7 @@ function loadChart(div_id, chart_options, search_results, dimensions) {
   let unit = chart_options.count == 'mentions' ? 'mentions' : 'seconds';
   var y_axis_title;
   if (chart_options.count == 'mentions' && chart_options.normalize) {
-    y_axis_title = `# of ${unit}s / # of text tokens`;
+    y_axis_title = `# of ${unit}s / # of text tokens (as %)`;
   } else {
     y_axis_title = `${chart_options.normalize ? '%' : '#'} of ${unit}s`;
   }

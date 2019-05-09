@@ -135,17 +135,17 @@ def test_count_mentions(client: FlaskClient) -> None:
     _combination_test_get(
         client, '/search', {
             'count': ['mentions'],
+            'text': ['united states of america'],
             # General options
             'start_date': [None, '2017-01-01'],
             'end_date': [None, '2018-01-01'],
             'normalize': TEST_NORMALIZE_OPTIONS,
             'aggregate': TEST_AGGREGATE_OPTIONS,
-            'text': ['united states of america'],
             'channel': TEST_CHANNEL_OPTIONS,
             'show': TEST_SHOW_OPTIONS,
             'hour': TEST_HOUR_OPTIONS,
             'dayofweek': TEST_DAYOFWEEK_OPTIONS,
-            'commercial.none': TEST_COMMERCIAL_OPTIONS,
+            'commercials': TEST_COMMERCIAL_OPTIONS,
             'onscreen.face': TEST_ONSCREEN_FACE_OPTIONS,
             'onscreen.person': TEST_ONSCREEN_PERSON_OPTIONS
         }, _check_count_result, n=100)
@@ -168,15 +168,15 @@ def test_count_face_time(client: FlaskClient) -> None:
             'end_date': [None, '2018-01-01'],
             'normalize': TEST_NORMALIZE_OPTIONS,
             'aggregate': TEST_AGGREGATE_OPTIONS,
-            'text': [None, 'united states'],
             'channel': TEST_CHANNEL_OPTIONS,
             'show': TEST_SHOW_OPTIONS,
             'hour': TEST_HOUR_OPTIONS,
             'dayofweek': TEST_DAYOFWEEK_OPTIONS,
-            'commercial.none': TEST_COMMERCIAL_OPTIONS,
+            'commercials': TEST_COMMERCIAL_OPTIONS,
             'onscreen.face': TEST_ONSCREEN_FACE_OPTIONS,
             'onscreen.person': TEST_ONSCREEN_PERSON_OPTIONS,
-            'text.window': TEST_TEXT_WINDOW_OPTIONS
+            'captions.window': TEST_TEXT_WINDOW_OPTIONS,
+            'captions.window': [None, 'united states of america'],
         }, _check_count_result, n=100)
     _combination_test_get(
         client, '/search', {
@@ -195,15 +195,15 @@ def test_count_video_time(client: FlaskClient) -> None:
             'end_date': [None, '2018-01-01'],
             'normalize': TEST_NORMALIZE_OPTIONS,
             'aggregate': TEST_AGGREGATE_OPTIONS,
-            'text': [None, 'united states of america'],
             'channel': TEST_CHANNEL_OPTIONS,
             'show': TEST_SHOW_OPTIONS,
             'hour': TEST_HOUR_OPTIONS,
             'dayofweek': TEST_DAYOFWEEK_OPTIONS,
-            'commercial.none': TEST_COMMERCIAL_OPTIONS,
+            'commercials': TEST_COMMERCIAL_OPTIONS,
             'onscreen.face': TEST_ONSCREEN_FACE_OPTIONS,
             'onscreen.person': TEST_ONSCREEN_PERSON_OPTIONS,
-            'text.window': TEST_TEXT_WINDOW_OPTIONS
+            'captions.window': TEST_TEXT_WINDOW_OPTIONS,
+            'captions.window': [None, 'united states of america'],
         }, _check_count_result, n=100)
     _combination_test_get(
         client, '/search', {
@@ -243,7 +243,7 @@ def test_search_mentions_in_videos(client: FlaskClient) -> None:
             'count': ['mentions'],
             # General options
             'text': TEST_COMMON_TEXT_OPTIONS,
-            'commercial.none': TEST_COMMERCIAL_OPTIONS,
+            'commercials': TEST_COMMERCIAL_OPTIONS,
             'onscreen.face': TEST_ONSCREEN_FACE_OPTIONS,
             'onscreen.person': TEST_ONSCREEN_PERSON_OPTIONS
         }, _check_search_in_video_result)
@@ -258,11 +258,11 @@ def test_search_face_time_in_videos(client: FlaskClient) -> None:
             'gender': [None, 'female'],
             'role': [None, 'host'],
             # General options
-            'text': [None] + TEST_COMMON_TEXT_OPTIONS,
-            'commercial.none': TEST_COMMERCIAL_OPTIONS,
+            'commercials': TEST_COMMERCIAL_OPTIONS,
             'onscreen.face': TEST_ONSCREEN_FACE_OPTIONS,
             'onscreen.person': TEST_ONSCREEN_PERSON_OPTIONS,
-            'text.window': TEST_TEXT_WINDOW_OPTIONS
+            'captions.window': TEST_TEXT_WINDOW_OPTIONS,
+            'captions.text': [None] + TEST_COMMON_TEXT_OPTIONS
         }, _check_search_in_video_result, n=100)
 
 
@@ -273,9 +273,9 @@ def test_search_time_in_videos(client: FlaskClient) -> None:
             # Count options
             'count': ['videotime'],
             # General options
-            'text': [None] + TEST_COMMON_TEXT_OPTIONS,
-            'commercial.none': TEST_COMMERCIAL_OPTIONS,
+            'commercials': TEST_COMMERCIAL_OPTIONS,
             'onscreen.face': TEST_ONSCREEN_FACE_OPTIONS,
             'onscreen.person': TEST_ONSCREEN_PERSON_OPTIONS,
-            'text.window': TEST_TEXT_WINDOW_OPTIONS
+            'captions.window': TEST_TEXT_WINDOW_OPTIONS,
+            'captions.text': [None] + TEST_COMMON_TEXT_OPTIONS
         }, _check_search_in_video_result)

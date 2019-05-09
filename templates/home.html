@@ -143,10 +143,10 @@
           Count
           <select class="selectpicker" id="countVar" data-width="fit">
             <option value="raw:mentions" selected="selected">mentions</option>
-            <option value="raw:facetime">face time</option>
-            <option value="raw:videotime">video time</option>
             <option value="norm:mentions">normalized mentions</option>
+            <option value="raw:facetime">face time</option>
             <option value="norm:facetime">normalized face time</option>
+            <option value="raw:videotime">video time</option>
             <option value="norm:videotime">normalized video time</option>
           </select>
           between
@@ -239,9 +239,7 @@
         <tr>
           <td>text</td>
           <td>mentions</td>
-          <td>text mentions in the captions. In count face or video time mode, <br>
-              "text.window" sets a threshold for nearness to a text mention.
-          </td>
+          <td>text mentions in the captions</td>
           <td><a href="https://github.com/scanner-research/caption-index/blob/master/captions/query.py" target="_blank">grammar</a></td>
           <td>n/a</td>
           <td>text="affordable care act"</td>
@@ -266,7 +264,7 @@
     </div>
 
     <div class="container">
-      <b>Video Options</b>
+      <b>Video Filters</b>
       <table>
         <tr>
           <th>Name</th>
@@ -307,7 +305,7 @@
     </div>
 
     <div class="container">
-      <b>Interval Options</b>
+      <b>Interval Filters</b>
       <table>
         <tr>
           <th>Name</th>
@@ -317,11 +315,26 @@
           <th>Example</th>
         </tr>
         <tr>
-          <td>commercial.none</td>
-          <td>exclude commercials</td>
+          <td>commercials</td>
+          <td>include commercials</td>
           <td>true, false</td>
-          <td>{{ default_exclude_commercials }}</td>
-          <td>commercial.none={{ default_exclude_commercials }}</td>
+          <td>{{ default_include_commercials }}</td>
+          <td>commercials={{ default_include_commercials }}</td>
+        </tr>
+        <tr>
+          <td>captions.text</td>
+          <td>keyword nearby in the captions</td>
+          <td>text query</td>
+          <td>n/a</td>
+          <td>captions="affordable care act"</td>
+        </tr>
+        <tr>
+          <td>captions.window</td>
+          <td>threshold (in seconds) for nearby captions,<br>
+              when counting by video time</td>
+          <td>non-negative integer</td>
+          <td>{{ default_text_window }}</td>
+          <td>captions.window={{ default_text_window }}</td>
         </tr>
         <tr>
           <td>onscreen.face</td>
@@ -339,14 +352,6 @@
           <td><a href="/people" target="_blank">list of people</a></td>
           <td>n/a</td>
           <td>onscreen.person="barack obama"</td>
-        </tr>
-        <tr>
-          <td>text.window</td>
-          <td>threshold (in seconds) for nearby text,<br>
-              when counting by video time</td>
-          <td>non-negative integer</td>
-          <td>{{ default_text_window }}</td>
-          <td>text.window={{ default_text_window }}</td>
         </tr>
       </table>
     </div>
