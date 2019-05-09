@@ -132,7 +132,7 @@
       <tr class="header">
         <th></th>
         <th>Color</th>
-        <th width="95%">Query <a href="#" onclick="toggleQueryHelp(); return false;" id="toggle-help">(show syntax)</a></th>
+        <th width="95%">Query <a href="#" onclick="toggleQueryHelp(); return false;" id="toggle-help">(show instructions)</a></th>
       </tr>
       <tr name="controls" id="chart-options">
         <td>
@@ -268,11 +268,20 @@
           <td>n/a</td>
           <td>person="barack obama"</td>
         </tr>
+        <tr>
+          <td></td>
+          <td>video time</td>
+          <td>no countable options needed</td>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
       </table>
     </div>
 
     <div class="container">
-      <b>Video Filters</b>
+      <b>Filters</b> - <sup>&dagger;</sup> indicates that the filter is used to
+                       computer the total for normalization.
       <table>
         <tr>
           <th>Name</th>
@@ -282,48 +291,35 @@
           <th>Example</th>
         </tr>
         <tr>
-          <td>channel</td>
+          <td>channel <sup>&dagger;</sup></td>
           <td>name of the channel</td>
           <td>CNN, FOX, MSNBC</td>
           <td>all</td>
           <td>channel=CNN</td>
         </tr>
         <tr>
-          <td>show</td>
+          <td>show <sup>&dagger;</sup></td>
           <td>name of the show</td>
           <td><a href="/shows" target="_blank">list of shows</a></td>
           <td>all</td>
           <td>show="CNN Newsroom"</td>
         </tr>
         <tr>
-          <td>hour</td>
+          <td>hour <sup>&dagger;</sup></td>
           <td>ranges of hours in 24h format</td>
           <td>0-23 or 0, 1, 2, ...</td>
           <td>0-23</td>
-          <td>hour=9-17</td>
+          <td>hour="9-17"</td>
         </tr>
         <tr>
-          <td>dayofweek</td>
+          <td>dayofweek <sup>&dagger;</sup></td>
           <td>range or list of days of the week</td>
           <td>mon-sun or mon, tue, ...</td>
           <td>all</td>
-          <td>dayofweek=sat-sun</td>
-        </tr>
-      </table>
-    </div>
-
-    <div class="container">
-      <b>Interval Filters</b>
-      <table>
-        <tr>
-          <th>Name</th>
-          <th>Description</th>
-          <th>Values</th>
-          <th>Default</th>
-          <th>Example</th>
+          <td>dayofweek="sat-sun"</td>
         </tr>
         <tr>
-          <td>commercials</td>
+          <td>commercials <sup>&dagger;</sup></td>
           <td>include commercials</td>
           <td>true, false</td>
           <td>{{ default_include_commercials }}</td>
@@ -331,7 +327,7 @@
         </tr>
         <tr>
           <td>captions.text</td>
-          <td>keyword nearby in the captions</td>
+          <td>keywords nearby in the captions</td>
           <td>text query</td>
           <td>n/a</td>
           <td>captions.text="affordable care act"</td>
@@ -362,15 +358,41 @@
         </tr>
       </table>
     </div>
+
+    <div>
+      <b>Examples</b>
+      <table>
+        <tr>
+          <th>Counting</th>
+          <th>Query</th>
+          <th>English meaning</th>
+        </tr>
+        <tr>
+          <td>mentions</td>
+          <td>text="affordable care act" AND channel=CNN AND onscreen.person="Barack Obama"</td>
+          <td><i>mentions of "affordable care act" on CNN when Barack Obama's face is on screen</i></td>
+        </tr>
+        <tr>
+          <td>face&nbsp;time</td>
+          <td>gender="female" AND role="host" AND channel=FOX</td>
+          <td><i>screen time of female hosts on FOXNEWS</i></td>
+        </tr>
+        <tr>
+          <td>video&nbsp;time</td>
+          <td>onscreen.face="female+host" AND captions.text="science" AND captions.window=30</td>
+          <td><i>seconds of video where a female host is onscreen and the word "science" is mentioned in the captions within 30s</i></td>
+        </tr>
+      </table>
+    </div>
   </div>
   <script>
     function toggleQueryHelp() {
       if ($('#toggle-help').text().includes('show')) {
         $('#query-help').show();
-        $('#toggle-help').text('(hide syntax)');
+        $('#toggle-help').text('(hide instructions)');
       } else {
         $('#query-help').hide();
-        $('#toggle-help').text('(show syntax)');
+        $('#toggle-help').text('(show instructions)');
       }
     }
   </script>
