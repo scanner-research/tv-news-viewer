@@ -88,7 +88,7 @@ function loadChart(div_id, chart_options, search_results, dimensions) {
     return Object.keys(values).map(
       t => {
         var link_href = null;
-        if (chart_options.enable_playback && values[t].length > 0) {
+        if (ENABLE_PLAYBACK && values[t].length > 0) {
           // Enable embedded player
           let video_ids = shuffle(values[t].map(x => x[0]));
           let params = {
@@ -210,7 +210,7 @@ function loadChart(div_id, chart_options, search_results, dimensions) {
         color: {field: 'color', type: 'nominal', scale: null},
         size: {field: 'size', type: 'quantitative', scale: null},
         opacity: {value: 1},
-        href: chart_options.enable_playback ? {
+        href: ENABLE_PLAYBACK ? {
           field: 'video_href', type: 'nominal'
         } : null,
         tooltip: [

@@ -32,3 +32,5 @@ const DEFAULT_PHRASES = shuffle([
   'border wall | border fence',
   'government shutdown'
 ]);
+
+const ENABLE_PLAYBACK = true;
