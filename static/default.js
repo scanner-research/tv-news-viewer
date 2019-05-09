@@ -3,34 +3,8 @@ const DEFAULT_COLORS = [
   '#EDC948', '#B07AA1', '#FF9DA7', '#9C755F', '#BAB0AC'
 ];
 
-const DEFAULT_PHRASES = shuffle([
-  'donald trump',
-  'hillary clinton',
-  'terrorism',
-  'isis',
-  'immigration',
-  'black lives | blacklivesmatter | blacklives',
-  'brexit',
-  'obamacare | affordable care act',
-  'irs | internal revenue service',
-  'socialism | socialist',
-  'hurricane irma',
-  'fifa',
-  'facebook',
-  'alternative facts | fake news',
-  'collusion',
-  'sean spicer & [resign]',
-  'global warming',
-  'arab spring',
-  '787 | dreamliner',
-  'trayvon martin',
-  'north korea | dprk',
-  'bernie sanders',
-  'nafta',
-  'e coli | ecoli',
-  'ebola',
-  'border wall | border fence',
-  'government shutdown'
-]);
-
 const ENABLE_PLAYBACK = true;
+
+const DEFAULT_MENTIONS_QUERY = 'text="affordable care act" AND channel=CNN AND onscreen.person="Barack Obama"';
+const DEFAULT_FACETIME_QUERY = 'gender="female" AND role="host" AND channel=FOX';
+const DEFAULT_VIDEOTIME_QUERY = 'onscreen.face="female+host" AND captions.text="terrorism" AND captions.window=30';

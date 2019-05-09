@@ -427,15 +427,6 @@
       throw Error('All colors used');
     }
 
-    function getDefaultPhraseQuery() {
-      for (var i in DEFAULT_PHRASES) {
-        if ($(`#search-table input[name='query'][value*='${DEFAULT_PHRASES[i]}']`).length == 0) {
-          return DEFAULT_PHRASES[i];
-        }
-      }
-      throw Error('All default queries used');
-    }
-
     function setRemoveButtonsState() {
       let state = $('#search-table tr[name="query"]').length < 2;
       $('#search-table td').find('button.remove-row-btn').each(function() {
@@ -449,9 +440,20 @@
       setRemoveButtonsState();
     }
 
+    function getDefaultQuery() {
+      let count_var = $('#countVar').val();
+      if (count_var.includes('mentions')) {
+        return DEFAULT_MENTIONS_QUERY;
+      } else if (count_var.includes('facetime')) {
+        return DEFAULT_FACETIME_QUERY;
+      } else if (count_var.includes('videotime')) {
+        return DEFAULT_VIDEOTIME_QUERY;
+      }
+    }
+
     function addRow(query) {
       let color = query ? query.color : getColor();
-      let query_str = query ? query.query : `text="${getDefaultPhraseQuery()}"`;
+      let query_str = query ? query.query : getDefaultQuery();
 
       let html = `<tr name="query" data-color="${color}">
         <td><button type="button" class="btn btn-secondary remove-row-btn" onclick="removeRow('${color}');">-</button></td>
