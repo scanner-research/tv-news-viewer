@@ -142,12 +142,9 @@
         <td>
           Count
           <select class="selectpicker" id="countVar" data-width="fit">
-            <option value="raw:mentions" selected="selected">mentions</option>
-            <option value="norm:mentions">normalized mentions</option>
-            <option value="raw:facetime">face time</option>
-            <option value="norm:facetime">normalized face time</option>
-            <option value="raw:videotime">video time</option>
-            <option value="norm:videotime">normalized video time</option>
+            <option value="mentions" selected="selected">mentions</option>
+            <option value="facetime">face time</option>
+            <option value="videotime">video time</option>
           </select>
           between
           <input type="text" class="datepicker" id="startDate">
@@ -184,12 +181,10 @@
       if (start_date > end_date) {
         alertAndThrow('Start date cannot exceed end date.');
       }
-      let count_options = $('#countVar').val().split(':');
       return {
         start_date: start_date,
         end_date: end_date,
-        count: count_options[1],
-        normalize: count_options[0] == 'norm',
+        count: $('#countVar').val(),
         aggregate: $('#aggregateBy').val()
       }
     }
@@ -200,8 +195,7 @@
       if (chart_options) {
         start_date = chart_options.start_date;
         end_date = chart_options.end_date;
-        let normalize = chart_options.normalize == 'true' ? 'norm' : 'raw';
-        $('#countVar').val(normalize + ':' + chart_options.count);
+        $('#countVar').val(chart_options.count);
         $('#aggregateBy').val(chart_options.aggregate);
       }
       $('#startDate').datepicker({
@@ -225,7 +219,33 @@
     <p><b>Query usage</b> - The following options are supported (separated by <b>AND</b>).</p>
 
     <div class="container">
-      <b>Countables</b>
+      <h4>Examples</h4>
+      <table>
+        <tr>
+          <th>Counting</th>
+          <th>Query</th>
+          <th>English meaning</th>
+        </tr>
+        <tr>
+          <td>mentions</td>
+          <td>text="affordable care act" AND channel=CNN AND onscreen.person="Barack Obama"</td>
+          <td><i>mentions of "affordable care act" on CNN when Barack Obama's face is on screen</i></td>
+        </tr>
+        <tr>
+          <td>face&nbsp;time</td>
+          <td>gender="female" AND role="host" AND channel=FOX</td>
+          <td><i>screen time of female hosts on FOX News</i></td>
+        </tr>
+        <tr>
+          <td>video&nbsp;time</td>
+          <td>onscreen.face="female+host" AND captions.text="science" AND captions.window=30</td>
+          <td><i>seconds of video where a female host is onscreen and the word "science" is mentioned in the captions within 30s</i></td>
+        </tr>
+      </table>
+    </div>
+
+    <div class="container">
+      <h4>Countables</h4>
       <table>
         <tr>
           <th>Name</th>
@@ -279,8 +299,7 @@
     </div>
 
     <div class="container">
-      <b>Filters</b> - <sup>&dagger;</sup> indicates that the filter is used to
-                       compute the total for normalization.
+      <h4>Supported filters</h4>
       <table>
         <tr>
           <th>Name</th>
@@ -290,35 +309,35 @@
           <th>Example</th>
         </tr>
         <tr>
-          <td>channel <sup>&dagger;</sup></td>
+          <td>channel</td>
           <td>name of the channel</td>
           <td>CNN, FOX, MSNBC</td>
           <td>all</td>
           <td>channel=CNN</td>
         </tr>
         <tr>
-          <td>show <sup>&dagger;</sup></td>
+          <td>show</td>
           <td>name of the show</td>
           <td><a href="/shows" target="_blank">list of shows</a></td>
           <td>all</td>
           <td>show="CNN Newsroom"</td>
         </tr>
         <tr>
-          <td>hour <sup>&dagger;</sup></td>
+          <td>hour</td>
           <td>ranges of hours in 24h format</td>
           <td>0-23 or 0, 1, 2, ...</td>
           <td>0-23</td>
           <td>hour="9-17"</td>
         </tr>
         <tr>
-          <td>dayofweek <sup>&dagger;</sup></td>
+          <td>dayofweek</td>
           <td>range or list of days of the week</td>
           <td>mon-sun or mon, tue, ...</td>
           <td>all</td>
           <td>dayofweek="sat-sun"</td>
         </tr>
         <tr>
-          <td>commercials <sup>&dagger;</sup></td>
+          <td>commercials</td>
           <td>include commercials</td>
           <td>true, false</td>
           <td>{{ default_include_commercials }}</td>
@@ -358,28 +377,26 @@
       </table>
     </div>
 
-    <div>
-      <b>Examples</b>
+    <div class="container">
+      <h4>Normalization and Minus</h4>
       <table>
         <tr>
-          <th>Counting</th>
-          <th>Query</th>
-          <th>English meaning</th>
+          <th>Keyword</th>
+          <th>Syntax</th>
+          <th>Description</th>
+          <th>Example</th>
         </tr>
         <tr>
-          <td>mentions</td>
-          <td>text="affordable care act" AND channel=CNN AND onscreen.person="Barack Obama"</td>
-          <td><i>mentions of "affordable care act" on CNN when Barack Obama's face is on screen</i></td>
+          <td>NORMALIZE</td>
+          <td>query1 NORMALIZE query2</td>
+          <td><i>divide query1's results by query2's results</i></td>
+          <td>text="united states" NORMALIZE</td>
         </tr>
         <tr>
-          <td>face&nbsp;time</td>
-          <td>gender="female" AND role="host" AND channel=FOX</td>
-          <td><i>screen time of female hosts on FOX News</i></td>
-        </tr>
-        <tr>
-          <td>video&nbsp;time</td>
-          <td>onscreen.face="female+host" AND captions.text="science" AND captions.window=30</td>
-          <td><i>seconds of video where a female host is onscreen and the word "science" is mentioned in the captions within 30s</i></td>
+          <td>MINUS</td>
+          <td>query1 MINUS query2</td>
+          <td><i>subtract query2's results from query1's results</i></td>
+          <td>text="united" MINUS text="united states"</td>
         </tr>
       </table>
     </div>
@@ -499,82 +516,116 @@
       throw Error(msg);
     }
 
+    function displaySearchResults(chart_options, unparsed_queries, search_results) {
+      let valid_search_results = Object.keys(search_results).reduce(
+        (acc, k) => {
+            if (!search_results[k].is_bad) acc[k] = search_results[k];
+            return acc;
+        }, {});
+      loadChart('#chart', chart_options, valid_search_results, {
+        width: $("#chart-area").width(), height: EMBED_DIMS.height
+      });
+
+      if (Object.keys(valid_search_results).length == Object.keys(search_results).length) {
+        // Allow embedding if all queries are ok
+        let embed_url = getEmbedUrl(chart_options, unparsed_queries);
+        let chart_path = getChartPath(chart_options, unparsed_queries);
+        $('#embed-area p[name="text"]').html(
+  `<a href="#" onclick="setShareUrl('${chart_path}'); return false;">Share</a>
+  or <a href="#" onclick="setEmbedUrl('${embed_url}'); return false;">embed</a> chart.`
+        );
+        window.history.pushState(null, '', chart_path);
+      } else {
+        // Allow embedding if all queries are ok
+        $('#embed-area p[name="text"]').empty();
+        window.history.pushState(null, '', '')
+      }
+    }
+
     function search() {
       let chart_options = getChartOptions();
-      let queries = [];
+
+      let unparsed_queries = [];
       $('#search-table tr[name="query"]').each(function() {
         if ($(this).attr('name')) {
           let query = $.trim($(this).find("input[name='query']").val());
-          queries.push({
+          unparsed_queries.push({
             color: $(this).attr('data-color'),
             query: query
           });
         }
       });
 
-      function displayResults() {
-        loadChart('#chart', chart_options, search_results, {
-          width: $("#chart-area").width(), height: EMBED_DIMS.height
-        });
-        let embed_url = getEmbedUrl(chart_options, queries);
-        let chart_path = getChartPath(chart_options, queries);
-        $('#embed-area p[name="text"]').html(
-`<a href="#" onclick="setShareUrl('${chart_path}'); return false;">Share</a>
-or <a href="#" onclick="setEmbedUrl('${embed_url}'); return false;">embed</a> chart.`
-        );
-        window.history.pushState(null, '', chart_path)
-      }
-
-      let parsed_queries = queries.map(query => {
+      let parsed_queries = unparsed_queries.map(query => {
         var filters;
         try {
-          filters = normalizeFilters(parseFilters(query.query));
+          filters = parseQueryString(query.query);
         } catch (e) {
           alertAndThrow(e.message);
         }
         return {
           color: query.color, query: query.query,
-          args: getQueryOptions(chart_options, filters)
+          main_args: getQueryOptions(chart_options, filters.main_query),
+          // Set subquery args
+          minus_args: filters.minus_query ?
+            getQueryOptions(chart_options, filters.minus_query) : null,
+          norm_args: filters.norm_query ?
+            getQueryOptions(chart_options, filters.norm_query) : null
         };
       });
 
-      let search_results = {};
-      var remaining = parsed_queries.length;
+      function searchOne(data, onSuccess, onError) {
+        return $.ajax({
+          url: '/search', type: 'get', data: data, success: onSuccess,
+          error: onError
+        });
+      }
 
       $('#shade').show();
       $('#search').prop('disabled', true);
-      parsed_queries.forEach(query => {
-        $.ajax({
-          url: '/search',
-          type: 'get',
-          data: query.args,
-          success: resp => {
-            search_results[query.color] = {query: query.query, data: resp};
-            remaining--;
-            if (remaining <= 0) {
-              $('#shade').hide();
-              $('#search').prop('disabled', false);
-              displayResults();
-            }
-          },
-          error: xhr => {
-            var msg;
-            try {
-              msg = JSON.parse(xhr.responseText).message;
-            } catch {
-              msg = 'Unknown server error';
-            }
-            alert(`[Query failed. The chart may be incomplete.]\n\n${msg}`);
-            console.log('Failed:', query);
-            remaining--;
-            if (remaining <= 0) {
-              $('#shade').hide();
-              $('#search').prop('disabled', false);
-              displayResults();
-            }
+
+      let search_results = {};
+      function onDone() {
+        $('#shade').hide();
+        $('#search').prop('disabled', false);
+        displaySearchResults(chart_options, unparsed_queries, search_results);
+      }
+
+      Promise.all(parsed_queries.flatMap(query => {
+        console.log('Executing query:', query);
+        search_results[query.color] = {query: query.query, is_bad: false};
+
+        function onError(xhr) {
+          var msg;
+          try {
+            msg = JSON.parse(xhr.responseText).message;
+          } catch {
+            msg = 'Unknown server error';
           }
-        });
-      });
+          alert(`[Query failed. The chart may be incomplete.]\n\n${msg}`);
+          console.log('Failed:', query);
+          search_results[query.color].is_bad = true;
+        }
+
+        let promises = [];
+        promises.push(searchOne(
+          Object.assign({detailed: true}, query.main_args), resp => {
+            search_results[query.color].data = resp;
+          }, onError));
+        if (query.norm_args) {
+          promises.push(searchOne(
+            Object.assign({detailed: false}, query.norm_args), resp => {
+              search_results[query.color].norm_data = resp;
+            }, onError));
+        }
+        if (query.minus_args) {
+          promises.push(searchOne(
+            Object.assign({detailed: false}, query.minus_args), resp => {
+              search_results[query.color].minus_data = resp;
+            }, onError));
+        }
+        return promises;
+      })).then(onDone).catch(onDone);
     }
     $('#search').click(search);
 

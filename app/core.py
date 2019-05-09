@@ -17,6 +17,7 @@ from rs_intervalset import (                            # type: ignore
 from .types import *
 from .error import InvalidUsage
 from .parsing import *
+from .sum import *
 from .load import get_video_name, load_video_data, load_index
 
 
@@ -246,31 +247,6 @@ def get_face_time_intersect_fn(
                            get_entire_video_ms_interval(video)),
                 payload_mask, payload_value, True)
     return f
-
-
-class DateAccumulator(object):
-    Value = Tuple[int, Number]
-
-    def __init__(self, aggregate_fn: AggregateFn):
-        self._values: Dict[str, List['DateAccumulator.Value']] = {}
-        self._totals: Dict[str, Number] = {}
-        self._aggregate_fn = aggregate_fn
-
-    def add(self, date: datetime, video_id: int,
-            value: Number) -> None:
-        if value > 0:
-            key = format_date(self._aggregate_fn(date))
-            if key not in self._values:
-                self._values[key] = []
-            self._values[key].append((video_id, value))
-
-    def add_total(self, date: datetime, value: Number) -> None:
-        if value > 0:
-            key = format_date(self._aggregate_fn(date))
-            self._totals[key] = self._totals.get(key, 0) + value
-
-    def get(self) -> JsonObject:
-        return {'values': self._values, 'totals': self._totals}
 
 
 def get_shows_by_channel(video_dict: Dict[str, Video]) -> Dict[str, List[str]]:
@@ -513,48 +489,6 @@ def build_app(
         print('Matched {} videos, filtered {}, missing {}'.format(
               matched_videos, filtered_videos, missing_videos))
 
-    def _normalize_mentions(
-        accumulator: DateAccumulator, video_filter: Optional[VideoFilterFn],
-        exclude_commercials: bool
-    ) -> None:
-        for document in documents:
-            video = video_dict.get(document.name)
-            if video and (video_filter is None or video_filter(video)):
-                accumulator.add_total(
-                    video.date, _get_document_token_count(
-                        video, document, exclude_commercials))
-
-    def _normalize_video_time(
-        accumulator: DateAccumulator, video_filter: Optional[VideoFilterFn],
-        exclude_commercials: bool
-    ) -> None:
-        for video in video_dict.values():
-            if video_filter is None or video_filter(video):
-                total = video.num_frames / video.fps
-                if exclude_commercials:
-                    total -= sum(
-                        b - a for a, b in
-                        commercial_isetmap.get_intervals(video.id, True)
-                    ) / 1000
-                accumulator.add_total(video.date, total)
-
-    def _normalize_face_time(
-        accumulator: DateAccumulator, video_filter: Optional[VideoFilterFn],
-        exclude_commercials: bool
-    ) -> None:
-        for video in video_dict.values():
-            if video_filter is None or video_filter(video):
-                intervals = get_entire_video_ms_interval(video)
-                if exclude_commercials:
-                    intervals = commercial_isetmap.minus(
-                        video.id, intervals, True)
-                if intervals:
-                    accumulator.add_total(
-                        video.date,
-                        all_faces_ilistmap.intersect_sum(
-                            video.id, intervals, 0, 0, True
-                        ) / 1000)
-
     @app.route('/search')
     def search() -> Response:
         video_filter = get_video_filter()
@@ -567,7 +501,10 @@ def build_app(
                 'commercials', DEFAULT_INCLUDE_COMMERCIALS, type=str
             ).strip().lower() == 'false')
 
-        accumulator = DateAccumulator(aggregate_fn)
+        accumulator = (
+            DetailedDateAccumulator(aggregate_fn)
+            if request.args.get('detailed', 'true', type=str) == 'true' else
+            SimpleDateAcumulator(aggregate_fn))
         if count_var == Countable.mentions.name:
             assert_option_not_set(
                 'captions.text', count_var, Countable.facetime.value + ' or '
@@ -589,10 +526,6 @@ def build_app(
                 get_onscreen_face_filter(face_intervals),
                 get_onscreen_person_filter(person_intervals))
 
-            if normalize:
-                _normalize_mentions(accumulator, video_filter,
-                                    exclude_commercials)
-
         elif (count_var == Countable.videotime.name
               or count_var == Countable.facetime.name):
             assert_option_not_set(
@@ -604,14 +537,6 @@ def build_app(
                     'role', count_var, Countable.facetime.value)
                 assert_option_not_set(
                     'person', count_var, Countable.facetime.value)
-
-                if normalize:
-                    _normalize_video_time(accumulator, video_filter,
-                                          exclude_commercials)
-            else:
-                if normalize:
-                    _normalize_face_time(accumulator, video_filter,
-                                         exclude_commercials)
 
             caption_query = request.args.get(
                 'captions.text', '', type=str).strip()

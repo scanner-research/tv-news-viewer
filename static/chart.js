@@ -73,17 +73,32 @@ function loadChart(div_id, chart_options, search_results, dimensions) {
   let x_tick_count = chart_options.aggregate == 'year' ? year_span + 1 : 24;
 
   let unit = chart_options.count == 'mentions' ? 'mentions' : 'seconds';
+
+  var has_norm = false;
+  var has_raw = false;
+  Object.keys(search_results).forEach(k => {
+    let is_norm = !_.isEmpty(search_results[k].norm_data);
+    console.log(search_results[k])
+    has_norm |= is_norm;
+    has_raw |= !is_norm;
+  });
+
   var y_axis_title;
-  if (chart_options.count == 'mentions' && chart_options.normalize) {
-    y_axis_title = `# of ${unit}s / # of text tokens (as %)`;
+  if (has_norm) {
+    if (has_raw) {
+      y_axis_title = `(WARNING!) Mixed normalized and raw # of ${unit}`;
+    } else {
+      y_axis_title = `Normalized # of ${unit}`;
+    }
   } else {
-    y_axis_title = `${chart_options.normalize ? '%' : '#'} of ${unit}s`;
+    y_axis_title = `# of ${unit}`;
   }
+
+  // TODO: remove redundant work
   let point_data = Object.keys(search_results).flatMap(color => {
     let result = search_results[color];
-    let totals = result.data.totals;
     let values = fillZeros(
-      result.data.values, chart_options.aggregate, chart_options.start_date,
+      result.data, chart_options.aggregate, chart_options.start_date,
       chart_options.end_date, []);
     return Object.keys(values).map(
       t => {
@@ -100,11 +115,16 @@ function loadChart(div_id, chart_options, search_results, dimensions) {
           link_href = `javascript:chartHrefHandler("${btoa(JSON.stringify(params))}")`;
         }
         var value = values[t].reduce((acc, x) => acc + x[1], 0);
-        if (chart_options.normalize) {
-          value /= _.get(totals, t, 1.);
-          value *= 100;
-          value_str = `${value} %`;
+        var value_str;
+        if (result.norm_data) {
+          // Normalized is unitless
+          value /= _.get(result.norm_data, t, 1.);
+          value_str = value.toString();
         } else {
+          // Unit remains the same
+          if (result.minus_data) {
+            value -= _.get(result.minus_data, t, 0.);
+          }
           value_str = `${value} ${unit}`;
         }
         return {
@@ -115,6 +135,8 @@ function loadChart(div_id, chart_options, search_results, dimensions) {
       }
     );
   });
+
+  // TODO: remove redundant work
   let series = Object.keys(search_results).map(
     color => ({name: getSeriesName(color), color: color})
   );
@@ -123,17 +145,34 @@ function loadChart(div_id, chart_options, search_results, dimensions) {
   ).map(t => {
     let point = {time: t};
     Object.keys(search_results).forEach(color => {
-      let series_name = getSeriesName(color);
-      let videos = _.get(search_results[color].data.values, t, []);
-      let value = Math.round(videos.reduce((acc, x) => acc + x[1], 0));
-      point[series_name] = `${value} ${unit} in ${videos.length} videos`;
+      let result = search_results[color]
+
+      let videos = _.get(result.data, t, []);
+      var value = videos.reduce((acc, x) => acc + x[1], 0);
+      var value_str;
+
+      if (result.norm_data) {
+        // Normalized is unitless
+        value /= _.get(result.norm_data, t, 1.);
+        value_str = value.toString();
+      } else {
+        // Unit remains the same
+        if (result.minus_data) {
+          value -= _.get(result.minus_data, t, 0.);
+        }
+        value_str = `${value} ${unit}`;
+      }
+
+      point[getSeriesName(color)] = `${value_str} in ${videos.length} videos`;
     });
     return point;
   });
+
   let chart_description = (
     chart_options.count == 'mentions' ? 'Keyword mentions' : (
       chart_options.count == 'videotime' ? 'Video time' : 'Face time'
     ));
+
   let vega_spec = {
     $schema: 'https://vega.github.io/schema/vega-lite/v3.json',
     width: dimensions.width,

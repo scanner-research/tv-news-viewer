@@ -27,7 +27,6 @@ class WidgetView(NamedTuple):
     start_date: str = format_date(MIN_DATE)
     end_date: str = format_date(MAX_DATE)
     aggregate: Aggregate = Aggregate.month
-    normalize: bool = False
     comment: Optional[str] = None
 
     @property
@@ -36,7 +35,6 @@ class WidgetView(NamedTuple):
             "data": json.dumps({
                 "options": {
                     'count': self.count.name,
-                    'normalize': str(self.normalize).lower(),
                     'aggregate': self.aggregate.name,
                     'start_date': self.start_date,
                     'end_date': self.end_date
@@ -74,14 +72,13 @@ MENTION_VIEWS = [
         'Plot normalized mentions of "Donald Trump" by channel',
         Countable.mentions,
         [
-            'text="Donald Trump" AND channel="CNN"',
-            'text="Donald Trump" AND channel="FOX"',
-            'text="Donald Trump" AND channel="MSNBC"'
-        ],
-        normalize=True
+            'text="Donald Trump" AND channel="CNN" NORMALIZE channel="CNN"',
+            'text="Donald Trump" AND channel="FOX" NORMALIZE channel="FOX"',
+            'text="Donald Trump" AND channel="MSNBC" NORMALIZE channel="MSNBC"'
+        ]
     ),
     WidgetView(
-        'Plot mentions of "aflak" including and excluding commericals',
+        'Plot mentions of "aflak" including and excluding commercials',
         Countable.mentions,
         [
             'text="aflak"',
@@ -118,53 +115,48 @@ FACE_TIME_VIEWS = [
         ['', 'channel=CNN', 'channel=FOX', 'channel=MSNBC']
     ),
     WidgetView(
-        'Plot % face screen time of hosts over time (and broken by channel)',
+        'Plot proportion of face screen time of hosts over time (and broken by channel)',
         Countable.facetime,
         [
-            'role="host"',
-            'role="host" AND channel=CNN',
-            'role="host" AND channel=FOX',
-            'role="host" AND channel=MSNBC'
-        ],
-        normalize=True
+            'role="host" NORMALIZE',
+            'role="host" AND channel=CNN NORMALIZE channel=CNN',
+            'role="host" AND channel=FOX NORMALIZE channel=FOX',
+            'role="host" AND channel=MSNBC NORMALIZE channel=MSNBC'
+        ]
     ),
     WidgetView(
-        'Plot % face time of women (and broken by channel)',
+        'Plot proportion of face time of women (and broken by channel)',
         Countable.facetime,
         [
-            'gender="female"',
-            'gender="female" AND channel=CNN',
-            'gender="female" AND channel=FOX',
-            'gender="female" AND channel=MSNBC'
-        ],
-        normalize=True
+            'gender="female" NORMALIZE',
+            'gender="female" AND channel=CNN NORMALIZE channel=CNN',
+            'gender="female" AND channel=FOX NORMALIZE channel=FOX',
+            'gender="female" AND channel=MSNBC NORMALIZE channel=CNN'
+        ]
     ),
     WidgetView(
-        'Plot % face time of female vs male hosts',
+        'Plot proportion of face time of female vs male hosts',
         Countable.facetime,
         [
-            'gender="male" AND role="host"',
-            'gender="female" AND role="host"'
-        ],
-        normalize=True
+            'gender="male" AND role="host" NORMALIZE role="host"',
+            'gender="female" AND role="host" NORMALIZE role="host"'
+        ]
     ),
     WidgetView(
-        'Plot % face time of female vs male hosts on FOX News',
+        'Plot proportion of face time of female vs male hosts on FOX News',
         Countable.facetime,
         [
-            'gender="male" AND role="host" AND channel=FOX',
-            'gender="female" AND role="host" AND channel=FOX'
-        ],
-        normalize=True
+            'gender="male" AND role="host" AND channel=FOX NORMALIZE role="host" AND channel="FOX"',
+            'gender="female" AND role="host" AND channel=FOX NORMALIZE role="host" AND channel="FOX"'
+        ]
     ),
     WidgetView(
-        'Plot % face time of female vs male hosts on "Morning Joe"',
+        'Plot proportion of face time of female vs male hosts on "Morning Joe"',
         Countable.facetime,
         [
-            'gender="male" AND role="host" AND show="Morning Joe"',
-            'gender="female" AND role="host" AND show="Morning Joe"'
-        ],
-        normalize=True
+            'gender="male" AND role="host" AND show="Morning Joe" NORMALIZE role="host" AND show="Morning Joe"',
+            'gender="female" AND role="host" AND show="Morning Joe" NORMALIZE role="host" AND show="Morning Joe"'
+        ]
     ),
     WidgetView(
         'Plot male vs. female screen time when "isis" is mentioned',
@@ -179,26 +171,25 @@ FACE_TIME_VIEWS = [
         Countable.facetime,
         [
             'gender="male" AND onscreen.person="Hillary Clinton"',
-            'gender="female" AND onscreen.person="Hillary Clinton"',
+            'gender="female" AND onscreen.person="Hillary Clinton" MINUS person="Hillary Clinton"',
             'person="Hillary Clinton"'
-        ],
-        normalize=True,
-        comment='The second query includes Clinton\'s face'
+        ]
     ),
     WidgetView(
-        'Plot male and female host screen time when "Hillary Clinton" is on screen',
+        'Plot proportion of male and female host screen time when "Hillary Clinton" is on screen',
         Countable.facetime,
         [
-            'gender="male" AND role="host" AND onscreen.person="Hillary Clinton"',
-            'gender="female" AND role="host" AND onscreen.person="Hillary Clinton"',
-        ],
-        normalize=True
+            'gender="male" AND role="host" AND onscreen.person="Hillary Clinton" NORMALIZE role="host" AND onscreen.person="Hillary Clinton"',
+            'gender="female" AND role="host" AND onscreen.person="Hillary Clinton" NORMALIZE role="host" AND onscreen.person="Hillary Clinton"',
+        ]
     ),
     WidgetView(
-        'Plot face time for "Donald Trump" and "Hillary Clinton"',
+        'Plot proportion of total face time for "Donald Trump" and "Hillary Clinton"',
         Countable.facetime,
-        ['person="Donald Trump"', 'person="Hillary Clinton"'],
-        normalize=True
+        [
+            'person="Donald Trump" NORMALIZE',
+            'person="Hillary Clinton" NORMALIZE'
+        ]
     )
 ]
 
@@ -224,26 +215,24 @@ VIDEO_TIME_VIEWS = [
         ]
     ),
     WidgetView(
-        'Plot % of video when there is a face on screen (and broken by channel)',
+        'Plot proportion of video when there is a face on screen (and broken by channel)',
         Countable.videotime,
         [
-            'onscreen.face=all',
-            'onscreen.face=all AND channel=CNN',
-            'onscreen.face=all AND channel=FOX',
-            'onscreen.face=all AND channel=MSNBC'
-        ],
-        normalize=True
+            'onscreen.face=all NORMALIZE',
+            'onscreen.face=all AND channel=CNN NORMALIZE channel=CNN',
+            'onscreen.face=all AND channel=FOX NORMALIZE channel=FOX',
+            'onscreen.face=all AND channel=MSNBC NORMALIZE channel=MSNBC'
+        ]
     ),
     WidgetView(
-        'Plot % of video when there is a female host on screen (and broken by channel)',
+        'Plot proportion of video when there is a female host on screen (and broken by channel)',
         Countable.videotime,
         [
-            'onscreen.face="female+host"',
-            'onscreen.face="female+host" AND channel=CNN',
-            'onscreen.face="female+host" AND channel=FOX',
-            'onscreen.face="female+host" AND channel=MSNBC'
-        ],
-        normalize=True
+            'onscreen.face=female+host NORMALIZE',
+            'onscreen.face=female+host AND channel=CNN NORMALIZE channel=CNN',
+            'onscreen.face=female+host AND channel=FOX NORMALIZE channel=FOX',
+            'onscreen.face=female+host AND channel=MSNBC NORMALIZE channel=MSNBC'
+        ]
     )
 ]
 

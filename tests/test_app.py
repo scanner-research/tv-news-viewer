@@ -107,7 +107,7 @@ def _combination_test_get(
         _test_get(client, path, params, response_fn)
 
 
-TEST_NORMALIZE_OPTIONS = ['true', 'false']
+TEST_DETAILED_OPTIONS = ['true', 'false']
 TEST_AGGREGATE_OPTIONS = ['year', 'month', 'week', 'day']
 TEST_SHOW_OPTIONS = [None, 'The Situaton Room']
 TEST_CHANNEL_OPTIONS = [None, 'CNN', 'FOXNEWS', 'MSNBC']
@@ -124,11 +124,6 @@ def _check_count_result(
 ) -> None:
     assert response.status_code == 200, 'Query failed: {}'.format(repr(params))
     assert response.is_json, str(response.data)
-    json_body = response.get_json()
-    assert 'totals' in json_body
-    if params.get('normalize', None) != 'false' and not params.get('show'):
-        assert len(json_body['totals']) > 0
-    assert 'values' in json_body
 
 
 def test_count_mentions(client: FlaskClient) -> None:
@@ -137,9 +132,9 @@ def test_count_mentions(client: FlaskClient) -> None:
             'count': ['mentions'],
             'text': ['united states of america'],
             # General options
+            'detailed': TEST_DETAILED_OPTIONS,
             'start_date': [None, '2017-01-01'],
             'end_date': [None, '2018-01-01'],
-            'normalize': TEST_NORMALIZE_OPTIONS,
             'aggregate': TEST_AGGREGATE_OPTIONS,
             'channel': TEST_CHANNEL_OPTIONS,
             'show': TEST_SHOW_OPTIONS,
@@ -167,7 +162,7 @@ def test_count_face_time(client: FlaskClient) -> None:
             # General options
             'start_date': [None, '2017-01-01'],
             'end_date': [None, '2018-01-01'],
-            'normalize': TEST_NORMALIZE_OPTIONS,
+            'detailed': TEST_DETAILED_OPTIONS,
             'aggregate': TEST_AGGREGATE_OPTIONS,
             'channel': TEST_CHANNEL_OPTIONS,
             'show': TEST_SHOW_OPTIONS,
@@ -188,7 +183,7 @@ def test_count_face_time(client: FlaskClient) -> None:
             # General options
             'start_date': [None, '2017-01-01'],
             'end_date': [None, '2018-01-01'],
-            'normalize': TEST_NORMALIZE_OPTIONS,
+            'detailed': TEST_DETAILED_OPTIONS,
             'aggregate': TEST_AGGREGATE_OPTIONS,
             'channel': TEST_CHANNEL_OPTIONS,
             'show': TEST_SHOW_OPTIONS,
@@ -216,7 +211,7 @@ def test_count_video_time(client: FlaskClient) -> None:
             # General options
             'start_date': [None, '2017-01-01'],
             'end_date': [None, '2018-01-01'],
-            'normalize': TEST_NORMALIZE_OPTIONS,
+            'detailed': TEST_DETAILED_OPTIONS,
             'aggregate': TEST_AGGREGATE_OPTIONS,
             'channel': TEST_CHANNEL_OPTIONS,
             'show': TEST_SHOW_OPTIONS,
@@ -231,7 +226,7 @@ def test_count_video_time(client: FlaskClient) -> None:
     _combination_test_get(
         client, '/search', {
             'count': ['videotime'],
-            'normalize': ['true'],
+            'detailed': ['true'],
             'aggregate': TEST_AGGREGATE_OPTIONS,
         }, _check_count_result)
 
