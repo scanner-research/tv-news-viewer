@@ -158,6 +158,7 @@ def test_count_mentions(client: FlaskClient) -> None:
 
 
 def test_count_face_time(client: FlaskClient) -> None:
+    # Non-person facetime
     _combination_test_get(
         client, '/search', {
             'count': ['facetime'],
@@ -178,6 +179,28 @@ def test_count_face_time(client: FlaskClient) -> None:
             'captions.window': TEST_TEXT_WINDOW_OPTIONS,
             'captions.window': [None, 'united states of america'],
         }, _check_count_result, n=100)
+
+    # Person facetime
+    _combination_test_get(
+        client, '/search', {
+            'count': ['facetime'],
+            'person': ['donald trump'],
+            # General options
+            'start_date': [None, '2017-01-01'],
+            'end_date': [None, '2018-01-01'],
+            'normalize': TEST_NORMALIZE_OPTIONS,
+            'aggregate': TEST_AGGREGATE_OPTIONS,
+            'channel': TEST_CHANNEL_OPTIONS,
+            'show': TEST_SHOW_OPTIONS,
+            'hour': TEST_HOUR_OPTIONS,
+            'dayofweek': TEST_DAYOFWEEK_OPTIONS,
+            'commercials': TEST_COMMERCIAL_OPTIONS,
+            'onscreen.face': TEST_ONSCREEN_FACE_OPTIONS,
+            'onscreen.person': TEST_ONSCREEN_PERSON_OPTIONS,
+            'captions.window': TEST_TEXT_WINDOW_OPTIONS,
+            'captions.window': [None, 'united states of america'],
+        }, _check_count_result, n=10)
+
     _combination_test_get(
         client, '/search', {
             'count': ['facetime'],
@@ -250,6 +273,7 @@ def test_search_mentions_in_videos(client: FlaskClient) -> None:
 
 
 def test_search_face_time_in_videos(client: FlaskClient) -> None:
+    # Non-person facetime
     _combination_test_get(
         client, '/search-videos', {
             'ids': TEST_VIDEO_IDS,
@@ -264,6 +288,21 @@ def test_search_face_time_in_videos(client: FlaskClient) -> None:
             'captions.window': TEST_TEXT_WINDOW_OPTIONS,
             'captions.text': [None] + TEST_COMMON_TEXT_OPTIONS
         }, _check_search_in_video_result, n=100)
+
+    # Person facetime
+    _combination_test_get(
+        client, '/search-videos', {
+            'ids': TEST_VIDEO_IDS,
+            # Count options
+            'count': ['facetime'],
+            'person': ['donald trump'],
+            # General options
+            'commercials': TEST_COMMERCIAL_OPTIONS,
+            'onscreen.face': TEST_ONSCREEN_FACE_OPTIONS,
+            'onscreen.person': TEST_ONSCREEN_PERSON_OPTIONS,
+            'captions.window': TEST_TEXT_WINDOW_OPTIONS,
+            'captions.text': [None] + TEST_COMMON_TEXT_OPTIONS
+        }, _check_search_in_video_result, n=10)
 
 
 def test_search_time_in_videos(client: FlaskClient) -> None:

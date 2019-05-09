@@ -45,7 +45,6 @@ function parseBool(s) {
   }
 }
 
-
 function normalizeFilters(filters) {
   let result = {};
   Object.keys(filters).forEach(k => {
@@ -88,7 +87,7 @@ function normalizeFilters(filters) {
       } else {
         result[k] = v;
       }
-    } else if (k == 'onscreen.face' || k == 'onscreen.person') {
+    } else if (k == 'onscreen.face' || k == 'onscreen.person' || k == 'person') {
       result[k] = v;
     } else if (k == 'role' || k == 'gender') {
       if (v_up != 'ALL') {
