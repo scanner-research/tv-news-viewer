@@ -78,11 +78,11 @@ MENTION_VIEWS = [
         ]
     ),
     WidgetView(
-        'Plot mentions of "aflak" including and excluding commercials',
+        'Plot mentions of "geico" including and excluding commercials',
         Countable.mentions,
         [
-            'text="aflak"',
-            'text="aflak" AND commercials=true'
+            'text="geico"',
+            'text="geico" AND commercials=true'
         ]
     ),
     WidgetView(
@@ -239,22 +239,21 @@ VIDEO_TIME_VIEWS = [
 
 def get_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
-    parser.add_argument('--host', type=str, default='localhost')
-    parser.add_argument('--port', type=int, default=8080)
+    parser.add_argument('--outfile', default='static/examples.html')
     return parser.parse_args()
 
 
-def main(host: str, port: int) -> None:
-    url_prefix = 'http://' + host
-    if port != 80:
-        url_prefix += ':' + str(port)
+# TODO: Make this a more serious page
+def main(outfile: str) -> None:
     views = MENTION_VIEWS + FACE_TIME_VIEWS + VIDEO_TIME_VIEWS
-    for i, w in enumerate(views):
-        print('{}. {}'.format(i + 1, w.description))
-        if w.comment:
-            print('[ {} ]'.format(w.comment))
-        print(url_prefix + w.path)
-        print()
+
+    with open(outfile, 'w') as f:
+        for i, w in enumerate(views):
+            f.write('<h1>{}. {}</h1>\n'.format(i + 1, w.description))
+            if w.comment:
+                f.write('<h2>[ {} ]</h2>\n'.format(w.comment))
+            f.write('<a href="{}" target="_blank">link</a>\n'.format(w.path))
+            f.write('<br>\n\n')
 
 
 if __name__ == '__main__':
