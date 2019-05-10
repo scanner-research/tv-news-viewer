@@ -94,7 +94,24 @@ function loadChart(div_id, chart_options, search_results, dimensions) {
     y_axis_title = `# of ${unit}`;
   }
 
-  // TODO: remove redundant work
+  let raw_precision = chart_options.count == 'mentions' ? 0 : 1;
+  function getPointValue(result, video_data, t) {
+    var value = video_data.reduce((acc, x) => acc + x[1], 0);
+    var value_str;
+    if (result.norm_data) {
+      // Normalized is unitless
+      value /= _.get(result.norm_data, t, 1.);
+      value_str = value.toString();
+    } else {
+      // Unit remains the same
+      if (result.minus_data) {
+        value -= _.get(result.minus_data, t, 0.);
+      }
+      value_str = `${value.toFixed(raw_precision)} ${unit}`;
+    }
+    return {value: value, text: value_str};
+  }
+
   let point_data = Object.keys(search_results).flatMap(color => {
     let result = search_results[color];
     let values = fillZeros(
@@ -114,29 +131,16 @@ function loadChart(div_id, chart_options, search_results, dimensions) {
           };
           link_href = `javascript:chartHrefHandler("${btoa(JSON.stringify(params))}")`;
         }
-        var value = values[t].reduce((acc, x) => acc + x[1], 0);
-        var value_str;
-        if (result.norm_data) {
-          // Normalized is unitless
-          value /= _.get(result.norm_data, t, 1.);
-          value_str = value.toString();
-        } else {
-          // Unit remains the same
-          if (result.minus_data) {
-            value -= _.get(result.minus_data, t, 0.);
-          }
-          value_str = `${value} ${unit}`;
-        }
+        let x = getPointValue(result, values[t], t);
         return {
           time: t, color: color, query: getSeriesName(color),
-          value: value, value_str: value_str,
+          value: x.value, value_str: x.text,
           video_href: link_href, size: values[t].length > 0 ? 30 : 0
         };
       }
     );
   });
 
-  // TODO: remove redundant work
   let series = Object.keys(search_results).map(
     color => ({name: getSeriesName(color), color: color})
   );
@@ -146,24 +150,9 @@ function loadChart(div_id, chart_options, search_results, dimensions) {
     let point = {time: t};
     Object.keys(search_results).forEach(color => {
       let result = search_results[color]
-
-      let videos = _.get(result.data, t, []);
-      var value = videos.reduce((acc, x) => acc + x[1], 0);
-      var value_str;
-
-      if (result.norm_data) {
-        // Normalized is unitless
-        value /= _.get(result.norm_data, t, 1.);
-        value_str = value.toString();
-      } else {
-        // Unit remains the same
-        if (result.minus_data) {
-          value -= _.get(result.minus_data, t, 0.);
-        }
-        value_str = `${value} ${unit}`;
-      }
-
-      point[getSeriesName(color)] = `${value_str} in ${videos.length} videos`;
+      let video_data = _.get(result.data, t, []);
+      let x = getPointValue(result, video_data, t);
+      point[getSeriesName(color)] = `${x.text} in ${video_data.length} videos`;
     });
     return point;
   });
