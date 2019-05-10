@@ -225,13 +225,13 @@ VIDEO_TIME_VIEWS = [
         ]
     ),
     WidgetView(
-        'Plot proportion of video when there is a face on screen (by channel)',
+        'Plot proportion of video when there is a host on screen (by channel)',
         Countable.videotime,
         [
-            'onscreen.face=all NORMALIZE',
-            'onscreen.face=all AND channel=CNN NORMALIZE channel=CNN',
-            'onscreen.face=all AND channel=FOX NORMALIZE channel=FOX',
-            'onscreen.face=all AND channel=MSNBC NORMALIZE channel=MSNBC'
+            'onscreen.face=host NORMALIZE',
+            'onscreen.face=host AND channel=CNN NORMALIZE channel=CNN',
+            'onscreen.face=host AND channel=FOX NORMALIZE channel=FOX',
+            'onscreen.face=host AND channel=MSNBC NORMALIZE channel=MSNBC'
         ]
     ),
     WidgetView(
