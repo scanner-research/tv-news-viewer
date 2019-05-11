@@ -20,9 +20,9 @@
 
   <link rel="shortcut icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}" />
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
-  <script src="{{ url_for('static', filename='chart.js') }}" /></script>
-  <script src="{{ url_for('static', filename='query.js') }}" /></script>
-  <script src="{{ url_for('static', filename='default.js') }}" /></script>
+  <script src="{{ url_for('static', filename='js/chart.js') }}" /></script>
+  <script src="{{ url_for('static', filename='js/query.js') }}" /></script>
+  <script src="{{ url_for('static', filename='js/default.js') }}" /></script>
 
   <title>Stanford TV News Viewer</title>
   <style>
@@ -132,7 +132,8 @@
       <tr class="header">
         <th></th>
         <th>Color</th>
-        <th width="95%">Query <a href="#" onclick="toggleQueryHelp(); return false;" id="toggle-help">(show instructions)</a></th>
+        <th width="95%">Query <a href="#" onclick="toggleQueryHelp(); return false;"
+                               id="toggle-help">(show help)</a></th>
       </tr>
       <tr name="controls" id="chart-options">
         <td>
@@ -216,7 +217,9 @@
   </script>
 
   <div class="container" id="query-help">
-    <p><b>Query usage</b> - The following options are supported (separated by <b>AND</b>).</p>
+    <p><b>Query help <a href="#" onclick="toggleQueryHelp(); return false;" id="toggle-help">(hide)</a></b>
+      - The following options are supported (separated by <b>AND</b>).
+    </p>
 
     <div class="container">
       <h4>Examples</h4>
@@ -238,7 +241,7 @@
         </tr>
         <tr>
           <td>video&nbsp;time</td>
-          <td>onscreen.face="female+host" AND captions.text="science" AND captions.window=30</td>
+          <td>onscreen.face="female+host" AND caption.text="science" AND caption.window=30</td>
           <td><i>seconds of video where a female host is onscreen and the word "science" is mentioned in the captions within 30s</i></td>
         </tr>
       </table>
@@ -344,18 +347,18 @@
           <td>commercials={{ default_include_commercials }}</td>
         </tr>
         <tr>
-          <td>captions.text</td>
+          <td>caption.text</td>
           <td>keywords nearby in the captions</td>
           <td>text query</td>
           <td>n/a</td>
-          <td>captions.text="affordable care act"</td>
+          <td>caption.text="affordable care act"</td>
         </tr>
         <tr>
-          <td>captions.window</td>
+          <td>caption.window</td>
           <td>threshold (in seconds) for nearby keywords</td>
           <td>non-negative integer</td>
           <td>{{ default_text_window }}</td>
-          <td>captions.window={{ default_text_window }}</td>
+          <td>caption.window={{ default_text_window }}</td>
         </tr>
         <tr>
           <td>onscreen.face</td>
@@ -378,7 +381,7 @@
     </div>
 
     <div class="container">
-      <h4>Normalization and Minus</h4>
+      <h4>Normalization and subtraction</h4>
       <table>
         <tr>
           <th>Keyword</th>
@@ -393,10 +396,10 @@
           <td>text="united states" NORMALIZE</td>
         </tr>
         <tr>
-          <td>MINUS</td>
-          <td>query1 MINUS query2</td>
+          <td>SUBTRACT</td>
+          <td>query1 SUBTRACT query2</td>
           <td><i>subtract query2's results from query1's results</i></td>
-          <td>text="united" MINUS text="united states"</td>
+          <td>text="united" SUBTRACT text="united states"</td>
         </tr>
       </table>
     </div>
@@ -405,10 +408,10 @@
     function toggleQueryHelp() {
       if ($('#toggle-help').text().includes('show')) {
         $('#query-help').show();
-        $('#toggle-help').text('(hide instructions)');
+        $('#toggle-help').text('(hide help)');
       } else {
         $('#query-help').hide();
-        $('#toggle-help').text('(show instructions)');
+        $('#toggle-help').text('(show help)');
       }
     }
   </script>
@@ -470,12 +473,11 @@
 
     function addRow(query) {
       let color = query ? query.color : getColor();
-      let query_str = query ? query.query : getDefaultQuery();
-
+      let text = query ? query.text : getDefaultQuery();
       let html = `<tr name="query" data-color="${color}">
         <td><button type="button" class="btn btn-secondary remove-row-btn" onclick="removeRow('${color}');">-</button></td>
         <td><div class="color-box" style="background-color: ${color};"></div></td>
-        <td><input type="text" name="query" value='${query_str}'</td>
+        <td><input type="text" name="query" value='${text}'</td>
       </tr>`;
       $('#search-table > tbody > tr').eq(
         $('#search-table tr[name="query"]').length
@@ -487,12 +489,19 @@
     }
     $('#add-row-btn').click(() => {addRow();});
 
-    function getEmbedUrl(chart_options, queries) {
-      return `http://{{ host }}/embed?width=${EMBED_DIMS.width}&height=${EMBED_DIMS.height}&data=${encodeURIComponent(JSON.stringify({options: chart_options, queries: queries}))}`;
+    function getDataString(chart_options, lines) {
+      return encodeURIComponent(JSON.stringify({
+        options: chart_options,
+        queries: lines.map(l => ({color: l.color, text: l.query.query}))
+      }));
     }
 
-    function getChartPath(chart_options, queries) {
-      return `/?data=${encodeURIComponent(JSON.stringify({options: chart_options, queries: queries}))}`;
+    function getEmbedUrl(data) {
+      return `http://{{ host }}/embed?width=${EMBED_DIMS.width}&height=${EMBED_DIMS.height}&data=${data}`;
+    }
+
+    function getChartPath(data) {
+      return `/?data=${data}`;
     }
 
     function setShareUrl(path) {
@@ -516,23 +525,18 @@
       throw Error(msg);
     }
 
-    function displaySearchResults(chart_options, unparsed_queries, search_results) {
-      let valid_search_results = Object.keys(search_results).reduce(
-        (acc, k) => {
-            if (!search_results[k].is_bad) acc[k] = search_results[k];
-            return acc;
-        }, {});
-      loadChart('#chart', chart_options, valid_search_results, {
+    function displaySearchResults(chart_options, lines, search_results) {
+      loadChart('#chart', chart_options, search_results, {
         width: $("#chart-area").width(), height: EMBED_DIMS.height
       });
 
-      if (Object.keys(valid_search_results).length == Object.keys(search_results).length) {
+      if (Object.keys(search_results).length == lines.length) {
         // Allow embedding if all queries are ok
-        let embed_url = getEmbedUrl(chart_options, unparsed_queries);
-        let chart_path = getChartPath(chart_options, unparsed_queries);
+        let data_str = getDataString(chart_options, lines);
+        let chart_path = getChartPath(data_str);
+        let embed_url = getEmbedUrl(data_str);
         $('#embed-area p[name="text"]').html(
-  `<a href="#" onclick="setShareUrl('${chart_path}'); return false;">Share</a>
-  or <a href="#" onclick="setEmbedUrl('${embed_url}'); return false;">embed</a> chart.`
+          `<a href="#" onclick="setShareUrl('${chart_path}'); return false;">Share</a> or <a href="#" onclick="setEmbedUrl('${embed_url}'); return false;">embed</a> chart.`
         );
         window.history.pushState(null, '', chart_path);
       } else {
@@ -542,44 +546,31 @@
       }
     }
 
-    function search() {
-      let chart_options = getChartOptions();
-
-      let unparsed_queries = [];
+    function getRawQueries() {
+      let queries = [];
       $('#search-table tr[name="query"]').each(function() {
         if ($(this).attr('name')) {
-          let query = $.trim($(this).find("input[name='query']").val());
-          unparsed_queries.push({
+          let query_str = $.trim($(this).find("input[name='query']").val());
+          queries.push({
             color: $(this).attr('data-color'),
-            query: query
+            text: query_str
           });
         }
       });
+      return queries;
+    }
 
-      let parsed_queries = unparsed_queries.map(query => {
-        var filters;
+    function search() {
+      let chart_options = getChartOptions();
+      let lines = getRawQueries().map(raw_query => {
+        var parsed_query;
         try {
-          filters = parseQueryString(query.query);
+          parsed_query = new SearchableQuery(raw_query.text, chart_options.count);
         } catch (e) {
           alertAndThrow(e.message);
         }
-        return {
-          color: query.color, query: query.query,
-          main_args: getQueryOptions(chart_options, filters.main_query),
-          // Set subquery args
-          minus_args: filters.minus_query ?
-            getQueryOptions(chart_options, filters.minus_query) : null,
-          norm_args: filters.norm_query ?
-            getQueryOptions(chart_options, filters.norm_query) : null
-        };
+        return {color: raw_query.color, query: parsed_query};
       });
-
-      function searchOne(data, onSuccess, onError) {
-        return $.ajax({
-          url: '/search', type: 'get', data: data, success: onSuccess,
-          error: onError
-        });
-      }
 
       $('#shade').show();
       $('#search').prop('disabled', true);
@@ -588,12 +579,11 @@
       function onDone() {
         $('#shade').hide();
         $('#search').prop('disabled', false);
-        displaySearchResults(chart_options, unparsed_queries, search_results);
+        displaySearchResults(chart_options, lines, search_results);
       }
 
-      Promise.all(parsed_queries.flatMap(query => {
-        console.log('Executing query:', query);
-        search_results[query.color] = {query: query.query, is_bad: false};
+      Promise.all(lines.map(line => {
+        console.log('Executing query:', line);
 
         function onError(xhr) {
           var msg;
@@ -603,28 +593,13 @@
             msg = 'Unknown server error';
           }
           alert(`[Query failed. The chart may be incomplete.]\n\n${msg}`);
-          console.log('Failed:', query);
-          search_results[query.color].is_bad = true;
+          console.log('Failed:', query, xhr);
         }
 
-        let promises = [];
-        promises.push(searchOne(
-          Object.assign({detailed: true}, query.main_args), resp => {
-            search_results[query.color].data = resp;
-          }, onError));
-        if (query.norm_args) {
-          promises.push(searchOne(
-            Object.assign({detailed: false}, query.norm_args), resp => {
-              search_results[query.color].norm_data = resp;
-            }, onError));
-        }
-        if (query.minus_args) {
-          promises.push(searchOne(
-            Object.assign({detailed: false}, query.minus_args), resp => {
-              search_results[query.color].minus_data = resp;
-            }, onError));
-        }
-        return promises;
+        return line.query.search(
+          chart_options,
+          result => search_results[line.color] = result,
+          onError);
       })).then(onDone).catch(onDone);
     }
     $('#search').click(search);

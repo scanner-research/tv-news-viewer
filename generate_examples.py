@@ -40,7 +40,7 @@ class WidgetView(NamedTuple):
                     'end_date': self.end_date
                 },
                 "queries": [
-                    {"color": DEFAULT_COLORS[i], "query": q}
+                    {"color": DEFAULT_COLORS[i], "text": q}
                     for i, q in enumerate(self.queries)
                 ]
             })
@@ -167,8 +167,8 @@ FACE_TIME_VIEWS = [
         'Plot male vs. female screen time when "isis" is mentioned',
         Countable.facetime,
         [
-            'gender="male" AND captions.text="isis"',
-            'gender="female" AND captions.text="isis"',
+            'gender="male" AND caption.text="isis"',
+            'gender="female" AND caption.text="isis"',
         ]
     ),
     WidgetView(

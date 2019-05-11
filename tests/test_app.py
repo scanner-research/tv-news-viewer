@@ -171,8 +171,8 @@ def test_count_face_time(client: FlaskClient) -> None:
             'commercials': TEST_COMMERCIAL_OPTIONS,
             'onscreen.face': TEST_ONSCREEN_FACE_OPTIONS,
             'onscreen.person': TEST_ONSCREEN_PERSON_OPTIONS,
-            'captions.window': TEST_TEXT_WINDOW_OPTIONS,
-            'captions.window': [None, 'united states of america'],
+            'caption.window': TEST_TEXT_WINDOW_OPTIONS,
+            'caption.window': [None, 'united states of america'],
         }, _check_count_result, n=100)
 
     # Person facetime
@@ -192,8 +192,8 @@ def test_count_face_time(client: FlaskClient) -> None:
             'commercials': TEST_COMMERCIAL_OPTIONS,
             'onscreen.face': TEST_ONSCREEN_FACE_OPTIONS,
             'onscreen.person': TEST_ONSCREEN_PERSON_OPTIONS,
-            'captions.window': TEST_TEXT_WINDOW_OPTIONS,
-            'captions.window': [None, 'united states of america'],
+            'caption.window': TEST_TEXT_WINDOW_OPTIONS,
+            'caption.window': [None, 'united states of america'],
         }, _check_count_result, n=10)
 
     _combination_test_get(
@@ -220,8 +220,8 @@ def test_count_video_time(client: FlaskClient) -> None:
             'commercials': TEST_COMMERCIAL_OPTIONS,
             'onscreen.face': TEST_ONSCREEN_FACE_OPTIONS,
             'onscreen.person': TEST_ONSCREEN_PERSON_OPTIONS,
-            'captions.window': TEST_TEXT_WINDOW_OPTIONS,
-            'captions.window': [None, 'united states of america'],
+            'caption.window': TEST_TEXT_WINDOW_OPTIONS,
+            'caption.window': [None, 'united states of america'],
         }, _check_count_result, n=100)
     _combination_test_get(
         client, '/search', {
@@ -280,8 +280,8 @@ def test_search_face_time_in_videos(client: FlaskClient) -> None:
             'commercials': TEST_COMMERCIAL_OPTIONS,
             'onscreen.face': TEST_ONSCREEN_FACE_OPTIONS,
             'onscreen.person': TEST_ONSCREEN_PERSON_OPTIONS,
-            'captions.window': TEST_TEXT_WINDOW_OPTIONS,
-            'captions.text': [None] + TEST_COMMON_TEXT_OPTIONS
+            'caption.window': TEST_TEXT_WINDOW_OPTIONS,
+            'caption.text': [None] + TEST_COMMON_TEXT_OPTIONS
         }, _check_search_in_video_result, n=100)
 
     # Person facetime
@@ -295,8 +295,8 @@ def test_search_face_time_in_videos(client: FlaskClient) -> None:
             'commercials': TEST_COMMERCIAL_OPTIONS,
             'onscreen.face': TEST_ONSCREEN_FACE_OPTIONS,
             'onscreen.person': TEST_ONSCREEN_PERSON_OPTIONS,
-            'captions.window': TEST_TEXT_WINDOW_OPTIONS,
-            'captions.text': [None] + TEST_COMMON_TEXT_OPTIONS
+            'caption.window': TEST_TEXT_WINDOW_OPTIONS,
+            'caption.text': [None] + TEST_COMMON_TEXT_OPTIONS
         }, _check_search_in_video_result, n=10)
 
 
@@ -310,6 +310,6 @@ def test_search_time_in_videos(client: FlaskClient) -> None:
             'commercials': TEST_COMMERCIAL_OPTIONS,
             'onscreen.face': TEST_ONSCREEN_FACE_OPTIONS,
             'onscreen.person': TEST_ONSCREEN_PERSON_OPTIONS,
-            'captions.window': TEST_TEXT_WINDOW_OPTIONS,
-            'captions.text': [None] + TEST_COMMON_TEXT_OPTIONS
+            'caption.window': TEST_TEXT_WINDOW_OPTIONS,
+            'caption.text': [None] + TEST_COMMON_TEXT_OPTIONS
         }, _check_search_in_video_result)

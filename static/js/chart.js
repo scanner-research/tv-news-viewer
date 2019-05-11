@@ -2,6 +2,14 @@
 
 const MAX_DISPLAY_VIDEOS = 25;
 
+function shuffle(a) {
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
 function fillZeros(data, unit, start, end, default_value) {
   let all_ts = new Set(Object.keys(data));
   Object.keys(data).forEach(t_curr_str => {
@@ -49,21 +57,23 @@ function chartHrefHandler(b64json) {
   window.open(`/videos?params=${encodeURIComponent(JSON.stringify(params))}`, '_blank');
 }
 
+function getDateFormat(agg) {
+  if (agg == 'year') {
+    return '%Y';
+  } else if (agg == 'month') {
+    return '%b `%y';
+  } else {
+    return '%b %d, %Y';
+  }
+};
+
 function loadChart(div_id, chart_options, search_results, dimensions) {
-  // TODO: fix escaping characters
+
   let getSeriesName = (color) => {
     let result = search_results[color];
+    // TODO: hack to make vega-lite work
     let query = result.query.replaceAll('[', '').replaceAll(']', '').replaceAll('"', '').replaceAll('.', '');
     return query;
-  };
-  let getDateFormat = (agg) => {
-    if (agg == 'year') {
-      return '%Y';
-    } else if (agg == 'month') {
-      return '%b `%y';
-    } else {
-      return '%b %d, %Y';
-    }
   };
 
   let year_span = (
@@ -77,8 +87,7 @@ function loadChart(div_id, chart_options, search_results, dimensions) {
   var has_norm = false;
   var has_raw = false;
   Object.keys(search_results).forEach(k => {
-    let is_norm = !_.isEmpty(search_results[k].norm_data);
-    console.log(search_results[k])
+    let is_norm = search_results[k].has_normalization();
     has_norm |= is_norm;
     has_raw |= !is_norm;
   });
@@ -86,9 +95,9 @@ function loadChart(div_id, chart_options, search_results, dimensions) {
   var y_axis_title;
   if (has_norm) {
     if (has_raw) {
-      y_axis_title = `(WARNING!) Mixed normalized and raw # of ${unit}`;
+      y_axis_title = `(WARNING!) Mixing normalized and raw ${unit}`;
     } else {
-      y_axis_title = `Normalized # of ${unit}`;
+      y_axis_title = `# of ${unit} / # of ${unit} (Normalized)`;
     }
   } else {
     y_axis_title = `# of ${unit}`;
@@ -98,14 +107,14 @@ function loadChart(div_id, chart_options, search_results, dimensions) {
   function getPointValue(result, video_data, t) {
     var value = video_data.reduce((acc, x) => acc + x[1], 0);
     var value_str;
-    if (result.norm_data) {
+    if (result.normalize) {
       // Normalized is unitless
-      value /= _.get(result.norm_data, t, 1.);
+      value /= _.get(result.normalize, t, 1.);
       value_str = value.toString();
     } else {
       // Unit remains the same
-      if (result.minus_data) {
-        value -= _.get(result.minus_data, t, 0.);
+      if (result.subtraction) {
+        value -= _.get(result.subtraction, t, 0.);
       }
       value_str = `${value.toFixed(raw_precision)} ${unit}`;
     }
@@ -115,7 +124,7 @@ function loadChart(div_id, chart_options, search_results, dimensions) {
   let point_data = Object.keys(search_results).flatMap(color => {
     let result = search_results[color];
     let values = fillZeros(
-      result.data, chart_options.aggregate, chart_options.start_date,
+      result.main, chart_options.aggregate, chart_options.start_date,
       chart_options.end_date, []);
     return Object.keys(values).map(
       t => {
@@ -150,7 +159,7 @@ function loadChart(div_id, chart_options, search_results, dimensions) {
     let point = {time: t};
     Object.keys(search_results).forEach(color => {
       let result = search_results[color]
-      let video_data = _.get(result.data, t, []);
+      let video_data = _.get(result.main, t, []);
       let x = getPointValue(result, video_data, t);
       point[getSeriesName(color)] = `${x.text} in ${video_data.length} videos`;
     });

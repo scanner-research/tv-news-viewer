@@ -11,7 +11,7 @@
 
   <link rel="stylesheet" href="{{ url_for('static', filename='vgrid/index.css') }}" />
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
-  <script src="{{ url_for('static', filename='query.js') }}" /></script>
+  <script src="{{ url_for('static', filename='js/query.js') }}" /></script>
 
   <title>TV News: Videos</title>
 
@@ -37,49 +37,8 @@
   </div>
 
   <script>
-    const INTERVAL_PADDING = 10;
-
-    function showVideos(data) {
-      let videos = [];
-      let interval_blocks = [];
-      data.forEach(x => {
-        videos.push({
-          id: x.metadata.id,
-          width: x.metadata.width,
-          height: x.metadata.height,
-          fps: x.metadata.fps,
-          num_frames: x.metadata.num_frames,
-          path: `tvnews/videos/${x.metadata.name}.mp4`
-        });
-        interval_blocks.push({
-          interval_dict: {
-            'results': x.intervals.map(i => ({
-              t: [i[0], Math.max(i[1], i[0] + INTERVAL_PADDING)],
-              x: [0, 1], y: [0, 1],
-              payload: {spatial_type: {type: 'SpatialType_Bbox'}, metadata: {}}
-            })),
-            '_captions': x.captions.map(l => ({
-              t: [l[0], l[1]], x: [0, 1], y: [0, 1],
-              payload: {
-                metadata: {}, spatial_type: {
-                  type: 'SpatialType_Caption', args: {text: l[2]}
-                }
-              }
-            })),
-            // '_metadata': [{
-            //   t: [0, x.metadata.num_frames / x.metadata.fps],
-            //   x: [0, 1], y: [0, 1],
-            //   payload: {
-            //     metadata: {
-            //       video: {type: 'Metadata_Generic', args: {data: x.metadata.name}}
-            //     },
-            //     spatial_type: {type: 'SpatialType_Bbox'}
-            //   }
-            // }]
-          },
-          video_id: x.metadata.id
-        });
-      });
+    alert('THIS PAGE DOES NOT WORK!');
+    function showVideos(json_data) {
       let vgrid_settings = {
         {% if frameserver_endpoint is not none %}
         frameserver_endpoint: '{{ frameserver_endpoint }}',
@@ -87,7 +46,7 @@
         {% endif %}
         video_endpoint: 'https://storage.cloud.google.com/esper'
       };
-      renderVGrid(interval_blocks, {videos: videos}, vgrid_settings);
+      renderVGrid(json_data, vgrid_settings);
     }
 
     let params = JSON.parse(decodeURIComponent((new URL(document.location)).searchParams.get('params')));
@@ -97,19 +56,14 @@
       `<p>Showing results from ${video_ids.length} of ${params.video_count} videos.</p>`
     );
 
-    let args = parseQueryString(params.query).main_query;
-    args.count = params.count;
-    args.ids = JSON.stringify(video_ids);
-
-    $.ajax({
-      url: '/search-videos',
-      type: 'get',
-      data: args,
-      success: showVideos,
-      error: xhr => {
+    let query = new SearchableQuery(params.query, params.count);
+    console.log('Executing query:', query);
+    query.searchInVideos(
+      video_ids, showVideos, xhr => {
         alert('Search failed.');
+        console.log(xhr);
       }
-    });
+    );
   </script>
   <script src="{{ url_for('static', filename='vgrid/bundle.js') }}"></script>
 </body>

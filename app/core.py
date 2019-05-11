@@ -507,10 +507,10 @@ def build_app(
             SimpleDateAcumulator(aggregate_fn))
         if count_var == Countable.mentions.name:
             assert_option_not_set(
-                'captions.text', count_var, Countable.facetime.value + ' or '
+                'caption.text', count_var, Countable.facetime.value + ' or '
                 + Countable.videotime.value)
             assert_option_not_set(
-                'captions.window', count_var, Countable.facetime.value + ' or '
+                'caption.window', count_var, Countable.facetime.value + ' or '
                 + Countable.videotime.value)
             assert_option_not_set(
                 'gender', count_var, Countable.facetime.value)
@@ -539,9 +539,9 @@ def build_app(
                     'person', count_var, Countable.facetime.value)
 
             caption_query = request.args.get(
-                'captions.text', '', type=str).strip()
+                'caption.text', '', type=str).strip()
             caption_window = request.args.get(
-                'captions.window', DEFAULT_TEXT_WINDOW, type=int)
+                'caption.window', DEFAULT_TEXT_WINDOW, type=int)
             _count_time(
                 accumulator,
                 caption_query, caption_window,
@@ -736,10 +736,10 @@ def build_app(
         if count_var == Countable.mentions.name:
             text_query = request.args.get('text', '', type=str).strip()
             assert_option_not_set(
-                'captions.text', count_var, Countable.facetime.value + ' or '
+                'caption.text', count_var, Countable.facetime.value + ' or '
                 + Countable.videotime.value)
             assert_option_not_set(
-                'captions.window', count_var, Countable.facetime.value + ' or '
+                'caption.window', count_var, Countable.facetime.value + ' or '
                 + Countable.videotime.value)
             assert_option_not_set(
                 'gender', count_var, Countable.facetime.value)
@@ -766,9 +766,9 @@ def build_app(
                     'person', count_var, Countable.facetime.value)
 
             caption_query = request.args.get(
-                'captions.text', '', type=str).strip()
+                'caption.text', '', type=str).strip()
             caption_window = request.args.get(
-                'captions.window', DEFAULT_TEXT_WINDOW, type=int)
+                'caption.window', DEFAULT_TEXT_WINDOW, type=int)
             results = _count_time_in_videos(
                 videos, caption_query, caption_window, exclude_commercials,
                 None if count_var == Countable.videotime.name

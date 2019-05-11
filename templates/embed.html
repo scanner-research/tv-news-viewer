@@ -11,9 +11,9 @@
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
 
   <link rel="shortcut icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}" />
-  <script src="{{ url_for('static', filename='default.js') }}" /></script>
-  <script src="{{ url_for('static', filename='chart.js') }}" /></script>
-  <script src="{{ url_for('static', filename='query.js') }}" /></script>
+  <script src="{{ url_for('static', filename='js/default.js') }}" /></script>
+  <script src="{{ url_for('static', filename='js/chart.js') }}" /></script>
+  <script src="{{ url_for('static', filename='js/query.js') }}" /></script>
 
   <title>Stanford TV News Viewer</title>
   <style>
@@ -61,56 +61,42 @@
     let data = JSON.parse(decodeURIComponent(params.get('data')));
     let width = params.get('width');
     let height = params.get('height');
-    let unparsed_queries = data.queries;
     let chart_options = data.options;
 
-    function renderText() {
+    function renderText(lines) {
       // TODO: XSS attack here
-      unparsed_queries.forEach(query => {
-        let html = `<tr name='${query.color}'>
-          <td><div class="color-box" style="background-color: ${query.color};"></div></td>
-          <td>${query.query}</td>
+      lines.forEach(line => {
+        let html = `<tr name='${line.color}'>
+          <td><div class="color-box" style="background-color: ${line.color};"></div></td>
+          <td>${line.query.query}</td>
         </tr>`;
         $('#search-table tbody').append(html);
       });
       $('#options').html(`Showing ${chart_options.count} from <b>${chart_options.start_date}</b> to <b>${chart_options.end_date}</b> aggregated by <b>${chart_options.aggregate}</b>.`);
     }
 
-    let parsed_queries = unparsed_queries.map(query => {
-      var filters;
+    let lines = data.queries.map(raw_query => {
+      var parsed;
       try {
-        filters = parseQueryString(query.query);
+        parsed_query = new SearchableQuery(raw_query.text, chart_options.count);
       } catch (e) {
         alertAndThrow(e.message);
       }
-      return {
-        color: query.color, query: query.query,
-        main_args: getQueryOptions(chart_options, filters.main_query),
-        // Set subquery args
-        minus_args: filters.minus_query ?
-          getQueryOptions(chart_options, filters.minus_query) : null,
-        norm_args: filters.norm_query ?
-          getQueryOptions(chart_options, filters.norm_query) : null
-      };
+      return {color: raw_query.color, query: parsed_query};
     });
 
-    function searchOne(data, onSuccess, onError) {
-      return $.ajax({
-        url: '/search', type: 'get', data: data, success: onSuccess,
-        error: onError
-      });
-    }
+    $('#shade').show();
+    $('#search').prop('disabled', true);
 
     let search_results = {};
     function onDone() {
       loadChart('#chart', chart_options, search_results,
                 {width: width, height: height});
-      renderText();
+      renderText(lines);
     };
 
-    Promise.all(parsed_queries.flatMap(query => {
-      console.log('Executing query:', query);
-      search_results[query.color] = {query: query.query, is_bad: false};
+    Promise.all(lines.map(line => {
+      console.log('Executing query:', line.query);
 
       function onError(xhr) {
         var msg;
@@ -120,30 +106,14 @@
           msg = 'Unknown server error';
         }
         alert(`[Query failed. The chart may be incomplete.]\n\n${msg}`);
-        console.log('Failed:', query);
-        search_results[query.color].is_bad = true;
+        console.log('Failed:', line, xhr);
       }
 
-      let promises = [];
-      promises.push(searchOne(
-        Object.assign({detailed: true}, query.main_args), (resp) => {
-          search_results[query.color].data = resp;
-        }, onError));
-      if (query.norm_args) {
-        promises.push(searchOne(
-          Object.assign({detailed: false}, query.norm_args), (resp) => {
-            search_results[query.color].norm_data = resp;
-          }, onError));
-      }
-      if (query.minus_args) {
-        promises.push(searchOne(
-          Object.assign({detailed: false}, query.minus_args), (resp) => {
-            search_results[query.color].minus_data = resp;
-          }, onError));
-      }
-      return promises;
-    })).then(onDone).catch(onDone)
-    ;
+      return line.query.search(
+        chart_options,
+        result => search_results[line.color] = result,
+        onError);
+    })).then(onDone).catch(onDone);
   </script>
 </body>
 </html>
