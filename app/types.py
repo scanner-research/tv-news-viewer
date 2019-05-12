@@ -18,6 +18,12 @@ class Countable(Enum):
     videotime = 'video time'
 
 
+class Ternary(Enum):
+    true = 'true'
+    false = 'false'
+    both = 'both'
+
+
 class Video(NamedTuple):
     id: int
     name: str

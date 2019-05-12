@@ -29,7 +29,7 @@ STATIC_DIR = os.path.join(FILE_DIR, '..', 'static')
 MIN_DATE = datetime(2010, 1, 1)
 MAX_DATE = datetime(2018, 4, 1)
 DEFAULT_TEXT_WINDOW = 30
-DEFAULT_INCLUDE_COMMERCIALS = str(False).lower()
+DEFAULT_IS_COMMERCIAL = Ternary.false
 
 
 def milliseconds(s: float) -> int:
@@ -41,11 +41,11 @@ def get_entire_video_ms_interval(video: Video) -> List[Interval]:
 
 
 def assert_option_not_set(
-    option: str, count_var: str, suggested_var: Optional[str] = None
+    option: str, countable: str, suggested_var: Optional[str] = None
 ) -> None:
     if option in request.args:
         mesg = '"{}" cannot be used when counting "{}".'.format(
-           option, count_var)
+           option, countable)
         if suggested_var:
             mesg += ' Try counting "{}" instead.'.format(suggested_var)
         raise InvalidUsage(mesg)
@@ -87,16 +87,30 @@ def get_video_filter() -> Optional[VideoFilterFn]:
         return None
 
 
-def get_aggregate_fn(agg: Optional[str]) -> AggregateFn:
-    if agg is None or agg == Aggregate.day.name:
+def get_aggregate_fn() -> AggregateFn:
+    agg = request.args.get('aggregate', None, type=str)
+    e = Aggregate[agg] if agg else Aggregate.day
+    if e == Aggregate.day:
         return lambda d: d
-    elif agg == Aggregate.month.name:
+    elif e == Aggregate.month:
         return lambda d: datetime(d.year, d.month, 1)
-    elif agg == Aggregate.week.name:
+    elif e == Aggregate.week:
         return lambda d: d - timedelta(days=d.isoweekday() - 1)
-    elif agg == Aggregate.year.name:
+    elif e == Aggregate.year:
         return lambda d: datetime(d.year, 1, 1)
     raise InvalidUsage('invalid aggregation parameter: {}'.format(agg))
+
+
+def get_is_commercial() -> Ternary:
+    value = request.args.get('iscommercial', None, type=str)
+    return Ternary[value] if value else DEFAULT_IS_COMMERCIAL
+
+
+def get_countable() -> Countable:
+    value = request.args.get('count', None, type=str)
+    if value is None:
+        raise InvalidUsage('no count variable specified')
+    return Countable[value]
 
 
 def get_onscreen_face_isetmap(
@@ -117,13 +131,13 @@ def get_onscreen_face_isetmap(
         isetmap = face_intervals.host
     elif filter_str == 'nonhost':
         isetmap = face_intervals.nonhost
-    elif filter_str == 'male+host':
+    elif filter_str == 'male:host':
         isetmap = face_intervals.male_host
-    elif filter_str == 'female+host':
+    elif filter_str == 'female:host':
         isetmap = face_intervals.female_host
-    elif filter_str == 'male+nonhost':
+    elif filter_str == 'male:nonhost':
         isetmap = face_intervals.male_nonhost
-    elif filter_str == 'female+nonhost':
+    elif filter_str == 'female:nonhost':
         isetmap = face_intervals.female_nonhost
     else:
         raise InvalidUsage('{} is not a valid face filter'.format(filter_str))
@@ -243,9 +257,7 @@ def get_face_time_intersect_fn(
 
         def f(video: Video, intervals: List[Interval]) -> List[Interval]:
             return all_faces_ilistmap.intersect(
-                video.id, (intervals if intervals else
-                           get_entire_video_ms_interval(video)),
-                payload_mask, payload_value, True)
+                video.id, intervals, payload_mask, payload_value, True)
     return f
 
 
@@ -264,6 +276,15 @@ def intersect_isetmap(
 ) -> List[Interval]:
     return (isetmap.get_intervals(video.id, True) if intervals is None
             else isetmap.intersect(video.id, intervals, True))
+
+
+def minus_isetmap(
+    video: Video, isetmap: MmapIntervalSetMapping,
+    intervals: Optional[List[Interval]]
+) -> List[Interval]:
+    return isetmap.minus(
+        video.id, intervals
+        if intervals else get_entire_video_ms_interval(video), True)
 
 
 def build_app(
@@ -311,7 +332,7 @@ def build_app(
             start_date=format_date(start_date),
             end_date=format_date(end_date), shows=all_shows,
             default_text_window=DEFAULT_TEXT_WINDOW,
-            default_include_commercials=DEFAULT_INCLUDE_COMMERCIALS)
+            default_is_commercial=DEFAULT_IS_COMMERCIAL)
 
     @app.route('/embed')
     def embed() -> Response:
@@ -323,22 +344,27 @@ def build_app(
                                frameserver_endpoint=frameserver_endpoint)
 
     def _get_document_token_count(
-        video: Video, document: Documents.Document, exclude_commercials: bool
+        video: Video, document: Documents.Document, is_commercial: Ternary
     ) -> int:
-        total = index.document_length(document)
-        if exclude_commercials:
+        if is_commercial == Ternary.both:
+            return index.document_length(document)
+        else:
+            commercial_tokens = 0
             for a, b in commercial_isetmap.get_intervals(
                 video.id, True
             ):
                 min_idx = index.position(document.id, a)
                 max_idx = index.position(document.id, b)
                 if max_idx > min_idx:
-                    total -= max(0, max_idx - min_idx)
-        return total
+                    commercial_tokens += max(0, max_idx - min_idx)
+            if is_commercial == Ternary.true:
+                return commercial_tokens
+            else:
+                return index.document_length(document) - commercial_tokens
 
     def _count_mentions(
         accumulator: DateAccumulator,
-        text_query_str: str, exclude_commercials: bool,
+        text_query_str: str, is_commercial: Ternary,
         video_filter: Optional[VideoFilterFn],
         onscreen_face_filter: Optional[OnScreenFilterFn],
         onscreen_person_filter: Optional[OnScreenFilterFn]
@@ -373,12 +399,17 @@ def build_app(
                         if onscreen_face_filter(
                             video.id, milliseconds((p.start + p.end) / 2))]
 
-                if exclude_commercials:
+                if is_commercial != Ternary.both:
+
                     def in_commercial(p: CaptionIndex.Posting) -> int:
                         return 1 if commercial_isetmap.is_contained(
                             video.id, int((p.start + p.end) / 2 * 1000), True
                         ) else 0
-                    total = sum(1 - in_commercial(p) for p in postings)
+
+                    if is_commercial == Ternary.true:
+                        total = sum(in_commercial(p) for p in postings)
+                    else:
+                        total = sum(1 - in_commercial(p) for p in postings)
                 else:
                     total = len(postings)
                 accumulator.add(video.date, video.id, total)
@@ -403,7 +434,7 @@ def build_app(
 
                 accumulator.add(
                     video.date, video.id, _get_document_token_count(
-                        video, document, exclude_commercials))
+                        video, document, is_commercial))
 
         print('Matched {} videos, {} filtered, {} missing'.format(
               matched_videos, filtered_videos, missing_videos))
@@ -411,7 +442,7 @@ def build_app(
     def _count_time(
         accumulator: DateAccumulator,
         caption_query_str: str, caption_window: int,
-        exclude_commercials: bool,
+        is_commercial: Ternary,
         video_filter: Optional[VideoFilterFn],
         face_time_agg_fn: Optional[FaceTimeAggregateFn],
         onscreen_face_isetmap: Optional[MmapIntervalSetMapping],
@@ -424,10 +455,13 @@ def build_app(
         def helper(
             video: Video, intervals: Optional[List[Interval]] = None
         ) -> None:
-            if exclude_commercials:
-                if intervals is None:
-                    intervals = get_entire_video_ms_interval(video)
-                intervals = commercial_isetmap.minus(video.id, intervals, True)
+            if is_commercial != Ternary.both:
+                if is_commercial == Ternary.true:
+                    intervals = intersect_isetmap(
+                        video, commercial_isetmap, intervals)
+                else:
+                    intervals = minus_isetmap(
+                        video, commercial_isetmap, intervals)
                 if not intervals:
                     return
 
@@ -492,51 +526,46 @@ def build_app(
     @app.route('/search')
     def search() -> Response:
         video_filter = get_video_filter()
-        count_var = request.args.get('count', None, type=str)
-        normalize = request.args.get('normalize', False, type=bool)
-        aggregate_fn = get_aggregate_fn(request.args.get(
-            'aggregate', None, type=str))
-        exclude_commercials = (
-            request.args.get(
-                'commercials', DEFAULT_INCLUDE_COMMERCIALS, type=str
-            ).strip().lower() == 'false')
+        countable = get_countable()
+        aggregate_fn = get_aggregate_fn()
+        is_commercial = get_is_commercial()
 
         accumulator = (
             DetailedDateAccumulator(aggregate_fn)
             if request.args.get('detailed', 'true', type=str) == 'true' else
             SimpleDateAcumulator(aggregate_fn))
-        if count_var == Countable.mentions.name:
+        if countable == Countable.mentions:
             assert_option_not_set(
-                'caption.text', count_var, Countable.facetime.value + ' or '
-                + Countable.videotime.value)
+                'caption.text', countable.value,
+                Countable.facetime.value + ' or ' + Countable.videotime.value)
             assert_option_not_set(
-                'caption.window', count_var, Countable.facetime.value + ' or '
-                + Countable.videotime.value)
+                'caption.window', countable.value,
+                Countable.facetime.value + ' or ' + Countable.videotime.value)
             assert_option_not_set(
-                'gender', count_var, Countable.facetime.value)
+                'gender', countable.value, Countable.facetime.value)
             assert_option_not_set(
-                'role', count_var, Countable.facetime.value)
+                'role', countable.value, Countable.facetime.value)
             assert_option_not_set(
-                'person', count_var, Countable.facetime.value)
+                'person', countable.value, Countable.facetime.value)
 
             text_query = request.args.get('text', '', type=str).strip()
             _count_mentions(
                 accumulator,
-                text_query, exclude_commercials, video_filter,
+                text_query, is_commercial, video_filter,
                 get_onscreen_face_filter(face_intervals),
                 get_onscreen_person_filter(person_intervals))
 
-        elif (count_var == Countable.videotime.name
-              or count_var == Countable.facetime.name):
+        elif (countable == Countable.videotime
+              or countable == Countable.facetime):
             assert_option_not_set(
-                'text', count_var, Countable.mentions.value)
-            if count_var == Countable.videotime.name:
+                'text', countable.value, Countable.mentions.value)
+            if countable == Countable.videotime:
                 assert_option_not_set(
-                    'gender', count_var, Countable.facetime.value)
+                    'gender', countable.value, Countable.facetime.value)
                 assert_option_not_set(
-                    'role', count_var, Countable.facetime.value)
+                    'role', countable.value, Countable.facetime.value)
                 assert_option_not_set(
-                    'person', count_var, Countable.facetime.value)
+                    'person', countable.value, Countable.facetime.value)
 
             caption_query = request.args.get(
                 'caption.text', '', type=str).strip()
@@ -545,14 +574,14 @@ def build_app(
             _count_time(
                 accumulator,
                 caption_query, caption_window,
-                exclude_commercials, video_filter,
-                None if count_var == Countable.videotime.name else
+                is_commercial, video_filter,
+                None if countable == Countable.videotime else
                 get_face_time_agg_fn(all_faces_ilistmap, person_intervals),
                 get_onscreen_face_isetmap(face_intervals),
                 get_onscreen_person_isetmap(person_intervals))
 
         else:
-            raise InvalidUsage('{} is not countable'.format(count_var))
+            raise NotImplementedError('unreachable code')
 
         resp = jsonify(accumulator.get())
         resp.cache_control.max_age = cache_seconds
@@ -597,8 +626,7 @@ def build_app(
 
     def _count_mentions_in_videos(
         videos: List[Video],
-        text_query_str: str,
-        exclude_commercials: bool,
+        text_query_str: str, is_commercial: Ternary,
         onscreen_face_filter: Optional[OnScreenFilterFn],
         onscreen_person_filter: Optional[OnScreenFilterFn]
     ) -> List[JsonObject]:
@@ -611,8 +639,8 @@ def build_app(
             ):
                 document = documents[result.id]
                 video = video_dict[document.name]
-
                 postings = result.postings
+
                 if onscreen_person_filter:
                     postings = [
                         p for p in postings
@@ -623,11 +651,16 @@ def build_app(
                         p for p in postings
                         if onscreen_face_filter(
                             video.id, milliseconds((p.start + p.end) / 2))]
-                if exclude_commercials:
+
+                if is_commercial != Ternary.both:
+
                     def in_commercial(p: CaptionIndex.Posting) -> bool:
                         return commercial_isetmap.is_contained(
                             video.id, int((p.start + p.end) / 2 * 1000), True)
-                    postings = [p for p in postings if not in_commercial(p)]
+
+                    is_commercial_bool = is_commercial == Ternary.true
+                    postings = [p for p in postings
+                                if is_commercial_bool == in_commercial(p)]
 
                 if len(postings) > 0:
                     results.append({
@@ -644,7 +677,7 @@ def build_app(
             if onscreen_person_filter:
                 raise InvalidUsage(
                     'not implemented: empty text and person filter')
-            if exclude_commercials:
+            if is_commercial != Ternary.both:
                 raise InvalidUsage(
                     'not implemented: empty text and commercial filter')
 
@@ -656,7 +689,7 @@ def build_app(
     def _count_time_in_videos(
         videos: List[Video],
         caption_query_str: str, caption_window: int,
-        exclude_commercials: bool,
+        is_commercial: Ternary,
         face_time_isect_fn: Optional[FaceTimeIntersectFn],
         onscreen_face_isetmap: Optional[MmapIntervalSetMapping],
         onscreen_person_isetmap: Optional[MmapIntervalSetMapping]
@@ -667,10 +700,15 @@ def build_app(
             video: Video,
             intervals: Optional[List[Interval]] = None
         ) -> None:
-            if exclude_commercials:
-                if intervals is None:
-                    intervals = get_entire_video_ms_interval(video)
-                intervals = commercial_isetmap.minus(video.id, intervals, True)
+            if is_commercial != Ternary.both:
+                if is_commercial == Ternary.true:
+                    intervals = intersect_isetmap(
+                        video, commercial_isetmap, intervals)
+                else:
+                    intervals = minus_isetmap(
+                        video, commercial_isetmap, intervals)
+                if not intervals:
+                    return
 
             if onscreen_person_isetmap:
                 intervals = intersect_isetmap(
@@ -684,7 +722,10 @@ def build_app(
                     return
 
             if face_time_isect_fn:
-                intervals = face_time_isect_fn(video, intervals)
+                intervals = face_time_isect_fn(
+                    video,
+                    intervals if intervals else
+                    get_entire_video_ms_interval(video))
                 if not intervals:
                     return
 
@@ -727,58 +768,55 @@ def build_app(
         if not ids:
             raise InvalidUsage('must specify video ids')
         videos = [video_by_id[i] for i in json.loads(ids)]
-        count_var = request.args.get('count', None, type=str)
-        exclude_commercials = (
-            request.args.get(
-                'commercials', DEFAULT_INCLUDE_COMMERCIALS, type=str
-            ).strip().lower() == 'false')
+        countable = get_countable()
+        is_commercial = get_is_commercial()
 
-        if count_var == Countable.mentions.name:
+        if countable == Countable.mentions:
             text_query = request.args.get('text', '', type=str).strip()
             assert_option_not_set(
-                'caption.text', count_var, Countable.facetime.value + ' or '
-                + Countable.videotime.value)
+                'caption.text', countable.value,
+                Countable.facetime.value + ' or ' + Countable.videotime.value)
             assert_option_not_set(
-                'caption.window', count_var, Countable.facetime.value + ' or '
-                + Countable.videotime.value)
+                'caption.window', countable.value,
+                Countable.facetime.value + ' or ' + Countable.videotime.value)
             assert_option_not_set(
-                'gender', count_var, Countable.facetime.value)
+                'gender', countable.value, Countable.facetime.value)
             assert_option_not_set(
-                'role', count_var, Countable.facetime.value)
+                'role', countable.value, Countable.facetime.value)
             assert_option_not_set(
-                'person', count_var, Countable.facetime.value)
+                'person', countable.value, Countable.facetime.value)
 
             results = _count_mentions_in_videos(
-                videos, text_query, exclude_commercials,
+                videos, text_query, is_commercial,
                 get_onscreen_face_filter(face_intervals),
                 get_onscreen_person_filter(person_intervals))
 
-        elif (count_var == Countable.videotime.name
-              or count_var == Countable.facetime.name):
+        elif (countable == Countable.videotime
+              or countable == Countable.facetime):
             assert_option_not_set(
-                'text', count_var, Countable.mentions.value)
-            if count_var == Countable.videotime.name:
+                'text', countable.value, Countable.mentions.value)
+            if countable == Countable.videotime:
                 assert_option_not_set(
-                    'gender', count_var, Countable.facetime.value)
+                    'gender', countable.value, Countable.facetime.value)
                 assert_option_not_set(
-                    'role', count_var, Countable.facetime.value)
+                    'role', countable.value, Countable.facetime.value)
                 assert_option_not_set(
-                    'person', count_var, Countable.facetime.value)
+                    'person', countable.value, Countable.facetime.value)
 
             caption_query = request.args.get(
                 'caption.text', '', type=str).strip()
             caption_window = request.args.get(
                 'caption.window', DEFAULT_TEXT_WINDOW, type=int)
             results = _count_time_in_videos(
-                videos, caption_query, caption_window, exclude_commercials,
-                None if count_var == Countable.videotime.name
+                videos, caption_query, caption_window, is_commercial,
+                None if countable == Countable.videotime
                 else get_face_time_intersect_fn(
                     all_faces_ilistmap, person_intervals),
                 get_onscreen_face_isetmap(face_intervals),
                 get_onscreen_person_isetmap(person_intervals))
 
         else:
-            raise InvalidUsage('{} is not countable'.format(count_var))
+            raise NotImplementedError('unreachable code')
 
         resp = jsonify(results)
         resp.cache_control.max_age = cache_seconds

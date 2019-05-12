@@ -5,6 +5,6 @@ const DEFAULT_COLORS = [
 
 const ENABLE_PLAYBACK = true;
 
-const DEFAULT_MENTIONS_QUERY = 'text="affordable care act"';
-const DEFAULT_FACETIME_QUERY = 'gender="female" AND role="host"';
-const DEFAULT_VIDEOTIME_QUERY = 'onscreen.face="female+host"';
+const DEFAULT_MENTIONS_QUERY = 'affordable care act';
+const DEFAULT_FACETIME_QUERY = 'male hosts';
+const DEFAULT_VIDEOTIME_QUERY = '';

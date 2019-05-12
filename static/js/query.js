@@ -2,16 +2,52 @@ const QUERY_DELIM = 'AND';
 const QUERY_ASSIGN = '=';
 const QUERY_NORMALIZE = 'NORMALIZE';
 const QUERY_MINUS = 'SUBTRACT';
+const QUERY_WHERE = 'WHERE';
 
-function parseBool(s) {
-  s = s.toUpperCase();
-  if (s == 'TRUE') {
-    return true;
-  } else if (s == 'FALSE') {
-    return false;
+function parseTernary(s) {
+  if (s.match(/^true$/i)) {
+    return 'true';
+  } else if (s.match(/^false$/i)) {
+    return 'false';
+  } else if (s.match(/^both$/i)) {
+    return 'both';
   } else {
-    throw Error(`${s} is neither true or false`);
+    throw Error(`${s} is neither true, false, nor both`);
   }
+}
+
+function parseIsCommercialString(s) {
+
+}
+
+function parseFaceTimeString(s) {
+  let result = {};
+  var m;
+  if (s == '') {
+    // do nothing
+  } else if (m = s.match(/^all$/i)) {
+    result.all = true;
+  } else if (m = s.match(/^(wo)?m(e|a)n$/i)) {
+    result.gender = m[1] ? 'female' : 'male';
+  } else if (m = s.match(/^(fe)?males?$/i)) {
+    result.gender = m[1] ? 'female' : 'male';
+  } else if (m = s.match(/^((fe)?male)? ?(non-?)?hosts?$/i)) {
+    if (m[1]) {
+      if (m[2]) {
+        result.gender = 'female';
+      } else {
+        result.gender = 'male';
+      }
+    }
+    if (m[3]) {
+      result.role = 'nonhost';
+    } else {
+      result.role = 'host';
+    }
+  } else {
+    result.person = s;
+  }
+  return result;
 }
 
 function translateFilterDict(filters) {
@@ -19,10 +55,21 @@ function translateFilterDict(filters) {
   Object.keys(filters).forEach(k => {
     let v = filters[k];
     let v_up = v.toUpperCase();
-    if (k == 'text' || k == 'caption.text'
-        || k == 'role' || k == 'gender' || k == 'onscreen.face'
-        || k == 'person' || k == 'onscreen.person') {
+    if (k == 'caption.text') {
       result[k] = v;
+    } else if (k == 'onscreen.face') {
+      let face_params = parseFaceTimeString(v);
+      if (face_params.all) {
+        result[k] = 'all';
+      } else if (face_params.gender && face_params.role) {
+        result[k] = `${face_params.gender}:${face_params.role}`;
+      } else if (face_params.gender) {
+        result[k] = face_params.gender;
+      } else if (face_params.role) {
+        result[k] = face_params.role;
+      } else {
+        result['onsreen.person'] = face_params.person;
+      }
     } else if (k == 'caption.window') {
       result[k] = parseInt(v);
     } else if (k == 'channel') {
@@ -58,13 +105,23 @@ function translateFilterDict(filters) {
       } else {
         result[k] = v;
       }
-    } else if (k == 'commercials') {
-      result[k] = parseBool(v);
+    } else if (k == 'iscommercial') {
+      result[k] = parseTernary(v);
     } else {
       throw Error(`Unknown filter: ${k}`);
     }
   });
   return result;
+}
+
+function unquoteString(s) {
+  if (s.length >= 2) {
+    if ((s[0] == '"' && s[s.length - 1] == '"') ||
+        (s[0] == '\'' && s[s.length - 1] == '\'')) {
+      s = s.substr(1, s.length - 2);
+    }
+  }
+  return s;
 }
 
 function parseFilterDict(filters_str) {
@@ -78,12 +135,11 @@ function parseFilterDict(filters_str) {
           throw Error(`Invalid filter: ${line}`);
         }
         let k = $.trim(line.substr(0, i));
-        var v = $.trim(line.substr(i + 1));
-        if ((v[0] == '"' && v[v.length - 1] == '"') ||
-            (v[0] == '\'' && v[v.length - 1] == '\'')) {
-          v = v.substr(1, v.length - 2);
+        if (filters.hasOwnProperty(k)) {
+          throw Error(`"${k}" is specified multiple times`)
+        } else {
+          filters[k] = $.trim(unquoteString($.trim(line.substr(i + 1))));
         }
-        filters[k] = v;
       }
     });
   }
@@ -113,7 +169,33 @@ class SearchableQuery {
   constructor(s, count) {
 
     function parse(s) {
-      return translateFilterDict(parseFilterDict($.trim(s)));
+      var params, countable_str;
+      var has_where = false;
+      if (s.includes(QUERY_WHERE)) {
+        let [a, b] = s.split(QUERY_WHERE);
+        countable_str = a;
+        params = translateFilterDict(parseFilterDict($.trim(b)));
+        has_where = true;
+      } else {
+        countable_str = s;
+        params = {};
+      }
+      countable_str = $.trim(unquoteString($.trim(countable_str)));
+      if (countable_str.length > 0) {
+        if (count == 'mentions') {
+          params.text = countable_str;
+        } else if (count == 'facetime') {
+          let face_params = parseFaceTimeString(countable_str);
+          if (face_params.gender) params.gender = face_params.gender;
+          if (face_params.role) params.role = face_params.role;
+          if (face_params.person) params.person = face_params.person;
+        } else if (count == 'videotime') {
+          if (!has_where) {
+            params = translateFilterDict(parseFilterDict($.trim(countable_str)));
+          }
+        }
+      }
+      return params;
     }
 
     this.count = count;
@@ -123,13 +205,13 @@ class SearchableQuery {
 
     var main_str;
     if (s.includes(QUERY_NORMALIZE)) {
-      let parts = s.split(QUERY_NORMALIZE);
-      main_str = parts[0];
-      this.normalize_args = parse(parts[1]);
+      let [a, b] = s.split(QUERY_NORMALIZE);
+      main_str = a;
+      this.normalize_args = parse(b);
     } else if (s.includes(QUERY_MINUS)) {
-      let parts = s.split(QUERY_MINUS);
-      main_str = parts[0];
-      this.subtract_args = parse(parts[1]);
+      let [a, b] = s.split(QUERY_MINUS);
+      main_str = a;
+      this.subtract_args = parse(b);
     } else {
       main_str = s;
     }
@@ -138,7 +220,7 @@ class SearchableQuery {
 
   search(chart_options, onSuccess, onError) {
     if (this.count != chart_options.count) {
-      throw 'count type changed';
+      throw Error('count type changed');
     }
 
     function getParams(args, detailed) {

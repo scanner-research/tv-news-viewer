@@ -57,58 +57,58 @@ MENTION_VIEWS = [
     WidgetView(
         'Plot mentions of Hillary Clinton vs Donald Trump',
         Countable.mentions,
-        ['text="Donald Trump"', 'text="Hillary Clinton"']
+        ['Donald Trump', 'Hillary Clinton']
     ),
     WidgetView(
         'Plot net number of mentions of Hillary Clinton vs Donald Trump',
         Countable.mentions,
-        ['text="Hillary Clinton" MINUS text="Donald Trump"']
+        ['Hillary Clinton SUBTRACT Donald Trump']
     ),
     WidgetView(
         'Plot mentions of "Donald Trump" by channel',
         Countable.mentions,
         [
-            'text="Donald Trump" AND channel="CNN"',
-            'text="Donald Trump" AND channel="FOX"',
-            'text="Donald Trump" AND channel="MSNBC"'
+            '"Donald Trump" WHERE channel="CNN"',
+            '"Donald Trump" WHERE channel="FOX"',
+            '"Donald Trump" WHERE channel="MSNBC"'
         ]
     ),
     WidgetView(
         'Plot normalized mentions of "Donald Trump" by channel',
         Countable.mentions,
         [
-            'text="Donald Trump" AND channel="CNN" NORMALIZE channel="CNN"',
-            'text="Donald Trump" AND channel="FOX" NORMALIZE channel="FOX"',
-            'text="Donald Trump" AND channel="MSNBC" NORMALIZE channel="MSNBC"'
+            '"Donald Trump" WHERE channel="CNN" NORMALIZE channel="CNN"',
+            '"Donald Trump" WHERE channel="FOX" NORMALIZE channel="FOX"',
+            '"Donald Trump" WHERE channel="MSNBC" NORMALIZE channel="MSNBC"'
         ]
     ),
     WidgetView(
         'Plot mentions of "geico" including and excluding commercials',
         Countable.mentions,
         [
-            'text="geico"',
-            'text="geico" AND commercials=true'
+            'geico WHERE iscommercial=false',
+            'geico WHERE iscommercial=true'
         ]
     ),
     WidgetView(
         'Plot mentions of "abortion" when a woman vs. a man is onsreen',
         Countable.mentions,
         [
-            'text="abortion" AND onscreen.face="female"',
-            'text="abortion" AND onscreen.face="male"'
+            'abortion WHERE onscreen.face="female"',
+            'abortion WHERE onscreen.face="male"'
         ]
     ),
     WidgetView(
         'Plot mentions of "collusion" when Robert Mueller is on screen',
         Countable.mentions,
-        ['text="collusion" AND onscreen.person="Robert Mueller"']
+        ['collusion WHERE onscreen.face="Robert Mueller"']
     ),
     WidgetView(
         'Plot mentions of "good morning" in the morning vs. evening',
         Countable.mentions,
         [
-            'text="good morning" AND hour="4-11"',
-            'text="good morning" AND hour="15-23"'
+            '"good morning" WHERE hour="4-11"',
+            '"good morning" WHERE hour="15-23"'
         ]
     )
 ]
@@ -123,77 +123,77 @@ FACE_TIME_VIEWS = [
         'Plot proportion of face screen time of hosts over time (by channel)',
         Countable.facetime,
         [
-            'role="host" NORMALIZE',
-            'role="host" AND channel=CNN NORMALIZE channel=CNN',
-            'role="host" AND channel=FOX NORMALIZE channel=FOX',
-            'role="host" AND channel=MSNBC NORMALIZE channel=MSNBC'
+            'host NORMALIZE',
+            'host WHERE channel=CNN NORMALIZE WHERE channel=CNN',
+            'host WHERE channel=FOX NORMALIZE WHERE channel=FOX',
+            'host WHERE channel=MSNBC NORMALIZE WHERE channel=MSNBC'
         ]
     ),
     WidgetView(
         'Plot proportion of face time of women (by channel)',
         Countable.facetime,
         [
-            'gender="female" NORMALIZE',
-            'gender="female" AND channel=CNN NORMALIZE channel=CNN',
-            'gender="female" AND channel=FOX NORMALIZE channel=FOX',
-            'gender="female" AND channel=MSNBC NORMALIZE channel=CNN'
+            'women NORMALIZE',
+            'women WHERE channel=CNN NORMALIZE WHERE channel=CNN',
+            'women WHERE channel=FOX NORMALIZE WHERE channel=FOX',
+            'women WHERE channel=MSNBC NORMALIZE WHERE channel=CNN'
         ]
     ),
     WidgetView(
         'Plot proportion of face time of female vs male hosts',
         Countable.facetime,
         [
-            'gender="male" AND role="host" NORMALIZE role="host"',
-            'gender="female" AND role="host" NORMALIZE role="host"'
+            'male hosts WHEREMALIZE role="host"',
+            'female hosts WHEREMALIZE role="host"'
         ]
     ),
     WidgetView(
         'Plot proportion of face time of female vs male hosts on FOX News',
         Countable.facetime,
         [
-            'gender="male" AND role="host" AND channel=FOX NORMALIZE role="host" AND channel="FOX"',
-            'gender="female" AND role="host" AND channel=FOX NORMALIZE role="host" AND channel="FOX"'
+            'male hosts WHERE channel=FOX NORMALIZE hosts WHERE channel="FOX"',
+            'female hosts WHERE channel=FOX NORMALIZE hosts WHERE channel="FOX"'
         ]
     ),
     WidgetView(
         'Plot proportion of face time of female vs male hosts on "Morning Joe"',
         Countable.facetime,
         [
-            'gender="male" AND role="host" AND show="Morning Joe" NORMALIZE role="host" AND show="Morning Joe"',
-            'gender="female" AND role="host" AND show="Morning Joe" NORMALIZE role="host" AND show="Morning Joe"'
+            'male hosts WHERE show="Morning Joe" NORMALIZE hosts WHERE show="Morning Joe"',
+            'female hosts WHERE show="Morning Joe" NORMALIZE hosts WHERE show="Morning Joe"'
         ]
     ),
     WidgetView(
         'Plot male vs. female screen time when "isis" is mentioned',
         Countable.facetime,
         [
-            'gender="male" AND caption.text="isis"',
-            'gender="female" AND caption.text="isis"',
+            'men WHERE caption.text="isis"',
+            'women WHERE caption.text="isis"',
         ]
     ),
     WidgetView(
         'Plot male and female screen time when "Hillary Clinton" is on screen',
         Countable.facetime,
         [
-            'gender="male" AND onscreen.person="Hillary Clinton"',
-            'gender="female" AND onscreen.person="Hillary Clinton" MINUS person="Hillary Clinton"',
-            'person="Hillary Clinton"'
+            'men WHERE onscreen.face="Hillary Clinton"',
+            'women WHERE onscreen.face="Hillary Clinton" SUBTRACT "Hillary Clinton"',
+            '"Hillary Clinton"'
         ]
     ),
     WidgetView(
         'Plot proportion of male and female host screen time when "Hillary Clinton" is on screen',
         Countable.facetime,
         [
-            'gender="male" AND role="host" AND onscreen.person="Hillary Clinton" NORMALIZE role="host" AND onscreen.person="Hillary Clinton"',
-            'gender="female" AND role="host" AND onscreen.person="Hillary Clinton" NORMALIZE role="host" AND onscreen.person="Hillary Clinton"',
+            'male hosts WHERE onscreen.face="Hillary Clinton" NORMALIZE hosts WHERE onscreen.face="Hillary Clinton"',
+            'female hosts WHERE onscreen.face="Hillary Clinton" NORMALIZE hosts WHERE onscreen.face="Hillary Clinton"',
         ]
     ),
     WidgetView(
         'Plot proportion of total face time for "Donald Trump" and "Hillary Clinton"',
         Countable.facetime,
         [
-            'person="Donald Trump" NORMALIZE',
-            'person="Hillary Clinton" NORMALIZE'
+            '"Donald Trump" NORMALIZE',
+            '"Hillary Clinton" NORMALIZE'
         ]
     )
 ]
@@ -205,13 +205,13 @@ VIDEO_TIME_VIEWS = [
         ['', 'channel=CNN', 'channel=FOX', 'channel=MSNBC']
     ),
     WidgetView(
-        'Plot proportion of video that is not commercials (by channel)',
+        'Plot proportion of video that is commercials (by channel)',
         Countable.videotime,
         [
-            'commercials=false NORMALIZE commercials=true',
-            'channel=CNN AND commercials=false NORMALIZE channel=CNN AND commercials=true',
-            'channel=FOX AND commercials=false NORMALIZE channel=FOX AND commercials=true',
-            'channel=MSNBC AND commercials=false NORMALIZE channel=MSNBC AND commercials=true'
+            'iscommercial=true NORMALIZE iscommercial=both',
+            'channel=CNN AND iscommercial=true NORMALIZE channel=CNN AND iscommercial=both',
+            'channel=FOX AND iscommercial=true NORMALIZE channel=FOX AND iscommercial=both',
+            'channel=MSNBC AND iscommercial=true NORMALIZE channel=MSNBC AND iscommercial=both'
         ],
     ),
     WidgetView(
@@ -238,10 +238,10 @@ VIDEO_TIME_VIEWS = [
         'Plot proportion of video when there is a female host on screen (by channel)',
         Countable.videotime,
         [
-            'onscreen.face=female+host NORMALIZE',
-            'onscreen.face=female+host AND channel=CNN NORMALIZE channel=CNN',
-            'onscreen.face=female+host AND channel=FOX NORMALIZE channel=FOX',
-            'onscreen.face=female+host AND channel=MSNBC NORMALIZE channel=MSNBC'
+            'onscreen.face="female host" NORMALIZE',
+            'onscreen.face="female host" AND channel=CNN NORMALIZE channel=CNN',
+            'onscreen.face="female host" AND channel=FOX NORMALIZE channel=FOX',
+            'onscreen.face="female host" AND channel=MSNBC NORMALIZE channel=MSNBC'
         ]
     )
 ]

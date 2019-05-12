@@ -222,7 +222,7 @@
     </p>
 
     <div class="container">
-      <h4>Examples</h4>
+      <h4>Example queries</h4>
       <table>
         <tr>
           <th>Counting</th>
@@ -231,67 +231,56 @@
         </tr>
         <tr>
           <td>mentions</td>
-          <td>text="affordable care act" AND channel=CNN AND onscreen.person="Barack Obama"</td>
+          <td>affordable care act WHERE channel="CNN" AND onscreen.person="Barack Obama"</td>
           <td><i>mentions of "affordable care act" on CNN when Barack Obama's face is on screen</i></td>
         </tr>
         <tr>
           <td>face&nbsp;time</td>
-          <td>gender="female" AND role="host" AND channel=FOX</td>
-          <td><i>screen time of female hosts on FOX News</i></td>
+          <td>
+            female hosts WHERE channel="FOX" <br>
+            Barack Obama WHERE channel="FOX"
+          </td>
+          <td>
+            <i>face time of female hosts on FOX News</i> <br>
+            <i>face time of Barack Obama on FOX News</i>
+          </td>
         </tr>
         <tr>
           <td>video&nbsp;time</td>
-          <td>onscreen.face="female+host" AND caption.text="science" AND caption.window=30</td>
-          <td><i>seconds of video where a female host is onscreen and the word "science" is mentioned in the captions within 30s</i></td>
+          <td>onscreen.face="women" AND caption.text="science"</td>
+          <td><i>seconds of video where a female host is onscreen and the word "science" is mentioned</i></td>
         </tr>
       </table>
     </div>
 
     <div class="container">
-      <h4>Countables</h4>
+      <h4>Countable query</h4>
       <table>
         <tr>
-          <th>Name</th>
-          <th>Valid for counting</th>
+          <th>Mode</th>
           <th>Description</th>
           <th>Values</th>
           <th>Default</th>
           <th>Example</th>
         </tr>
         <tr>
-          <td>text</td>
           <td>mentions</td>
           <td>phrase mentions in the captions</td>
           <td><a href="https://github.com/scanner-research/caption-index/blob/master/captions/query.py" target="_blank">grammar</a></td>
           <td>n/a</td>
-          <td>text="affordable care act"</td>
+          <td>affordable care act</td>
         </tr>
         <tr>
-          <td>gender</td>
           <td>face time</td>
-          <td>gender face time (height &ge; 20%)</td>
-          <td>all, male, female</td>
+          <td>screen time for face (height &ge; 20%)</td>
+          <td>
+            all, men, women, (fe)male (non)hosts, <br>
+            name of person <a href="/people" target="_blank">(list of people)</a>
+          </td>
           <td>all</td>
-          <td>gender=male</td>
+          <td>female hosts<br>Barack Obama</td>
         </tr>
         <tr>
-          <td>role</td>
-          <td>face time</td>
-          <td>host face time (height &ge; 20%)</td>
-          <td>all, host, nonhost</td>
-          <td>all</td>
-          <td>role=host</td>
-        </tr>
-        <tr>
-          <td>person</td>
-          <td>face time</td>
-          <td>person's face time (height &ge; 20%)</td>
-          <td><a href="/people" target="_blank">list of people</a></td>
-          <td>n/a</td>
-          <td>person="barack obama"</td>
-        </tr>
-        <tr>
-          <td></td>
           <td>video time</td>
           <td>no countable options needed</td>
           <td></td>
@@ -340,11 +329,11 @@
           <td>dayofweek="sat-sun"</td>
         </tr>
         <tr>
-          <td>commercials</td>
-          <td>include commercials</td>
-          <td>true, false</td>
-          <td>{{ default_include_commercials }}</td>
-          <td>commercials={{ default_include_commercials }}</td>
+          <td>iscommercial</td>
+          <td>filter or select commercials</td>
+          <td>true, false, both</td>
+          <td>{{ default_is_commercial }}</td>
+          <td>iscommercial={{ default_is_commercial }}</td>
         </tr>
         <tr>
           <td>caption.text</td>
@@ -362,20 +351,18 @@
         </tr>
         <tr>
           <td>onscreen.face</td>
-          <td>face is on screen (height &ge; 20%)</td>
           <td>
-            all, male, female, host, nonhost,<br>
-            {male,female}+{host,nonhost}
+            at least one matching face is on screen<br>
+            (height &ge; 20%)</td>
+          <td>
+            all, men, women, (fe)male (non)hosts, <br>
+            name of person <a href="/people" target="_blank">(list of people)</a>
           </td>
           <td>n/a</td>
-          <td>onscreen.face="male+host"</td>
-        </tr>
-        <tr>
-          <td>onscreen.person</td>
-          <td>person is on screen (height &ge; 20%)</td>
-          <td><a href="/people" target="_blank">list of people</a></td>
-          <td>n/a</td>
-          <td>onscreen.person="barack obama"</td>
+          <td>
+            onscreen.face="male hosts" <br>
+            onscreen.face="Barack Obama"
+          </td>
         </tr>
       </table>
     </div>
@@ -393,13 +380,13 @@
           <td>NORMALIZE</td>
           <td>query1 NORMALIZE query2</td>
           <td><i>divide query1's results by query2's results</i></td>
-          <td>text="united states" NORMALIZE</td>
+          <td>"united states" NORMALIZE</td>
         </tr>
         <tr>
           <td>SUBTRACT</td>
           <td>query1 SUBTRACT query2</td>
           <td><i>subtract query2's results from query1's results</i></td>
-          <td>text="united" SUBTRACT text="united states"</td>
+          <td>"united" SUBTRACT "united states"</td>
         </tr>
       </table>
     </div>
@@ -583,7 +570,7 @@
       }
 
       Promise.all(lines.map(line => {
-        console.log('Executing query:', line);
+        console.log('Executing query:', line.query);
 
         function onError(xhr) {
           var msg;
@@ -592,8 +579,9 @@
           } catch {
             msg = 'Unknown server error';
           }
-          alert(`[Query failed. The chart may be incomplete.]\n\n${msg}`);
-          console.log('Failed:', query, xhr);
+          alert(`[Query failed] ${line.query.query}\n\n${msg}\n\nThe chart may be incomplete.`);
+
+          console.log('Failed:', line.query, xhr);
         }
 
         return line.query.search(

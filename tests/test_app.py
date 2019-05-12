@@ -113,8 +113,8 @@ TEST_SHOW_OPTIONS = [None, 'The Situaton Room']
 TEST_CHANNEL_OPTIONS = [None, 'CNN', 'FOXNEWS', 'MSNBC']
 TEST_HOUR_OPTIONS = [None, '9-5', '5', '5,6', '5-6,7']
 TEST_DAYOFWEEK_OPTIONS = [None, 'mon-wed,thu,fri', 'sat', 'sat-sun', 'sat,sun']
-TEST_COMMERCIAL_OPTIONS = [None, 'false', 'true']
-TEST_ONSCREEN_FACE_OPTIONS = [None, 'female+host', 'female', 'all']
+TEST_IS_COMMERCIAL_OPTIONS = [None, 'false', 'true', 'both']
+TEST_ONSCREEN_FACE_OPTIONS = [None, 'female:host', 'female', 'all']
 TEST_ONSCREEN_PERSON_OPTIONS = [None, 'wolf blitzer']
 TEST_TEXT_WINDOW_OPTIONS = [None, '0', '15', '120']
 
@@ -140,7 +140,7 @@ def test_count_mentions(client: FlaskClient) -> None:
             'show': TEST_SHOW_OPTIONS,
             'hour': TEST_HOUR_OPTIONS,
             'dayofweek': TEST_DAYOFWEEK_OPTIONS,
-            'commercials': TEST_COMMERCIAL_OPTIONS,
+            'iscommercial': TEST_IS_COMMERCIAL_OPTIONS,
             'onscreen.face': TEST_ONSCREEN_FACE_OPTIONS,
             'onscreen.person': TEST_ONSCREEN_PERSON_OPTIONS
         }, _check_count_result, n=100)
@@ -168,7 +168,7 @@ def test_count_face_time(client: FlaskClient) -> None:
             'show': TEST_SHOW_OPTIONS,
             'hour': TEST_HOUR_OPTIONS,
             'dayofweek': TEST_DAYOFWEEK_OPTIONS,
-            'commercials': TEST_COMMERCIAL_OPTIONS,
+            'iscommercial': TEST_IS_COMMERCIAL_OPTIONS,
             'onscreen.face': TEST_ONSCREEN_FACE_OPTIONS,
             'onscreen.person': TEST_ONSCREEN_PERSON_OPTIONS,
             'caption.window': TEST_TEXT_WINDOW_OPTIONS,
@@ -189,7 +189,7 @@ def test_count_face_time(client: FlaskClient) -> None:
             'show': TEST_SHOW_OPTIONS,
             'hour': TEST_HOUR_OPTIONS,
             'dayofweek': TEST_DAYOFWEEK_OPTIONS,
-            'commercials': TEST_COMMERCIAL_OPTIONS,
+            'iscommercial': TEST_IS_COMMERCIAL_OPTIONS,
             'onscreen.face': TEST_ONSCREEN_FACE_OPTIONS,
             'onscreen.person': TEST_ONSCREEN_PERSON_OPTIONS,
             'caption.window': TEST_TEXT_WINDOW_OPTIONS,
@@ -217,7 +217,7 @@ def test_count_video_time(client: FlaskClient) -> None:
             'show': TEST_SHOW_OPTIONS,
             'hour': TEST_HOUR_OPTIONS,
             'dayofweek': TEST_DAYOFWEEK_OPTIONS,
-            'commercials': TEST_COMMERCIAL_OPTIONS,
+            'iscommercial': TEST_IS_COMMERCIAL_OPTIONS,
             'onscreen.face': TEST_ONSCREEN_FACE_OPTIONS,
             'onscreen.person': TEST_ONSCREEN_PERSON_OPTIONS,
             'caption.window': TEST_TEXT_WINDOW_OPTIONS,
@@ -261,7 +261,7 @@ def test_search_mentions_in_videos(client: FlaskClient) -> None:
             'count': ['mentions'],
             # General options
             'text': TEST_COMMON_TEXT_OPTIONS,
-            'commercials': TEST_COMMERCIAL_OPTIONS,
+            'iscommercial': TEST_IS_COMMERCIAL_OPTIONS,
             'onscreen.face': TEST_ONSCREEN_FACE_OPTIONS,
             'onscreen.person': TEST_ONSCREEN_PERSON_OPTIONS
         }, _check_search_in_video_result)
@@ -277,7 +277,7 @@ def test_search_face_time_in_videos(client: FlaskClient) -> None:
             'gender': [None, 'female'],
             'role': [None, 'host'],
             # General options
-            'commercials': TEST_COMMERCIAL_OPTIONS,
+            'iscommercial': TEST_IS_COMMERCIAL_OPTIONS,
             'onscreen.face': TEST_ONSCREEN_FACE_OPTIONS,
             'onscreen.person': TEST_ONSCREEN_PERSON_OPTIONS,
             'caption.window': TEST_TEXT_WINDOW_OPTIONS,
@@ -292,7 +292,7 @@ def test_search_face_time_in_videos(client: FlaskClient) -> None:
             'count': ['facetime'],
             'person': ['donald trump'],
             # General options
-            'commercials': TEST_COMMERCIAL_OPTIONS,
+            'iscommercial': TEST_IS_COMMERCIAL_OPTIONS,
             'onscreen.face': TEST_ONSCREEN_FACE_OPTIONS,
             'onscreen.person': TEST_ONSCREEN_PERSON_OPTIONS,
             'caption.window': TEST_TEXT_WINDOW_OPTIONS,
@@ -307,7 +307,7 @@ def test_search_time_in_videos(client: FlaskClient) -> None:
             # Count options
             'count': ['videotime'],
             # General options
-            'commercials': TEST_COMMERCIAL_OPTIONS,
+            'iscommercial': TEST_IS_COMMERCIAL_OPTIONS,
             'onscreen.face': TEST_ONSCREEN_FACE_OPTIONS,
             'onscreen.person': TEST_ONSCREEN_PERSON_OPTIONS,
             'caption.window': TEST_TEXT_WINDOW_OPTIONS,
