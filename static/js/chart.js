@@ -86,10 +86,24 @@ function chartHrefHandler(color, t, video_div_id) {
     video_count: video_ids.length
   };
   console.log('Click params:', params);
-  let url = `/videos?params=${encodeURIComponent(JSON.stringify(params))}`;
   if (video_div_id != 'null') {
-    $(video_div_id).html($(`<iframe src="${url}" width="100%" height="600" frameBorder="0">`));
+    $(video_div_id).html($(`<iframe src="/videos" width="100%" frameBorder="0">`));
+    let iframe_selector = video_div_id + ' iframe';
+    let iframe = $(iframe_selector)[0];
+    $(iframe_selector).on('load', () => {
+      iframe.contentWindow.loadVideos(params);
+      function resizeIframe() {
+        if (document.contains(iframe)) {
+          iframe.height = iframe.contentWindow.document.body.scrollHeight + 35;
+          setTimeout(resizeIframe, 500);
+        } else {
+          console.log('height timer terminated');
+        }
+      }
+      setTimeout(resizeIframe, 500)
+    });
   } else {
+    let url = `/videos?params=${encodeURIComponent(JSON.stringify(params))}`;
     window.open(url, '_blank');
   }
 }

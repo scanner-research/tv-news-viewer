@@ -36,7 +36,7 @@ function loadJsonData(json_data) {
             let [start, end] = interval;
             return new Interval(
               new Bounds(start, Math.max(end, start + INTERVAL_PADDING)),
-              {spatial_type: new SpatialType_Temporal(), metadata: {}}
+              {spatial_type: SpatialType_Temporal.get_instance(), metadata: {}}
             );
           }))
       }, {

@@ -551,7 +551,13 @@
       return queries;
     }
 
+    function reset() {
+      $('#vgrid').empty();
+    }
+
     function search() {
+      reset()
+
       let chart_options = getChartOptions();
       let lines = getRawQueries().map(raw_query => {
         var parsed_query;

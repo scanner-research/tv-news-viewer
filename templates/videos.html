@@ -29,11 +29,6 @@
            alt="Stanford University"><p>TV News Viewer</p>
     </div>
   </div>
-  <script>
-    if (window.location == window.parent.location) {
-      $('.top-header').show();
-    }
-  </script>
 
   <div class="container">
     <p id="text-info"></p>
@@ -41,32 +36,40 @@
   </div>
 
   <script>
-    function showVideos(json_data) {
-      let vgrid_settings = {
-        {% if frameserver_endpoint is not none %}
-        frameserver_endpoint: '{{ frameserver_endpoint }}',
-        use_frameserver: true,
-        {% endif %}
-        video_endpoint: 'https://storage.cloud.google.com/esper'
-      };
-      renderVGrid(json_data, vgrid_settings);
+    function loadVideos(params) {
+      var video_ids = params.video_ids;
+      $("#text-info").html(
+        `Showing results from ${video_ids.length} of ${params.video_count} videos from ${params.time}. <font color="${params.color}"><b>(${params.query})</b></font>`
+      );
+      let query = new SearchableQuery(params.query, params.count);
+      console.log('Executing query:', query);
+      query.searchInVideos(
+        video_ids,
+        json_data => {
+          let vgrid_settings = {
+            {% if frameserver_endpoint is not none %}
+            frameserver_endpoint: '{{ frameserver_endpoint }}',
+            use_frameserver: true,
+            {% endif %}
+            video_endpoint: 'https://storage.cloud.google.com/esper',
+            show_timeline: true,
+            show_captions: false,
+            paginate: false
+          };
+          renderVGrid(json_data, vgrid_settings);
+        },
+        error => {
+          alert('Search failed.');
+          console.log(error);
+        }
+      );
     }
 
-    let params = JSON.parse(decodeURIComponent((new URL(document.location)).searchParams.get('params')));
-    var video_ids = params.video_ids;
-
-    $("#text-info").html(
-      `Showing results from ${video_ids.length} of ${params.video_count} videos from ${params.time}. <font color="${params.color}"><b>(${params.query})</b></font>`
-    );
-
-    let query = new SearchableQuery(params.query, params.count);
-    console.log('Executing query:', query);
-    query.searchInVideos(
-      video_ids, showVideos, xhr => {
-        alert('Search failed.');
-        console.log(xhr);
-      }
-    );
+    if (window.location == window.parent.location) {
+      $('.top-header').show();
+      let params = JSON.parse(decodeURIComponent((new URL(document.location)).searchParams.get('params')));
+      loadVideos(params);
+    }
   </script>
   <script src="{{ url_for('static', filename='vgrid/bundle.js') }}"></script>
 </body>
