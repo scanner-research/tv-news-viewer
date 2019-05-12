@@ -128,41 +128,43 @@
     </div>
   </div>
   <div class="container">
-    <table id="search-table">
-      <tr class="header">
-        <th></th>
-        <th>Color</th>
-        <th width="95%">Query <a href="#" onclick="toggleQueryHelp(); return false;"
-                               id="toggle-help">(show help)</a></th>
-      </tr>
-      <tr name="controls" id="chart-options">
-        <td>
-          <button type="button" class="btn btn-secondary" id='add-row-btn'>+</button>
-        </td>
-        <td>&nbsp;</td>
-        <td>
-          Count
-          <select class="selectpicker" id="countVar" data-width="fit">
-            <option value="mentions" selected="selected">mentions</option>
-            <option value="facetime">face time</option>
-            <option value="videotime">video time</option>
-          </select>
-          between
-          <input type="text" class="datepicker" id="startDate">
-          and
-          <input type="text" class="datepicker" id="endDate">
-          aggregated by
-          <select class="selectpicker" id="aggregateBy" data-width="fit">
-            <option value="year">year</option>
-            <option value="month" selected="selected">month</option>
-            <option value="week">week</option>
-            <option value="day">day</option>
-          </select>
-          . &nbsp;
-          <button type="button" class="btn btn-primary" id="search">Search the news!</button>
-        </td>
-      </tr>
-    </table>
+    <form action="javascript:void(0);" onsubmit="search();">
+      <table id="search-table">
+        <tr class="header">
+          <th></th>
+          <th>Color</th>
+          <th width="95%">Query <a href="#" onclick="toggleQueryHelp(); return false;"
+                                 id="toggle-help">(show help)</a></th>
+        </tr>
+        <tr name="controls" id="chart-options">
+          <td>
+            <button type="button" class="btn btn-outline-secondary btn-sm" id='add-row-btn'>+</button>
+          </td>
+          <td>&nbsp;</td>
+          <td>
+            Count
+            <select class="selectpicker" id="countVar" data-width="fit">
+              <option value="mentions" selected="selected">mentions</option>
+              <option value="facetime">face time</option>
+              <option value="videotime">video time</option>
+            </select>
+            between
+            <input type="text" class="datepicker" id="startDate">
+            and
+            <input type="text" class="datepicker" id="endDate">
+            aggregated by
+            <select class="selectpicker" id="aggregateBy" data-width="fit">
+              <option value="year">year</option>
+              <option value="month" selected="selected">month</option>
+              <option value="week">week</option>
+              <option value="day">day</option>
+            </select>
+            . &nbsp;
+            <input type="submit" class="btn btn-primary btn-sm" value="Search the news!">
+          </td>
+        </tr>
+      </table>
+    </form>
   </div>
 
   <script>
@@ -462,7 +464,7 @@
       let color = query ? query.color : getColor();
       let text = query ? query.text : getDefaultQuery();
       let html = `<tr name="query" data-color="${color}">
-        <td><button type="button" class="btn btn-secondary remove-row-btn" onclick="removeRow('${color}');">-</button></td>
+        <td><button type="button" class="btn btn-outline-secondary btn-sm remove-row-btn" onclick="removeRow('${color}');">-</button></td>
         <td><div class="color-box" style="background-color: ${color};"></div></td>
         <td><input type="text" name="query" value='${text}'</td>
       </tr>`;
@@ -590,7 +592,6 @@
           onError);
       })).then(onDone).catch(onDone);
     }
-    $('#search').click(search);
 
     /* Load initial plot */
     let params = (new URL(document.location)).searchParams;

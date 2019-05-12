@@ -332,7 +332,7 @@ def build_app(
             start_date=format_date(start_date),
             end_date=format_date(end_date), shows=all_shows,
             default_text_window=DEFAULT_TEXT_WINDOW,
-            default_is_commercial=DEFAULT_IS_COMMERCIAL)
+            default_is_commercial=DEFAULT_IS_COMMERCIAL.name)
 
     @app.route('/embed')
     def embed() -> Response:
