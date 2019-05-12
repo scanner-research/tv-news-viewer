@@ -2,7 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import {
   VGrid, Database, Table, Bounds, Interval, IntervalSet,
-  SpatialType_Bbox, SpatialType_Caption
+  SpatialType_Temporal, SpatialType_Caption
 } from '@wcrichto/vgrid';
 
 import '@wcrichto/vgrid/dist/vgrid.css';
@@ -36,7 +36,7 @@ function loadJsonData(json_data) {
             let [start, end] = interval;
             return new Interval(
               new Bounds(start, Math.max(end, start + INTERVAL_PADDING)),
-              {spatial_type: new SpatialType_Bbox(), metadata: {}}
+              {spatial_type: new SpatialType_Temporal(), metadata: {}}
             );
           }))
       }, {

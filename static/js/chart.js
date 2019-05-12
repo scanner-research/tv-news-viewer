@@ -1,6 +1,6 @@
 /* Embed a chart using vega-embed */
 
-const MAX_DISPLAY_VIDEOS = 25;
+const MAX_DISPLAY_VIDEOS = 12;
 
 function shuffle(a) {
   for (let i = a.length - 1; i > 0; i--) {
