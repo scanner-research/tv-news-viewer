@@ -232,7 +232,7 @@ function loadChart(div_id, chart_options, search_results, dimensions) {
           title: null,
           axis: {
             titleFontSize: 12, labelFontSize: 12, tickCount: x_tick_count,
-            format: getDateFormat(chart_options.aggregate), labelAngle: -10
+            format: getDateFormat(chart_options.aggregate), labelAngle: -30
           },
           scale: {
             domain: [chart_options.start_date, chart_options.end_date]

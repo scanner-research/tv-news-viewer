@@ -91,7 +91,7 @@ MENTION_VIEWS = [
         ]
     ),
     WidgetView(
-        'Plot mentions of "abortion" when a woman vs. a man is onsreen',
+        'Plot mentions of "abortion" when a woman vs. a man is on screen',
         Countable.mentions,
         [
             'abortion WHERE onscreen.face="female"',
@@ -143,8 +143,8 @@ FACE_TIME_VIEWS = [
         'Plot proportion of face time of female vs male hosts',
         Countable.facetime,
         [
-            'male hosts WHEREMALIZE role="host"',
-            'female hosts WHEREMALIZE role="host"'
+            'male hosts NORMALIZE hosts',
+            'female hosts NORMALIZE hosts'
         ]
     ),
     WidgetView(
