@@ -3,6 +3,7 @@
 <head>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.11/lodash.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/vega@5.3.4"></script>
   <script src="https://cdn.jsdelivr.net/npm/vega-lite@3.1.0"></script>
   <script src="https://cdn.jsdelivr.net/npm/vega-embed@4.0.0"></script>
@@ -90,8 +91,9 @@
 
     let search_results = {};
     function onDone() {
-      loadChart('#chart', chart_options, search_results,
-                {width: width, height: height});
+      new Chart(
+        chart_options, search_results, {width: width, height: height}
+      ).load('#chart', null);
       renderText(lines);
     };
 

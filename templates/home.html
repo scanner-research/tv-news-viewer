@@ -414,6 +414,8 @@
     <textarea readonly rows="3" name="embed"></textarea>
   </div>
 
+  <div class="container" id="vgrid"></div>
+
   <div id="shade">&nbsp;</div>
 
   <script>
@@ -515,9 +517,9 @@
     }
 
     function displaySearchResults(chart_options, lines, search_results) {
-      loadChart('#chart', chart_options, search_results, {
+      new Chart(chart_options, search_results, {
         width: $("#chart-area").width(), height: EMBED_DIMS.height
-      });
+      }).load('#chart', '#vgrid');
 
       if (Object.keys(search_results).length == lines.length) {
         // Allow embedding if all queries are ok

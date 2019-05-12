@@ -23,16 +23,20 @@
   </style>
 </head>
 <body>
-  <div class="top-header">
+  <div class="top-header" style="display: none">
     <div class="container">
       <img src="{{ url_for('static', filename='stanford.png') }}"
            alt="Stanford University"><p>TV News Viewer</p>
     </div>
   </div>
-
-  <div class="container" id="text-info"></div>
+  <script>
+    if (window.location == window.parent.location) {
+      $('.top-header').show();
+    }
+  </script>
 
   <div class="container">
+    <p id="text-info"></p>
     <div id="videos"></div>
   </div>
 
@@ -52,7 +56,7 @@
     var video_ids = params.video_ids;
 
     $("#text-info").html(
-      `<p>Showing results from ${video_ids.length} of ${params.video_count} videos.</p>`
+      `Showing results from ${video_ids.length} of ${params.video_count} videos from ${params.time}. <font color="${params.color}"><b>(${params.query})</b></font>`
     );
 
     let query = new SearchableQuery(params.query, params.count);
