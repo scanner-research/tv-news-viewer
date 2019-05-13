@@ -37,32 +37,41 @@
 
   <script>
     function loadVideos(params) {
-      var video_ids = params.video_ids;
+      let video_ids = params.video_ids;
       $("#text-info").html(
-        `Showing results from ${video_ids.length} of ${params.video_count} videos from ${params.time}. <font color="${params.color}"><b>(${params.query})</b></font>`
+        `Showing results for <font color="${params.color}"><b>${params.query}</b></font> from ${video_ids.length} of ${params.video_count} videos from ${params.time}.`
       );
       let query = new SearchableQuery(params.query, params.count);
       console.log('Executing query:', query);
-      query.searchInVideos(
-        video_ids,
-        json_data => {
-          let vgrid_settings = {
-            {% if frameserver_endpoint is not none %}
-            frameserver_endpoint: '{{ frameserver_endpoint }}',
-            use_frameserver: true,
-            {% endif %}
-            video_endpoint: 'https://storage.cloud.google.com/esper',
-            show_timeline: true,
-            show_captions: false,
-            paginate: false
-          };
-          renderVGrid(json_data, vgrid_settings);
-        },
-        error => {
-          alert('Search failed.');
-          console.log(error);
-        }
-      );
+
+      let caption_data = {};
+      Promise.all(
+        video_ids.map(i =>
+          $.get(`/captions/${i}`).then(
+            resp => caption_data[i] = resp
+          ).catch(`Failed to get captions: ${i}`))
+      ).then(() => {
+        query.searchInVideos(
+          video_ids,
+          json_data => {
+            let vgrid_settings = {
+              {% if frameserver_endpoint is not none %}
+              frameserver_endpoint: '{{ frameserver_endpoint }}',
+              use_frameserver: true,
+              {% endif %}
+              video_endpoint: 'https://storage.cloud.google.com/esper',
+              show_timeline: true,
+              show_captions: false,
+              paginate: false
+            };
+            renderVGrid(json_data, caption_data, vgrid_settings);
+          },
+          error => {
+            alert('Search failed.');
+            console.log(error);
+          }
+        );
+      });
     }
 
     if (window.location == window.parent.location) {

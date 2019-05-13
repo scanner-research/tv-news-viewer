@@ -95,12 +95,12 @@ function chartHrefHandler(color, t, video_div_id) {
       function resizeIframe() {
         if (document.contains(iframe)) {
           iframe.height = iframe.contentWindow.document.body.scrollHeight + 35;
-          setTimeout(resizeIframe, 500);
+          setTimeout(resizeIframe, 250);
         } else {
           console.log('height timer terminated');
         }
       }
-      setTimeout(resizeIframe, 500)
+      setTimeout(resizeIframe, 250)
     });
   } else {
     let url = `/videos?params=${encodeURIComponent(JSON.stringify(params))}`;

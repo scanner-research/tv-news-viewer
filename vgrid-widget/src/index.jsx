@@ -2,7 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import {
   VGrid, Database, Table, Bounds, Interval, IntervalSet,
-  SpatialType_Temporal, SpatialType_Caption
+  SpatialType_Temporal, SpatialType_Caption, Metadata_Generic
 } from '@wcrichto/vgrid';
 
 import '@wcrichto/vgrid/dist/vgrid.css';
@@ -12,7 +12,7 @@ import '@wcrichto/vgrid/dist/vgrid.css';
 const INTERVAL_PADDING = 60;
 
 
-function loadJsonData(json_data) {
+function loadJsonData(json_data, caption_data) {
   let videos = [];
   let interval_blocks = [];
 
@@ -42,33 +42,28 @@ function loadJsonData(json_data) {
       }, {
         name: '_captions',
         interval_set: new IntervalSet(
-          video_json.captions.map(caption => {
-            let [start, end, text] = caption;
-            return new Interval(
-              new Bounds(start, end),
-              {spatial_type: new SpatialType_Caption(text), metadata: {}}
-            );
-          }))
-      }],
-    });
-      // , {
-      //   name: '_captions',
-      //   interval_set:
-      //   }))
+          _.get(caption_data, video_json.metadata.id, []).map(
+            caption => {
+              let [start, end, text] = caption;
+              return new Interval(
+                new Bounds(start, end),
+                {spatial_type: new SpatialType_Caption(text), metadata: {}}
+              );
+            }
+          ))
       // }, {
       //   name: '_metadata',
-      //   interval_set: [{
-      //     t: [0, video_json.metadata.num_frames / video_json.metadata.fps],
-      //     x: [0, 1], y: [0, 1],
-      //     payload: {
-      //       metadata: {
-      //         video: {type: 'Metadata_Generic', args: {data: video_json.metadata.name}}
-      //       },
-      //       spatial_type: {type: 'SpatialType_Bbox'}
-      //     }
-      //   }]
-      // }]
-    // });
+      //   interval_set: new IntervalSet([
+      //     new Interval(
+      //       new Bounds(0, video_json.metadata.num_frames / video_json.metadata.fps),
+      //       {
+      //         spatial_type: SpatialType_Temporal.get_instance(),
+      //         metadata: {video: new Metadata_Generic(video_json.metadata.name)}
+      //       }
+      //     )
+      //   ])
+      }]
+    });
   });
 
   let database = new Database([new Table('videos', videos)]);
@@ -76,8 +71,8 @@ function loadJsonData(json_data) {
 }
 
 
-function renderVGrid(json_data, settings) {
-  let [database, interval_blocks] = loadJsonData(json_data);
+function renderVGrid(json_data, caption_data, settings) {
+  let [database, interval_blocks] = loadJsonData(json_data, caption_data);
   ReactDOM.render(
     <VGrid interval_blocks={interval_blocks} database={database}
            settings={settings} />,

@@ -604,18 +604,6 @@ def build_app(
             'num_frames': video.num_frames
         }
 
-    def _get_captions(document: Documents.Document) -> List[Caption]:
-        lines = []
-        for p in index.intervals(document):
-            if p.len > 0:
-                tokens: List[str] = [
-                    lexicon.decode(t)
-                    for t in index.tokens(document, p.idx, p.len)]
-                start: float = round(p.start, 1)
-                end: float = round(p.end, 1)
-                lines.append((start, end, ' '.join(tokens)))
-        return lines
-
     def _get_entire_video(video: Video) -> JsonObject:
         document = document_by_name.get(video.name)
         return {
@@ -736,8 +724,7 @@ def build_app(
                     'metadata': _video_to_dict(video),
                     'intervals': [
                         (i[0] / 1000, i[1] / 1000) for i in intervals
-                    ],
-                    'captions': _get_captions(document) if document else []
+                    ]
                 })
             else:
                 results.append(_get_entire_video(video))
@@ -820,6 +807,26 @@ def build_app(
 
         resp = jsonify(results)
         resp.cache_control.max_age = cache_seconds
+        return resp
+
+    def _get_captions(document: Documents.Document) -> List[Caption]:
+        lines = []
+        for p in index.intervals(document):
+            if p.len > 0:
+                tokens: List[str] = [
+                    lexicon.decode(t)
+                    for t in index.tokens(document, p.idx, p.len)]
+                start: float = round(p.start, 1)
+                end: float = round(p.end, 1)
+                lines.append((start, end, ' '.join(tokens)))
+        return lines
+
+    @app.route('/captions/<int:i>')
+    def get_captions(i: int) -> Response:
+        video = video_by_id[i]
+        document = document_by_name[video.name]
+        resp = jsonify(_get_captions(document))
+        resp.cache_control.max_age = cache_seconds * 100
         return resp
 
     @app.route('/shows')
