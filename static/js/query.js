@@ -68,7 +68,7 @@ function translateFilterDict(filters) {
       } else if (face_params.role) {
         result[k] = face_params.role;
       } else {
-        result['onsreen.person'] = face_params.person;
+        result['onscreen.person'] = face_params.person;
       }
     } else if (k == 'caption.window') {
       result[k] = parseInt(v);
