@@ -11,6 +11,7 @@
 
   <link rel="stylesheet" href="{{ url_for('static', filename='vgrid/index.css') }}" />
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+  <script src="{{ url_for('static', filename='js/constant.js') }}" /></script>
   <script src="{{ url_for('static', filename='js/query.js') }}" /></script>
 
   <title>TV News: Videos</title>
@@ -36,11 +37,6 @@
   </div>
 
   <script>
-    // TODO: remove this ALL_SHOWS variable
-    const ALL_SHOWS = [
-      {% for show in shows %}"{{ show }}",{% endfor %}
-    ];
-
     function getUnit(count) {
       var unit;
       if (count == 'mentions') {

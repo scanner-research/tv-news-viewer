@@ -5,7 +5,9 @@ Main application code
 from datetime import datetime, timedelta
 import os
 import json
-from flask import Flask, Response, jsonify, request, render_template, send_file
+from flask import (
+    Flask, Response, jsonify, request, render_template, send_file,
+    make_response)
 from typing import Dict, List, Set, Tuple, Optional, Iterable, Generator
 
 from captions import CaptionIndex, Documents, Lexicon   # type: ignore
@@ -353,12 +355,21 @@ def build_app(
 
     @app.route('/embed')
     def embed() -> Response:
-        return render_template('embed.html', shows=all_shows)
+        return render_template('embed.html')
 
     @app.route('/videos')
     def show_videos() -> Response:
-        return render_template('videos.html', shows=all_shows,
+        return render_template('videos.html',
                                frameserver_endpoint=frameserver_endpoint)
+
+    @app.route('/static/js/query.js')
+    def get_constants() -> Response:
+        resp = make_response(render_template(
+            'query.js', shows=all_shows,
+            people=sorted(person_intervals.keys())))
+        resp.headers['Content-type'] = 'text/javascript'
+        resp.cache_control.max_age = cache_seconds
+        return resp
 
     def _get_document_token_count(
         video: Video, document: Documents.Document, is_commercial: Ternary

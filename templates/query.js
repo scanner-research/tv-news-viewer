@@ -4,6 +4,14 @@ const QUERY_NORMALIZE = 'NORMALIZE';
 const QUERY_MINUS = 'SUBTRACT';
 const QUERY_WHERE = 'WHERE';
 
+const ALL_SHOWS = [
+  {% for show in shows %}"{{ show }}",{% endfor %}
+];
+
+const ALL_PEOPLE = [
+  {% for person in people %}"{{ person }}",{% endfor %}
+];
+
 function parseTernary(s) {
   if (s.match(/^true$/i)) {
     return 'true';
@@ -64,7 +72,18 @@ function translateFilterDict(filters) {
       } else if (face_params.role) {
         result[k] = face_params.role;
       } else {
-        result['onscreen.person'] = face_params.person;
+        var person = null;
+        for (var i in ALL_PEOPLE) {
+          if (ALL_PEOPLE[i].toUpperCase() == v_up) {
+            person = ALL_PEOPLE[i];
+            break;
+          }
+        }
+        if (person) {
+          result['onscreen.person'] = person;
+        } else {
+          throw Error(`Unknown person: ${v}`);
+        }
       }
     } else if (k == 'caption.window') {
       result[k] = parseInt(v);

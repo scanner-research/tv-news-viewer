@@ -20,9 +20,9 @@
 
   <link rel="shortcut icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}" />
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+  <script src="{{ url_for('static', filename='js/constant.js') }}" /></script>
   <script src="{{ url_for('static', filename='js/chart.js') }}" /></script>
   <script src="{{ url_for('static', filename='js/query.js') }}" /></script>
-  <script src="{{ url_for('static', filename='js/default.js') }}" /></script>
 
   <title>Stanford TV News Viewer</title>
   <style>
@@ -440,10 +440,6 @@
   <script>
     const EMBED_DIMS = {width: 1000, height: 400};
 
-    const ALL_SHOWS = [
-      {% for show in shows %}"{{ show }}",{% endfor %}
-    ];
-
     function getRandomSample(arr) {
       return arr[Math.floor(Math.random() * arr.length)];
     }
@@ -481,12 +477,17 @@
       }
     }
 
+    let strToOption = x => `<option value="${x}">${x}</option>`;
+    const SHOW_OPTIONS = ALL_SHOWS.map(strToOption).join('\n');
+    const PERSON_OPTIONS = ALL_PEOPLE.map(strToOption).join('\n');
+
     function toggleQueryBuilder(color) {
       let search_table_row = $(`#search-table tr[data-color="${color}"]`);
       if (search_table_row.find('.query-builder').length > 0) {
         search_table_row.find('.query-builder').remove();
         search_table_row.find('.color-box').height('auto');
       } else {
+        // TODO: build this the right way
         let builder_html = `
           <div class="query-builder">
             <table>
@@ -510,9 +511,7 @@
                 <td type="value-col">
                   <select class="selectpicker" name="show" data-width="fit">
                     <option value="" selected="selected"></option>
-                    {% for show in shows %}
-                    <option value="{{ show }}">{{ show }}</option>
-                    {% endfor %}
+                    ${SHOW_OPTIONS}
                   </select>
                 </td>
               </tr>
@@ -550,8 +549,7 @@
                   or person
                   <select class="selectpicker" name="face.person" data-width="fit">
                     <option value="" selected="selected"></option>
-                    <option value="donald trump">Donald Trump</option>
-                    <option value="donald trump">Hillary Clinton</option>
+                    ${PERSON_OPTIONS}
                   </select>
                 </td>
               </tr>
@@ -626,7 +624,7 @@
         } else {
           face_str = `${face_gender ? face_gender + ' ' : ''}${face_role}`
         }
-        filters.push(`onscreen.face=${face_str}`);
+        filters.push(`onscreen.face="${face_str}"`);
       }
       let is_commercial = builder.find('select[name="iscommercial"]').val();
       if (is_commercial != 'false') {
