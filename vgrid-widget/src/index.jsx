@@ -8,10 +8,6 @@ import {
 import '@wcrichto/vgrid/dist/vgrid.css';
 
 
-// Pad time onto intervals to make them more visible
-const INTERVAL_PADDING = 60;
-
-
 function loadJsonData(json_data, caption_data) {
   let videos = [];
   let interval_blocks = [];
@@ -37,7 +33,7 @@ function loadJsonData(json_data, caption_data) {
           video_json.intervals.map(interval => {
             let [start, end] = interval;
             return new Interval(
-              new Bounds(start, Math.max(end, start + INTERVAL_PADDING)),
+              new Bounds(start, end),
               {spatial_type: SpatialType_Temporal.get_instance(), metadata: {}}
             );
           }))

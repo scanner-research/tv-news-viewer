@@ -16,10 +16,6 @@ function parseTernary(s) {
   }
 }
 
-function parseIsCommercialString(s) {
-
-}
-
 function parseFaceTimeString(s) {
   let result = {};
   var m;

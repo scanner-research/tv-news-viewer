@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 import os
 import json
 from flask import Flask, Response, jsonify, request, render_template, send_file
-from typing import Dict, List, Set, Tuple, Optional
+from typing import Dict, List, Set, Tuple, Optional, Iterable, Generator
 
 from captions import CaptionIndex, Documents, Lexicon   # type: ignore
 from captions.util import PostingUtil                   # type: ignore
@@ -287,6 +287,23 @@ def minus_isetmap(
         if intervals else get_entire_video_ms_interval(video), True)
 
 
+def merge_close_intervals(
+    intervals: Iterable[Interval], threshold: float = 0.25
+) -> Generator[Interval, None, None]:
+    curr_i = None
+    for i in intervals:
+        if curr_i is not None:
+            if max(curr_i[0], i[0]) - min(curr_i[1], i[1]) < threshold:
+                curr_i = (min(curr_i[0], i[0]), max(curr_i[1], i[1]))
+            else:
+                yield curr_i
+                curr_i = i
+        else:
+            curr_i = i
+    if curr_i is not None:
+        yield curr_i
+
+
 def build_app(
     data_dir: str, index_dir: str, frameserver_endpoint: Optional[str],
     cache_seconds: int
@@ -340,7 +357,7 @@ def build_app(
 
     @app.route('/videos')
     def show_videos() -> Response:
-        return render_template('videos.html',
+        return render_template('videos.html', shows=all_shows,
                                frameserver_endpoint=frameserver_endpoint)
 
     def _get_document_token_count(
@@ -722,9 +739,9 @@ def build_app(
                 document = document_by_name.get(video.name)
                 results.append({
                     'metadata': _video_to_dict(video),
-                    'intervals': [
+                    'intervals': list(merge_close_intervals(
                         (i[0] / 1000, i[1] / 1000) for i in intervals
-                    ]
+                    ))
                 })
             else:
                 results.append(_get_entire_video(video))

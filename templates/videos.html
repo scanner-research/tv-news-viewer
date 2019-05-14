@@ -36,10 +36,30 @@
   </div>
 
   <script>
+    // TODO: remove this ALL_SHOWS variable
+    const ALL_SHOWS = [
+      {% for show in shows %}"{{ show }}",{% endfor %}
+    ];
+
+    function getUnit(count) {
+      var unit;
+      if (count == 'mentions') {
+        unit = 'mentions';
+      } else if (count == 'videotime') {
+        unit = 'video time';
+      } else if (count == 'facetime') {
+        unit = 'face time';
+      } else {
+        alert(`unknown count: ${count}`)
+      }
+      return unit;
+    }
+
     function loadVideos(params) {
       let video_ids = params.video_ids;
+      let unit = getUnit(params.count);
       $("#text-info").html(
-        `Showing results for <font color="${params.color}"><b>${params.query}</b></font> from ${video_ids.length} of ${params.video_count} videos from ${params.time}.`
+        `Showing results for ${unit} of <font color="${params.color}"><b>${params.query}</b></font> from ${video_ids.length} of ${params.video_count} videos from ${params.time}.`
       );
       let query = new SearchableQuery(params.query, params.count);
       console.log('Executing query:', query);
