@@ -313,9 +313,9 @@ def build_app(
     }
 
     shows_by_channel = get_shows_by_channel(video_dict)
-    all_shows: Set[str] = set()
-    for shows in shows_by_channel.values():
-        all_shows.update(shows)
+    all_shows: List[str] = list(sorted({
+        show for shows in shows_by_channel.values() for show in shows
+    }))
 
     @app.errorhandler(InvalidUsage)
     def _handle_invalid_usage(error: InvalidUsage) -> Response:

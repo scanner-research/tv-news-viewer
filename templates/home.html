@@ -44,7 +44,7 @@
     #search-table .color-box {
       margin: auto;
       width: 40px;
-      height: 30px;
+      min-height: 30px;
     }
     #search-table .remove-row-btn {
       width: 35px;
@@ -118,6 +118,26 @@
       bottom:0px;
       left:0px;
     }
+    .query-builder {
+      padding: 10px;
+    }
+    .query-builder table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 2px;
+    }
+    .query-builder input {
+      text-align: center;
+    }
+    .query-builder th {
+      text-align: right;
+    }
+    .query-builder td[type=key-col] {
+      text-align: right;
+    }
+    .query-builder td[type=value-col] {
+      text-align: left;
+    }
   </style>
 </head>
 <body>
@@ -133,8 +153,9 @@
         <tr class="header">
           <th></th>
           <th>Color</th>
-          <th width="95%">Query <a href="#" onclick="toggleQueryHelp(); return false;"
-                                 id="toggle-help">(show help)</a></th>
+          <th width="95%">Query
+            (click color box for options or <a href="#" onclick="toggleQueryHelp(); return false;" id="toggle-help">show help</a>)
+          </th>
         </tr>
         <tr name="controls" id="chart-options">
           <td>
@@ -144,8 +165,8 @@
           <td>
             Count
             <select class="selectpicker" id="countVar" data-width="fit">
-              <option value="mentions" selected="selected">mentions</option>
-              <option value="facetime">face time</option>
+              <option value="mentions">mentions</option>
+              <option value="facetime" selected="selected">face time</option>
               <option value="videotime">video time</option>
             </select>
             between
@@ -224,7 +245,7 @@
     </p>
 
     <div class="container">
-      <h4>Example queries</h4>
+      <h4>Examples</h4>
       <table>
         <tr>
           <th>Counting</th>
@@ -256,7 +277,7 @@
     </div>
 
     <div class="container">
-      <h4>Countable query</h4>
+      <h4>Countable</h4>
       <table>
         <tr>
           <th>Mode</th>
@@ -274,7 +295,7 @@
         </tr>
         <tr>
           <td>face&nbsp;time</td>
-          <td>screen time for face (height &ge; 20%)</td>
+          <td>screen time for faces (height &ge; 20%)</td>
           <td>
             all, (wo)men, (non)hosts, (fe)male (non)hosts, <br>
             name of person <a href="/people" target="_blank">(list of people)</a>
@@ -284,10 +305,8 @@
         </tr>
         <tr>
           <td>video&nbsp;time</td>
-          <td>no countable options needed</td>
-          <td></td>
-          <td></td>
-          <td></td>
+          <td>number of seconds of video</td>
+          <td colspan="3"></td>
         </tr>
       </table>
     </div>
@@ -397,10 +416,10 @@
     function toggleQueryHelp() {
       if ($('#toggle-help').text().includes('show')) {
         $('#query-help').show();
-        $('#toggle-help').text('(hide help)');
+        $('#toggle-help').text('hide help');
       } else {
         $('#query-help').hide();
-        $('#toggle-help').text('(show help)');
+        $('#toggle-help').text('show help');
       }
     }
   </script>
@@ -462,18 +481,182 @@
       }
     }
 
+    function toggleQueryBuilder(color) {
+      let search_table_row = $(`#search-table tr[data-color="${color}"]`);
+      if (search_table_row.find('.query-builder').length > 0) {
+        search_table_row.find('.query-builder').remove();
+        search_table_row.find('.color-box').height('auto');
+      } else {
+        let builder_html = `
+          <div class="query-builder">
+            <table>
+              <tr>
+                <th style="text-align: right;">Include results where:</th>
+                <th></th>
+              </tr>
+              <tr>
+                <td type="key-col">the channel is</td>
+                <td type="value-col">
+                  <select class="selectpicker" name="channel" data-width="fit">
+                    <option value="" selected="selected">CNN, FOX, or MSNBC</option>
+                    <option value="CNN">CNN</option>
+                    <option value="FOX">FOX</option>
+                    <option value="MSNBC">MSNBC</option>
+                  </select>
+                </td>
+              </tr>
+              <tr>
+                <td type="key-col">the show is</td>
+                <td type="value-col">
+                  <select class="selectpicker" name="show" data-width="fit">
+                    <option value="" selected="selected"></option>
+                    {% for show in shows %}
+                    <option value="{{ show }}">{{ show }}</option>
+                    {% endfor %}
+                  </select>
+                </td>
+              </tr>
+              <tr>
+                <td type="key-col">the hour of day is between</td>
+                <td type="value-col"><input type="text" class="no-enter-submit" name="hour" value="" placeholder="0-23"></td>
+              </tr>
+              <tr>
+                <td type="key-col">the day of week is</td>
+                <td type="value-col"><input type="text" class="no-enter-submit" name="dayofweek" value="" placeholder="mon-fri"></td>
+              </tr>
+              <tr>
+                <td type="key-col">
+                  the captions contain
+                </td>
+                <td type="value-col">
+                  <input type="text" class="no-enter-submit" name="caption.text" value="" placeholder="keyword or phrase">
+                  within
+                  <input type="number" class="no-enter-submit" name="caption.window" min="0" max="3600" placeholder="{{ default_text_window }}"> seconds
+                </td>
+              </tr>
+              <tr>
+                <td type="key-col">an on-screen face matches</td>
+                <td type="value-col">
+                  <select class="selectpicker" name="face.gender" data-width="fit">
+                    <option value="" selected="selected"></option>
+                    <option value="male">male</option>
+                    <option value="female">female</option>
+                  </select>
+                  <select class="selectpicker" name="face.role" data-width="fit">
+                    <option value="" selected="selected"></option>
+                    <option value="host">host</option>
+                    <option value="non-host">non-host</option>
+                  </select>
+                  or person
+                  <select class="selectpicker" name="face.person" data-width="fit">
+                    <option value="" selected="selected"></option>
+                    <option value="donald trump">Donald Trump</option>
+                    <option value="donald trump">Hillary Clinton</option>
+                  </select>
+                </td>
+              </tr>
+              <tr>
+                <td type="key-col">is in commercial</td>
+                <td type="value-col">
+                  <select class="selectpicker" name="iscommercial" data-width="fit">
+                    <option value="false" selected="selected">false</option>
+                    <option value="true">true</option>
+                    <option value="both">both</option>
+                  </select>
+                </td>
+              </tr>
+              <tr>
+                <td></td>
+                <td>
+                  <button type="button" class="btn btn-outline-danger btn-sm" onclick="populateQueryBox('${color}');">populate query</button>
+                  <button type="button" class="btn btn-outline-secondary btn-sm" onclick="toggleQueryBuilder('${color}');">cancel</button>
+                </td>
+              </tr>
+            </table>
+          </div>`;
+        search_table_row.find('td:last').append(builder_html);
+        $('.selectpicker').selectpicker();
+
+        // Set the color-box to be the height of the query box
+        search_table_row.find('.color-box').height(
+          search_table_row.find('td').height()
+        );
+      }
+    }
+    $('.no-enter-submit').keypress(e => e.which != 13);
+
+    function populateQueryBox(color) {
+      let search_table_row = $(`#search-table tr[data-color="${color}"]`);
+      let builder = search_table_row.find('.query-builder');
+      let filters = [];
+      let channel = builder.find('select[name="channel"]').val();
+      if (channel) {
+        filters.push(`channel=${channel}`);
+      }
+      let show = builder.find('select[name="show"]').val();
+      if (show) {
+        filters.push(`show="${show}"`);
+      }
+      let hour = builder.find('input[name="hour"]').val();
+      if (hour) {
+        filters.push(`hour=${hour}`);
+      }
+      let dayofweek = builder.find('input[name="dayofweek"]').val();
+      if (dayofweek) {
+        filters.push(`dayofweek="${dayofweek}"`);
+      }
+      let caption_text = builder.find('input[name="caption.text"]').val();
+      if (caption_text) {
+        filters.push(`caption.text="${caption_text}"`);
+      }
+      let caption_window = builder.find('input[name="caption.window"]').val();
+      if (caption_window) {
+        filters.push(`caption.window=${caption_window}`);
+      }
+      let face_gender = builder.find('select[name="face.gender"]').val();
+      let face_role = builder.find('select[name="face.role"]').val();
+      let face_person = builder.find('select[name="face.person"]').val();
+      if (face_person || face_role || face_gender) {
+        var face_str;
+        if (face_person) {
+          if (face_role || face_gender) {
+            alertAndThrow('"gender and role" cannot be specified simultaneously with "person"');
+          }
+          face_str = face_person;
+        } else {
+          face_str = `${face_gender ? face_gender + ' ' : ''}${face_role}`
+        }
+        filters.push(`onscreen.face=${face_str}`);
+      }
+      let is_commercial = builder.find('select[name="iscommercial"]').val();
+      if (is_commercial != 'false') {
+        filters.push(`iscommercial=${is_commercial}`);
+      }
+
+      let query_box = search_table_row.find('input[name="query"]');
+      var current_query = query_box.val();
+      if (current_query.includes('WHERE')) {
+        current_query = current_query.slice(0, current_query.indexOf('WHERE'));
+      }
+      query_box.val(
+        $.trim(current_query)
+        + (filters.length > 0 ? ' WHERE ' + filters.join(' AND ') : ''));
+      toggleQueryBuilder(color);
+    }
+
     function addRow(query) {
       let color = query ? query.color : getColor();
       let text = query ? query.text : getDefaultQuery();
       let html = `<tr name="query" data-color="${color}">
         <td><button type="button" class="btn btn-outline-secondary btn-sm remove-row-btn" onclick="removeRow('${color}');">-</button></td>
-        <td><div class="color-box" style="background-color: ${color};"></div></td>
-        <td><input type="text" name="query" value='${text}'</td>
+        <td><div class="color-box" style="background-color: ${color};" onclick="javascript:toggleQueryBuilder('${color}');return false;"></div></td>
+        <td><input type="text" name="query" value='${text}'></td>
       </tr>`;
+
       $('#search-table > tbody > tr').eq(
         $('#search-table tr[name="query"]').length
       ).after(html);
-      if ($('#search-table tr').length >= DEFAULT_COLORS.length + 1) {
+      if ($('#search-table tr[name="query"]').length >= DEFAULT_COLORS.length + 1) {
         $('#add-row-btn').prop('disabled', true);
       }
       setRemoveButtonsState();
