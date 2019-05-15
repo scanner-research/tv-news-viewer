@@ -80,7 +80,12 @@
               show_captions: false,
               paginate: false
             };
-            renderVGrid(json_data, caption_data, vgrid_settings);
+            try {
+              renderVGrid(json_data, caption_data, vgrid_settings);
+            } catch (e) {
+              alert('Failed to load videos.');
+              throw e;
+            }
           },
           error => {
             alert('Search failed.');

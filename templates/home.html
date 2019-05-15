@@ -35,11 +35,13 @@
       text-align: center;
     }
     #search-table input[name=query] {
-      width: 100%;
-      height: 30px;
-      text-align: center;
+      text-align: left;
       font-size: 14px;
-      margin: auto;
+    }
+    #search-table .input-group, .input-group-prepend, .input-group-text, .form-control {
+      height: 30px;
+      padding-top: 0px;
+      padding-bottom: 0px;
     }
     #search-table .query-td {
       width: 95%;
@@ -141,6 +143,8 @@
     }
     .query-builder input {
       text-align: center;
+      width: auto;
+      display: inline;
     }
     .query-builder th {
       text-align: right;
@@ -254,15 +258,19 @@
 
     function setBlankQueryPlaceholder() {
       let count_var = $('#countVar').val();
-      var placeholder;
+      var placeholder, prefix_var;
       if (count_var == '{{ countables.mentions.name }}') {
         placeholder = 'all words';
+        prefix_var = '{{ countables.mentions.value }}';
       } else if (count_var == '{{ countables.facetime.name }}') {
         placeholder = 'all faces';
+        prefix_var = '{{ countables.facetime.value }}';
       } else if (count_var == '{{ countables.videotime.name }}') {
         placeholder = 'all video';
+        prefix_var = '{{ countables.videotime.value }}';
       }
       $('#search-table input[type="text"][name="query"]').attr('placeholder', placeholder);
+      $('#search-table span[name="count-prefix"]').text(`COUNT ${prefix_var}`);
     }
     $('#countVar').change(setBlankQueryPlaceholder);
   </script>
@@ -739,8 +747,14 @@
              onclick="removeRow(this);">-</button></td>
         <td><div class="color-box" style="background-color: ${color};"
              onclick="toggleQueryBuilder(this);"></div></td>
-        <td class="query-td"><input type="text" name="query" value='${text}'
-             onchange="onQueryUpdate(this);"></td>
+        <td class="query-td">
+          <div class="input-group">
+            <div class="input-group-prepend">
+              <span class="input-group-text" name="count-prefix"></span>
+            </div>
+            <input type="text" class="form-control" name="query" value='${text}'
+                   onchange="onQueryUpdate(this);"></td>
+          </div>
       </tr>`;
 
       $('#search-table > tbody > tr').eq(

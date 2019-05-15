@@ -32,6 +32,9 @@
       padding-left: 10px;
       padding-right: 10px;
     }
+    .query-td {
+      text-align: left;
+    }
     .color-box {
       margin: auto;
       width: 20px;
@@ -65,11 +68,11 @@
       lines.forEach(line => {
         let html = `<tr name='${line.color}'>
           <td><div class="color-box" style="background-color: ${line.color};"></div></td>
-          <td>${line.query.query}</td>
+          <td class="query-td">COUNT ${chart_options.count} OF ${line.query.query}</td>
         </tr>`;
         $('#search-table tbody').append(html);
       });
-      $('#options').html(`Showing ${chart_options.count} from <b>${chart_options.start_date}</b> to <b>${chart_options.end_date}</b> aggregated by <b>${chart_options.aggregate}</b>.`);
+      $('#options').html(`Showing results from <b>${chart_options.start_date}</b> to <b>${chart_options.end_date}</b> aggregated by <b>${chart_options.aggregate}</b>.`);
     }
 
     let lines = data.queries.map(raw_query => {

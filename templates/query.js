@@ -347,18 +347,19 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
     </tr>
     <tr>
       <td type="key-col">the hour of day is between</td>
-      <td type="value-col"><input type="text" class="no-enter-submit"
+      <td type="value-col"><input type="text" class="form-control no-enter-submit"
           name="{{ parameters.hour.value }}" value="" placeholder="0-23"></td>
     </tr>
     <tr>
       <td type="key-col">the day of week is</td>
-      <td type="value-col"><input type="text" class="no-enter-submit"
+      <td type="value-col"><input type="text" class="form-control no-enter-submit"
           name="{{ parameters.day_of_week.value }}" value="" placeholder="mon-sun"></td>
     </tr>
     <tr>
       <td type="key-col">is in commercial</td>
       <td type="value-col">
-        <select class="selectpicker" name="{{ parameters.is_commercial.value }}" data-width="fit">
+        <select class="selectpicker" name="{{ parameters.is_commercial.value }}"
+                data-width="fit">
           <option value="false" selected="selected">false</option>
           <option value="true">true</option>
           <option value="both">both</option>
@@ -370,10 +371,12 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
         (optional) the captions contain
       </td>
       <td type="value-col">
-        <input type="text" class="no-enter-submit" name="{{ parameters.caption_text.value }}"
+        <input type="text" class="form-control no-enter-submit"
+               name="{{ parameters.caption_text.value }}"
                value="" placeholder="keyword or phrase">
         within
-        <input type="number" class="no-enter-submit" name="{{ parameters.caption_window.value }}"
+        <input type="number" class="form-control no-enter-submit"
+               name="{{ parameters.caption_window.value }}"
                min="0" max="3600" placeholder="{{ default_text_window }}"> seconds
       </td>
     </tr>
