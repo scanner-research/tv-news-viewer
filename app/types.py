@@ -24,6 +24,32 @@ class Ternary(Enum):
     both = 'both'
 
 
+class SearchParameter(Enum):
+    count = 'count'
+    aggregate = 'aggregate'
+    start_date = 'start_date'
+    end_date = 'end_date'
+    detailed = 'detailed'
+
+    mention_text = 'text'
+
+    face_gender = 'gender'
+    face_role = 'role'
+    face_person = 'person'
+
+    channel = 'channel'
+    show = 'show'
+    hour = 'hour'
+    day_of_week = 'dayofweek'
+    onscreen_face = 'onscreen.face'
+    onscreen_person = 'onscreen.person'
+    caption_text = 'caption.text'
+    caption_window = 'caption.window'
+    is_commercial = 'iscommercial'
+
+    video_ids = 'ids'
+
+
 class Video(NamedTuple):
     id: int
     name: str

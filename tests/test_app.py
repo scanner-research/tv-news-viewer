@@ -250,7 +250,6 @@ def _check_search_in_video_result(
     for v in json_body:
         assert 'metadata' in v
         assert 'intervals' in v
-        assert 'captions' in v
 
 
 def test_search_mentions_in_videos(client: FlaskClient) -> None:

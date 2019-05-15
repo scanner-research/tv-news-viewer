@@ -42,25 +42,28 @@ def get_entire_video_ms_interval(video: Video) -> List[Interval]:
     return [(0, int(video.num_frames / video.fps * 1000))]
 
 
-def assert_option_not_set(
-    option: str, countable: str, suggested_var: Optional[str] = None
+def assert_param_not_set(
+    param: str, countable: str, suggested_var: Optional[str] = None
 ) -> None:
-    if option in request.args:
+    if param in request.args:
         mesg = '"{}" cannot be used when counting "{}".'.format(
-           option, countable)
+           param, countable)
         if suggested_var:
             mesg += ' Try counting "{}" instead.'.format(suggested_var)
         raise InvalidUsage(mesg)
 
 
 def get_video_filter() -> Optional[VideoFilterFn]:
-    start_date = parse_date(request.args.get('start_date', None, type=str))
-    end_date = parse_date(request.args.get('end_date', None, type=str))
-    channel = request.args.get('channel', None, type=str)
-    show = request.args.get('show', None, type=str)
-    hours = parse_hour_set(request.args.get('hour', None, type=str))
+    start_date = parse_date(
+        request.args.get(SearchParameter.start_date.value, None, type=str))
+    end_date = parse_date(
+        request.args.get(SearchParameter.end_date.value, None, type=str))
+    channel = request.args.get(SearchParameter.channel.value, None, type=str)
+    show = request.args.get(SearchParameter.show.value, None, type=str)
+    hours = parse_hour_set(
+        request.args.get(SearchParameter.hour.value, None, type=str))
     daysofweek = parse_day_of_week_set(
-        request.args.get('dayofweek', None, type=str))
+        request.args.get(SearchParameter.day_of_week.value, None, type=str))
 
     if start_date or end_date or channel or show or hours or daysofweek:
         def video_filter(video: Video) -> bool:
@@ -90,7 +93,7 @@ def get_video_filter() -> Optional[VideoFilterFn]:
 
 
 def get_aggregate_fn() -> AggregateFn:
-    agg = request.args.get('aggregate', None, type=str)
+    agg = request.args.get(SearchParameter.aggregate.value, None, type=str)
     e = Aggregate[agg] if agg else Aggregate.day
     if e == Aggregate.day:
         return lambda d: d
@@ -104,12 +107,13 @@ def get_aggregate_fn() -> AggregateFn:
 
 
 def get_is_commercial() -> Ternary:
-    value = request.args.get('iscommercial', None, type=str)
+    value = request.args.get(
+        SearchParameter.is_commercial.value, None, type=str)
     return Ternary[value] if value else DEFAULT_IS_COMMERCIAL
 
 
 def get_countable() -> Countable:
-    value = request.args.get('count', None, type=str)
+    value = request.args.get(SearchParameter.count.value, None, type=str)
     if value is None:
         raise InvalidUsage('no count variable specified')
     return Countable[value]
@@ -119,7 +123,7 @@ def get_onscreen_face_isetmap(
     face_intervals: FaceIntervals
 ) -> MmapIntervalSetMapping:
     filter_str = request.args.get(
-        'onscreen.face', '', type=str
+        SearchParameter.onscreen_face.value, '', type=str
     ).strip().lower()
     if not filter_str:
         return None
@@ -159,7 +163,8 @@ def get_onscreen_person_isetmap(
     person_intervals: PersonIntervals
 ) -> MmapIntervalSetMapping:
     filter_str = request.args.get(
-        'onscreen.person', '', type=str).strip().lower()
+        SearchParameter.onscreen_person.value, '', type=str
+    ).strip().lower()
     if not filter_str:
         return None
     isetmap = person_intervals.get(filter_str, None)
@@ -209,10 +214,14 @@ def get_face_time_agg_fn(
     all_faces_ilistmap: MmapIntervalListMapping,
     person_intervals: PersonIntervals
 ) -> FaceTimeAggregateFn:
-    if 'person' in request.args:
-        assert_option_not_set('gender', 'person')
-        assert_option_not_set('role', 'person')
-        person_str = request.args.get('person', '', type=str).strip().lower()
+    if SearchParameter.face_person.value in request.args:
+        assert_param_not_set(
+            SearchParameter.face_gender.value,
+            SearchParameter.face_person.value)
+        assert_param_not_set(
+            SearchParameter.face_role.value, SearchParameter.face_person.value)
+        person_str = request.args.get(
+            SearchParameter.face_person.value, '', type=str).strip().lower()
         if not person_str:
             raise InvalidUsage('person cannot be blank')
         person_isetmap = person_intervals.get(person_str, None)
@@ -225,8 +234,10 @@ def get_face_time_agg_fn(
                 person_isetmap.intersect(video.id, intervals, True)
             ) / 1000
     else:
-        gender = request.args.get('gender', None, type=str)
-        role = request.args.get('role', None, type=str)
+        gender = request.args.get(
+            SearchParameter.face_gender.value, None, type=str)
+        role = request.args.get(
+            SearchParameter.face_role.value, None, type=str)
         payload_mask, payload_value = get_face_time_filter_mask(gender, role)
 
         def f(video: Video, intervals: List[Interval]) -> float:
@@ -240,10 +251,16 @@ def get_face_time_intersect_fn(
     all_faces_ilistmap: MmapIntervalListMapping,
     person_intervals: PersonIntervals
 ) -> FaceTimeIntersectFn:
-    if 'person' in request.args:
-        assert_option_not_set('gender', 'person')
-        assert_option_not_set('role', 'person')
-        person_str = request.args.get('person', '', type=str).strip().lower()
+    if SearchParameter.face_person.value in request.args:
+        assert_param_not_set(
+            SearchParameter.face_gender.value,
+            SearchParameter.face_person.value)
+        assert_param_not_set(
+            SearchParameter.face_role.value,
+            SearchParameter.face_person.value)
+        person_str = request.args.get(
+            SearchParameter.face_person.value, '', type=str
+        ).strip().lower()
         if not person_str:
             raise InvalidUsage('person cannot be blank')
         person_isetmap = person_intervals.get(person_str, None)
@@ -253,8 +270,10 @@ def get_face_time_intersect_fn(
         def f(video: Video, intervals: List[Interval]) -> List[Interval]:
             return intersect_isetmap(video, person_isetmap, intervals)
     else:
-        gender = request.args.get('gender', None, type=str)
-        role = request.args.get('role', None, type=str)
+        gender = request.args.get(
+            SearchParameter.face_gender.value, None, type=str)
+        role = request.args.get(
+            SearchParameter.face_role.value, None, type=str)
         payload_mask, payload_value = get_face_time_filter_mask(gender, role)
 
         def f(video: Video, intervals: List[Interval]) -> List[Interval]:
@@ -347,7 +366,8 @@ def build_app(
         start_date = max(min(v.date for v in video_dict.values()), MIN_DATE)
         end_date = min(max(v.date for v in video_dict.values()), MAX_DATE)
         return render_template(
-            'home.html', host=request.host, aggregate='month',
+            'home.html', countables=Countable, parameters=SearchParameter,
+            host=request.host, aggregate='month',
             start_date=format_date(start_date),
             end_date=format_date(end_date), shows=all_shows,
             default_text_window=DEFAULT_TEXT_WINDOW,
@@ -359,14 +379,16 @@ def build_app(
 
     @app.route('/videos')
     def show_videos() -> Response:
-        return render_template('videos.html',
-                               frameserver_endpoint=frameserver_endpoint)
+        return render_template(
+            'videos.html', frameserver_endpoint=frameserver_endpoint,
+            countables=Countable)
 
     @app.route('/static/js/query.js')
     def get_constants() -> Response:
         resp = make_response(render_template(
-            'query.js', shows=all_shows,
-            people=sorted(person_intervals.keys())))
+            'query.js', parameters=SearchParameter, countables=Countable,
+            default_text_window=DEFAULT_TEXT_WINDOW,
+            shows=all_shows, people=sorted(person_intervals.keys())))
         resp.headers['Content-type'] = 'text/javascript'
         resp.cache_control.max_age = cache_seconds
         return resp
@@ -560,23 +582,28 @@ def build_app(
 
         accumulator = (
             DetailedDateAccumulator(aggregate_fn)
-            if request.args.get('detailed', 'true', type=str) == 'true' else
-            SimpleDateAcumulator(aggregate_fn))
+            if request.args.get(
+                SearchParameter.detailed.value, 'true', type=str
+            ) == 'true' else SimpleDateAcumulator(aggregate_fn))
         if countable == Countable.mentions:
-            assert_option_not_set(
-                'caption.text', countable.value,
+            assert_param_not_set(
+                SearchParameter.caption_text.value, countable.value,
                 Countable.facetime.value + ' or ' + Countable.videotime.value)
-            assert_option_not_set(
-                'caption.window', countable.value,
+            assert_param_not_set(
+                SearchParameter.caption_window.value, countable.value,
                 Countable.facetime.value + ' or ' + Countable.videotime.value)
-            assert_option_not_set(
-                'gender', countable.value, Countable.facetime.value)
-            assert_option_not_set(
-                'role', countable.value, Countable.facetime.value)
-            assert_option_not_set(
-                'person', countable.value, Countable.facetime.value)
+            assert_param_not_set(
+                SearchParameter.face_gender.value, countable.value,
+                Countable.facetime.value)
+            assert_param_not_set(
+                SearchParameter.face_role.value, countable.value,
+                Countable.facetime.value)
+            assert_param_not_set(
+                SearchParameter.face_person.value, countable.value,
+                Countable.facetime.value)
 
-            text_query = request.args.get('text', '', type=str).strip()
+            text_query = request.args.get(
+                SearchParameter.mention_text.value, '', type=str).strip()
             _count_mentions(
                 accumulator,
                 text_query, is_commercial, video_filter,
@@ -585,20 +612,25 @@ def build_app(
 
         elif (countable == Countable.videotime
               or countable == Countable.facetime):
-            assert_option_not_set(
-                'text', countable.value, Countable.mentions.value)
+            assert_param_not_set(
+                SearchParameter.mention_text.value, countable.value,
+                Countable.mentions.value)
             if countable == Countable.videotime:
-                assert_option_not_set(
-                    'gender', countable.value, Countable.facetime.value)
-                assert_option_not_set(
-                    'role', countable.value, Countable.facetime.value)
-                assert_option_not_set(
-                    'person', countable.value, Countable.facetime.value)
+                assert_param_not_set(
+                    SearchParameter.face_gender.value, countable.value,
+                    Countable.facetime.value)
+                assert_param_not_set(
+                    SearchParameter.face_role.value, countable.value,
+                    Countable.facetime.value)
+                assert_param_not_set(
+                    SearchParameter.face_person.value, countable.value,
+                    Countable.facetime.value)
 
             caption_query = request.args.get(
-                'caption.text', '', type=str).strip()
+                SearchParameter.caption_text.value, '', type=str).strip()
             caption_window = request.args.get(
-                'caption.window', DEFAULT_TEXT_WINDOW, type=int)
+                SearchParameter.caption_window.value, DEFAULT_TEXT_WINDOW,
+                type=int)
             _count_time(
                 accumulator,
                 caption_query, caption_window,
@@ -779,7 +811,7 @@ def build_app(
 
     @app.route('/search-videos')
     def search_videos() -> Response:
-        ids = request.args.get('ids', None, type=str)
+        ids = request.args.get(SearchParameter.video_ids.value, None, type=str)
         if not ids:
             raise InvalidUsage('must specify video ids')
         videos = [video_by_id[i] for i in json.loads(ids)]
@@ -787,19 +819,23 @@ def build_app(
         is_commercial = get_is_commercial()
 
         if countable == Countable.mentions:
-            text_query = request.args.get('text', '', type=str).strip()
-            assert_option_not_set(
-                'caption.text', countable.value,
+            text_query = request.args.get(
+                SearchParameter.mention_text.value, '', type=str).strip()
+            assert_param_not_set(
+                SearchParameter.caption_text.value, countable.value,
                 Countable.facetime.value + ' or ' + Countable.videotime.value)
-            assert_option_not_set(
-                'caption.window', countable.value,
+            assert_param_not_set(
+                SearchParameter.caption_window.value, countable.value,
                 Countable.facetime.value + ' or ' + Countable.videotime.value)
-            assert_option_not_set(
-                'gender', countable.value, Countable.facetime.value)
-            assert_option_not_set(
-                'role', countable.value, Countable.facetime.value)
-            assert_option_not_set(
-                'person', countable.value, Countable.facetime.value)
+            assert_param_not_set(
+                SearchParameter.face_gender.value,
+                countable.value, Countable.facetime.value)
+            assert_param_not_set(
+                SearchParameter.face_role.value, countable.value,
+                Countable.facetime.value)
+            assert_param_not_set(
+                SearchParameter.face_person.value, countable.value,
+                Countable.facetime.value)
 
             results = _count_mentions_in_videos(
                 videos, text_query, is_commercial,
@@ -808,20 +844,25 @@ def build_app(
 
         elif (countable == Countable.videotime
               or countable == Countable.facetime):
-            assert_option_not_set(
-                'text', countable.value, Countable.mentions.value)
+            assert_param_not_set(
+                SearchParameter.mention_text.value, countable.value,
+                Countable.mentions.value)
             if countable == Countable.videotime:
-                assert_option_not_set(
-                    'gender', countable.value, Countable.facetime.value)
-                assert_option_not_set(
-                    'role', countable.value, Countable.facetime.value)
-                assert_option_not_set(
-                    'person', countable.value, Countable.facetime.value)
+                assert_param_not_set(
+                    SearchParameter.face_gender.value,
+                    countable.value, Countable.facetime.value)
+                assert_param_not_set(
+                    SearchParameter.face_role.value, countable.value,
+                    Countable.facetime.value)
+                assert_param_not_set(
+                    SearchParameter.face_person.value, countable.value,
+                    Countable.facetime.value)
 
             caption_query = request.args.get(
-                'caption.text', '', type=str).strip()
+                SearchParameter.caption_text.value, '', type=str).strip()
             caption_window = request.args.get(
-                'caption.window', DEFAULT_TEXT_WINDOW, type=int)
+                SearchParameter.caption_window.value, DEFAULT_TEXT_WINDOW,
+                type=int)
             results = _count_time_in_videos(
                 videos, caption_query, caption_window, is_commercial,
                 None if countable == Countable.videotime

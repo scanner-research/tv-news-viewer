@@ -1,4 +1,4 @@
-const QUERY_DELIM = 'AND';
+const QUERY_AND = 'AND';
 const QUERY_ASSIGN = '=';
 const QUERY_NORMALIZE = 'NORMALIZE';
 const QUERY_MINUS = 'SUBTRACT';
@@ -29,7 +29,7 @@ function parseFaceTimeString(s) {
   var m;
   if (s == '') {
     // do nothing
-  } else if (m = s.match(/^all$/i)) {
+  } else if (m = s.match(/^all( ?faces?)?$/i)) {
     result.all = true;
   } else if (m = s.match(/^(wo)?m(e|a)n$/i)) {
     result.gender = m[1] ? 'female' : 'male';
@@ -54,14 +54,38 @@ function parseFaceTimeString(s) {
   return result;
 }
 
-function translateFilterDict(filters) {
+function findShow(v) {
+  let v_up = v.toUpperCase();
+  var show = null;
+  for (var i in ALL_SHOWS) {
+    if (ALL_SHOWS[i].toUpperCase() == v_up) {
+      show = ALL_SHOWS[i];
+      break;
+    }
+  }
+  return show;
+}
+
+function findPerson(v) {
+  let v_up = v.toUpperCase();
+  var person = null;
+  for (var i in ALL_PEOPLE) {
+    if (ALL_PEOPLE[i].toUpperCase() == v_up) {
+      person = ALL_PEOPLE[i];
+      break;
+    }
+  }
+  return person;
+}
+
+function translateFilterDict(filters, no_err) {
   let result = {};
   Object.keys(filters).forEach(k => {
     let v = filters[k];
     let v_up = v.toUpperCase();
-    if (k == 'caption.text') {
+    if (k == '{{ parameters.caption_text.value }}') {
       result[k] = v;
-    } else if (k == 'onscreen.face') {
+    } else if (k == '{{ parameters.onscreen_face.value }}') {
       let face_params = parseFaceTimeString(v);
       if (face_params.all) {
         result[k] = 'all';
@@ -72,58 +96,52 @@ function translateFilterDict(filters) {
       } else if (face_params.role) {
         result[k] = face_params.role;
       } else {
-        var person = null;
-        for (var i in ALL_PEOPLE) {
-          if (ALL_PEOPLE[i].toUpperCase() == v_up) {
-            person = ALL_PEOPLE[i];
-            break;
-          }
-        }
+        var person = findPerson(v);
         if (person) {
-          result['onscreen.person'] = person;
+          result['{{ parameters.onscreen_person.value }}'] = person;
         } else {
-          throw Error(`Unknown person: ${v}`);
+          if (!no_err) throw Error(`Unknown person: ${v}`);
         }
       }
-    } else if (k == 'caption.window') {
-      result[k] = parseInt(v);
-    } else if (k == 'channel') {
+    } else if (k == '{{ parameters.caption_window.value }}') {
+      let i = parseInt(v);
+      if (Number.isNaN(i)) {
+        if (!no_err) throw Error(`Invalid window value: ${i}`);
+      } else {
+        result[k] = i;
+      }
+    } else if (k == '{{ parameters.channel.value }}') {
       if (v_up == 'ALL') {
         // pass
       } else if (v_up == 'FOX') {
-        result.channel = 'FOXNEWS';
+        result[k] = 'FOXNEWS';
       } else if (v_up == 'CNN' || v_up == 'MSNBC' ||  v_up == 'FOXNEWS') {
-        result.channel = v_up;
+        result[k] = v_up;
       } else {
-        throw Error(`Unknown channel: ${v}`);
+        if (!no_err) throw Error(`Unknown channel: ${v}`);
       }
-    } else if (k == 'show') {
+    } else if (k == '{{ parameters.show.value }}') {
       if (v_up == 'ALL') {
         // pass
       } else {
-        var show = null;
-        for (var i in ALL_SHOWS) {
-          if (ALL_SHOWS[i].toUpperCase() == v_up) {
-            show = ALL_SHOWS[i];
-            break;
-          }
-        }
+        var show = findShow(v);
         if (show) {
-          result.show = show;
+          result[k] = show;
         } else {
           throw Error(`Unknown show: ${v}`);
         }
       }
-    } else if (k == 'dayofweek' || k == 'hour') {
-      if (v_up == 'ALL') {
-        // pass
-      } else {
-        result[k] = v;
+    } else if (k == '{{ parameters.day_of_week.value }}'
+               || k == '{{ parameters.hour.value }}') {
+      result[k] = v;
+    } else if (k == '{{ parameters.is_commercial.value }}') {
+      try {
+        result[k] = parseTernary(v);
+      } catch (e) {
+        if (!no_err) throw e;
       }
-    } else if (k == 'iscommercial') {
-      result[k] = parseTernary(v);
     } else {
-      throw Error(`Unknown filter: ${k}`);
+      if (!no_err) throw Error(`Unknown filter: ${k}`);
     }
   });
   return result;
@@ -142,7 +160,7 @@ function unquoteString(s) {
 function parseFilterDict(filters_str) {
   let filters = {};
   if (filters_str) {
-    filters_str.split(QUERY_DELIM).forEach(line => {
+    filters_str.split(QUERY_AND).forEach(line => {
       line = $.trim(line);
       if (line.length > 0) {
         let i = line.indexOf(QUERY_ASSIGN);
@@ -181,7 +199,7 @@ class SearchResult {
 }
 
 class SearchableQuery {
-  constructor(s, count) {
+  constructor(s, count, no_err) {
 
     function parse(s) {
       var params, countable_str;
@@ -189,7 +207,7 @@ class SearchableQuery {
       if (s.includes(QUERY_WHERE)) {
         let [a, b] = s.split(QUERY_WHERE);
         countable_str = a;
-        params = translateFilterDict(parseFilterDict($.trim(b)));
+        params = translateFilterDict(parseFilterDict($.trim(b)), no_err);
         has_where = true;
       } else {
         countable_str = s;
@@ -197,16 +215,21 @@ class SearchableQuery {
       }
       countable_str = $.trim(unquoteString($.trim(countable_str)));
       if (countable_str.length > 0) {
-        if (count == 'mentions') {
+        if (count == '{{ countables.mentions.name }}') {
           params.text = countable_str;
-        } else if (count == 'facetime') {
+        } else if (count == '{{ countables.facetime.name }}') {
           let face_params = parseFaceTimeString(countable_str);
           if (face_params.gender) params.gender = face_params.gender;
           if (face_params.role) params.role = face_params.role;
           if (face_params.person) params.person = face_params.person;
-        } else if (count == 'videotime') {
+        } else if (count == '{{ countables.videotime.name }}') {
           if (!has_where) {
-            params = translateFilterDict(parseFilterDict($.trim(countable_str)));
+            params = translateFilterDict(
+              parseFilterDict($.trim(countable_str)), no_err);
+          } else {
+            if (countable_str.length > 0 && !countable_str.match(/^all ?videos?$/i)) {
+              if (!no_err) throw Error(`Count {{ countables.videotime.value }} only supports WHERE filters. Try removing "${countable_str}"`);
+            }
           }
         }
       }
@@ -240,10 +263,10 @@ class SearchableQuery {
 
     function getParams(args, detailed) {
       let obj = Object.assign({detailed: detailed}, args);
-      obj.start_date = chart_options.start_date;
-      obj.end_date = chart_options.end_date;
-      obj.count = chart_options.count;
-      obj.aggregate = chart_options.aggregate;
+      obj.{{ parameters.start_date.value }} = chart_options.start_date;
+      obj.{{ parameters.end_date.value }} = chart_options.end_date;
+      obj.{{ parameters.count.value }} = chart_options.count;
+      obj.{{ parameters.aggregate.value }} = chart_options.aggregate;
       return obj;
     }
 
@@ -281,8 +304,10 @@ class SearchableQuery {
   }
 
   searchInVideos(video_ids, onSuccess, onError) {
-    let args = Object.assign(
-      {count: this.count, ids: JSON.stringify(video_ids)}, this.main_args);
+    let args = Object.assign({
+      {{ parameters.count.value }}: this.count,
+      {{ parameters.video_ids.value }}: JSON.stringify(video_ids)
+    }, this.main_args);
     return $.ajax({
       url: '/search-videos',
       type: 'get',
@@ -291,3 +316,110 @@ class SearchableQuery {
   }
 
 }
+
+const QUERY_BUILDER_HTML = `<div class="query-builder">
+  <table>
+    <tr>
+      <th style="text-align: right;">Include results where:</th>
+      <th></th>
+    </tr>
+    <tr>
+      <td type="key-col">the channel is</td>
+      <td type="value-col">
+        <select class="selectpicker" name="{{ parameters.channel.value }}" data-width="fit">
+          <option value="" selected="selected">CNN, FOX, or MSNBC</option>
+          <option value="CNN">CNN</option>
+          <option value="FOX">FOX</option>
+          <option value="MSNBC">MSNBC</option>
+        </select>
+      </td>
+    </tr>
+    <tr>
+      <td type="key-col">the show is</td>
+      <td type="value-col">
+        <select class="selectpicker" name="{{ parameters.show.value }}" data-width="fit">
+          <option value="" selected="selected">All shows</option>
+          {% for show in shows %}
+          <option value="{{ show }}">{{ show }}</option>
+          {% endfor %}
+        </select>
+      </td>
+    </tr>
+    <tr>
+      <td type="key-col">the hour of day is between</td>
+      <td type="value-col"><input type="text" class="no-enter-submit"
+          name="{{ parameters.hour.value }}" value="" placeholder="0-23"></td>
+    </tr>
+    <tr>
+      <td type="key-col">the day of week is</td>
+      <td type="value-col"><input type="text" class="no-enter-submit"
+          name="{{ parameters.day_of_week.value }}" value="" placeholder="mon-sun"></td>
+    </tr>
+    <tr>
+      <td type="key-col">is in commercial</td>
+      <td type="value-col">
+        <select class="selectpicker" name="{{ parameters.is_commercial.value }}" data-width="fit">
+          <option value="false" selected="selected">false</option>
+          <option value="true">true</option>
+          <option value="both">both</option>
+        </select>
+      </td>
+    </tr>
+    <tr>
+      <td type="key-col">
+        (optional) the captions contain
+      </td>
+      <td type="value-col">
+        <input type="text" class="no-enter-submit" name="{{ parameters.caption_text.value }}"
+               value="" placeholder="keyword or phrase">
+        within
+        <input type="number" class="no-enter-submit" name="{{ parameters.caption_window.value }}"
+               min="0" max="3600" placeholder="{{ default_text_window }}"> seconds
+      </td>
+    </tr>
+    <tr>
+      <td type="key-col">(optional) an on-screen face matches</td>
+      <td type="value-col">
+        <select class="selectpicker"
+                name="{{ parameters.onscreen_face.value }}:gender" data-width="fit">
+          <option value="" selected="selected"></option>
+          <option value="all">all; male or female</option>
+          <option value="male">male</option>
+          <option value="female">female</option>
+        </select>
+        <select class="selectpicker"
+                name="{{ parameters.onscreen_face.value }}:role" data-width="fit">
+          <option value="" selected="selected"></option>
+          <option value="host">host</option>
+          <option value="non-host">non-host</option>
+        </select>
+        or person
+        <select class="selectpicker"
+                name="{{ parameters.onscreen_person.value }}" data-width="fit">
+          <option value="" selected="selected"></option>
+          {% for person in people %}
+          <option value="{{ person }}">{{ person }}</option>
+          {% endfor %}
+        </select>
+      </td>
+    </tr>
+    <tr>
+      <td type="key-col">(optional) apply default normalization</td>
+      <td type="value-col">
+        <select class="selectpicker" name="normalize" data-width="fit">
+          <option value="false" selected="selected">no</option>
+          <option value="true">yes</option>
+        </select>
+      </td>
+    </tr>
+    <tr>
+      <td></td>
+      <td>
+        <button type="button" class="btn btn-outline-danger btn-sm"
+                onclick="populateQueryBox(this);">populate query</button>
+        <button type="button" class="btn btn-outline-secondary btn-sm"
+                onclick="toggleQueryBuilder(this);">cancel</button>
+      </td>
+    </tr>
+  </table>
+</div>`;

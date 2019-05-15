@@ -75,7 +75,8 @@
     let lines = data.queries.map(raw_query => {
       var parsed;
       try {
-        parsed_query = new SearchableQuery(raw_query.text, chart_options.count);
+        parsed_query = new SearchableQuery(
+          raw_query.text, chart_options.count, false);
       } catch (e) {
         alertAndThrow(e.message);
       }

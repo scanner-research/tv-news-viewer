@@ -41,6 +41,16 @@
       font-size: 14px;
       margin: auto;
     }
+    #search-table .query-td {
+      width: 95%;
+    }
+    #search-table .option-td {
+      padding-left: 10px;
+    }
+    #search-table .hint-td {
+      padding-left: 10px;
+      font-size: small;
+    }
     #search-table .color-box {
       margin: auto;
       width: 40px;
@@ -59,7 +69,7 @@
       font-size: 14px;
     }
     #chart-options {
-      text-align: center;
+      text-align: left;
       font-size: 14px;
     }
     #chart-options input, select, .filter-option {
@@ -109,17 +119,20 @@
     #shade {
       background-color: #000000;
       display: none;
-      opacity: 0.2;
+      opacity: 0.5;
       height: 100%;
       width: 100%;
-      position:fixed;
+      position: fixed;
       top: 0px;
       right: 0px;
-      bottom:0px;
-      left:0px;
+      bottom: 0px;
+      left: 0px;
     }
     .query-builder {
       padding: 10px;
+      border-left: solid #DAD7CB 1px;
+      border-right: solid #DAD7CB 1px;
+      border-bottom: solid #DAD7CB 1px;
     }
     .query-builder table {
       width: 100%;
@@ -144,36 +157,27 @@
   <div class="top-header">
     <div class="container">
       <img src="{{ url_for('static', filename='stanford.png') }}"
-           alt="Stanford University"><p>TV News Viewer</p>
+           alt="Stanford University">
+      <p>TV News Viewer</p>
     </div>
   </div>
   <div class="container">
     <form action="javascript:void(0);" onsubmit="search();">
       <table id="search-table">
-        <tr class="header">
-          <th></th>
-          <th>Color</th>
-          <th width="95%">Query
-            (click color box for options or <a href="#" onclick="toggleQueryHelp(); return false;" id="toggle-help">show help</a>)
-          </th>
-        </tr>
         <tr name="controls" id="chart-options">
-          <td>
-            <button type="button" class="btn btn-outline-secondary btn-sm" id='add-row-btn'>+</button>
-          </td>
-          <td>&nbsp;</td>
-          <td>
-            Count
+          <td></td>
+          <td colspan="2" class="option-td">
+            Count &nbsp;
             <select class="selectpicker" id="countVar" data-width="fit">
-              <option value="mentions">mentions</option>
-              <option value="facetime" selected="selected">face time</option>
-              <option value="videotime">video time</option>
+              <option value="{{ countables.mentions.name }}">mentions</option>
+              <option value="{{ countables.facetime.name }}" selected="selected">face time</option>
+              <option value="{{ countables.videotime.name }}">video time</option>
             </select>
-            between
+            &nbsp; between &nbsp;
             <input type="text" class="datepicker" id="startDate">
-            and
+            &nbsp; and &nbsp;
             <input type="text" class="datepicker" id="endDate">
-            aggregated by
+            &nbsp; aggregated by &nbsp;
             <select class="selectpicker" id="aggregateBy" data-width="fit">
               <option value="year">year</option>
               <option value="month" selected="selected">month</option>
@@ -182,6 +186,16 @@
             </select>
             . &nbsp;
             <input type="submit" class="btn btn-primary btn-sm" value="Search the news!">
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <button type="button" class="btn btn-outline-secondary btn-sm" id='add-row-btn'>+</button>
+          </td>
+          <td colspan="2" class="hint-td">
+            click the color box for the query editor or click
+            <a href="#" onclick="toggleQueryHelp(); return false;" id="toggle-help">show help</a>.
+            (<a href="/">reset viewer</a>)
           </td>
         </tr>
       </table>
@@ -237,15 +251,57 @@
       });
       $('#endDate').val(toDatepickerStr(end_date));
     }
+
+    function setBlankQueryPlaceholder() {
+      let count_var = $('#countVar').val();
+      var placeholder;
+      if (count_var == '{{ countables.mentions.name }}') {
+        placeholder = 'all words';
+      } else if (count_var == '{{ countables.facetime.name }}') {
+        placeholder = 'all faces';
+      } else if (count_var == '{{ countables.videotime.name }}') {
+        placeholder = 'all video';
+      }
+      $('#search-table input[type="text"][name="query"]').attr('placeholder', placeholder);
+    }
+    $('#countVar').change(setBlankQueryPlaceholder);
   </script>
 
   <div class="container" id="query-help">
-    <p><b>Query help <a href="#" onclick="toggleQueryHelp(); return false;" id="toggle-help">(hide)</a></b>
-      - The following options are supported (separated by <b>AND</b>).
+    <h5>Query help <a href="#" onclick="toggleQueryHelp(); return false;" id="toggle-help">(hide)</a></h5>
+
+    <p>
+      Queries in the viewer have the following form:
+
+      <ul>countable <b>WHERE</b> filter1="value1" <b>AND</b> filter2="value2" <b>AND</b> ...</ul>
+
+      Countables are objects that can be summed over. When counting "{{
+      countables.mentions.value }}", these are locations in the captions where
+      words appear. Likewise, when counting "{{ countables.facetime.value }}",
+      these are screen time of faces on screen. If left blank, then the
+      query is taken to mean "all".
+    </p>
+
+    <p>
+      The <b>WHERE</b> clause defines filters on which countables are counted.
+      It may be omitted if there are no filters or multiple filters can be
+      joined with <b>AND</b>.
+    </p>
+
+    <p>
+      You can normalize a query with respect to the <b>WHERE</b> clause by
+      adding <b>NORMALIZE</b> to the end of a query. This will rewrite the
+      query with the default normalization. For instance,
+
+      <ul>countable <b>WHERE</b> filters <b>NORMALIZE</b> &rarr; countable <b>WHERE</b> filters <b>NORMALIZE</b> "" <b>WHERE</b> filters</ul>
+
+      If this is not the desired behavior, the normalizing query can also be
+      written manually. See the <it>Normalization and subtraction</it> section
+      below.
     </p>
 
     <div class="container">
-      <h4>Examples</h4>
+      <h6>Example queries</h6>
       <table>
         <tr>
           <th>Counting</th>
@@ -253,31 +309,48 @@
           <th>English meaning</th>
         </tr>
         <tr>
-          <td>mentions</td>
-          <td>affordable care act WHERE channel="CNN" AND onscreen.person="Barack Obama"</td>
-          <td><i>mentions of "affordable care act" on CNN when Barack Obama's face is on screen</i></td>
+          <td rowspan="3">mentions</td>
+          <td>""</td>
+          <td><i>total number of words</i></td>
         </tr>
         <tr>
-          <td>face&nbsp;time</td>
-          <td>
-            female hosts WHERE channel="FOX" <br>
-            Barack Obama WHERE channel="FOX"
-          </td>
-          <td>
-            <i>face time of female hosts on FOX News</i> <br>
-            <i>face time of Barack Obama on FOX News</i>
-          </td>
+          <td>obamacare WHERE {{ parameters.channel.value }}=CNN</td>
+          <td><i>mentions of "obamacare" on CNN</i></td>
         </tr>
         <tr>
-          <td>video&nbsp;time</td>
-          <td>onscreen.face="women" AND caption.text="science"</td>
+          <td>obamacare WHERE {{ parameters.onscreen_face.value }}="Barack Obama"</td>
+          <td><i>mentions of "obamacare" when Barack Obama's face is on screen</i></td>
+        </tr>
+        <tr>
+          <td rowspan="3">face&nbsp;time</td>
+          <td>""</td>
+          <td><i>total face time</i></td>
+        </tr>
+          <td>female hosts WHERE {{ parameters.channel.value }}="FOX"</td>
+          <td><i>face time of Barack Obama on FOX News</i></td>
+        </tr>
+        <tr>
+          <td>Barack Obama WHERE {{ parameters.channel.value }}="FOX"</td>
+          <td><i>face time of female hosts on FOX News</i></td>
+        </tr>
+        <tr>
+          <td rowspan="3">video&nbsp;time</td>
+          <td>""</td>
+          <td><i>total seconds of video</i></td>
+        </tr>
+        <tr>
+          <td>{{ parameters.is_commercial.value }}=true</td>
+          <td><i>seconds of commercials</i></td>
+        </tr>
+        <tr>
+          <td>{{ parameters.onscreen_face.value }}="women" AND {{ parameters.caption_text.value }}="science"</td>
           <td><i>seconds of video where a female host is onscreen and the word "science" is mentioned</i></td>
         </tr>
       </table>
     </div>
 
     <div class="container">
-      <h4>Countable</h4>
+      <h6>Supported countables</h6>
       <table>
         <tr>
           <th>Mode</th>
@@ -301,7 +374,7 @@
             name of person <a href="/people" target="_blank">(list of people)</a>
           </td>
           <td>all</td>
-          <td>female hosts<br>Barack Obama</td>
+          <td>male hosts<br>Barack Obama</td>
         </tr>
         <tr>
           <td>video&nbsp;time</td>
@@ -312,7 +385,7 @@
     </div>
 
     <div class="container">
-      <h4>Supported filters</h4>
+      <h6>Supported filters</h6>
       <table>
         <tr>
           <th>Name</th>
@@ -322,56 +395,56 @@
           <th>Example</th>
         </tr>
         <tr>
-          <td>channel</td>
+          <td>{{ parameters.channel.value }}</td>
           <td>name of the channel</td>
           <td>CNN, FOX, MSNBC</td>
           <td>all</td>
-          <td>channel=CNN</td>
+          <td>{{ parameters.channel.value }}=CNN</td>
         </tr>
         <tr>
-          <td>show</td>
+          <td>{{ parameters.show.value }}</td>
           <td>name of the show</td>
           <td><a href="/shows" target="_blank">list of shows</a></td>
           <td>all</td>
-          <td>show="CNN Newsroom"</td>
+          <td>{{ parameters.show.value }}="CNN Newsroom"</td>
         </tr>
         <tr>
-          <td>hour</td>
+          <td>{{ parameters.hour.value }}</td>
           <td>ranges of hours in 24h format</td>
           <td>0-23 or 0, 1, 2, ...</td>
           <td>0-23</td>
-          <td>hour="9-17"</td>
+          <td>{{ parameters.hour.value }}="9-17"</td>
         </tr>
         <tr>
-          <td>dayofweek</td>
+          <td>{{ parameters.day_of_week.value }}</td>
           <td>range or list of days of the week</td>
           <td>mon-sun or mon, tue, ...</td>
           <td>all</td>
-          <td>dayofweek="sat-sun"</td>
+          <td>{{ parameters.day_of_week.value }}="sat-sun"</td>
         </tr>
         <tr>
-          <td>iscommercial</td>
+          <td>{{ parameters.is_commercial.value }}</td>
           <td>filter or select commercials</td>
           <td>true, false, both</td>
           <td>{{ default_is_commercial }}</td>
-          <td>iscommercial={{ default_is_commercial }}</td>
+          <td>{{ parameters.is_commercial.value }}={{ default_is_commercial }}</td>
         </tr>
         <tr>
-          <td>caption.text</td>
+          <td>{{ parameters.caption_text.value }}</td>
           <td>keywords nearby in the captions</td>
           <td>text query</td>
           <td>n/a</td>
-          <td>caption.text="affordable care act"</td>
+          <td>{{ parameters.caption_text.value }}="affordable care act"</td>
         </tr>
         <tr>
-          <td>caption.window</td>
+          <td>{{ parameters.caption_window.value }}</td>
           <td>threshold (in seconds) for nearby keywords</td>
           <td>non-negative integer</td>
           <td>{{ default_text_window }}</td>
-          <td>caption.window={{ default_text_window }}</td>
+          <td>{{ parameters.caption_window.value }}={{ default_text_window }}</td>
         </tr>
         <tr>
-          <td>onscreen.face</td>
+          <td>{{ parameters.onscreen_face.value }}</td>
           <td>
             at least one matching face on screen (height &ge; 20%)</td>
           <td>
@@ -381,15 +454,16 @@
           </td>
           <td>n/a</td>
           <td>
-            onscreen.face="male hosts" <br>
-            onscreen.face="Barack Obama"
+            {{ parameters.onscreen_face.value }}="men" <br>
+            {{ parameters.onscreen_face.value }}="male hosts" <br>
+            {{ parameters.onscreen_face.value }}="Barack Obama"
           </td>
         </tr>
       </table>
     </div>
 
     <div class="container">
-      <h4>Normalization and subtraction</h4>
+      <h6>Normalization and subtraction</h6>
       <table>
         <tr>
           <th>Keyword</th>
@@ -400,7 +474,8 @@
         <tr>
           <td>NORMALIZE</td>
           <td>query1 NORMALIZE query2</td>
-          <td><i>divide query1's results by query2's results</i></td>
+          <td><i>divide query1's results by query2's results.<br>
+              If query2 is blank, default normalization is applied.</i></td>
           <td>"united states" NORMALIZE</td>
         </tr>
         <tr>
@@ -460,120 +535,77 @@
       });
     }
 
-    function removeRow(color) {
-      $(`#search-table tr[data-color="${color}"]`).remove();
+    function removeRow(element) {
+      $(element).closest('tr[name="query"]').remove();
       $('#add-row-btn').prop('disabled', false);
       setRemoveButtonsState();
     }
 
-    function getDefaultQuery() {
-      let count_var = $('#countVar').val();
-      if (count_var.includes('mentions')) {
-        return DEFAULT_MENTIONS_QUERY;
-      } else if (count_var.includes('facetime')) {
-        return DEFAULT_FACETIME_QUERY;
-      } else if (count_var.includes('videotime')) {
-        return DEFAULT_VIDEOTIME_QUERY;
-      }
-    }
-
-    let strToOption = x => `<option value="${x}">${x}</option>`;
-    const SHOW_OPTIONS = ALL_SHOWS.map(strToOption).join('\n');
-    const PERSON_OPTIONS = ALL_PEOPLE.map(strToOption).join('\n');
-
-    function toggleQueryBuilder(color) {
-      let search_table_row = $(`#search-table tr[data-color="${color}"]`);
+    function toggleQueryBuilder(element) {
+      let search_table_row = $(element).closest('tr[name="query"]');
       if (search_table_row.find('.query-builder').length > 0) {
         search_table_row.find('.query-builder').remove();
         search_table_row.find('.color-box').height('auto');
       } else {
-        // TODO: build this the right way
-        let builder_html = `
-          <div class="query-builder">
-            <table>
-              <tr>
-                <th style="text-align: right;">Include results where:</th>
-                <th></th>
-              </tr>
-              <tr>
-                <td type="key-col">the channel is</td>
-                <td type="value-col">
-                  <select class="selectpicker" name="channel" data-width="fit">
-                    <option value="" selected="selected">CNN, FOX, or MSNBC</option>
-                    <option value="CNN">CNN</option>
-                    <option value="FOX">FOX</option>
-                    <option value="MSNBC">MSNBC</option>
-                  </select>
-                </td>
-              </tr>
-              <tr>
-                <td type="key-col">the show is</td>
-                <td type="value-col">
-                  <select class="selectpicker" name="show" data-width="fit">
-                    <option value="" selected="selected"></option>
-                    ${SHOW_OPTIONS}
-                  </select>
-                </td>
-              </tr>
-              <tr>
-                <td type="key-col">the hour of day is between</td>
-                <td type="value-col"><input type="text" class="no-enter-submit" name="hour" value="" placeholder="0-23"></td>
-              </tr>
-              <tr>
-                <td type="key-col">the day of week is</td>
-                <td type="value-col"><input type="text" class="no-enter-submit" name="dayofweek" value="" placeholder="mon-fri"></td>
-              </tr>
-              <tr>
-                <td type="key-col">
-                  the captions contain
-                </td>
-                <td type="value-col">
-                  <input type="text" class="no-enter-submit" name="caption.text" value="" placeholder="keyword or phrase">
-                  within
-                  <input type="number" class="no-enter-submit" name="caption.window" min="0" max="3600" placeholder="{{ default_text_window }}"> seconds
-                </td>
-              </tr>
-              <tr>
-                <td type="key-col">an on-screen face matches</td>
-                <td type="value-col">
-                  <select class="selectpicker" name="face.gender" data-width="fit">
-                    <option value="" selected="selected"></option>
-                    <option value="male">male</option>
-                    <option value="female">female</option>
-                  </select>
-                  <select class="selectpicker" name="face.role" data-width="fit">
-                    <option value="" selected="selected"></option>
-                    <option value="host">host</option>
-                    <option value="non-host">non-host</option>
-                  </select>
-                  or person
-                  <select class="selectpicker" name="face.person" data-width="fit">
-                    <option value="" selected="selected"></option>
-                    ${PERSON_OPTIONS}
-                  </select>
-                </td>
-              </tr>
-              <tr>
-                <td type="key-col">is in commercial</td>
-                <td type="value-col">
-                  <select class="selectpicker" name="iscommercial" data-width="fit">
-                    <option value="false" selected="selected">false</option>
-                    <option value="true">true</option>
-                    <option value="both">both</option>
-                  </select>
-                </td>
-              </tr>
-              <tr>
-                <td></td>
-                <td>
-                  <button type="button" class="btn btn-outline-danger btn-sm" onclick="populateQueryBox('${color}');">populate query</button>
-                  <button type="button" class="btn btn-outline-secondary btn-sm" onclick="toggleQueryBuilder('${color}');">cancel</button>
-                </td>
-              </tr>
-            </table>
-          </div>`;
-        search_table_row.find('td:last').append(builder_html);
+        search_table_row.find('td:last').append(QUERY_BUILDER_HTML);
+
+        let query_box = search_table_row.find('input[name="query"]');
+        var current_query = new SearchableQuery(
+          query_box.val(), $('#countVar').val(), true);
+
+        let query_builder = search_table_row.find('.query-builder');
+        let setIfDefined = k => {
+          let v = current_query.main_args[k];
+          if (v) {
+            query_builder.find(`[name="${k}"]`).val(v);
+          }
+        };
+
+        var channel = current_query.main_args['{{ parameters.channel.value }}'];
+        if (channel) {
+          query_builder.find(`[name="{{ parameters.channel.value }}"]`).val(
+            channel.toUpperCase() == 'FOXNEWS' ? 'FOX' : channel);
+        }
+
+        setIfDefined('{{ parameters.show.value }}');
+        setIfDefined('{{ parameters.hour.value }}');
+        setIfDefined('{{ parameters.day_of_week.value }}');
+        setIfDefined('{{ parameters.caption_text.value }}');
+        setIfDefined('{{ parameters.caption_window.value }}');
+        setIfDefined('{{ parameters.onscreen_person.value }}');
+        setIfDefined('{{ parameters.is_commercial.value }}');
+
+        let onscreen_face = current_query.main_args['{{ parameters.onscreen_face.value }}'];
+        if (onscreen_face) {
+          var gender = null;
+          var role = null;
+          if (onscreen_face == 'all' || onscreen_face.match(/^(fe)?male$/i)) {
+            gender = onscreen_face;
+          } else if (onscreen_face.match(/^(non)?host$)/i)) {
+            role = onscreen_face;
+          } else {
+            let [a, b] = onscreen_face.split(':');
+            gender = a;
+            role = b;
+          }
+          if (gender) {
+            query_builder.find(
+              `[name="{{ parameters.onscreen_face.value }}:gender"]`
+            ).val(gender);
+          }
+          if (role) {
+            query_builder.find(
+              `[name="{{ parameters.onscreen_face.value }}:role"]`
+            ).val(role);
+          }
+        }
+
+        if (current_query.normalize_args) {
+          query_builder.find('[name="normalize"]').val('true');
+        }
+
         $('.selectpicker').selectpicker();
+        $('.no-enter-submit').keypress(e => e.which != 13);
 
         // Set the color-box to be the height of the query box
         search_table_row.find('.color-box').height(
@@ -581,39 +613,43 @@
         );
       }
     }
-    $('.no-enter-submit').keypress(e => e.which != 13);
 
-    function populateQueryBox(color) {
-      let search_table_row = $(`#search-table tr[data-color="${color}"]`);
+    function populateQueryBox(element) {
+      let search_table_row = $(element).closest('tr[name="query"]');
       let builder = search_table_row.find('.query-builder');
       let filters = [];
-      let channel = builder.find('select[name="channel"]').val();
+
+      let channel = builder.find('[name="{{ parameters.channel.value }}"]').val();
       if (channel) {
-        filters.push(`channel=${channel}`);
+        filters.push(`{{parameters.channel.value }}=${channel}`);
       }
-      let show = builder.find('select[name="show"]').val();
+      let show = builder.find('[name="{{ parameters.show.value }}"]').val();
       if (show) {
-        filters.push(`show="${show}"`);
+        filters.push(`{{ parameters.show.value }}="${show}"`);
       }
-      let hour = builder.find('input[name="hour"]').val();
+      let hour = builder.find('[name="{{ parameters.hour.value }}"]').val();
       if (hour) {
-        filters.push(`hour=${hour}`);
+        filters.push(`{{ parameters.hour.value }}=${hour}`);
       }
-      let dayofweek = builder.find('input[name="dayofweek"]').val();
-      if (dayofweek) {
-        filters.push(`dayofweek="${dayofweek}"`);
+      let day_of_week = builder.find('[name="{{ parameters.day_of_week.value }}"]').val();
+      if (day_of_week) {
+        filters.push(`{{ parameters.day_of_week.value }}="${day_of_week}"`);
       }
-      let caption_text = builder.find('input[name="caption.text"]').val();
-      if (caption_text) {
-        filters.push(`caption.text="${caption_text}"`);
+
+      if ($('#countVar').val() != '{{ countables.mentions.name }}') {
+        let caption_text = builder.find('[name="{{ parameters.caption_text.value }}"]').val();
+        if (caption_text) {
+          filters.push(`{{ parameters.caption_text.value }}="${caption_text}"`);
+        }
+        let caption_window = builder.find('[name="{{ parameters.caption_window.value }}"]').val();
+        if (caption_window) {
+          filters.push(`{{ parameters.caption_window.value }}=${caption_window}`);
+        }
       }
-      let caption_window = builder.find('input[name="caption.window"]').val();
-      if (caption_window) {
-        filters.push(`caption.window=${caption_window}`);
-      }
-      let face_gender = builder.find('select[name="face.gender"]').val();
-      let face_role = builder.find('select[name="face.role"]').val();
-      let face_person = builder.find('select[name="face.person"]').val();
+
+      let face_gender = builder.find('[name="{{ parameters.onscreen_face.value }}:gender"]').val();
+      let face_role = builder.find('[name="{{ parameters.onscreen_face.value }}:role"]').val();
+      let face_person = builder.find('[name="{{ parameters.onscreen_person.value }}"]').val();
       if (face_person || face_role || face_gender) {
         var face_str;
         if (face_person) {
@@ -622,38 +658,95 @@
           }
           face_str = face_person;
         } else {
-          face_str = `${face_gender ? face_gender + ' ' : ''}${face_role}`
+          if (face_role) {
+            if (face_gender == 'all') {
+              face_str = face_role;
+            } else {
+              face_str = `${face_gender ? face_gender + ' ' : ''}${face_role}`;
+            }
+          } else {
+            face_str = face_gender;
+          }
         }
-        filters.push(`onscreen.face="${face_str}"`);
+        filters.push(`{{ parameters.onscreen_face.value }}="${face_str}"`);
       }
-      let is_commercial = builder.find('select[name="iscommercial"]').val();
+      let is_commercial = builder.find('[name="{{ parameters.is_commercial.value }}"]').val();
       if (is_commercial != 'false') {
-        filters.push(`iscommercial=${is_commercial}`);
+        filters.push(`{{ parameters.is_commercial.value }}=${is_commercial}`);
       }
 
+      let normalize = builder.find('[name="normalize"]').val() == 'true';
+
+      // Get the countable part of the query
       let query_box = search_table_row.find('input[name="query"]');
       var current_query = query_box.val();
-      if (current_query.includes('WHERE')) {
-        current_query = current_query.slice(0, current_query.indexOf('WHERE'));
+      if (current_query.includes(QUERY_WHERE)) {
+        current_query = current_query.slice(0, current_query.indexOf(QUERY_WHERE));
       }
-      query_box.val(
-        $.trim(current_query)
-        + (filters.length > 0 ? ' WHERE ' + filters.join(' AND ') : ''));
-      toggleQueryBuilder(color);
+      if (current_query.includes(QUERY_NORMALIZE)) {
+        current_query = current_query.slice(0, current_query.indexOf(QUERY_NORMALIZE));
+      }
+
+      // Construct the new query
+      let filter_str = filters.length > 0 ? ` ${QUERY_WHERE} ` + filters.join(` ${QUERY_AND} `) : '';
+      var new_query = $.trim(current_query) + filter_str;
+      if (normalize) {
+        new_query += ` ${QUERY_NORMALIZE}` + filter_str;
+      }
+      query_box.val(new_query);
+      toggleQueryBuilder(element);
+    }
+
+    function getDefaultQuery() {
+      if ($('#search-table tr[name="query"]').length > 0) {
+        return $('#search-table input[type="text"][name="query"]:last').val();
+      } else {
+        let count_var = $('#countVar').val();
+        if (count_var == '{{ countables.mentions.name }}') {
+          return DEFAULT_MENTIONS_QUERY;
+        } else if (count_var == '{{ countables.facetime.name }}') {
+          return DEFAULT_FACETIME_QUERY;
+        } else if (count_var == '{{ countables.videotime.name }}') {
+          return DEFAULT_VIDEOTIME_QUERY;
+        }
+      }
+    }
+
+    function onQueryUpdate(element) {
+      // Rewrite query with default normalization if necessary
+      if ($('#countVar') == '{{ countables.videotime.value }}') {
+        return;
+      }
+      let query_str = $.trim($(element).val());
+      if (query_str.endsWith(QUERY_NORMALIZE)) {
+        let main_query_str = $.trim(query_str.slice(0, query_str.indexOf(QUERY_NORMALIZE)));
+        if (main_query_str.includes(QUERY_WHERE)) {
+          let main_query_where_str = $.trim(main_query_str.slice(
+            main_query_str.lastIndexOf(QUERY_WHERE) + QUERY_WHERE.length
+          ));
+          if (main_query_where_str) {
+            $(element).val(`${query_str} ${QUERY_WHERE} ${main_query_where_str}`);
+          }
+        }
+      }
     }
 
     function addRow(query) {
-      let color = query ? query.color : getColor();
-      let text = query ? query.text : getDefaultQuery();
+      let color = _.get(query, 'color', getColor());
+      let text = _.get(query, 'text', getDefaultQuery());
       let html = `<tr name="query" data-color="${color}">
-        <td><button type="button" class="btn btn-outline-secondary btn-sm remove-row-btn" onclick="removeRow('${color}');">-</button></td>
-        <td><div class="color-box" style="background-color: ${color};" onclick="javascript:toggleQueryBuilder('${color}');return false;"></div></td>
-        <td><input type="text" name="query" value='${text}'></td>
+        <td><button type="button" class="btn btn-outline-secondary btn-sm remove-row-btn"
+             onclick="removeRow(this);">-</button></td>
+        <td><div class="color-box" style="background-color: ${color};"
+             onclick="toggleQueryBuilder(this);"></div></td>
+        <td class="query-td"><input type="text" name="query" value='${text}'
+             onchange="onQueryUpdate(this);"></td>
       </tr>`;
 
       $('#search-table > tbody > tr').eq(
         $('#search-table tr[name="query"]').length
       ).after(html);
+      setBlankQueryPlaceholder();
       if ($('#search-table tr[name="query"]').length >= DEFAULT_COLORS.length + 1) {
         $('#add-row-btn').prop('disabled', true);
       }
@@ -676,26 +769,12 @@
       return `/?data=${data}`;
     }
 
-    function setShareUrl(path) {
-      var dummy = document.createElement('input');
-      document.body.appendChild(dummy);
-      dummy.setAttribute('value', 'http://{{ host }}' + path);
-      dummy.select();
-      document.execCommand("copy");
-      document.body.removeChild(dummy);
-      alert('Copied link to clipboard!');
-    }
-
-    function setEmbedUrl(url) {
-      let x = $('#embed-area textarea[name="embed"]');
-      x.val(`<iframe src="${url}"></iframe>`);
-      x.toggle();
-    }
-
     function alertAndThrow(msg) {
       alert(msg);
       throw Error(msg);
     }
+
+    var setShareUrl, setEmbedUrl;
 
     function displaySearchResults(chart_options, lines, search_results) {
       new Chart(chart_options, search_results, {
@@ -707,8 +786,26 @@
         let data_str = getDataString(chart_options, lines);
         let chart_path = getChartPath(data_str);
         let embed_url = getEmbedUrl(data_str);
+
+        setShareUrl = () => {
+          var dummy = document.createElement('input');
+          document.body.appendChild(dummy);
+          dummy.setAttribute('value', 'http://{{ host }}' + chart_path);
+          dummy.select();
+          document.execCommand("copy");
+          document.body.removeChild(dummy);
+          alert('Copied link to clipboard!');
+        };
+
+        setEmbedUrl = () => {
+          let x = $('#embed-area textarea[name="embed"]');
+          x.val(`<iframe src="${embed_url}"></iframe>`);
+          x.toggle();
+        };
+
         $('#embed-area p[name="text"]').html(
-          `<a href="#" onclick="setShareUrl('${chart_path}'); return false;">Share</a> or <a href="#" onclick="setEmbedUrl('${embed_url}'); return false;">embed</a> chart.`
+          `<a href="#" onclick="setShareUrl(); return false;">Share</a> or
+           <a href="#" onclick="setEmbedUrl(); return false;">embed</a> chart.`
         );
         window.history.pushState(null, '', chart_path);
       } else {
@@ -743,7 +840,8 @@
       let lines = getRawQueries().map(raw_query => {
         var parsed_query;
         try {
-          parsed_query = new SearchableQuery(raw_query.text, chart_options.count);
+          parsed_query = new SearchableQuery(
+            raw_query.text, chart_options.count, false);
         } catch (e) {
           alertAndThrow(e.message);
         }
@@ -787,8 +885,8 @@
     if (params.get('data')) {
       let data = JSON.parse(decodeURIComponent(params.get('data')));
       try {
-        data.queries.forEach(query => addRow(query));
         initChartOptions(data.options);
+        data.queries.forEach(query => addRow(query));
         search();
       } catch (e) {
         alert('Invalid data in url. Unable to load.');
@@ -796,7 +894,8 @@
       }
     } else {
       initChartOptions();
-      addRow();
+      addRow({text: 'men'});
+      addRow({text: 'women'});
     }
   </script>
 </body>

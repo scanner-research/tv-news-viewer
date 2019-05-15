@@ -39,11 +39,11 @@
   <script>
     function getUnit(count) {
       var unit;
-      if (count == 'mentions') {
+      if (count == '{{ countables.mentions.name }}') {
         unit = 'mentions';
-      } else if (count == 'videotime') {
+      } else if (count == '{{ countables.videotime.name }}') {
         unit = 'video time';
-      } else if (count == 'facetime') {
+      } else if (count == '{{ countables.facetime.name }}') {
         unit = 'face time';
       } else {
         alert(`unknown count: ${count}`)
@@ -57,7 +57,7 @@
       $("#text-info").html(
         `Showing results for ${unit} of <font color="${params.color}"><b>${params.query}</b></font> from ${video_ids.length} of ${params.video_count} videos from ${params.time}.`
       );
-      let query = new SearchableQuery(params.query, params.count);
+      let query = new SearchableQuery(params.query, params.count, false);
       console.log('Executing query:', query);
 
       let caption_data = {};
