@@ -1,6 +1,6 @@
 /* Embed a chart using vega-embed */
 
-const MAX_DISPLAY_VIDEOS = 10;
+const MAX_NEW_WINDOW_VIDEOS = 100;
 
 String.prototype.replaceAll = function(search, replacement) {
     var target = this;
@@ -77,12 +77,13 @@ var current_chart;
 function chartHrefHandler(color, t, video_div_id) {
   // Enable embedded player
   let result = current_chart.search_results[color];
-  let video_ids = shuffle(result.main[t].map(x => x[0]));
+  let video_ids = result.main[t].map(x => x[0]);
   let date_format = getMomentDateFormat(current_chart.options.aggregate);
   let params = {
     time: moment(t).format(date_format), color: color,
     count: current_chart.options.count, query: result.query,
-    video_ids: video_ids.slice(0, MAX_DISPLAY_VIDEOS),
+    video_ids: video_div_id != 'null' ? video_ids :
+      shuffle(video_ids).slice(0, MAX_NEW_WINDOW_VIDEOS),
     video_count: video_ids.length
   };
   console.log('Click params:', params);
