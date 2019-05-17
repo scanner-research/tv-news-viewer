@@ -260,7 +260,7 @@
       $('#endDate').val(toDatepickerStr(end_date));
     }
 
-    function setBlankQueryPlaceholder() {
+    function setQueryBoxForMode() {
       let count_var = $('#countVar').val();
       var placeholder, prefix_str, has_countable;
       if (count_var == '{{ countables.mentions.name }}') {
@@ -286,7 +286,7 @@
       });
       $('#search-table span[name="count-type-prefix"]').text(`COUNT ${prefix_str}`);
     }
-    $('#countVar').change(setBlankQueryPlaceholder);
+    $('#countVar').change(setQueryBoxForMode);
   </script>
 
   <div class="container" id="query-help">
@@ -801,7 +801,7 @@
       $('#search-table > tbody > tr').eq(
         $('#search-table tr[name="query"]').length
       ).after(new_row);
-      setBlankQueryPlaceholder();
+      setQueryBoxForMode();
       if ($('#search-table tr[name="query"]').length >= DEFAULT_COLORS.length + 1) {
         $('#add-row-btn').prop('disabled', true);
       }
@@ -870,11 +870,12 @@
       }
     }
 
-    function getRawQueries() {
+    function getRawQueries(count_var) {
       let queries = [];
       $('#search-table tr[name="query"]').each(function() {
         if ($(this).attr('name')) {
-          let countable_str = $.trim($(this).find('input[name="countable"]').val())
+          let countable_str = count_var != '{{ countables.videotime.name }}' ?
+            $.trim($(this).find('input[name="countable"]').val()) : '';
           let query_str = $.trim($(this).find('input[name="where"]').val());
           queries.push({
             color: $(this).attr('data-color'),
@@ -891,16 +892,17 @@
       hideQueryHelp();
 
       let chart_options = getChartOptions();
-      let lines = getRawQueries().map(raw_query => {
-        var parsed_query;
-        try {
-          parsed_query = new SearchableQuery(
-            raw_query.text, chart_options.count, false);
-        } catch (e) {
-          alertAndThrow(e.message);
-        }
-        return {color: raw_query.color, query: parsed_query};
-      });
+      let lines = getRawQueries(chart_options.count).map(
+        raw_query => {
+          var parsed_query;
+          try {
+            parsed_query = new SearchableQuery(
+              raw_query.text, chart_options.count, false);
+          } catch (e) {
+            alertAndThrow(e.message);
+          }
+          return {color: raw_query.color, query: parsed_query};
+        });
 
       $('#shade').show();
       $('#search').prop('disabled', true);
