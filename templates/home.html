@@ -742,22 +742,17 @@
     function onWhereUpdate(element) {
       // Rewrite query with default normalization if necessary
       let count_var = $('#countVar').val();
-      let query_str = $.trim($(element).val());
-      if (query_str.endsWith(QUERY_NORMALIZE)) {
+      let where_str = $.trim($(element).val());
+      if (where_str.endsWith(QUERY_NORMALIZE)) {
         if (count_var == '{{ countables.videotime.name }}') {
-          $(element).val(`${query_str} ${QUERY_ALL}`);
+          $(element).val(`${where_str} ${QUERY_ALL}`);
         } else {
-          let main_query_str = $.trim(query_str.slice(0, query_str.indexOf(QUERY_NORMALIZE)));
-          var new_query = `${query_str} ${QUERY_ALL}`;
-          if (main_query_str.includes(QUERY_WHERE)) {
-            let main_query_where_str = $.trim(main_query_str.slice(
-              main_query_str.lastIndexOf(QUERY_WHERE) + QUERY_WHERE.length
-            ));
-            if (main_query_where_str) {
-              new_query += ` ${QUERY_WHERE} ${main_query_where_str}`;
-            }
+          let no_normlize_where_str = $.trim(where_str.slice(0, where_str.indexOf(QUERY_NORMALIZE)));
+          var new_where = `${where_str} ${QUERY_ALL}`;
+          if (count_var != '{{ countables.mentions.name }}' && no_normlize_where_str.length > 0) {
+            new_where += ` WHERE ${no_normlize_where_str}`;
           }
-          $(element).val(new_query);
+          $(element).val(new_where);
         }
       }
     }
@@ -872,10 +867,10 @@
         if ($(this).attr('name')) {
           let countable_str = count_var != '{{ countables.videotime.name }}' ?
             $.trim($(this).find('input[name="countable"]').val()) : '';
-          let query_str = $.trim($(this).find('input[name="where"]').val());
+          let where_str = $.trim($(this).find('input[name="where"]').val());
           queries.push({
             color: $(this).attr('data-color'),
-            text: `${countable_str} WHERE ${query_str}`
+            text: `${countable_str} WHERE ${where_str}`
           });
         }
       });
