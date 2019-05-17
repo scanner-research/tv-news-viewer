@@ -163,7 +163,7 @@ class Chart {
       y_axis_title = `# of ${unit}`;
     }
 
-    let raw_precision = this.options.count == '{{ countables.mentions.name }}' ? 0 : 2;
+    let raw_precision = this.options.count == '{{ countables.mentions.name }}' ? 0 : 4;
     function getPointValue(result, video_data, t) {
       var value = secondsToMinutes(video_data.reduce((acc, x) => acc + x[1], 0));
       var value_str;
