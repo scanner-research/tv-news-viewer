@@ -748,18 +748,18 @@
           $(element).val(`${query_str} ${QUERY_ALL_VIDEO}`);
         } else {
           let main_query_str = $.trim(query_str.slice(0, query_str.indexOf(QUERY_NORMALIZE)));
+          let all_str = count_var == '{{ countables.mentions.name }}' ?
+                        QUERY_ALL_WORDS : QUERY_ALL_FACES;
+          var new_query = `${query_str} ${all_str}`;
           if (main_query_str.includes(QUERY_WHERE)) {
-            let all_str = count_val == '{{ countables.mentions.name }}' ?
-                          QUERY_ALL_WORDS : QUERY_ALL_FACES;
             let main_query_where_str = $.trim(main_query_str.slice(
               main_query_str.lastIndexOf(QUERY_WHERE) + QUERY_WHERE.length
             ));
-            var new_query = `${query_str} ${all_str}`;
             if (main_query_where_str) {
               new_query += ` ${QUERY_WHERE} ${main_query_where_str}`;
             }
-            $(element).val(new_query);
           }
+          $(element).val(new_query);
         }
       }
     }

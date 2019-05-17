@@ -230,12 +230,14 @@ class SearchableQuery {
           if (face_params.role) params.role = face_params.role;
           if (face_params.person) params.person = face_params.person;
         } else if (count == '{{ countables.videotime.name }}') {
-          if (!has_where) {
-            params = translateFilterDict(
-              parseFilterDict($.trim(countable_str), no_err), no_err);
-          } else {
-            if (countable_str.length > 0 && !countable_str.match(/^all ?videos?$/i)) {
-              if (!no_err) throw Error(`Count {{ countables.videotime.value }} only supports WHERE filters. Try removing "${countable_str}"`);
+          if (!countable_str.match(/^all ?videos?$/i)) {
+            if (!has_where) {
+              params = translateFilterDict(
+                parseFilterDict($.trim(countable_str), no_err), no_err);
+            } else {
+              if (countable_str.length > 0) {
+                if (!no_err) throw Error(`Count {{ countables.videotime.value }} only supports WHERE filters. Try removing "${countable_str}"`);
+              }
             }
           }
         }
