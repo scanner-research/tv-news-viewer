@@ -173,8 +173,8 @@ class Chart {
         value_str = value.toString();
       } else {
         // Unit remains the same
-        if (result.subtraction) {
-          value -= secondsToMinutes(_.get(result.subtraction, t, 0.));
+        if (result.subtract) {
+          value -= secondsToMinutes(_.get(result.subtract, t, 0.));
         }
         value_str = `${value.toFixed(raw_precision)} ${unit}`;
       }
@@ -185,8 +185,8 @@ class Chart {
       let result = this.search_results[color];
       var values = result.main;
       // Fill in zeros for subtraction
-      if (result.subtraction) {
-        Object.keys(result.subtraction).forEach(t => {
+      if (result.subtract) {
+        Object.keys(result.subtract).forEach(t => {
           if (!values.hasOwnProperty(t)) {
             values[t] = [];
           }
