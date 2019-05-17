@@ -353,19 +353,21 @@
             <td>{{ parameters.caption_window.value }}={{ default_text_window }}</td>
           </tr>
           <tr>
-            <td>{{ parameters.onscreen_face.value }}</td>
+            <td>{{ parameters.onscreen_face.value }} <br>
+                {{ parameters.onscreen_face.value }}1 <br>
+                {{ parameters.onscreen_face.value }}<b>n</b> </td>
             <td>
-              at least one matching face on screen (height &ge; 20%)</td>
+              at least one matching face on screen <br> (height &ge; 20%)</td>
             <td>
-              all, (wo)men, (non)hosts, <br>
+              all, (wo)men, (fe)male, (non)hosts, <br>
               (fe)male (non)hosts, <br>
               name of person <a href="/people" target="_blank">(list of people)</a>
             </td>
             <td>n/a</td>
             <td>
               {{ parameters.onscreen_face.value }}="men" <br>
-              {{ parameters.onscreen_face.value }}="male hosts" <br>
-              {{ parameters.onscreen_face.value }}="Barack Obama"
+              {{ parameters.onscreen_face.value }}1="male hosts" <br>
+              {{ parameters.onscreen_face.value }}2="Barack Obama"
             </td>
           </tr>
         </table>
@@ -584,17 +586,19 @@
         setIfDefined('{{ parameters.day_of_week.value }}');
         setIfDefined('{{ parameters.caption_text.value }}');
         setIfDefined('{{ parameters.caption_window.value }}');
-        setIfDefined('{{ parameters.onscreen_person.value }}');
         setIfDefined('{{ parameters.is_commercial.value }}');
 
         let onscreen_face = current_query.main_args['{{ parameters.onscreen_face.value }}'];
         if (onscreen_face) {
           var gender = null;
           var role = null;
+          var person = null;
           if (onscreen_face == 'all' || onscreen_face.match(/^(fe)?male$/i)) {
             gender = onscreen_face;
-          } else if (onscreen_face.match(/^(non)?host$)/i)) {
+          } else if (onscreen_face.match(/^(non)?host$/i)) {
             role = onscreen_face;
+          } else if (onscreen_face.match(/^person:/i)) {
+            person = onscreen_face.slice(onscreen_face.indexOf(':') + 1);
           } else {
             let [a, b] = onscreen_face.split(':');
             gender = a;
@@ -609,6 +613,11 @@
             query_builder.find(
               `[name="{{ parameters.onscreen_face.value }}:role"]`
             ).val(role);
+          }
+          if (person) {
+            query_builder.find(
+              `[name="{{ parameters.onscreen_face.value }}:person"]`
+            ).val(person);
           }
         }
 
@@ -661,7 +670,7 @@
 
       let face_gender = builder.find('[name="{{ parameters.onscreen_face.value }}:gender"]').val();
       let face_role = builder.find('[name="{{ parameters.onscreen_face.value }}:role"]').val();
-      let face_person = builder.find('[name="{{ parameters.onscreen_person.value }}"]').val();
+      let face_person = builder.find('[name="{{ parameters.onscreen_face.value }}:person"]').val();
       if (face_person || face_role || face_gender) {
         var face_str;
         if (face_person) {

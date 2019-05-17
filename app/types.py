@@ -42,7 +42,6 @@ class SearchParameter(Enum):
     hour = 'hour'
     day_of_week = 'dayofweek'
     onscreen_face = 'onscreen.face'
-    onscreen_person = 'onscreen.person'
     caption_text = 'caption.text'
     caption_window = 'caption.window'
     is_commercial = 'iscommercial'

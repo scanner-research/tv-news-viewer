@@ -89,7 +89,7 @@ function translateFilterDict(filters, no_err) {
     let v_up = v.toUpperCase();
     if (k == '{{ parameters.caption_text.value }}') {
       result[k] = v;
-    } else if (k == '{{ parameters.onscreen_face.value }}') {
+    } else if (k.match(/^{{ parameters.onscreen_face.value }}(\d+)?/)) {
       let face_params = parseFaceTimeString(v);
       if (face_params.all) {
         result[k] = 'all';
@@ -102,7 +102,7 @@ function translateFilterDict(filters, no_err) {
       } else {
         var person = findPerson(v);
         if (person) {
-          result['{{ parameters.onscreen_person.value }}'] = person;
+          result[k] = `person:${person}`;
         } else {
           if (!no_err) throw Error(`Unknown person: ${v}`);
         }
@@ -161,7 +161,7 @@ function unquoteString(s) {
   return s;
 }
 
-function parseFilterDict(filters_str) {
+function parseFilterDict(filters_str, no_err) {
   let filters = {};
   if (filters_str) {
     filters_str.split(QUERY_AND).forEach(line => {
@@ -169,10 +169,11 @@ function parseFilterDict(filters_str) {
       if (line.length > 0) {
         let i = line.indexOf(QUERY_ASSIGN);
         if (i == -1) {
+          if (no_err) return;
           throw Error(`Invalid filter: ${line}`);
         }
         let k = $.trim(line.substr(0, i));
-        if (filters.hasOwnProperty(k)) {
+        if (filters.hasOwnProperty(k) && !no_err) {
           throw Error(`"${k}" is specified multiple times`)
         } else {
           filters[k] = $.trim(unquoteString($.trim(line.substr(i + 1))));
@@ -211,7 +212,7 @@ class SearchableQuery {
       if (s.includes(QUERY_WHERE)) {
         let [a, b] = s.split(QUERY_WHERE);
         countable_str = a;
-        params = translateFilterDict(parseFilterDict($.trim(b)), no_err);
+        params = translateFilterDict(parseFilterDict($.trim(b), no_err), no_err);
         has_where = true;
       } else {
         countable_str = s;
@@ -224,14 +225,14 @@ class SearchableQuery {
             params.text = countable_str;
           }
         } else if (count == '{{ countables.facetime.name }}') {
-          let face_params = parseFaceTimeString(countable_str);
+          let face_params = parseFaceTimeString(countable_str, no_err);
           if (face_params.gender) params.gender = face_params.gender;
           if (face_params.role) params.role = face_params.role;
           if (face_params.person) params.person = face_params.person;
         } else if (count == '{{ countables.videotime.name }}') {
           if (!has_where) {
             params = translateFilterDict(
-              parseFilterDict($.trim(countable_str)), no_err);
+              parseFilterDict($.trim(countable_str), no_err), no_err);
           } else {
             if (countable_str.length > 0 && !countable_str.match(/^all ?videos?$/i)) {
               if (!no_err) throw Error(`Count {{ countables.videotime.value }} only supports WHERE filters. Try removing "${countable_str}"`);
@@ -404,7 +405,7 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
         </select>
         or person
         <select class="selectpicker"
-                name="{{ parameters.onscreen_person.value }}" data-width="fit">
+                name="{{ parameters.onscreen_face.value }}:person" data-width="fit">
           <option value="" selected="selected"></option>
           {% for person in people %}
           <option value="{{ person }}">{{ person }}</option>

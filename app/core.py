@@ -120,66 +120,62 @@ def get_countable() -> Countable:
 
 
 def get_onscreen_face_isetmap(
-    face_intervals: FaceIntervals
-) -> MmapIntervalSetMapping:
-    filter_str = request.args.get(
-        SearchParameter.onscreen_face.value, '', type=str
-    ).strip().lower()
-    if not filter_str:
+    face_intervals: FaceIntervals, person_intervals: PersonIntervals, key: str
+) -> Optional[MmapIntervalSetMapping]:
+    if not key:
         return None
-    if filter_str == 'all':
+    if key == 'all':
         isetmap = face_intervals.all
-    elif filter_str == 'male':
+    elif key == 'male':
         isetmap = face_intervals.male
-    elif filter_str == 'female':
+    elif key == 'female':
         isetmap = face_intervals.female
-    elif filter_str == 'host':
+    elif key == 'host':
         isetmap = face_intervals.host
-    elif filter_str == 'nonhost':
+    elif key == 'nonhost':
         isetmap = face_intervals.nonhost
-    elif filter_str == 'male:host':
+    elif key == 'male:host':
         isetmap = face_intervals.male_host
-    elif filter_str == 'female:host':
+    elif key == 'female:host':
         isetmap = face_intervals.female_host
-    elif filter_str == 'male:nonhost':
+    elif key == 'male:nonhost':
         isetmap = face_intervals.male_nonhost
-    elif filter_str == 'female:nonhost':
+    elif key == 'female:nonhost':
         isetmap = face_intervals.female_nonhost
+    elif key.startswith('person'):
+        isetmap = person_intervals.get(key.split(':', 1)[1], None)
+        if isetmap is None:
+            raise InvalidUsage('{} is not a valid person'.format(key))
     else:
-        raise InvalidUsage('{} is not a valid face filter'.format(filter_str))
+        raise InvalidUsage('{} is not a valid face filter'.format(key))
     return isetmap
+
+
+def get_onscreen_face_isetmaps(
+    face_intervals: FaceIntervals, person_intervals: PersonIntervals
+) -> Optional[List[MmapIntervalSetMapping]]:
+    result = None
+    for k in request.args:
+        if k.startswith(SearchParameter.onscreen_face.value):
+            filter_str = request.args.get(k, '', type=str).strip().lower()
+            isetmap = get_onscreen_face_isetmap(
+                face_intervals, person_intervals, filter_str)
+            if isetmap:
+                if result is None:
+                    result = [isetmap]
+                else:
+                    result.append(isetmap)
+    return result
 
 
 def get_onscreen_face_filter(
-    face_intervals: FaceIntervals
+    face_intervals: FaceIntervals, person_intervals: PersonIntervals
 ) -> Optional[OnScreenFilterFn]:
-    isetmap = get_onscreen_face_isetmap(face_intervals)
-    if isetmap is None:
+    isetmaps = get_onscreen_face_isetmaps(face_intervals, person_intervals)
+    if isetmaps is None:
         return None
-    return lambda v, t: isetmap.is_contained(v, t, True)
-
-
-def get_onscreen_person_isetmap(
-    person_intervals: PersonIntervals
-) -> MmapIntervalSetMapping:
-    filter_str = request.args.get(
-        SearchParameter.onscreen_person.value, '', type=str
-    ).strip().lower()
-    if not filter_str:
-        return None
-    isetmap = person_intervals.get(filter_str, None)
-    if isetmap is None:
-        raise InvalidUsage('{} is not a valid person'.format(filter_str))
-    return isetmap
-
-
-def get_onscreen_person_filter(
-    person_intervals: PersonIntervals
-) -> Optional[OnScreenFilterFn]:
-    isetmap = get_onscreen_person_isetmap(person_intervals)
-    if isetmap is None:
-        return None
-    return lambda v, t: isetmap.is_contained(v, t, True)
+    return lambda v, t: all(isetmap.is_contained(v, t, True)
+                            for isetmap in isetmaps)
 
 
 def get_face_time_filter_mask(
@@ -416,8 +412,7 @@ def build_app(
         accumulator: DateAccumulator,
         text_query_str: str, is_commercial: Ternary,
         video_filter: Optional[VideoFilterFn],
-        onscreen_face_filter: Optional[OnScreenFilterFn],
-        onscreen_person_filter: Optional[OnScreenFilterFn]
+        onscreen_face_filter: Optional[OnScreenFilterFn]
     ) -> None:
         missing_videos = 0
         matched_videos = 0
@@ -438,11 +433,6 @@ def build_app(
                     continue
 
                 postings = result.postings
-                if onscreen_person_filter:
-                    postings = [
-                        p for p in postings
-                        if onscreen_person_filter(
-                            video.id, milliseconds((p.start + p.end) / 2))]
                 if onscreen_face_filter:
                     postings = [
                         p for p in postings
@@ -475,9 +465,6 @@ def build_app(
                     filtered_videos += 1
                     continue
 
-                if onscreen_person_filter:
-                    raise InvalidUsage(
-                        'Not implemented: empty text and person filter')
                 if onscreen_face_filter:
                     raise InvalidUsage(
                         'Not implemented: empty text and face filter')
@@ -495,8 +482,7 @@ def build_app(
         is_commercial: Ternary,
         video_filter: Optional[VideoFilterFn],
         face_time_agg_fn: Optional[FaceTimeAggregateFn],
-        onscreen_face_isetmap: Optional[MmapIntervalSetMapping],
-        onscreen_person_isetmap: Optional[MmapIntervalSetMapping]
+        onscreen_face_isetmaps: Optional[List[MmapIntervalSetMapping]]
     ) -> None:
         missing_videos = 0
         matched_videos = 0
@@ -515,16 +501,11 @@ def build_app(
                 if not intervals:
                     return
 
-            if onscreen_person_isetmap:
-                intervals = intersect_isetmap(
-                    video, onscreen_person_isetmap, intervals)
-                if not intervals:
-                    return
-            if onscreen_face_isetmap:
-                intervals = intersect_isetmap(
-                    video, onscreen_face_isetmap, intervals)
-                if not intervals:
-                    return
+            if onscreen_face_isetmaps:
+                for isetmap in onscreen_face_isetmaps:
+                    intervals = intersect_isetmap(video, isetmap, intervals)
+                    if not intervals:
+                        return
 
             if face_time_agg_fn:
                 accumulator.add(
@@ -607,8 +588,7 @@ def build_app(
             _count_mentions(
                 accumulator,
                 text_query, is_commercial, video_filter,
-                get_onscreen_face_filter(face_intervals),
-                get_onscreen_person_filter(person_intervals))
+                get_onscreen_face_filter(face_intervals, person_intervals))
 
         elif (countable == Countable.videotime
               or countable == Countable.facetime):
@@ -637,8 +617,7 @@ def build_app(
                 is_commercial, video_filter,
                 None if countable == Countable.videotime else
                 get_face_time_agg_fn(all_faces_ilistmap, person_intervals),
-                get_onscreen_face_isetmap(face_intervals),
-                get_onscreen_person_isetmap(person_intervals))
+                get_onscreen_face_isetmaps(face_intervals, person_intervals))
 
         else:
             raise NotImplementedError('unreachable code')
@@ -675,8 +654,7 @@ def build_app(
     def _count_mentions_in_videos(
         videos: List[Video],
         text_query_str: str, is_commercial: Ternary,
-        onscreen_face_filter: Optional[OnScreenFilterFn],
-        onscreen_person_filter: Optional[OnScreenFilterFn]
+        onscreen_face_filter: Optional[OnScreenFilterFn]
     ) -> List[JsonObject]:
         results = []
         if text_query_str:
@@ -689,11 +667,6 @@ def build_app(
                 video = video_dict[document.name]
                 postings = result.postings
 
-                if onscreen_person_filter:
-                    postings = [
-                        p for p in postings
-                        if onscreen_person_filter(
-                            video.id, milliseconds((p.start + p.end) / 2))]
                 if onscreen_face_filter:
                     postings = [
                         p for p in postings
@@ -722,9 +695,6 @@ def build_app(
             if onscreen_face_filter:
                 raise InvalidUsage(
                     'not implemented: empty text and face filter')
-            if onscreen_person_filter:
-                raise InvalidUsage(
-                    'not implemented: empty text and person filter')
             if is_commercial != Ternary.both:
                 raise InvalidUsage(
                     'not implemented: empty text and commercial filter')
@@ -739,8 +709,7 @@ def build_app(
         caption_query_str: str, caption_window: int,
         is_commercial: Ternary,
         face_time_isect_fn: Optional[FaceTimeIntersectFn],
-        onscreen_face_isetmap: Optional[MmapIntervalSetMapping],
-        onscreen_person_isetmap: Optional[MmapIntervalSetMapping]
+        onscreen_face_isetmaps: Optional[List[MmapIntervalSetMapping]]
     ) -> List[JsonObject]:
         results = []
 
@@ -758,16 +727,11 @@ def build_app(
                 if not intervals:
                     return
 
-            if onscreen_person_isetmap:
-                intervals = intersect_isetmap(
-                    video, onscreen_person_isetmap, intervals)
-                if not intervals:
-                    return
-            if onscreen_face_isetmap:
-                intervals = intersect_isetmap(
-                    video, onscreen_face_isetmap, intervals)
-                if not intervals:
-                    return
+            if onscreen_face_isetmaps:
+                for isetmap in onscreen_face_isetmaps:
+                    intervals = intersect_isetmap(video, isetmap, intervals)
+                    if not intervals:
+                        return
 
             if face_time_isect_fn:
                 intervals = face_time_isect_fn(
@@ -839,8 +803,7 @@ def build_app(
 
             results = _count_mentions_in_videos(
                 videos, text_query, is_commercial,
-                get_onscreen_face_filter(face_intervals),
-                get_onscreen_person_filter(person_intervals))
+                get_onscreen_face_filter(face_intervals, person_intervals))
 
         elif (countable == Countable.videotime
               or countable == Countable.facetime):
@@ -868,8 +831,7 @@ def build_app(
                 None if countable == Countable.videotime
                 else get_face_time_intersect_fn(
                     all_faces_ilistmap, person_intervals),
-                get_onscreen_face_isetmap(face_intervals),
-                get_onscreen_person_isetmap(person_intervals))
+                get_onscreen_face_isetmaps(face_intervals, person_intervals))
 
         else:
             raise NotImplementedError('unreachable code')

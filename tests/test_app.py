@@ -114,8 +114,8 @@ TEST_CHANNEL_OPTIONS = [None, 'CNN', 'FOXNEWS', 'MSNBC']
 TEST_HOUR_OPTIONS = [None, '9-5', '5', '5,6', '5-6,7']
 TEST_DAYOFWEEK_OPTIONS = [None, 'mon-wed,thu,fri', 'sat', 'sat-sun', 'sat,sun']
 TEST_IS_COMMERCIAL_OPTIONS = [None, 'false', 'true', 'both']
-TEST_ONSCREEN_FACE_OPTIONS = [None, 'female:host', 'female', 'all']
-TEST_ONSCREEN_PERSON_OPTIONS = [None, 'wolf blitzer']
+TEST_ONSCREEN_FACE_OPTIONS = [None, 'female:host', 'female', 'all',
+                              'person:wolf blitzer']
 TEST_TEXT_WINDOW_OPTIONS = [None, '0', '15', '120']
 
 
@@ -141,8 +141,7 @@ def test_count_mentions(client: FlaskClient) -> None:
             'hour': TEST_HOUR_OPTIONS,
             'dayofweek': TEST_DAYOFWEEK_OPTIONS,
             'iscommercial': TEST_IS_COMMERCIAL_OPTIONS,
-            'onscreen.face': TEST_ONSCREEN_FACE_OPTIONS,
-            'onscreen.person': TEST_ONSCREEN_PERSON_OPTIONS
+            'onscreen.face': TEST_ONSCREEN_FACE_OPTIONS
         }, _check_count_result, n=100)
     _combination_test_get(
         client, '/search', {
@@ -170,7 +169,6 @@ def test_count_face_time(client: FlaskClient) -> None:
             'dayofweek': TEST_DAYOFWEEK_OPTIONS,
             'iscommercial': TEST_IS_COMMERCIAL_OPTIONS,
             'onscreen.face': TEST_ONSCREEN_FACE_OPTIONS,
-            'onscreen.person': TEST_ONSCREEN_PERSON_OPTIONS,
             'caption.window': TEST_TEXT_WINDOW_OPTIONS,
             'caption.window': [None, 'united states of america'],
         }, _check_count_result, n=100)
@@ -191,7 +189,6 @@ def test_count_face_time(client: FlaskClient) -> None:
             'dayofweek': TEST_DAYOFWEEK_OPTIONS,
             'iscommercial': TEST_IS_COMMERCIAL_OPTIONS,
             'onscreen.face': TEST_ONSCREEN_FACE_OPTIONS,
-            'onscreen.person': TEST_ONSCREEN_PERSON_OPTIONS,
             'caption.window': TEST_TEXT_WINDOW_OPTIONS,
             'caption.window': [None, 'united states of america'],
         }, _check_count_result, n=10)
@@ -219,7 +216,6 @@ def test_count_video_time(client: FlaskClient) -> None:
             'dayofweek': TEST_DAYOFWEEK_OPTIONS,
             'iscommercial': TEST_IS_COMMERCIAL_OPTIONS,
             'onscreen.face': TEST_ONSCREEN_FACE_OPTIONS,
-            'onscreen.person': TEST_ONSCREEN_PERSON_OPTIONS,
             'caption.window': TEST_TEXT_WINDOW_OPTIONS,
             'caption.window': [None, 'united states of america'],
         }, _check_count_result, n=100)
@@ -261,8 +257,7 @@ def test_search_mentions_in_videos(client: FlaskClient) -> None:
             # General options
             'text': TEST_COMMON_TEXT_OPTIONS,
             'iscommercial': TEST_IS_COMMERCIAL_OPTIONS,
-            'onscreen.face': TEST_ONSCREEN_FACE_OPTIONS,
-            'onscreen.person': TEST_ONSCREEN_PERSON_OPTIONS
+            'onscreen.face': TEST_ONSCREEN_FACE_OPTIONS
         }, _check_search_in_video_result)
 
 
@@ -278,7 +273,6 @@ def test_search_face_time_in_videos(client: FlaskClient) -> None:
             # General options
             'iscommercial': TEST_IS_COMMERCIAL_OPTIONS,
             'onscreen.face': TEST_ONSCREEN_FACE_OPTIONS,
-            'onscreen.person': TEST_ONSCREEN_PERSON_OPTIONS,
             'caption.window': TEST_TEXT_WINDOW_OPTIONS,
             'caption.text': [None] + TEST_COMMON_TEXT_OPTIONS
         }, _check_search_in_video_result, n=100)
@@ -293,7 +287,6 @@ def test_search_face_time_in_videos(client: FlaskClient) -> None:
             # General options
             'iscommercial': TEST_IS_COMMERCIAL_OPTIONS,
             'onscreen.face': TEST_ONSCREEN_FACE_OPTIONS,
-            'onscreen.person': TEST_ONSCREEN_PERSON_OPTIONS,
             'caption.window': TEST_TEXT_WINDOW_OPTIONS,
             'caption.text': [None] + TEST_COMMON_TEXT_OPTIONS
         }, _check_search_in_video_result, n=10)
@@ -308,7 +301,6 @@ def test_search_time_in_videos(client: FlaskClient) -> None:
             # General options
             'iscommercial': TEST_IS_COMMERCIAL_OPTIONS,
             'onscreen.face': TEST_ONSCREEN_FACE_OPTIONS,
-            'onscreen.person': TEST_ONSCREEN_PERSON_OPTIONS,
             'caption.window': TEST_TEXT_WINDOW_OPTIONS,
             'caption.text': [None] + TEST_COMMON_TEXT_OPTIONS
         }, _check_search_in_video_result)
