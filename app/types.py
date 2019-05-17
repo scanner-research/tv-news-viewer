@@ -13,9 +13,9 @@ class Aggregate(Enum):
 
 
 class Countable(Enum):
-    mentions = 'mentions'
+    mentions = 'caption occurences'
     facetime = 'face time'
-    videotime = 'video time'
+    videotime = 'screen time'
 
 
 class Ternary(Enum):

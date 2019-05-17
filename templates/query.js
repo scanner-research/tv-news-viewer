@@ -4,6 +4,10 @@ const QUERY_NORMALIZE = 'NORMALIZE';
 const QUERY_MINUS = 'SUBTRACT';
 const QUERY_WHERE = 'WHERE';
 
+const QUERY_ALL_VIDEO = 'all video';
+const QUERY_ALL_WORDS = 'all words';
+const QUERY_ALL_FACES = 'all faces';
+
 const ALL_SHOWS = [
   {% for show in shows %}"{{ show }}",{% endfor %}
 ];
@@ -216,7 +220,9 @@ class SearchableQuery {
       countable_str = $.trim(unquoteString($.trim(countable_str)));
       if (countable_str.length > 0) {
         if (count == '{{ countables.mentions.name }}') {
-          params.text = countable_str;
+          if (!countable_str.match(/^all ?words?$/i)) {
+            params.text = countable_str;
+          }
         } else if (count == '{{ countables.facetime.name }}') {
           let face_params = parseFaceTimeString(countable_str);
           if (face_params.gender) params.gender = face_params.gender;

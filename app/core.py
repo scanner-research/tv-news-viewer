@@ -30,7 +30,7 @@ STATIC_DIR = os.path.join(FILE_DIR, '..', 'static')
 
 MIN_DATE = datetime(2010, 1, 1)
 MAX_DATE = datetime(2018, 4, 1)
-DEFAULT_TEXT_WINDOW = 30
+DEFAULT_TEXT_WINDOW = 0
 DEFAULT_IS_COMMERCIAL = Ternary.false
 
 

@@ -71,6 +71,8 @@ function getMomentDateFormat(agg) {
   }
 };
 
+let secondsToMinutes = x => x / 60;
+
 // The currently loaded chart
 var current_chart;
 
@@ -128,10 +130,9 @@ class Chart {
       new Date(this.options.end_date).getUTCFullYear() -
       new Date(this.options.start_date).getUTCFullYear()
     );
-    let x_tick_count = this.options.aggregate == 'year' ? year_span + 1 : 24;
 
     let date_format = getVegaDateFormat(this.options.aggregate);
-    let unit = this.options.count == 'mentions' ? 'mentions' : 'seconds';
+    let unit = this.options.count == 'occurences' ? 'occurences' : 'minutes';
 
     var y_axis_title;
     if (Object.values(this.search_results).some(v => v.has_normalization())) {
@@ -144,18 +145,18 @@ class Chart {
       y_axis_title = `# of ${unit}`;
     }
 
-    let raw_precision = this.options.count == 'mentions' ? 0 : 1;
+    let raw_precision = this.options.count == '{{ countables.mentions.name }}' ? 0 : 2;
     function getPointValue(result, video_data, t) {
-      var value = video_data.reduce((acc, x) => acc + x[1], 0);
+      var value = secondsToMinutes(video_data.reduce((acc, x) => acc + x[1], 0));
       var value_str;
       if (result.normalize) {
         // Normalized is unitless
-        value /= _.get(result.normalize, t, 1.);
+        value /= secondsToMinutes(_.get(result.normalize, t, 60.));
         value_str = value.toString();
       } else {
         // Unit remains the same
         if (result.subtraction) {
-          value -= _.get(result.subtraction, t, 0.);
+          value -= secondsToMinutes(_.get(result.subtraction, t, 0.));
         }
         value_str = `${value.toFixed(raw_precision)} ${unit}`;
       }
@@ -164,8 +165,18 @@ class Chart {
 
     let point_data = Object.keys(this.search_results).flatMap(color => {
       let result = this.search_results[color];
-      let values = fillZeros(
-        result.main, this.options.aggregate, this.options.start_date,
+      var values = result.main;
+      // Fill in zeros for subtraction
+      if (result.subtraction) {
+        Object.keys(result.subtraction).forEach(t => {
+          if (!values.hasOwnProperty(t)) {
+            values[t] = [];
+          }
+        });
+      }
+      // Fill in zeros for points next to non-zero points
+      values = fillZeros(
+        values, this.options.aggregate, this.options.start_date,
         this.options.end_date, []);
       return Object.keys(values).map(
         t => {
@@ -184,9 +195,8 @@ class Chart {
     let series = Object.keys(this.search_results).map(
       color => ({name: getSeriesName(color), color: color})
     );
-    let tooltip_data = Array.from(
-      new Set(point_data.map(x => x.time))
-    ).map(t => {
+    let set_t = new Set(point_data.map(x => x.time));
+    let tooltip_data = Array.from(set_t).map(t => {
       let point = {time: t};
       Object.keys(this.search_results).forEach(color => {
         let result = this.search_results[color]
@@ -197,17 +207,13 @@ class Chart {
       return point;
     });
 
-    let chart_description = (
-      this.options.count == 'mentions' ? 'Keyword mentions' : (
-        this.options.count == 'videotime' ? 'Video time' : 'Face time'
-      ));
+    let x_tick_count = Math.min(24, set_t.size);
 
     let vega_spec = {
       $schema: 'https://vega.github.io/schema/vega-lite/v3.json',
       width: this.dimensions.width,
       height: this.dimensions.height,
       autosize: {type: 'fit', resize: true, contains: 'padding'},
-      description: `${chart_description} over time`,
       data: {values: tooltip_data},
       encoding: {
         x: {
@@ -225,7 +231,7 @@ class Chart {
         data: {values: point_data},
         mark: {
           type: 'line',
-          interpolate: 'monotone'
+          interpolate: 'linear'
         },
         encoding: {
           x: {

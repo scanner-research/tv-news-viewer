@@ -24,7 +24,7 @@
   <script src="{{ url_for('static', filename='js/chart.js') }}" /></script>
   <script src="{{ url_for('static', filename='js/query.js') }}" /></script>
 
-  <title>Stanford TV News Viewer</title>
+  <title>Cable TV News Viewer</title>
   <style>
     #search-table {
       width: 100%;
@@ -162,7 +162,7 @@
     <div class="container">
       <img src="{{ url_for('static', filename='stanford.png') }}"
            alt="Stanford University">
-      <p>TV News Viewer</p>
+      <p>Cable TV News Viewer</p>
     </div>
   </div>
   <div class="container">
@@ -173,9 +173,9 @@
           <td colspan="2" class="option-td">
             Count &nbsp;
             <select class="selectpicker" id="countVar" data-width="fit">
-              <option value="{{ countables.mentions.name }}">mentions</option>
-              <option value="{{ countables.facetime.name }}" selected="selected">face time</option>
-              <option value="{{ countables.videotime.name }}">video time</option>
+              <option value="{{ countables.videotime.name }}" selected="selected">{{ countables.videotime.value }}</option>
+              <option value="{{ countables.facetime.name }}">{{ countables.facetime.value }}</option>
+              <option value="{{ countables.mentions.name }}">{{ countables.mentions.value }}</option>
             </select>
             &nbsp; between &nbsp;
             <input type="text" class="datepicker" id="startDate">
@@ -258,19 +258,19 @@
 
     function setBlankQueryPlaceholder() {
       let count_var = $('#countVar').val();
-      var placeholder, prefix_var;
+      var placeholder, prefix_str;
       if (count_var == '{{ countables.mentions.name }}') {
         placeholder = 'all words';
-        prefix_var = '{{ countables.mentions.value }}';
+        prefix_str = '{{ countables.mentions.value }} OF';
       } else if (count_var == '{{ countables.facetime.name }}') {
         placeholder = 'all faces';
-        prefix_var = '{{ countables.facetime.value }}';
+        prefix_str = '{{ countables.facetime.value }} OF';
       } else if (count_var == '{{ countables.videotime.name }}') {
         placeholder = 'all video';
-        prefix_var = '{{ countables.videotime.value }}';
+        prefix_str = '{{ countables.videotime.value }} WHERE';
       }
       $('#search-table input[type="text"][name="query"]').attr('placeholder', placeholder);
-      $('#search-table span[name="count-prefix"]').text(`COUNT ${prefix_var}`);
+      $('#search-table span[name="count-prefix"]').text(`COUNT ${prefix_str}`);
     }
     $('#countVar').change(setBlankQueryPlaceholder);
   </script>
@@ -278,221 +278,225 @@
   <div class="container" id="query-help">
     <h5>Query help <a href="#" onclick="toggleQueryHelp(); return false;" id="toggle-help">(hide)</a></h5>
 
-    <p>
-      Queries in the viewer have the following form:
-
-      <ul>countable <b>WHERE</b> filter1="value1" <b>AND</b> filter2="value2" <b>AND</b> ...</ul>
-
-      Countables are objects that can be summed over. When counting "{{
-      countables.mentions.value }}", these are locations in the captions where
-      words appear. Likewise, when counting "{{ countables.facetime.value }}",
-      these are screen time of faces on screen. If left blank, then the
-      query is taken to mean "all".
-    </p>
-
-    <p>
-      The <b>WHERE</b> clause defines filters on which countables are counted.
-      It may be omitted if there are no filters or multiple filters can be
-      joined with <b>AND</b>.
-    </p>
-
-    <p>
-      You can normalize a query with respect to the <b>WHERE</b> clause by
-      adding <b>NORMALIZE</b> to the end of a query. This will rewrite the
-      query with the default normalization. For instance,
-
-      <ul>countable <b>WHERE</b> filters <b>NORMALIZE</b> &rarr; countable <b>WHERE</b> filters <b>NORMALIZE</b> "" <b>WHERE</b> filters</ul>
-
-      If this is not the desired behavior, the normalizing query can also be
-      written manually. See the <it>Normalization and subtraction</it> section
-      below.
-    </p>
-
     <div class="container">
-      <h6>Example queries</h6>
-      <table>
-        <tr>
-          <th>Counting</th>
-          <th>Query</th>
-          <th>English meaning</th>
-        </tr>
-        <tr>
-          <td rowspan="3">mentions</td>
-          <td>""</td>
-          <td><i>total number of words</i></td>
-        </tr>
-        <tr>
-          <td>obamacare WHERE {{ parameters.channel.value }}=CNN</td>
-          <td><i>mentions of "obamacare" on CNN</i></td>
-        </tr>
-        <tr>
-          <td>obamacare WHERE {{ parameters.onscreen_face.value }}="Barack Obama"</td>
-          <td><i>mentions of "obamacare" when Barack Obama's face is on screen</i></td>
-        </tr>
-        <tr>
-          <td rowspan="3">face&nbsp;time</td>
-          <td>""</td>
-          <td><i>total face time</i></td>
-        </tr>
-          <td>female hosts WHERE {{ parameters.channel.value }}="FOX"</td>
-          <td><i>face time of Barack Obama on FOX News</i></td>
-        </tr>
-        <tr>
-          <td>Barack Obama WHERE {{ parameters.channel.value }}="FOX"</td>
-          <td><i>face time of female hosts on FOX News</i></td>
-        </tr>
-        <tr>
-          <td rowspan="3">video&nbsp;time</td>
-          <td>""</td>
-          <td><i>total seconds of video</i></td>
-        </tr>
-        <tr>
-          <td>{{ parameters.is_commercial.value }}=true</td>
-          <td><i>seconds of commercials</i></td>
-        </tr>
-        <tr>
-          <td>{{ parameters.onscreen_face.value }}="women" AND {{ parameters.caption_text.value }}="science"</td>
-          <td><i>seconds of video where a female host is onscreen and the word "science" is mentioned</i></td>
-        </tr>
-      </table>
+      <p>
+        Screen time queries in the viewer have the following form:
+
+        <ul><b>COUNT</b> screen time <b>WHERE</b> filter1="value1" <b>AND</b> filter2="value2" <b>AND</b> ...</ul>
+
+        This will match all video segments that pass the filter and find the
+        screen time. Multiple filters are joined by <b>AND</b>. You can normalize
+        a query with respect to the <b>WHERE</b> clause by adding <b>NORMALIZE</b>
+        to the end of a query. This will rewrite the query with the default
+        normalization. If this is not the desired behavior, the normalizing query
+        can also be written manually. See the <it>normalization and
+        subtraction</it> section below.
+      </p>
+
+      <div class="container">
+        <h6>Supported screen time filters</h6>
+        <table>
+          <tr>
+            <th>Name</th>
+            <th>Description</th>
+            <th>Values</th>
+            <th>Default</th>
+            <th>Example</th>
+          </tr>
+          <tr>
+            <td>{{ parameters.channel.value }}</td>
+            <td>name of the channel</td>
+            <td>CNN, FOX, MSNBC</td>
+            <td>all</td>
+            <td>{{ parameters.channel.value }}=CNN</td>
+          </tr>
+          <tr>
+            <td>{{ parameters.show.value }}</td>
+            <td>name of the show</td>
+            <td><a href="/shows" target="_blank">list of shows</a></td>
+            <td>all</td>
+            <td>{{ parameters.show.value }}="CNN Newsroom"</td>
+          </tr>
+          <tr>
+            <td>{{ parameters.hour.value }}</td>
+            <td>ranges of hours in 24h format</td>
+            <td>0-23 or 0, 1, 2, ...</td>
+            <td>0-23</td>
+            <td>{{ parameters.hour.value }}="9-17"</td>
+          </tr>
+          <tr>
+            <td>{{ parameters.day_of_week.value }}</td>
+            <td>range or list of days of the week</td>
+            <td>mon-sun or mon, tue, ...</td>
+            <td>all</td>
+            <td>{{ parameters.day_of_week.value }}="sat-sun"</td>
+          </tr>
+          <tr>
+            <td>{{ parameters.is_commercial.value }}</td>
+            <td>filter or select commercials</td>
+            <td>true, false, both</td>
+            <td>{{ default_is_commercial }}</td>
+            <td>{{ parameters.is_commercial.value }}={{ default_is_commercial }}</td>
+          </tr>
+          <tr>
+            <td>{{ parameters.caption_text.value }}</td>
+            <td>keywords nearby in the captions</td>
+            <td>text query</td>
+            <td>n/a</td>
+            <td>{{ parameters.caption_text.value }}="affordable care act"</td>
+          </tr>
+          <tr>
+            <td>{{ parameters.caption_window.value }}</td>
+            <td>threshold (in seconds) for nearby keywords</td>
+            <td>non-negative integer</td>
+            <td>{{ default_text_window }}</td>
+            <td>{{ parameters.caption_window.value }}={{ default_text_window }}</td>
+          </tr>
+          <tr>
+            <td>{{ parameters.onscreen_face.value }}</td>
+            <td>
+              at least one matching face on screen (height &ge; 20%)</td>
+            <td>
+              all, (wo)men, (non)hosts, <br>
+              (fe)male (non)hosts, <br>
+              name of person <a href="/people" target="_blank">(list of people)</a>
+            </td>
+            <td>n/a</td>
+            <td>
+              {{ parameters.onscreen_face.value }}="men" <br>
+              {{ parameters.onscreen_face.value }}="male hosts" <br>
+              {{ parameters.onscreen_face.value }}="Barack Obama"
+            </td>
+          </tr>
+        </table>
+      </div>
+
+      <div class="container">
+        <h6>Example screen time queries</h6>
+        <table>
+          <tr>
+            <th>Query</th>
+            <th>English meaning</th>
+          </tr>
+          <tr>
+            <td>COUNT {{ countables.videotime.value }} WHERE all video</td>
+            <td><i>total seconds of video</i></td>
+          </tr>
+          <tr>
+            <td>COUNT {{ countables.videotime.value }} WHERE {{ parameters.is_commercial.value }}=true</td>
+            <td><i>seconds of commercials</i></td>
+          </tr>
+          <tr>
+            <td>COUNT {{ countables.videotime.value }} WHERE {{ parameters.onscreen_face.value }}="women" AND {{ parameters.caption_text.value }}="science"</td>
+            <td><i>seconds of video where a female host is onscreen and the word "science" is mentioned</i></td>
+          </tr>
+        </table>
+      </div>
+
+      <div class="container">
+        <h6>Normalization and subtraction</h6>
+        <table>
+          <tr>
+            <th>Keyword</th>
+            <th>Syntax</th>
+            <th>Description</th>
+            <th>Example</th>
+          </tr>
+          <tr>
+            <td>NORMALIZE</td>
+            <td>query1 NORMALIZE query2</td>
+            <td><i>divide query1's results by query2's results.<br>
+                If query2 is blank, default normalization is applied.</i></td>
+            <td>"united states" NORMALIZE</td>
+          </tr>
+          <tr>
+            <td>SUBTRACT</td>
+            <td>query1 SUBTRACT query2</td>
+            <td><i>subtract query2's results from query1's results</i></td>
+            <td>"united" SUBTRACT "united states"</td>
+          </tr>
+        </table>
+      </div>
     </div>
-
+    <hr>
     <div class="container">
-      <h6>Supported countables</h6>
-      <table>
-        <tr>
-          <th>Mode</th>
-          <th>Description</th>
-          <th>Values</th>
-          <th>Default</th>
-          <th>Example</th>
-        </tr>
-        <tr>
-          <td>mentions</td>
-          <td>phrase mentions in the captions</td>
-          <td><a href="https://github.com/scanner-research/caption-index/blob/master/captions/query.py" target="_blank">grammar</a></td>
-          <td>n/a</td>
-          <td>affordable care act</td>
-        </tr>
-        <tr>
-          <td>face&nbsp;time</td>
-          <td>screen time for faces (height &ge; 20%)</td>
-          <td>
-            all, (wo)men, (non)hosts, (fe)male (non)hosts, <br>
-            name of person <a href="/people" target="_blank">(list of people)</a>
-          </td>
-          <td>all</td>
-          <td>male hosts<br>Barack Obama</td>
-        </tr>
-        <tr>
-          <td>video&nbsp;time</td>
-          <td>number of seconds of video</td>
-          <td colspan="3"></td>
-        </tr>
-      </table>
-    </div>
+      <h5>Other counting modes</h5>
 
-    <div class="container">
-      <h6>Supported filters</h6>
-      <table>
-        <tr>
-          <th>Name</th>
-          <th>Description</th>
-          <th>Values</th>
-          <th>Default</th>
-          <th>Example</th>
-        </tr>
-        <tr>
-          <td>{{ parameters.channel.value }}</td>
-          <td>name of the channel</td>
-          <td>CNN, FOX, MSNBC</td>
-          <td>all</td>
-          <td>{{ parameters.channel.value }}=CNN</td>
-        </tr>
-        <tr>
-          <td>{{ parameters.show.value }}</td>
-          <td>name of the show</td>
-          <td><a href="/shows" target="_blank">list of shows</a></td>
-          <td>all</td>
-          <td>{{ parameters.show.value }}="CNN Newsroom"</td>
-        </tr>
-        <tr>
-          <td>{{ parameters.hour.value }}</td>
-          <td>ranges of hours in 24h format</td>
-          <td>0-23 or 0, 1, 2, ...</td>
-          <td>0-23</td>
-          <td>{{ parameters.hour.value }}="9-17"</td>
-        </tr>
-        <tr>
-          <td>{{ parameters.day_of_week.value }}</td>
-          <td>range or list of days of the week</td>
-          <td>mon-sun or mon, tue, ...</td>
-          <td>all</td>
-          <td>{{ parameters.day_of_week.value }}="sat-sun"</td>
-        </tr>
-        <tr>
-          <td>{{ parameters.is_commercial.value }}</td>
-          <td>filter or select commercials</td>
-          <td>true, false, both</td>
-          <td>{{ default_is_commercial }}</td>
-          <td>{{ parameters.is_commercial.value }}={{ default_is_commercial }}</td>
-        </tr>
-        <tr>
-          <td>{{ parameters.caption_text.value }}</td>
-          <td>keywords nearby in the captions</td>
-          <td>text query</td>
-          <td>n/a</td>
-          <td>{{ parameters.caption_text.value }}="affordable care act"</td>
-        </tr>
-        <tr>
-          <td>{{ parameters.caption_window.value }}</td>
-          <td>threshold (in seconds) for nearby keywords</td>
-          <td>non-negative integer</td>
-          <td>{{ default_text_window }}</td>
-          <td>{{ parameters.caption_window.value }}={{ default_text_window }}</td>
-        </tr>
-        <tr>
-          <td>{{ parameters.onscreen_face.value }}</td>
-          <td>
-            at least one matching face on screen (height &ge; 20%)</td>
-          <td>
-            all, (wo)men, (non)hosts, <br>
-            (fe)male (non)hosts, <br>
-            name of person <a href="/people" target="_blank">(list of people)</a>
-          </td>
-          <td>n/a</td>
-          <td>
-            {{ parameters.onscreen_face.value }}="men" <br>
-            {{ parameters.onscreen_face.value }}="male hosts" <br>
-            {{ parameters.onscreen_face.value }}="Barack Obama"
-          </td>
-        </tr>
-      </table>
-    </div>
+      <p>
+        You can also count "{{ countables.facetime.value }}" and "{{ countables.mentions.value }}". For instance,
 
-    <div class="container">
-      <h6>Normalization and subtraction</h6>
-      <table>
-        <tr>
-          <th>Keyword</th>
-          <th>Syntax</th>
-          <th>Description</th>
-          <th>Example</th>
-        </tr>
-        <tr>
-          <td>NORMALIZE</td>
-          <td>query1 NORMALIZE query2</td>
-          <td><i>divide query1's results by query2's results.<br>
-              If query2 is blank, default normalization is applied.</i></td>
-          <td>"united states" NORMALIZE</td>
-        </tr>
-        <tr>
-          <td>SUBTRACT</td>
-          <td>query1 SUBTRACT query2</td>
-          <td><i>subtract query2's results from query1's results</i></td>
-          <td>"united" SUBTRACT "united states"</td>
-        </tr>
-      </table>
+        <ul><b>COUNT</b> {{ countables.facetime.value }} <b>OF</b> faces being counted <b>WHERE</b> filters on screen time</ul>
+        <ul><b>COUNT</b> {{ countables.mentions.value }} <b>OF</b> text being counted <b>WHERE</b> filters on screen time</ul>
+
+        Adding <b>NORMALIZE</b> at the end of a query will apply the default
+        normalization.
+      </p>
+
+      <div class="container">
+        <h6>Example queries</h6>
+        <table>
+          <tr>
+            <th>Counting</th>
+            <th>Query</th>
+            <th>English meaning</th>
+          </tr>
+          <tr>
+            <td rowspan="3">{{ countables.facetime.value }}</td>
+            <td>COUNT {{ countables.facetime.value }} OF all faces</td>
+            <td><i>total face time</i></td>
+          </tr>
+            <td>COUNT {{ countables.facetime.value }} OF female hosts WHERE {{ parameters.channel.value }}="FOX"</td>
+            <td><i>face time of female hosts on FOX News</i></td>
+          </tr>
+          <tr>
+            <td>COUNT {{ countables.facetime.value }} OF Barack Obama WHERE {{ parameters.channel.value }}="FOX"</td>
+            <td><i>face time of Barack Obama on FOX News</i></td>
+          </tr>
+          <tr>
+            <td rowspan="3">{{ countables.mentions.value }}</td>
+            <td>COUNT {{ countables.mentions.value }} OF all words</td>
+            <td><i>total number of words</i></td>
+          </tr>
+          <tr>
+            <td>COUNT {{ countables.mentions.value }} OF obamacare WHERE {{ parameters.channel.value }}=CNN</td>
+            <td><i>mentions of "obamacare" on CNN</i></td>
+          </tr>
+          <tr>
+            <td>COUNT {{ countables.mentions.value }} OF obamacare WHERE {{ parameters.onscreen_face.value }}="Barack Obama"</td>
+            <td><i>mentions of "obamacare" when Barack Obama's face is on screen</i></td>
+          </tr>
+        </table>
+      </div>
+
+      <div class="container">
+        <h6>Supported count queries</h6>
+        <table>
+          <tr>
+            <th>Mode</th>
+            <th>Description</th>
+            <th>Values</th>
+            <th>Default</th>
+            <th>Example</th>
+          </tr>
+          <tr>
+            <td>{{ countables.facetime.value }}</td>
+            <td>screen time for faces (height &ge; 20%)</td>
+            <td>
+              all, (wo)men, (non)hosts, (fe)male (non)hosts, <br>
+              name of person <a href="/people" target="_blank">(list of people)</a>
+            </td>
+            <td>all</td>
+            <td>male hosts<br>Barack Obama</td>
+          </tr>
+          <tr>
+            <td>{{ countables.mentions.value }}</td>
+            <td>phrase mentions in the captions</td>
+            <td><a href="https://github.com/scanner-research/caption-index/blob/master/captions/query.py" target="_blank">grammar</a></td>
+            <td>n/a</td>
+            <td>affordable care act</td>
+          </tr>
+        </table>
+      </div>
     </div>
   </div>
   <script>
@@ -696,10 +700,16 @@
       }
 
       // Construct the new query
-      let filter_str = filters.length > 0 ? ` ${QUERY_WHERE} ` + filters.join(` ${QUERY_AND} `) : '';
-      var new_query = $.trim(current_query) + filter_str;
+      let count_var = $('#countVar').val();
+      var new_query;
+      let filter_str = filters.length > 0 ? filters.join(` ${QUERY_AND} `) : '';
+      if (count_var == '{{ countables.videotime.name }}') {
+        new_query = filter_str;
+      } else {
+        new_query = `${$.trim(current_query)} ${QUERY_WHERE} ${filter_str}`;
+      }
       if (normalize) {
-        new_query += ` ${QUERY_NORMALIZE}` + filter_str;
+        new_query += ` ${QUERY_NORMALIZE}`;
       }
       query_box.val(new_query);
       toggleQueryBuilder(element);
@@ -722,18 +732,24 @@
 
     function onQueryUpdate(element) {
       // Rewrite query with default normalization if necessary
-      if ($('#countVar') == '{{ countables.videotime.value }}') {
-        return;
-      }
+      let count_var = $('#countVar').val();
       let query_str = $.trim($(element).val());
       if (query_str.endsWith(QUERY_NORMALIZE)) {
-        let main_query_str = $.trim(query_str.slice(0, query_str.indexOf(QUERY_NORMALIZE)));
-        if (main_query_str.includes(QUERY_WHERE)) {
-          let main_query_where_str = $.trim(main_query_str.slice(
-            main_query_str.lastIndexOf(QUERY_WHERE) + QUERY_WHERE.length
-          ));
-          if (main_query_where_str) {
-            $(element).val(`${query_str} ${QUERY_WHERE} ${main_query_where_str}`);
+        if (count_var == '{{ countables.videotime.name }}') {
+          $(element).val(`${query_str} ${QUERY_ALL_VIDEO}`);
+        } else {
+          let main_query_str = $.trim(query_str.slice(0, query_str.indexOf(QUERY_NORMALIZE)));
+          if (main_query_str.includes(QUERY_WHERE)) {
+            let all_str = count_val == '{{ countables.mentions.name }}' ?
+                          QUERY_ALL_WORDS : QUERY_ALL_FACES;
+            let main_query_where_str = $.trim(main_query_str.slice(
+              main_query_str.lastIndexOf(QUERY_WHERE) + QUERY_WHERE.length
+            ));
+            var new_query = `${query_str} ${all_str}`;
+            if (main_query_where_str) {
+              new_query += ` ${QUERY_WHERE} ${main_query_where_str}`;
+            }
+            $(element).val(new_query);
           }
         }
       }
@@ -843,12 +859,9 @@
       return queries;
     }
 
-    function reset() {
-      $('#vgrid').empty();
-    }
-
     function search() {
-      reset()
+      $('.query-builder').each(function() {populateQueryBox($(this));});
+      $('#vgrid').empty();
 
       let chart_options = getChartOptions();
       let lines = getRawQueries().map(raw_query => {
@@ -908,8 +921,8 @@
       }
     } else {
       initChartOptions();
-      addRow({text: 'men'});
-      addRow({text: 'women'});
+      addRow({text: 'onscreen.face=men'});
+      addRow({text: 'onscreen.face=women'});
     }
   </script>
 </body>
