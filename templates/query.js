@@ -265,6 +265,34 @@ class SearchableQuery {
     this.main_args = parse(main_str);
   }
 
+  clauses() {
+    if (this.query.includes(QUERY_WHERE)) {
+      let where_idx = this.query.indexOf(QUERY_WHERE);
+      return {
+        where: $.trim(this.query.slice(where_idx + QUERY_WHERE.length)),
+        countable: $.trim(this.query.slice(0, where_idx)),
+      }
+    } else if (this.query.includes(QUERY_NORMALIZE)) {
+      let normalize_idx = this.query.indexOf(QUERY_NORMALIZE);
+      return {
+        where: $.trim(this.query.slice(normalize_idx + QUERY_NORMALIZE.length)),
+        countable: $.trim(this.query.slice(0, normalize_idx)),
+      }
+    } else {
+      if (this.count == '{{ countables.videotime.name }}') {
+        return {
+          where: $.trim(this.query),
+          countable: ''
+        }
+      } else {
+        return {
+          where: '',
+          countable: $.trim(this.query)
+        }
+      }
+    }
+  }
+
   search(chart_options, onSuccess, onError) {
     if (this.count != chart_options.count) {
       throw Error('count type changed');

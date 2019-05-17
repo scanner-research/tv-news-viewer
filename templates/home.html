@@ -34,7 +34,11 @@
     #search-table th {
       text-align: center;
     }
-    #search-table input[name=query] {
+    #search-table input[name=where] {
+      text-align: left;
+      font-size: 14px;
+    }
+    #search-table input[name=countable] {
       text-align: left;
       font-size: 14px;
     }
@@ -258,19 +262,29 @@
 
     function setBlankQueryPlaceholder() {
       let count_var = $('#countVar').val();
-      var placeholder, prefix_str;
+      var placeholder, prefix_str, has_countable;
       if (count_var == '{{ countables.mentions.name }}') {
         placeholder = 'all words';
         prefix_str = '{{ countables.mentions.value }} OF';
+        has_countable = true;
       } else if (count_var == '{{ countables.facetime.name }}') {
         placeholder = 'all faces';
         prefix_str = '{{ countables.facetime.value }} OF';
+        has_countable = true;
       } else if (count_var == '{{ countables.videotime.name }}') {
         placeholder = 'all video';
         prefix_str = '{{ countables.videotime.value }} WHERE';
+        has_countable = false;
       }
-      $('#search-table input[type="text"][name="query"]').attr('placeholder', placeholder);
-      $('#search-table span[name="count-prefix"]').text(`COUNT ${prefix_str}`);
+      $('#search-table .countable-only').each(function() {
+        $(this).attr('placeholder', placeholder);
+        if (has_countable) {
+          $(this).show();
+        } else {
+          $(this).hide();
+        }
+      });
+      $('#search-table span[name="count-type-prefix"]').text(`COUNT ${prefix_str}`);
     }
     $('#countVar').change(setBlankQueryPlaceholder);
   </script>
@@ -511,6 +525,12 @@
         $('#toggle-help').text('show help');
       }
     }
+    function hideQueryHelp() {
+      if (!$('#toggle-help').text().includes('show')) {
+        $('#query-help').hide();
+        $('#toggle-help').text('show help');
+      }
+    }
   </script>
 
   <div class="container" id="chart-area">
@@ -563,9 +583,9 @@
       } else {
         search_table_row.find('td:last').append(QUERY_BUILDER_HTML);
 
-        let query_box = search_table_row.find('input[name="query"]');
+        let where_box = search_table_row.find('input[name="where"]');
         var current_query = new SearchableQuery(
-          query_box.val(), $('#countVar').val(), true);
+          QUERY_WHERE + ' ' + where_box.val(), $('#countVar').val(), true);
 
         let query_builder = search_table_row.find('.query-builder');
         let setIfDefined = k => {
@@ -698,35 +718,18 @@
 
       let normalize = builder.find('[name="normalize"]').val() == 'true';
 
-      // Get the countable part of the query
-      let query_box = search_table_row.find('input[name="query"]');
-      var current_query = query_box.val();
-      if (current_query.includes(QUERY_WHERE)) {
-        current_query = current_query.slice(0, current_query.indexOf(QUERY_WHERE));
-      }
-      if (current_query.includes(QUERY_NORMALIZE)) {
-        current_query = current_query.slice(0, current_query.indexOf(QUERY_NORMALIZE));
-      }
-
       // Construct the new query
-      let count_var = $('#countVar').val();
-      var new_query;
-      let filter_str = filters.length > 0 ? filters.join(` ${QUERY_AND} `) : '';
-      if (count_var == '{{ countables.videotime.name }}') {
-        new_query = filter_str;
-      } else {
-        new_query = `${$.trim(current_query)} ${QUERY_WHERE} ${filter_str}`;
-      }
+      var new_where = filters.length > 0 ? filters.join(` ${QUERY_AND} `) : '';
       if (normalize) {
-        new_query += ` ${QUERY_NORMALIZE}`;
+        new_where += ` ${QUERY_NORMALIZE}`;
       }
-      query_box.val(new_query);
+      search_table_row.find('input[name="where"]').val(new_where);
       toggleQueryBuilder(element);
     }
 
     function getDefaultQuery() {
       if ($('#search-table tr[name="query"]').length > 0) {
-        return $('#search-table input[type="text"][name="query"]:last').val();
+        return 'WHERE ' + $('#search-table input[type="text"][name="where"]:last').val();
       } else {
         let count_var = $('#countVar').val();
         if (count_var == '{{ countables.mentions.name }}') {
@@ -739,7 +742,7 @@
       }
     }
 
-    function onQueryUpdate(element) {
+    function onWhereUpdate(element) {
       // Rewrite query with default normalization if necessary
       let count_var = $('#countVar').val();
       let query_str = $.trim($(element).val());
@@ -767,24 +770,37 @@
     function addRow(query) {
       let color = _.get(query, 'color', getColor());
       let text = _.get(query, 'text', getDefaultQuery());
-      let html = `<tr name="query" data-color="${color}">
-        <td><button type="button" class="btn btn-outline-secondary btn-sm remove-row-btn"
-             onclick="removeRow(this);">-</button></td>
-        <td><div class="color-box" style="background-color: ${color};"
-             onclick="toggleQueryBuilder(this);"></div></td>
+      let count_var = $('#countVar').val();
+      let query_clauses = new SearchableQuery(text, count_var).clauses();
+
+      let new_row = $('<tr name="query">');
+      new_row.attr('data-color', color);
+      new_row.append('<td><button type="button" class="btn btn-outline-secondary btn-sm remove-row-btn" onclick="removeRow(this);">-</button></td>')
+      let color_box = $('<div class="color-box" onloadedmetadata=""onclick="toggleQueryBuilder(this);">');
+      color_box.css('background-color', color);
+      new_row.append($('<td>').append(color_box));
+      new_row.append(`
         <td class="query-td">
           <div class="input-group">
             <div class="input-group-prepend">
-              <span class="input-group-text" name="count-prefix"></span>
+              <span class="input-group-text" name="count-type-prefix"></span>
             </div>
-            <input type="text" class="form-control" name="query" value='${text}'
-                   onchange="onQueryUpdate(this);"></td>
+            <div class="col-xs-2">
+              <input type="text" class="form-control countable-only" name="countable">
+            </div>
+            <div class="input-group-prepend countable-only">
+              <span class="input-group-text">WHERE</span>
+            </div>
+            <input type="text" class="form-control" name="where" placeholder="everything"
+                   onchange="onWhereUpdate(this);">
           </div>
-      </tr>`;
+        </td>`);
+      new_row.find('input[name="where"]').val(query_clauses.where);
+      new_row.find('input[name="countable"]').val(query_clauses.countable);
 
       $('#search-table > tbody > tr').eq(
         $('#search-table tr[name="query"]').length
-      ).after(html);
+      ).after(new_row);
       setBlankQueryPlaceholder();
       if ($('#search-table tr[name="query"]').length >= DEFAULT_COLORS.length + 1) {
         $('#add-row-btn').prop('disabled', true);
@@ -858,10 +874,11 @@
       let queries = [];
       $('#search-table tr[name="query"]').each(function() {
         if ($(this).attr('name')) {
-          let query_str = $.trim($(this).find("input[name='query']").val());
+          let countable_str = $.trim($(this).find('input[name="countable"]').val())
+          let query_str = $.trim($(this).find('input[name="where"]').val());
           queries.push({
             color: $(this).attr('data-color'),
-            text: query_str
+            text: `${countable_str} WHERE ${query_str}`
           });
         }
       });
@@ -871,6 +888,7 @@
     function search() {
       $('.query-builder').each(function() {populateQueryBox($(this));});
       $('#vgrid').empty();
+      hideQueryHelp();
 
       let chart_options = getChartOptions();
       let lines = getRawQueries().map(raw_query => {
