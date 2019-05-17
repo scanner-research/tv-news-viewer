@@ -71,6 +71,24 @@ function getMomentDateFormat(agg) {
   }
 };
 
+function getStartDate(agg, date_str) {
+  if (agg == 'day') {
+    return date_str;
+  }
+  let date = new Date(date_str);
+  if (agg == 'year') {
+    date.setUTCDate(1);
+    date.setUTCMonth(0);
+  } else if (agg == 'month') {
+    date.setUTCDate(1);
+  } else if (agg == 'week') {
+    date.setUTCDate(date.getUTCDate() - 6); // Not quite beautiful
+  } else {
+    throw Error(`Unknown unit: ${unit}`);
+  }
+  return date.toISOString().split('T')[0];
+}
+
 let secondsToMinutes = x => x / 60;
 
 // The currently loaded chart
@@ -208,6 +226,8 @@ class Chart {
     });
 
     let x_tick_count = Math.min(24, set_t.size);
+    let x_start_date = getStartDate(
+      this.options.aggregate, this.options.start_date);
 
     let vega_spec = {
       $schema: 'https://vega.github.io/schema/vega-lite/v3.json',
@@ -219,7 +239,7 @@ class Chart {
         x: {
           timeUnit: 'utcyearmonthdate', field: 'time', type: 'temporal',
           scale: {
-            domain: [this.options.start_date, this.options.end_date]
+            domain: [x_start_date, this.options.end_date]
           }
         },
         tooltip: [{
@@ -237,7 +257,7 @@ class Chart {
           x: {
             field: 'time', type: 'temporal', timeUnit: 'utcyearmonthdate',
             scale: {
-              domain: [this.options.start_date, this.options.end_date]
+              domain: [x_start_date, this.options.end_date]
             }
           },
           y: {field: 'value', type: 'quantitative'},
@@ -273,7 +293,7 @@ class Chart {
               labelAngle: -30
             },
             scale: {
-              domain: [this.options.start_date, this.options.end_date]
+              domain: [x_start_date, this.options.end_date]
             }
           },
           y: {
