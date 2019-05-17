@@ -93,7 +93,9 @@
         video_ids.map(i =>
           $.get(`/captions/${i}`).then(
             resp => caption_data[i] = resp
-          ).catch(`Failed to get captions: ${i}`))
+          ).catch(
+            e => `Failed to get captions: ${i}`
+          ))
       ).then(() => {
         query.searchInVideos(
           video_ids,
