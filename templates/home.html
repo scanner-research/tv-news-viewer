@@ -39,8 +39,9 @@
       font-size: 14px;
     }
     #search-table input[name=countable] {
-      text-align: left;
+      text-align: center;
       font-size: 14px;
+      border-radius: 0;
     }
     #search-table .input-group, .input-group-prepend, .input-group-text, .form-control {
       height: 30px;
@@ -262,22 +263,18 @@
 
     function setQueryBoxForMode() {
       let count_var = $('#countVar').val();
-      var placeholder, prefix_str, has_countable;
+      var prefix_str, has_countable;
       if (count_var == '{{ countables.mentions.name }}') {
-        placeholder = 'all words';
         prefix_str = '{{ countables.mentions.value }} OF';
         has_countable = true;
       } else if (count_var == '{{ countables.facetime.name }}') {
-        placeholder = 'all faces';
         prefix_str = '{{ countables.facetime.value }} OF';
         has_countable = true;
       } else if (count_var == '{{ countables.videotime.name }}') {
-        placeholder = 'all video';
         prefix_str = '{{ countables.videotime.value }} WHERE';
         has_countable = false;
       }
       $('#search-table .countable-only').each(function() {
-        $(this).attr('placeholder', placeholder);
         if (has_countable) {
           $(this).show();
         } else {
@@ -748,12 +745,10 @@
       let query_str = $.trim($(element).val());
       if (query_str.endsWith(QUERY_NORMALIZE)) {
         if (count_var == '{{ countables.videotime.name }}') {
-          $(element).val(`${query_str} ${QUERY_ALL_VIDEO}`);
+          $(element).val(`${query_str} ${QUERY_ALL}`);
         } else {
           let main_query_str = $.trim(query_str.slice(0, query_str.indexOf(QUERY_NORMALIZE)));
-          let all_str = count_var == '{{ countables.mentions.name }}' ?
-                        QUERY_ALL_WORDS : QUERY_ALL_FACES;
-          var new_query = `${query_str} ${all_str}`;
+          var new_query = `${query_str} ${QUERY_ALL}`;
           if (main_query_str.includes(QUERY_WHERE)) {
             let main_query_where_str = $.trim(main_query_str.slice(
               main_query_str.lastIndexOf(QUERY_WHERE) + QUERY_WHERE.length
@@ -785,13 +780,14 @@
             <div class="input-group-prepend">
               <span class="input-group-text" name="count-type-prefix"></span>
             </div>
-            <div class="col-xs-2">
-              <input type="text" class="form-control countable-only" name="countable">
+            <div class="countable-only" style="width: 200px;">
+              <input type="text" class="form-control" name="countable"
+                     placeholder="${QUERY_ALL}">
             </div>
             <div class="input-group-prepend countable-only">
               <span class="input-group-text">WHERE</span>
             </div>
-            <input type="text" class="form-control" name="where" placeholder="everything"
+            <input type="text" class="form-control" name="where" placeholder="${QUERY_ALL}"
                    onchange="onWhereUpdate(this);">
           </div>
         </td>`);

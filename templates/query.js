@@ -4,9 +4,7 @@ const QUERY_NORMALIZE = 'NORMALIZE';
 const QUERY_MINUS = 'SUBTRACT';
 const QUERY_WHERE = 'WHERE';
 
-const QUERY_ALL_VIDEO = 'all video';
-const QUERY_ALL_WORDS = 'all words';
-const QUERY_ALL_FACES = 'all faces';
+const QUERY_ALL = 'all';
 
 const ALL_SHOWS = [
   {% for show in shows %}"{{ show }}",{% endfor %}
@@ -221,7 +219,7 @@ class SearchableQuery {
       countable_str = $.trim(unquoteString($.trim(countable_str)));
       if (countable_str.length > 0) {
         if (count == '{{ countables.mentions.name }}') {
-          if (!countable_str.match(/^all ?words?$/i)) {
+          if (countable_str != QUERY_ALL) {
             params.text = countable_str;
           }
         } else if (count == '{{ countables.facetime.name }}') {
@@ -230,7 +228,7 @@ class SearchableQuery {
           if (face_params.role) params.role = face_params.role;
           if (face_params.person) params.person = face_params.person;
         } else if (count == '{{ countables.videotime.name }}') {
-          if (!countable_str.match(/^all ?videos?$/i)) {
+          if (countable_str != QUERY_ALL) {
             if (!has_where) {
               params = translateFilterDict(
                 parseFilterDict($.trim(countable_str), no_err), no_err);
