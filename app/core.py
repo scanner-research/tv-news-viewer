@@ -17,7 +17,7 @@ from rs_intervalset import (                            # type: ignore
     MmapIntervalSetMapping, MmapIntervalListMapping)
 
 from .types import *
-from .error import InvalidUsage
+from .error import InvalidUsage, NotFound
 from .parsing import *
 from .sum import *
 from .load import get_video_name, load_video_data, load_index
@@ -355,6 +355,12 @@ def build_app(
     def _handle_invalid_usage(error: InvalidUsage) -> Response:
         response = jsonify(error.to_dict())
         response.status_code = error.status_code
+        return response
+
+    @app.errorhandler(NotFound)
+    def _handle_not_found(error: NotFound) -> Response:
+        response = Response(error.message)
+        response.status_code = 404
         return response
 
     @app.route('/')
@@ -854,8 +860,12 @@ def build_app(
 
     @app.route('/captions/<int:i>')
     def get_captions(i: int) -> Response:
-        video = video_by_id[i]
-        document = document_by_name[video.name]
+        video = video_by_id.get(i)
+        if not video:
+            raise NotFound('video id: {}'.format(i))
+        document = document_by_name.get(video.name)
+        if not document:
+            raise NotFound('captions for video id: {}'.format(i))
         resp = jsonify(_get_captions(document))
         resp.cache_control.max_age = cache_seconds * 100
         return resp

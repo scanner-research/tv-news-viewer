@@ -17,3 +17,9 @@ class InvalidUsage(Exception):
         rv = dict(self.payload or ())
         rv['message'] = self.message
         return rv
+
+
+class NotFound(Exception):
+
+    def __init__(self, message: str):
+        self.message = message
