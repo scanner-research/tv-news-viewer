@@ -386,11 +386,19 @@ def build_app(
             countables=Countable)
 
     @app.route('/static/js/query.js')
-    def get_constants() -> Response:
+    def get_query_js() -> Response:
         resp = make_response(render_template(
-            'query.js', parameters=SearchParameter, countables=Countable,
+            'js/query.js', parameters=SearchParameter, countables=Countable,
             default_text_window=DEFAULT_TEXT_WINDOW,
             shows=all_shows, people=sorted(person_intervals.keys())))
+        resp.headers['Content-type'] = 'text/javascript'
+        resp.cache_control.max_age = cache_seconds
+        return resp
+
+    @app.route('/static/js/chart.js')
+    def get_chart_js() -> Response:
+        resp = make_response(render_template(
+            'js/chart.js', countables=Countable))
         resp.headers['Content-type'] = 'text/javascript'
         resp.cache_control.max_age = cache_seconds
         return resp

@@ -156,7 +156,7 @@ class Chart {
     );
 
     let date_format = getVegaDateFormat(this.options.aggregate);
-    let unit = this.options.count == 'occurences' ? 'occurences' : 'minutes';
+    let unit = this.options.count == '{{ countables.mentions.name }}' ? 'occurences' : 'minutes';
 
     var y_axis_title;
     if (Object.values(this.search_results).some(v => v.has_normalization())) {
