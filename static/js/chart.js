@@ -89,6 +89,12 @@ function getStartDate(agg, date_str) {
   return date.toISOString().split('T')[0];
 }
 
+function getEndDate(date_str) {
+  let date = new Date(date_str);
+  date.setUTCDate(date.getUTCDate() + 1);
+  return date.toISOString().split('T')[0];
+}
+
 let secondsToMinutes = x => x / 60;
 
 // The currently loaded chart
@@ -228,6 +234,7 @@ class Chart {
     let x_tick_count = Math.min(24, set_t.size);
     let x_start_date = getStartDate(
       this.options.aggregate, this.options.start_date);
+    let x_end_date = getEndDate(this.options.end_date);
 
     let vega_spec = {
       $schema: 'https://vega.github.io/schema/vega-lite/v3.json',
@@ -239,7 +246,7 @@ class Chart {
         x: {
           timeUnit: 'utcyearmonthdate', field: 'time', type: 'temporal',
           scale: {
-            domain: [x_start_date, this.options.end_date]
+            domain: [x_start_date, x_end_date]
           }
         },
         tooltip: [{
@@ -257,7 +264,7 @@ class Chart {
           x: {
             field: 'time', type: 'temporal', timeUnit: 'utcyearmonthdate',
             scale: {
-              domain: [x_start_date, this.options.end_date]
+              domain: [x_start_date, x_end_date]
             }
           },
           y: {field: 'value', type: 'quantitative'},
@@ -293,7 +300,7 @@ class Chart {
               labelAngle: -30
             },
             scale: {
-              domain: [x_start_date, this.options.end_date]
+              domain: [x_start_date, x_end_date]
             }
           },
           y: {
