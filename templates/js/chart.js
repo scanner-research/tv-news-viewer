@@ -171,16 +171,30 @@ class Chart {
 
     let raw_precision = this.options.count == '{{ countables.mentions.value }}' ? 0 : 4;
     function getPointValue(result, video_data, t) {
-      var value = secondsToMinutes(video_data.reduce((acc, x) => acc + x[1], 0));
+      var value = video_data.reduce((acc, x) => acc + x[1], 0);
+      let is_minutes = unit == 'minutes';
+      if (is_minutes) {
+        value = secondsToMinutes(value);
+      }
       var value_str;
       if (result.normalize) {
         // Normalized is unitless
-        value /= secondsToMinutes(_.get(result.normalize, t, 60.));
+        var denom = _.get(result.normalize, t, null);
+        if (denom) {
+          if (is_minutes) {
+            denom - secondsToMinutes(denom);
+          }
+          value /= denom;
+        }
         value_str = value.toString();
       } else {
         // Unit remains the same
         if (result.subtract) {
-          value -= secondsToMinutes(_.get(result.subtract, t, 0.));
+          var sub = _.get(result.subtract, t, 0.);
+          if (is_minutes) {
+            sub = secondsToMinutes(sub);
+          }
+          value -= sub;
         }
         value_str = `${value.toFixed(raw_precision)} ${unit}`;
       }
