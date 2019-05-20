@@ -205,7 +205,7 @@
           <td colspan="2" class="hint-td">
             click the color box for the query editor or click
             <a href="#" onclick="toggleQueryHelp(); return false;" id="toggle-help">show help</a>.
-            (<a href="/">reset viewer</a>)
+            (<a href="#" onclick="clearQueries(); return false;">clear queries</a>)
           </td>
         </tr>
       </table>
@@ -654,6 +654,14 @@
           search_table_row.find('td').height()
         );
       }
+    }
+
+    function clearQueries() {
+      $('tr[name="query"]').each(function() {
+        $(this).find('input[name="countable"]').val('');
+        $(this).find('input[name="where"]').val('');
+      });
+      window.history.pushState({}, document.title, '/');
     }
 
     function populateQueryBox(element) {
