@@ -46,7 +46,12 @@ Query2
 CountVarName
   = '"' s:TokenInclSpace '"' { return s; }
   / "'" s:TokenInclSpace "'" { return s; }
-  / s:TokenNoSpace { return s; }
+  / CountVarNameTokenList
+
+CountVarNameTokenList
+  = & (Blank ReservedWords) { return ''; }
+  / a:(Blank TokenNoSpace) b:CountVarNameTokenList { return a.join('') + b; }
+  / a:(Blank TokenNoSpace) { return a.join(''); }
 
 CountClause
   = Printable
@@ -83,7 +88,18 @@ TokenInclSpace
 Printable
   = "'" s:[^']* "'" { return s.join(''); }
   / '"' s:[^"]* '"' { return s.join(''); }
-  / s:[^ \t]* { return s.join(''); }
+  / PrintableTokenList
+
+PrintableTokenList
+  = & (Blank ReservedWords) { return ''; }
+  / a:(Blank PrintableNoSpace) b:PrintableTokenList { return a.join('') + b; }
+  / a:(Blank PrintableNoSpace) { return a.join(''); }
+
+PrintableNoSpace
+  = a:[^ \t]+ { return a.join(''); }
+
+ReservedWords
+  = "OF"i / "WHERE"i / "COUNT"i / "NORMALIZE"i / "SUBTRACT"i
 
 Blank
   = [ \t]*
@@ -115,7 +131,12 @@ WhereClause
 CountVarName
   = '"' s:TokenInclSpace '"' { return s; }
   / "'" s:TokenInclSpace "'" { return s; }
-  / s:TokenNoSpace { return s; }
+  / CountVarNameTokenList
+
+CountVarNameTokenList
+  = & (Blank ReservedWords) { return ''; }
+  / a:(Blank TokenNoSpace) b:CountVarNameTokenList { return a.join('') + b; }
+  / a:(Blank TokenNoSpace) { return a.join(''); }
 
 TokenNoSpace
   = s:[a-zA-Z0-9.]+ { return s.join(''); }
@@ -126,7 +147,18 @@ TokenInclSpace
 Printable
   = "'" s:[^']* "'" { return s.join(''); }
   / '"' s:[^"]* '"' { return s.join(''); }
-  / s:[^ \t]* { return s.join(''); }
+  / PrintableTokenList
+
+PrintableTokenList
+  = & (Blank ReservedWords) { return ''; }
+  / a:(Blank PrintableNoSpace) b:PrintableTokenList { return a.join('') + b; }
+  / a:(Blank PrintableNoSpace) { return a.join(''); }
+
+PrintableNoSpace
+  = a:[^ \t]+ { return a.join(''); }
+
+ReservedWords
+  = "OF"i / "WHERE"i / "COUNT"i / "NORMALIZE"i / "SUBTRACT"i
 
 Any
   = s:[^]* { return s.join(''); }
