@@ -55,7 +55,7 @@
     #search-table .option-td {
       padding-left: 10px;
     }
-    #search-table .hint-td {
+    #search-table .hint-span {
       padding-left: 10px;
       font-size: small;
     }
@@ -76,15 +76,19 @@
       text-align: center;
       font-size: 14px;
     }
-    #chart-options {
+    .chart-options {
       text-align: left;
       font-size: 14px;
     }
-    #chart-options input, select, .filter-option {
+    .chart-options input, select, .filter-option {
       text-align: center;
       font-size: 14px;
     }
-    #chart-options .datepicker {
+    .chart-options hr {
+      margin-top: 0.5rem;
+      margin-bottom: 0.5rem;
+    }
+    .chart-options .datepicker {
       width: 100px;
     }
     #search {
@@ -172,16 +176,30 @@
   <div class="container">
     <form action="javascript:void(0);" onsubmit="search();">
       <table id="search-table">
-        <tr name="controls" id="chart-options">
-          <td></td>
-          <td colspan="2" class="option-td">
-            Count &nbsp;
+        <tr name="controls" class="chart-options">
+          <td colspan="3" class="option-td">
+            I would like to count&nbsp;
             <select class="selectpicker" id="countVar" data-width="fit">
               <option value="{{ countables.videotime.value }}" selected="selected">{{ countables.videotime.value }}</option>
               <option value="{{ countables.facetime.value }}">{{ countables.facetime.value }}</option>
               <option value="{{ countables.mentions.value }}">{{ countables.mentions.value }}</option>
-            </select>
-            &nbsp; between &nbsp;
+            </select>.
+            &nbsp;
+            <span class="hint-span">
+              (Click the color box for the query editor or click
+               <a href="#" onclick="toggleQueryHelp(); return false;" id="toggle-help">show help</a>.
+               To reset, click <a href="#" onclick="clearQueries(); return false;">clear queries</a>.)
+            </span>
+            <hr>
+          </td>
+        </tr>
+        <tr name="controls" class="chart-options">
+          <td>
+            <button type="button" class="btn btn-outline-secondary btn-sm" id='add-row-btn'>+</button>
+          </td>
+          <td></td>
+          <td class="option-td">
+            between &nbsp;
             <input type="text" class="datepicker" id="startDate">
             &nbsp; and &nbsp;
             <input type="text" class="datepicker" id="endDate">
@@ -194,16 +212,6 @@
             </select>
             . &nbsp;
             <input type="submit" class="btn btn-primary btn-sm" value="Search the news!">
-          </td>
-        </tr>
-        <tr>
-          <td>
-            <button type="button" class="btn btn-outline-secondary btn-sm" id='add-row-btn'>+</button>
-          </td>
-          <td colspan="2" class="hint-td">
-            click the color box for the query editor or click
-            <a href="#" onclick="toggleQueryHelp(); return false;" id="toggle-help">show help</a>.
-            (<a href="#" onclick="clearQueries(); return false;">clear queries</a>)
           </td>
         </tr>
       </table>
