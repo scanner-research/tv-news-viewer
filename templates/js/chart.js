@@ -146,7 +146,7 @@ class Chart {
     let getSeriesName = (color) => {
       let result = this.search_results[color];
       // TODO: hack to make vega-lite work
-      let query = result.query.replaceAll('[', '').replaceAll(']', '').replaceAll('"', '').replaceAll('.', '');
+      let query = result.query.replaceAll('[', '').replaceAll(']', '').replaceAll('"', '').replaceAll('.', '').replaceAll("'", '');
       return query;
     };
 

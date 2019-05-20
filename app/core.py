@@ -434,7 +434,9 @@ def build_app(
 
         if text_query_str:
             text_query = Query(text_query_str.upper())
-            for result in text_query.execute(lexicon, index):
+            for result in text_query.execute(
+                lexicon, index, ignore_word_not_found=True
+            ):
                 document = documents[result.id]
                 video = video_dict.get(document.name)
                 if video is None:
@@ -538,7 +540,7 @@ def build_app(
         if caption_query_str:
             for result in Query(
                 caption_query_str.upper()
-            ).execute(lexicon, index):
+            ).execute(lexicon, index, ignore_word_not_found=True):
                 document = documents[result.id]
                 video = video_dict.get(document.name)
                 if video is None:
