@@ -38,20 +38,6 @@
   </div>
 
   <script>
-    function getUnit(count) {
-      var unit;
-      if (count == '{{ countables.mentions.name }}') {
-        unit = 'mentions';
-      } else if (count == '{{ countables.videotime.name }}') {
-        unit = 'video time';
-      } else if (count == '{{ countables.facetime.name }}') {
-        unit = 'face time';
-      } else {
-        alert(`unknown count: ${count}`)
-      }
-      return unit;
-    }
-
     const PAGINATE = false;
     const VIDEOS_PER_PAGE = 10;
     var QUERY_PARAMS = null;
@@ -59,7 +45,7 @@
 
     function displayVideos(page_i) {
       $('#videos').empty();
-      let unit = getUnit(QUERY_PARAMS.count);
+      let count_var = QUERY_PARAMS.count;
 
       var video_ids = QUERY_PARAMS.video_ids;
       if (video_ids.length >= VIDEOS_PER_PAGE) {
@@ -80,7 +66,7 @@
           onclick="displayVideos(${page_i + 1});">next page</button>`;
       }
 
-      let text_html = `Showing results for ${unit} of
+      let text_html = `Showing results for ${count_var} of
         <font color="${QUERY_PARAMS.color}"><b>${QUERY_PARAMS.query}</b></font>
         from ${video_ids.length} of ${QUERY_PARAMS.video_count} videos from ${QUERY_PARAMS.time}.
         ${PAGINATE && n_pages > 1 ? page_controls : ''}`;
