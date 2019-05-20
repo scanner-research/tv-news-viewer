@@ -1,10 +1,142 @@
-const QUERY_AND = 'AND';
-const QUERY_ASSIGN = '=';
-const QUERY_NORMALIZE = 'NORMALIZE';
-const QUERY_MINUS = 'SUBTRACT';
-const QUERY_WHERE = 'WHERE';
+const QUERY_KEYWORDS = {
+  and: 'AND',
+  normalize: 'NORMALIZE',
+  subtract: 'SUBTRACT',
+  where: 'WHERE',
+  all: 'all'
+}
 
-const QUERY_ALL = 'all';
+//
+// Query grammar
+// =============
+// Build this using peg.js
+//
+const QUERY_GRAMMAR = `
+Start
+  = Blank a:Query Blank "NORMALIZE"i Blank b:Query2 Blank {
+    if (b.count_var == null) {
+      b.count_var = a.count_var;
+    }
+    return {main: a, normalize: b};
+  }
+  / Blank a:Query Blank "SUBTRACT"i Blank b:Query2 Blank {
+    if (b.count_var == null) {
+      b.count_var = a.count_var;
+    }
+    return {main: a, subtract: b};
+  }
+  / Blank a:Query Blank { return {main: a}; }
+
+Query
+  = "COUNT"i Blank a:CountVarName Blank "OF"i Blank b:CountClause Blank c:WhereClause ? {
+    return {count_var: a, count: b, where: c ? c : {}};
+  }
+  / "COUNT"i Blank a:CountVarName Blank b:WhereClause ? {
+    return {count_var: a, count: null, where: b ? b : {}};
+  }
+  / a:WhereClause { return {count_var: null, count: null, where: a}; }
+  / a:CountClause Blank b:WhereClause ? {
+    return {count_var: null, count: a, where: b ? b : {}};
+  }
+
+Query2
+  = "(" Blank a:Query Blank ")" { return a; }
+  / a:Query { return a; }
+
+CountVarName
+  = '"' s:TokenInclSpace '"' { return s; }
+  / "'" s:TokenInclSpace "'" { return s; }
+  / s:TokenNoSpace { return s; }
+
+CountClause
+  = Printable
+
+WhereClause
+  = "WHERE"i Blank a:AndList { return a; }
+  / "WHERE"i Blank { return {}; }
+
+AndList
+  = a:KeyValue Blank "AND"i Blank b:AndList {
+      Object.keys(a).forEach(k => {
+      if (b.hasOwnProperty(k)) {
+        throw Error('Duplicate key in where-clause: ' + k);
+      }
+      b[k] = a[k];
+    });
+    return b;
+  }
+  / a:KeyValue { return a; }
+
+KeyValue
+  = k:TokenNoSpace Blank "=" Blank v:Printable {
+  	let ret = {};
+    ret[k] = v;
+  	return ret;
+  }
+
+TokenNoSpace
+  = s:[a-zA-Z0-9.]+ { return s.join(''); }
+
+TokenInclSpace
+  = s:[a-zA-Z0-9. ]+ { return s.join(''); }
+
+Printable
+  = "'" s:[^']* "'" { return s.join(''); }
+  / '"' s:[^"]* '"' { return s.join(''); }
+  / s:[^ \t]* { return s.join(''); }
+
+Blank
+  = [ \t]*
+`
+
+QUERY_CLAUSE_GRAMMAR = `
+Start
+  = Blank q:Query Blank { return q; }
+
+Query
+  = "COUNT"i Blank a:CountVarName Blank "OF"i Blank b:Printable Blank c:WhereClause {
+  	return {count_var: a, count: b, where: c};
+  }
+  / "COUNT"i Blank a:CountVarName Blank b:WhereClause {
+  	return {count_var: a, count: '', where: b};
+  }
+  / b:WhereClause {
+    return {count_var: null, count: '', where: b};
+  }
+  / a:Printable Blank b:WhereClause {
+    return {count_var: null, count: a, where: b};
+  }
+  / a:Printable { return {count_var: null, count: a, where: ""};}
+
+WhereClause
+  = "WHERE"i Blank a:Any { return a; }
+  / a:(("NORMALIZE"i / "SUBTRACT"i) Blank Any) { return a.join(''); }
+
+CountVarName
+  = '"' s:TokenInclSpace '"' { return s; }
+  / "'" s:TokenInclSpace "'" { return s; }
+  / s:TokenNoSpace { return s; }
+
+TokenNoSpace
+  = s:[a-zA-Z0-9.]+ { return s.join(''); }
+
+TokenInclSpace
+  = s:[a-zA-Z0-9. ]+ { return s.join(''); }
+
+Printable
+  = "'" s:[^']* "'" { return s.join(''); }
+  / '"' s:[^"]* '"' { return s.join(''); }
+  / s:[^ \t]* { return s.join(''); }
+
+Any
+  = s:[^]* { return s.join(''); }
+
+Blank
+  = s:[ \t]* { return s.join(''); }
+`
+
+const QUERY_PARSER = PEG.buildParser(QUERY_GRAMMAR);
+const QUERY_CLAUSE_PARSER = PEG.buildParser(QUERY_CLAUSE_GRAMMAR);
 
 const ALL_SHOWS = [
   {% for show in shows %}"{{ show }}",{% endfor %}
@@ -87,7 +219,7 @@ function translateFilterDict(filters, no_err) {
     let v_up = v.toUpperCase();
     if (k == '{{ parameters.caption_text.value }}') {
       result[k] = v;
-    } else if (k.match(/^{{ parameters.onscreen_face.value }}(\d+)?/)) {
+    } else if (k.match(/^{{ parameters.onscreen_face.value }}\d+/)) {
       let face_params = parseFaceTimeString(v);
       if (face_params.all) {
         result[k] = 'all';
@@ -149,39 +281,6 @@ function translateFilterDict(filters, no_err) {
   return result;
 }
 
-function unquoteString(s) {
-  if (s.length >= 2) {
-    if ((s[0] == '"' && s[s.length - 1] == '"') ||
-        (s[0] == '\'' && s[s.length - 1] == '\'')) {
-      s = s.substr(1, s.length - 2);
-    }
-  }
-  return s;
-}
-
-function parseFilterDict(filters_str, no_err) {
-  let filters = {};
-  if (filters_str) {
-    filters_str.split(QUERY_AND).forEach(line => {
-      line = $.trim(line);
-      if (line.length > 0) {
-        let i = line.indexOf(QUERY_ASSIGN);
-        if (i == -1) {
-          if (no_err) return;
-          throw Error(`Invalid filter: ${line}`);
-        }
-        let k = $.trim(line.substr(0, i));
-        if (filters.hasOwnProperty(k) && !no_err) {
-          throw Error(`"${k}" is specified multiple times`)
-        } else {
-          filters[k] = $.trim(unquoteString($.trim(line.substr(i + 1))));
-        }
-      }
-    });
-  }
-  return filters;
-}
-
 class SearchResult {
 
   constructor(query, results) {
@@ -202,105 +301,73 @@ class SearchResult {
 }
 
 class SearchableQuery {
-  constructor(s, count, no_err) {
+  constructor(s, default_count_var, no_err) {
 
-    function parse(s) {
-      var params, countable_str;
-      var has_where = false;
-      if (s.includes(QUERY_WHERE)) {
-        let [a, b] = s.split(QUERY_WHERE);
-        countable_str = a;
-        params = translateFilterDict(parseFilterDict($.trim(b), no_err), no_err);
-        has_where = true;
-      } else {
-        countable_str = s;
-        params = {};
-      }
-      countable_str = $.trim(unquoteString($.trim(countable_str)));
-      if (countable_str.length > 0) {
-        if (count == '{{ countables.mentions.name }}') {
-          if (countable_str != QUERY_ALL) {
-            params.text = countable_str;
+    function getArgs(obj) {
+      let count_var = obj.count_var ? obj.count_var : default_count_var;
+      var args = translateFilterDict(obj.where ? obj.where : {}, no_err);
+      if (obj.count && obj.count.length > 0) {
+        if (count_var == '{{ countables.mentions.value }}') {
+          if (obj.count != QUERY_KEYWORDS.all) {
+            args.text = obj.count;
           }
-        } else if (count == '{{ countables.facetime.name }}') {
-          let face_params = parseFaceTimeString(countable_str, no_err);
-          if (face_params.gender) params.gender = face_params.gender;
-          if (face_params.role) params.role = face_params.role;
-          if (face_params.person) params.person = face_params.person;
-        } else if (count == '{{ countables.videotime.name }}') {
-          if (countable_str != QUERY_ALL) {
-            if (!has_where) {
-              params = translateFilterDict(
-                parseFilterDict($.trim(countable_str), no_err), no_err);
-            } else {
-              if (countable_str.length > 0) {
-                if (!no_err) throw Error(`Count {{ countables.videotime.value }} only supports WHERE filters. Try removing "${countable_str}"`);
-              }
+        } else if (count_var == '{{ countables.facetime.value }}') {
+          let face_args = parseFaceTimeString(obj.count, no_err);
+          if (face_args.gender) args.gender = face_args.gender;
+          if (face_args.role) args.role = face_args.role;
+          if (face_args.person) args.person = face_args.person;
+        } else if (count_var == '{{ countables.videotime.value }}') {
+          if (obj.count != QUERY_KEYWORDS.all) {
+            if (obj.count.length > 0) {
+              if (!no_err) throw Error(`Count {{ countables.videotime.value }} only supports WHERE filters. Try removing "${obj.count}"`);
             }
           }
+        } else {
+          throw Error(`Invalid count mode: ${count_var}`);
         }
       }
-      return params;
+      args.count = count_var;
+      return args;
     }
 
-    this.count = count;
+    this.default_count_var = default_count_var;
     this.query = s;
     this.normalize_args = null;
     this.subtract_args = null;
 
-    var main_str;
-    if (s.includes(QUERY_NORMALIZE)) {
-      let [a, b] = s.split(QUERY_NORMALIZE);
-      main_str = a;
-      this.normalize_args = parse(b);
-    } else if (s.includes(QUERY_MINUS)) {
-      let [a, b] = s.split(QUERY_MINUS);
-      main_str = a;
-      this.subtract_args = parse(b);
+    var p;
+    if (no_err) {
+      try {
+        p = QUERY_PARSER.parse(s);
+      } catch {
+        console.log('Failed to parse:', s);
+        p = {main: {count_var: null, count: '', where: null}};
+      }
     } else {
-      main_str = s;
+      p = QUERY_PARSER.parse(s);
     }
-    this.main_args = parse(main_str);
+    if (p.normalize) {
+      this.normalize_args = getArgs(p.normalize);
+    }
+    if (p.subtract) {
+      this.subtract_args = getArgs(p.subtract);
+    }
+    this.main_args = getArgs(p.main);
   }
 
   clauses() {
-    if (this.query.includes(QUERY_WHERE)) {
-      let where_idx = this.query.indexOf(QUERY_WHERE);
-      return {
-        where: $.trim(this.query.slice(where_idx + QUERY_WHERE.length)),
-        countable: $.trim(this.query.slice(0, where_idx)),
-      }
-    } else if (this.query.includes(QUERY_NORMALIZE)) {
-      let normalize_idx = this.query.indexOf(QUERY_NORMALIZE);
-      return {
-        where: $.trim(this.query.slice(normalize_idx + QUERY_NORMALIZE.length)),
-        countable: $.trim(this.query.slice(0, normalize_idx)),
-      }
-    } else {
-      if (this.count == '{{ countables.videotime.name }}') {
-        return {
-          where: $.trim(this.query),
-          countable: ''
-        }
-      } else {
-        return {
-          where: '',
-          countable: $.trim(this.query)
-        }
-      }
-    }
+    return QUERY_CLAUSE_PARSER.parse(this.query);
   }
 
   search(chart_options, onSuccess, onError) {
-    if (this.count != chart_options.count) {
-      throw Error('count type changed');
+    if (this.default_count_var != chart_options.{{ parameters.count.value }}) {
+      throw Error('Count variable changed');
     }
 
     function getParams(args, detailed) {
       let obj = Object.assign({detailed: detailed}, args);
       obj.{{ parameters.start_date.value }} = chart_options.start_date;
       obj.{{ parameters.end_date.value }} = chart_options.end_date;
-      obj.{{ parameters.count.value }} = chart_options.count;
       obj.{{ parameters.aggregate.value }} = chart_options.aggregate;
       return obj;
     }
@@ -419,21 +486,21 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
       <td type="key-col">(optional) an on-screen face matches</td>
       <td type="value-col">
         <select class="selectpicker"
-                name="{{ parameters.onscreen_face.value }}:gender" data-width="fit">
+                name="{{ parameters.onscreen_face.value }}1:gender" data-width="fit">
           <option value="" selected="selected"></option>
           <option value="all">all; male or female</option>
           <option value="male">male</option>
           <option value="female">female</option>
         </select>
         <select class="selectpicker"
-                name="{{ parameters.onscreen_face.value }}:role" data-width="fit">
+                name="{{ parameters.onscreen_face.value }}1:role" data-width="fit">
           <option value="" selected="selected"></option>
           <option value="host">host</option>
           <option value="non-host">non-host</option>
         </select>
         or person
         <select class="selectpicker"
-                name="{{ parameters.onscreen_face.value }}:person" data-width="fit">
+                name="{{ parameters.onscreen_face.value }}1:person" data-width="fit">
           <option value="" selected="selected"></option>
           {% for person in people %}
           <option value="{{ person }}">{{ person }}</option>

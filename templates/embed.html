@@ -7,6 +7,7 @@
   <script src="https://cdn.jsdelivr.net/npm/vega@5.3.4"></script>
   <script src="https://cdn.jsdelivr.net/npm/vega-lite@3.1.0"></script>
   <script src="https://cdn.jsdelivr.net/npm/vega-embed@4.0.0"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pegjs/0.9.0/peg.js"></script>
 
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
@@ -68,7 +69,7 @@
       lines.forEach(line => {
         let html = `<tr name='${line.color}'>
           <td><div class="color-box" style="background-color: ${line.color};"></div></td>
-          <td class="query-td">COUNT ${chart_options.count} OF ${line.query.query}</td>
+          <td class="query-td">${line.query.query}</td>
         </tr>`;
         $('#search-table tbody').append(html);
       });

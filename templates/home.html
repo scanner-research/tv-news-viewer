@@ -8,6 +8,7 @@
   <script src="https://cdn.jsdelivr.net/npm/vega-embed@4.0.0"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.15.0/umd/popper.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pegjs/0.9.0/peg.js"></script>
 
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
@@ -178,9 +179,9 @@
           <td colspan="2" class="option-td">
             Count &nbsp;
             <select class="selectpicker" id="countVar" data-width="fit">
-              <option value="{{ countables.videotime.name }}" selected="selected">{{ countables.videotime.value }}</option>
-              <option value="{{ countables.facetime.name }}">{{ countables.facetime.value }}</option>
-              <option value="{{ countables.mentions.name }}">{{ countables.mentions.value }}</option>
+              <option value="{{ countables.videotime.value }}" selected="selected">{{ countables.videotime.value }}</option>
+              <option value="{{ countables.facetime.value }}">{{ countables.facetime.value }}</option>
+              <option value="{{ countables.mentions.value }}">{{ countables.mentions.value }}</option>
             </select>
             &nbsp; between &nbsp;
             <input type="text" class="datepicker" id="startDate">
@@ -264,13 +265,13 @@
     function setQueryBoxForMode() {
       let count_var = $('#countVar').val();
       var prefix_str, has_countable;
-      if (count_var == '{{ countables.mentions.name }}') {
+      if (count_var == '{{ countables.mentions.value }}') {
         prefix_str = '{{ countables.mentions.value }} OF';
         has_countable = true;
-      } else if (count_var == '{{ countables.facetime.name }}') {
+      } else if (count_var == '{{ countables.facetime.value }}') {
         prefix_str = '{{ countables.facetime.value }} OF';
         has_countable = true;
-      } else if (count_var == '{{ countables.videotime.name }}') {
+      } else if (count_var == '{{ countables.videotime.value }}') {
         prefix_str = '{{ countables.videotime.value }} WHERE';
         has_countable = false;
       }
@@ -364,9 +365,11 @@
             <td>{{ parameters.caption_window.value }}={{ default_text_window }}</td>
           </tr>
           <tr>
-            <td>{{ parameters.onscreen_face.value }} <br>
-                {{ parameters.onscreen_face.value }}1 <br>
-                {{ parameters.onscreen_face.value }}<b>n</b> </td>
+            <td>
+              {{ parameters.onscreen_face.value }}1 <br>
+              {{ parameters.onscreen_face.value }}2 <br>
+              {{ parameters.onscreen_face.value }}<b>n</b>
+            </td>
             <td>
               at least one matching face on screen <br> (height &ge; 20%)</td>
             <td>
@@ -582,7 +585,8 @@
 
         let where_box = search_table_row.find('input[name="where"]');
         var current_query = new SearchableQuery(
-          QUERY_WHERE + ' ' + where_box.val(), $('#countVar').val(), true);
+          `${QUERY_KEYWORDS.where} ${where_box.val()}`,
+          $('#countVar').val(), true);
 
         let query_builder = search_table_row.find('.query-builder');
         let setIfDefined = k => {
@@ -605,7 +609,7 @@
         setIfDefined('{{ parameters.caption_window.value }}');
         setIfDefined('{{ parameters.is_commercial.value }}');
 
-        let onscreen_face = current_query.main_args['{{ parameters.onscreen_face.value }}'];
+        let onscreen_face = current_query.main_args['{{ parameters.onscreen_face.value }}1'];
         if (onscreen_face) {
           var gender = null;
           var role = null;
@@ -623,17 +627,17 @@
           }
           if (gender) {
             query_builder.find(
-              `[name="{{ parameters.onscreen_face.value }}:gender"]`
+              `[name="{{ parameters.onscreen_face.value }}1:gender"]`
             ).val(gender);
           }
           if (role) {
             query_builder.find(
-              `[name="{{ parameters.onscreen_face.value }}:role"]`
+              `[name="{{ parameters.onscreen_face.value }}1:role"]`
             ).val(role);
           }
           if (person) {
             query_builder.find(
-              `[name="{{ parameters.onscreen_face.value }}:person"]`
+              `[name="{{ parameters.onscreen_face.value }}1:person"]`
             ).val(person);
           }
         }
@@ -674,7 +678,7 @@
         filters.push(`{{ parameters.day_of_week.value }}="${day_of_week}"`);
       }
 
-      if ($('#countVar').val() != '{{ countables.mentions.name }}') {
+      if ($('#countVar').val() != '{{ countables.mentions.value }}') {
         let caption_text = builder.find('[name="{{ parameters.caption_text.value }}"]').val();
         if (caption_text) {
           filters.push(`{{ parameters.caption_text.value }}="${caption_text}"`);
@@ -685,9 +689,9 @@
         }
       }
 
-      let face_gender = builder.find('[name="{{ parameters.onscreen_face.value }}:gender"]').val();
-      let face_role = builder.find('[name="{{ parameters.onscreen_face.value }}:role"]').val();
-      let face_person = builder.find('[name="{{ parameters.onscreen_face.value }}:person"]').val();
+      let face_gender = builder.find('[name="{{ parameters.onscreen_face.value }}1:gender"]').val();
+      let face_role = builder.find('[name="{{ parameters.onscreen_face.value }}1:role"]').val();
+      let face_person = builder.find('[name="{{ parameters.onscreen_face.value }}1:person"]').val();
       if (face_person || face_role || face_gender) {
         var face_str;
         if (face_person) {
@@ -706,7 +710,7 @@
             face_str = face_gender;
           }
         }
-        filters.push(`{{ parameters.onscreen_face.value }}="${face_str}"`);
+        filters.push(`{{ parameters.onscreen_face.value }}1="${face_str}"`);
       }
       let is_commercial = builder.find('[name="{{ parameters.is_commercial.value }}"]').val();
       if (is_commercial != 'false') {
@@ -716,9 +720,9 @@
       let normalize = builder.find('[name="normalize"]').val() == 'true';
 
       // Construct the new query
-      var new_where = filters.length > 0 ? filters.join(` ${QUERY_AND} `) : '';
+      var new_where = filters.length > 0 ? filters.join(` ${QUERY_KEYWORDS.and} `) : '';
       if (normalize) {
-        new_where += ` ${QUERY_NORMALIZE}`;
+        new_where += ` ${QUERY_KEYWORDS.normalize}`;
       }
       search_table_row.find('input[name="where"]').val(new_where);
       toggleQueryBuilder(element);
@@ -729,11 +733,11 @@
         return 'WHERE ' + $('#search-table input[type="text"][name="where"]:last').val();
       } else {
         let count_var = $('#countVar').val();
-        if (count_var == '{{ countables.mentions.name }}') {
+        if (count_var == '{{ countables.mentions.value }}') {
           return DEFAULT_MENTIONS_QUERY;
-        } else if (count_var == '{{ countables.facetime.name }}') {
+        } else if (count_var == '{{ countables.facetime.value }}') {
           return DEFAULT_FACETIME_QUERY;
-        } else if (count_var == '{{ countables.videotime.name }}') {
+        } else if (count_var == '{{ countables.videotime.value }}') {
           return DEFAULT_VIDEOTIME_QUERY;
         }
       }
@@ -743,13 +747,13 @@
       // Rewrite query with default normalization if necessary
       let count_var = $('#countVar').val();
       let where_str = $.trim($(element).val());
-      if (where_str.endsWith(QUERY_NORMALIZE)) {
-        if (count_var == '{{ countables.videotime.name }}') {
-          $(element).val(`${where_str} ${QUERY_ALL}`);
+      if (where_str.endsWith(QUERY_KEYWORDS.normalize)) {
+        if (count_var == '{{ countables.videotime.value }}') {
+          $(element).val(`${where_str} ${QUERY_KEYWORDS.all}`);
         } else {
-          let no_normlize_where_str = $.trim(where_str.slice(0, where_str.indexOf(QUERY_NORMALIZE)));
-          var new_where = `${where_str} ${QUERY_ALL}`;
-          if (count_var != '{{ countables.mentions.name }}' && no_normlize_where_str.length > 0) {
+          let no_normlize_where_str = $.trim(where_str.slice(0, where_str.indexOf(QUERY_KEYWORDS.normalize)));
+          var new_where = `${where_str} ${QUERY_KEYWORDS.all}`;
+          if (count_var != '{{ countables.mentions.value }}' && no_normlize_where_str.length > 0) {
             new_where += ` WHERE ${no_normlize_where_str}`;
           }
           $(element).val(new_where);
@@ -777,17 +781,17 @@
             </div>
             <div class="countable-only" style="width: 200px;">
               <input type="text" class="form-control" name="countable"
-                     placeholder="${QUERY_ALL}">
+                     placeholder="${QUERY_KEYWORDS.all}">
             </div>
             <div class="input-group-prepend countable-only">
               <span class="input-group-text">WHERE</span>
             </div>
-            <input type="text" class="form-control" name="where" placeholder="${QUERY_ALL}"
+            <input type="text" class="form-control" name="where" placeholder="${QUERY_KEYWORDS.all}"
                    onchange="onWhereUpdate(this);">
           </div>
         </td>`);
       new_row.find('input[name="where"]').val(query_clauses.where);
-      new_row.find('input[name="countable"]').val(query_clauses.countable);
+      new_row.find('input[name="countable"]').val(query_clauses.count);
 
       $('#search-table > tbody > tr').eq(
         $('#search-table tr[name="query"]').length
@@ -865,13 +869,15 @@
       let queries = [];
       $('#search-table tr[name="query"]').each(function() {
         if ($(this).attr('name')) {
-          let countable_str = count_var != '{{ countables.videotime.name }}' ?
-            $.trim($(this).find('input[name="countable"]').val()) : '';
           let where_str = $.trim($(this).find('input[name="where"]').val());
-          queries.push({
-            color: $(this).attr('data-color'),
-            text: `${countable_str} WHERE ${where_str}`
-          });
+          var text;
+          if (count_var != '{{ countables.videotime.value }}') {
+            let count_str = $.trim($(this).find('input[name="countable"]').val());
+            text = `COUNT "${count_var}" OF "${count_str ? count_str : QUERY_KEYWORDS.all}" WHERE ${where_str}`;
+          } else {
+            text = `COUNT "${count_var}" WHERE ${where_str}`;
+          }
+          queries.push({color: $(this).attr('data-color'), text: text});
         }
       });
       return queries;
@@ -941,8 +947,8 @@
       }
     } else {
       initChartOptions();
-      addRow({text: 'onscreen.face=men'});
-      addRow({text: 'onscreen.face=women'});
+      addRow({text: 'WHERE onscreen.face1=men'});
+      addRow({text: 'WHERE onscreen.face1=women'});
     }
   </script>
 </body>

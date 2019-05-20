@@ -156,7 +156,7 @@ class Chart {
     );
 
     let date_format = getVegaDateFormat(this.options.aggregate);
-    let unit = this.options.count == '{{ countables.mentions.name }}' ? 'occurences' : 'minutes';
+    let unit = this.options.count == '{{ countables.mentions.value }}' ? 'occurences' : 'minutes';
 
     var y_axis_title;
     if (Object.values(this.search_results).some(v => v.has_normalization())) {
@@ -169,7 +169,7 @@ class Chart {
       y_axis_title = `# of ${unit}`;
     }
 
-    let raw_precision = this.options.count == '{{ countables.mentions.name }}' ? 0 : 4;
+    let raw_precision = this.options.count == '{{ countables.mentions.value }}' ? 0 : 4;
     function getPointValue(result, video_data, t) {
       var value = secondsToMinutes(video_data.reduce((acc, x) => acc + x[1], 0));
       var value_str;

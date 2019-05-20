@@ -116,7 +116,7 @@ def get_countable() -> Countable:
     value = request.args.get(SearchParameter.count.value, None, type=str)
     if value is None:
         raise InvalidUsage('no count variable specified')
-    return Countable[value]
+    return Countable(value)
 
 
 def get_onscreen_face_isetmap(

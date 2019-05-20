@@ -60,6 +60,13 @@ def test_get_data(client: FlaskClient) -> None:
     _is_ok(client.get('/people'))
 
 
+def test_get_captions(client: FlaskClient) -> None:
+    """Make sure that captions can be fetched"""
+    base_id = 10000
+    for i in range(100):
+        _is_ok(client.get('/captions/{}'.format(base_id)))
+
+
 # Search tests
 
 ResponseFn = Callable[[Response, Dict[str, Optional[str]]], None]
@@ -129,7 +136,7 @@ def _check_count_result(
 def test_count_mentions(client: FlaskClient) -> None:
     _combination_test_get(
         client, '/search', {
-            'count': ['mentions'],
+            'count': ['caption occurences'],
             'text': ['united states of america'],
             # General options
             'detailed': TEST_DETAILED_OPTIONS,
@@ -145,7 +152,7 @@ def test_count_mentions(client: FlaskClient) -> None:
         }, _check_count_result, n=100)
     _combination_test_get(
         client, '/search', {
-            'count': ['mentions'],
+            'count': ['caption occurences'],
             'normalize': ['true'],
             'aggregate': TEST_AGGREGATE_OPTIONS,
         }, _check_count_result)
@@ -155,7 +162,7 @@ def test_count_face_time(client: FlaskClient) -> None:
     # Non-person facetime
     _combination_test_get(
         client, '/search', {
-            'count': ['facetime'],
+            'count': ['face time'],
             'gender': [None, 'female'],
             'role': [None, 'host'],
             # General options
@@ -176,7 +183,7 @@ def test_count_face_time(client: FlaskClient) -> None:
     # Person facetime
     _combination_test_get(
         client, '/search', {
-            'count': ['facetime'],
+            'count': ['face time'],
             'person': ['donald trump'],
             # General options
             'start_date': [None, '2017-01-01'],
@@ -195,7 +202,7 @@ def test_count_face_time(client: FlaskClient) -> None:
 
     _combination_test_get(
         client, '/search', {
-            'count': ['facetime'],
+            'count': ['face time'],
             'normalize': ['true'],
             'aggregate': TEST_AGGREGATE_OPTIONS,
         }, _check_count_result)
@@ -204,7 +211,7 @@ def test_count_face_time(client: FlaskClient) -> None:
 def test_count_video_time(client: FlaskClient) -> None:
     _combination_test_get(
         client, '/search', {
-            'count': ['videotime'],
+            'count': ['screen time'],
             # General options
             'start_date': [None, '2017-01-01'],
             'end_date': [None, '2018-01-01'],
@@ -221,7 +228,7 @@ def test_count_video_time(client: FlaskClient) -> None:
         }, _check_count_result, n=100)
     _combination_test_get(
         client, '/search', {
-            'count': ['videotime'],
+            'count': ['screen time'],
             'detailed': ['true'],
             'aggregate': TEST_AGGREGATE_OPTIONS,
         }, _check_count_result)
@@ -253,7 +260,7 @@ def test_search_mentions_in_videos(client: FlaskClient) -> None:
         client, '/search-videos', {
             'ids': TEST_VIDEO_IDS,
             # Count options
-            'count': ['mentions'],
+            'count': ['caption occurences'],
             # General options
             'text': TEST_COMMON_TEXT_OPTIONS,
             'iscommercial': TEST_IS_COMMERCIAL_OPTIONS,
@@ -267,7 +274,7 @@ def test_search_face_time_in_videos(client: FlaskClient) -> None:
         client, '/search-videos', {
             'ids': TEST_VIDEO_IDS,
             # Count options
-            'count': ['facetime'],
+            'count': ['face time'],
             'gender': [None, 'female'],
             'role': [None, 'host'],
             # General options
@@ -282,7 +289,7 @@ def test_search_face_time_in_videos(client: FlaskClient) -> None:
         client, '/search-videos', {
             'ids': TEST_VIDEO_IDS,
             # Count options
-            'count': ['facetime'],
+            'count': ['face time'],
             'person': ['donald trump'],
             # General options
             'iscommercial': TEST_IS_COMMERCIAL_OPTIONS,
@@ -297,7 +304,7 @@ def test_search_time_in_videos(client: FlaskClient) -> None:
         client, '/search-videos', {
             'ids': TEST_VIDEO_IDS,
             # Count options
-            'count': ['videotime'],
+            'count': ['screen time'],
             # General options
             'iscommercial': TEST_IS_COMMERCIAL_OPTIONS,
             'onscreen.face': TEST_ONSCREEN_FACE_OPTIONS,
