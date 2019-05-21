@@ -182,7 +182,7 @@ class Chart {
         var denom = _.get(result.normalize, t, null);
         if (denom) {
           if (is_minutes) {
-            denom - secondsToMinutes(denom);
+            denom = secondsToMinutes(denom);
           }
           value /= denom;
         }

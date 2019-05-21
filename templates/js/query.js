@@ -99,7 +99,7 @@ PrintableNoSpace
   = a:[^ \t]+ { return a.join(''); }
 
 ReservedWords
-  = "OF"i / "WHERE"i / "COUNT"i / "NORMALIZE"i / "SUBTRACT"i
+  = "OF"i / "WHERE"i / "COUNT"i / "NORMALIZE"i / "SUBTRACT"i / "AND"i
 
 Blank
   = [ \t]*
@@ -158,7 +158,7 @@ PrintableNoSpace
   = a:[^ \t]+ { return a.join(''); }
 
 ReservedWords
-  = "OF"i / "WHERE"i / "COUNT"i / "NORMALIZE"i / "SUBTRACT"i
+  = "OF"i / "WHERE"i / "COUNT"i / "NORMALIZE"i / "SUBTRACT"i / "AND"i
 
 Any
   = s:[^]* { return s.join(''); }
