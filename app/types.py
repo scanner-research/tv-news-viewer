@@ -2,7 +2,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Callable, Dict, List, Set, Tuple, NamedTuple, Union
 
-from rs_intervalset import MmapIntervalSetMapping       # type: ignore
+from rs_intervalset import MmapIntervalSetMapping, MmapIntervalListMapping  # type: ignore
 
 
 class Aggregate(Enum):
@@ -64,18 +64,24 @@ class Video(NamedTuple):
 
 
 class FaceIntervals(NamedTuple):
-    all: MmapIntervalSetMapping
-    male: MmapIntervalSetMapping
-    female: MmapIntervalSetMapping
-    host: MmapIntervalSetMapping
-    nonhost: MmapIntervalSetMapping
-    male_host: MmapIntervalSetMapping
-    male_nonhost: MmapIntervalSetMapping
-    female_host: MmapIntervalSetMapping
-    female_nonhost: MmapIntervalSetMapping
+    all_ilistmap: MmapIntervalListMapping
+    all_isetmap: MmapIntervalSetMapping
+    male_isetmap: MmapIntervalSetMapping
+    female_isetmap: MmapIntervalSetMapping
+    host_isetmap: MmapIntervalSetMapping
+    nonhost_isetmap: MmapIntervalSetMapping
+    male_host_isetmap: MmapIntervalSetMapping
+    male_nonhost_isetmap: MmapIntervalSetMapping
+    female_host_isetmap: MmapIntervalSetMapping
+    female_nonhost_isetmap: MmapIntervalSetMapping
 
 
-PersonIntervals = Dict[str, MmapIntervalSetMapping]
+class PersonIntervals(NamedTuple):
+    ilistmap: MmapIntervalListMapping
+    isetmap: MmapIntervalSetMapping
+
+
+AllPersonIntervals = Dict[str, PersonIntervals]
 
 Number = Union[int, float]
 Interval = Tuple[Number, Number]

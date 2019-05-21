@@ -18,9 +18,8 @@ def get_video_name(s: str) -> str:
 def load_video_data(data_dir: str) -> Tuple[
     Dict[str, Video],
     MmapIntervalSetMapping,
-    MmapIntervalListMapping,
     FaceIntervals,
-    PersonIntervals
+    AllPersonIntervals
 ]:
     print('Loading video data: please wait...')
     videos = {}
@@ -48,35 +47,48 @@ def load_video_data(data_dir: str) -> Tuple[
         )
 
     commercials = MmapIntervalSetMapping(
-        path.join(data_dir, 'commercials.bin'))
-
-    all_faces = MmapIntervalListMapping(path.join(data_dir, 'faces.bin'), 1)
+        path.join(data_dir, 'commercials.iset.bin'))
 
     face_dir = path.join(data_dir, 'face')
     face_intervals = FaceIntervals(
-        all=MmapIntervalSetMapping(path.join(face_dir, 'all.bin')),
-        male=MmapIntervalSetMapping(path.join(face_dir, 'male.bin')),
-        female=MmapIntervalSetMapping(path.join(face_dir, 'female.bin')),
-        host=MmapIntervalSetMapping(path.join(face_dir, 'host.bin')),
-        nonhost=MmapIntervalSetMapping(path.join(face_dir, 'nonhost.bin')),
-        male_host=MmapIntervalSetMapping(path.join(face_dir, 'male_host.bin')),
-        female_host=MmapIntervalSetMapping(
-            path.join(face_dir, 'female_host.bin')),
-        male_nonhost=MmapIntervalSetMapping(
-            path.join(face_dir, 'male_nonhost.bin')),
-        female_nonhost=MmapIntervalSetMapping(
-            path.join(face_dir, 'female_nonhost.bin')))
+        all_ilistmap=MmapIntervalListMapping(
+            path.join(data_dir, 'faces.ilist.bin'), 1),
+        all_isetmap=MmapIntervalSetMapping(
+            path.join(face_dir, 'all.iset.bin')),
+        male_isetmap=MmapIntervalSetMapping(
+            path.join(face_dir, 'male.iset.bin')),
+        female_isetmap=MmapIntervalSetMapping(
+            path.join(face_dir, 'female.iset.bin')),
+        host_isetmap=MmapIntervalSetMapping(
+            path.join(face_dir, 'host.iset.bin')),
+        nonhost_isetmap=MmapIntervalSetMapping(
+            path.join(face_dir, 'nonhost.iset.bin')),
+        male_host_isetmap=MmapIntervalSetMapping(
+            path.join(face_dir, 'male_host.iset.bin')),
+        female_host_isetmap=MmapIntervalSetMapping(
+            path.join(face_dir, 'female_host.iset.bin')),
+        male_nonhost_isetmap=MmapIntervalSetMapping(
+            path.join(face_dir, 'male_nonhost.iset.bin')),
+        female_nonhost_isetmap=MmapIntervalSetMapping(
+            path.join(face_dir, 'female_nonhost.iset.bin')))
 
     def parse_person_name(fname: str) -> str:
         return fname.split('.', 1)[0]
 
     person_dir = path.join(data_dir, 'people')
-    person_intervals = {
-        parse_person_name(person_file): MmapIntervalSetMapping(
-            path.join(person_dir, person_file))
+    person_names = {
+        parse_person_name(person_file)
         for person_file in os.listdir(person_dir)
     }
-    return videos, commercials, all_faces, face_intervals, person_intervals
+    all_person_intervals = {
+        person_name: PersonIntervals(
+            ilistmap=MmapIntervalListMapping(
+                path.join(person_dir, person_name + '.ilist.bin'), 1),
+            isetmap=MmapIntervalSetMapping(
+                path.join(person_dir, person_name + '.iset.bin'))
+        ) for person_name in person_names
+    }
+    return videos, commercials, face_intervals, all_person_intervals
 
 
 def load_index(index_dir: str) -> Tuple[CaptionIndex, Documents, Lexicon]:
