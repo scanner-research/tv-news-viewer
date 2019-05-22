@@ -677,7 +677,7 @@
 
       let channel = builder.find('[name="{{ parameters.channel.value }}"]').val();
       if (channel) {
-        filters.push(`{{parameters.channel.value }}=${channel}`);
+        filters.push(`{{ parameters.channel.value }}=${channel}`);
       }
       let show = builder.find('[name="{{ parameters.show.value }}"]').val();
       if (show) {
@@ -769,6 +769,17 @@
           $(element).val(`${where_str} (${norm_query})`);
         }
       }
+
+      // Check the query
+      let query = `COUNT "${count_var}" WHERE ${$(element).val()}`;
+      var err = false;
+      try {
+        new SearchableQuery(query, count_var, false);
+      } catch (e) {
+        console.log(e);
+        err = true;
+      }
+      $(element).css('background-color', err ? '#fee7e2' : '');
     }
 
     function addRow(query) {
@@ -811,6 +822,8 @@
         $('#add-row-btn').prop('disabled', true);
       }
       setRemoveButtonsState();
+
+      onWhereUpdate(new_row.find('input[name="where"]'));
     }
     $('#add-row-btn').click(() => {addRow();});
 
