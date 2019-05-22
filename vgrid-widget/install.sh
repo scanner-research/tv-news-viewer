@@ -2,9 +2,9 @@
 
 set -e
 
-WIDGET_DIR=$PWD
+WIDGET_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
-cd ../deps/vgrid/vgridjs
+cd $WIDGET_DIR/../deps/vgrid/vgridjs
 
 rm -rf node_modules package-lock.json
 npm install

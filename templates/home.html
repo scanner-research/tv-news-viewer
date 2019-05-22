@@ -388,8 +388,8 @@
             <td>n/a</td>
             <td>
               {{ parameters.onscreen_face.value }}1="gender:male" <br>
-              {{ parameters.onscreen_face.value }}1="gender:male,role:host" <br>
-              {{ parameters.onscreen_face.value }}2="name:Barack Obama"
+              {{ parameters.onscreen_face.value }}2="gender:male,role:host" <br>
+              {{ parameters.onscreen_face.value }}3="name:Barack Obama"
             </td>
           </tr>
         </table>
@@ -431,7 +431,7 @@
             <td>query1 NORMALIZE query2</td>
             <td><i>divide query1's results by query2's results.<br>
                 If query2 is blank, default normalization is applied.</i></td>
-            <td>"united states" NORMALIZE</td>
+            <td>"united states" NORMALIZE (all WHERE ... )</td>
           </tr>
           <tr>
             <td>SUBTRACT</td>
