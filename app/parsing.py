@@ -66,3 +66,29 @@ def parse_day_of_week_set(s: Optional[str]) -> Optional[Set[int]]:
         except ValueError:
             raise InvalidUsage('invalid day of week: {}'.format(t))
     return result if result else None
+
+
+def parse_face_filter_str(s: str) -> Tuple[Optional[str], Optional[str],
+                                           Optional[str]]:
+    gender = None
+    role = None
+    person = None
+    for kv in s.split(','):
+        kv = kv.strip()
+        if kv == '':
+            continue
+        try:
+            k, v = kv.split(':', 1)
+            k = k.strip()
+            v = v.strip()
+            if k == 'gender':
+                gender = v
+            elif k == 'role':
+                role = v
+            elif k == 'person':
+                person = v
+            else:
+                raise InvalidUsage('Invalid face filter: {}'.format(k))
+        except:
+            raise InvalidUsage('Failed to parse face filter: {}'.format(kv))
+    return gender, role, person

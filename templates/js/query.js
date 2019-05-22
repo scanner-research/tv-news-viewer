@@ -92,11 +92,11 @@ Printable
 
 PrintableTokenList
   = & (Blank ReservedWords) { return ''; }
-  / a:(Blank PrintableNoSpace) b:PrintableTokenList { return a.join('') + b; }
-  / a:(Blank PrintableNoSpace) { return a.join(''); }
+  / a:(Blank PrintableNoDelim) b:PrintableTokenList { return a.join('') + b; }
+  / a:(Blank PrintableNoDelim) { return a.join(''); }
 
-PrintableNoSpace
-  = a:[^ \t]+ { return a.join(''); }
+PrintableNoDelim
+  = a:[^ \t)]+ { return a.join(''); }
 
 ReservedWords
   = "OF"i / "WHERE"i / "COUNT"i / "NORMALIZE"i / "SUBTRACT"i / "AND"i
@@ -151,11 +151,11 @@ Printable
 
 PrintableTokenList
   = & (Blank ReservedWords) { return ''; }
-  / a:(Blank PrintableNoSpace) b:PrintableTokenList { return a.join('') + b; }
-  / a:(Blank PrintableNoSpace) { return a.join(''); }
+  / a:(Blank PrintableNoDelim) b:PrintableTokenList { return a.join('') + b; }
+  / a:(Blank PrintableNoDelim) { return a.join(''); }
 
-PrintableNoSpace
-  = a:[^ \t]+ { return a.join(''); }
+PrintableNoDelim
+  = a:[^ \t)]+ { return a.join(''); }
 
 ReservedWords
   = "OF"i / "WHERE"i / "COUNT"i / "NORMALIZE"i / "SUBTRACT"i / "AND"i
@@ -190,33 +190,12 @@ function parseTernary(s) {
   }
 }
 
-function parseFaceTimeString(s) {
+function parseFaceFilterString(s) {
   let result = {};
-  var m;
-  if (s == '') {
-    // do nothing
-  } else if (m = s.match(/^all( ?faces?)?$/i)) {
-    result.all = true;
-  } else if (m = s.match(/^(wo)?m(e|a)n$/i)) {
-    result.gender = m[1] ? 'female' : 'male';
-  } else if (m = s.match(/^(fe)?males?$/i)) {
-    result.gender = m[1] ? 'female' : 'male';
-  } else if (m = s.match(/^((fe)?male)? ?(non-?)?hosts?$/i)) {
-    if (m[1]) {
-      if (m[2]) {
-        result.gender = 'female';
-      } else {
-        result.gender = 'male';
-      }
-    }
-    if (m[3]) {
-      result.role = 'nonhost';
-    } else {
-      result.role = 'host';
-    }
-  } else {
-    result.person = s;
-  }
+  $.trim(s).toLowerCase().split(',').forEach(kv => {
+    let [k, v] = $.trim(kv).split(':').map(s => $.trim(s));
+    result[k] = v;
+  })
   return result;
 }
 
@@ -251,24 +230,10 @@ function translateFilterDict(filters, no_err) {
     let v_up = v.toUpperCase();
     if (k == '{{ parameters.caption_text.value }}') {
       result[k] = v;
-    } else if (k.match(/^{{ parameters.onscreen_face.value }}\d+/)) {
-      let face_params = parseFaceTimeString(v);
-      if (face_params.all) {
-        result[k] = 'all';
-      } else if (face_params.gender && face_params.role) {
-        result[k] = `${face_params.gender}:${face_params.role}`;
-      } else if (face_params.gender) {
-        result[k] = face_params.gender;
-      } else if (face_params.role) {
-        result[k] = face_params.role;
-      } else {
-        var person = findPerson(v);
-        if (person) {
-          result[k] = `person:${person}`;
-        } else {
-          if (!no_err) throw Error(`Unknown person: ${v}`);
-        }
-      }
+    } else if (
+        k == '{{ parameters.face.value }}'
+        || k.match(/^{{ parameters.onscreen_face.value }}\d+/)) {
+      result[k] = v;
     } else if (k == '{{ parameters.caption_window.value }}') {
       let i = parseInt(v);
       if (Number.isNaN(i)) {
@@ -344,10 +309,9 @@ class SearchableQuery {
             args.text = obj.count;
           }
         } else if (count_var == '{{ countables.facetime.value }}') {
-          let face_args = parseFaceTimeString(obj.count, no_err);
-          if (face_args.gender) args.gender = face_args.gender;
-          if (face_args.role) args.role = face_args.role;
-          if (face_args.person) args.person = face_args.person;
+          if (obj.count != QUERY_KEYWORDS.all) {
+            args.face = obj.count;
+          }
         } else if (count_var == '{{ countables.videotime.value }}') {
           if (obj.count != QUERY_KEYWORDS.all) {
             if (obj.count.length > 0) {
@@ -520,7 +484,6 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
         <select class="selectpicker"
                 name="{{ parameters.onscreen_face.value }}1:gender" data-width="fit">
           <option value="" selected="selected"></option>
-          <option value="all">all; male or female</option>
           <option value="male">male</option>
           <option value="female">female</option>
         </select>

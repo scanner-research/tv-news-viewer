@@ -121,8 +121,11 @@ TEST_CHANNEL_OPTIONS = [None, 'CNN', 'FOXNEWS', 'MSNBC']
 TEST_HOUR_OPTIONS = [None, '9-5', '5', '5,6', '5-6,7']
 TEST_DAYOFWEEK_OPTIONS = [None, 'mon-wed,thu,fri', 'sat', 'sat-sun', 'sat,sun']
 TEST_IS_COMMERCIAL_OPTIONS = [None, 'false', 'true', 'both']
-TEST_ONSCREEN_FACE_OPTIONS = [None, 'female:host', 'female', 'all',
-                              'person:wolf blitzer']
+TEST_FACE_OPTIONS = [
+    None, '', 'gender:female', 'role:host', 'person:wolf blitzer',
+    'gender:female,role:host', 'role:host,person:wolf blitzer',
+    'gender:male,role:host,person:wolf blitzer',
+]
 TEST_TEXT_WINDOW_OPTIONS = [None, '0', '15', '120']
 
 
@@ -148,7 +151,7 @@ def test_count_mentions(client: FlaskClient) -> None:
             'hour': TEST_HOUR_OPTIONS,
             'dayofweek': TEST_DAYOFWEEK_OPTIONS,
             'iscommercial': TEST_IS_COMMERCIAL_OPTIONS,
-            'onscreen.face': TEST_ONSCREEN_FACE_OPTIONS
+            'onscreen.face1': TEST_FACE_OPTIONS
         }, _check_count_result, n=100)
     _combination_test_get(
         client, '/search', {
@@ -163,8 +166,7 @@ def test_count_face_time(client: FlaskClient) -> None:
     _combination_test_get(
         client, '/search', {
             'count': ['face time'],
-            'gender': [None, 'female'],
-            'role': [None, 'host'],
+            'face': TEST_FACE_OPTIONS,
             # General options
             'start_date': [None, '2017-01-01'],
             'end_date': [None, '2018-01-01'],
@@ -175,30 +177,10 @@ def test_count_face_time(client: FlaskClient) -> None:
             'hour': TEST_HOUR_OPTIONS,
             'dayofweek': TEST_DAYOFWEEK_OPTIONS,
             'iscommercial': TEST_IS_COMMERCIAL_OPTIONS,
-            'onscreen.face': TEST_ONSCREEN_FACE_OPTIONS,
+            'onscreen.face1': TEST_FACE_OPTIONS,
             'caption.window': TEST_TEXT_WINDOW_OPTIONS,
             'caption.window': [None, 'united states of america'],
         }, _check_count_result, n=100)
-
-    # Person facetime
-    _combination_test_get(
-        client, '/search', {
-            'count': ['face time'],
-            'person': ['donald trump'],
-            # General options
-            'start_date': [None, '2017-01-01'],
-            'end_date': [None, '2018-01-01'],
-            'detailed': TEST_DETAILED_OPTIONS,
-            'aggregate': TEST_AGGREGATE_OPTIONS,
-            'channel': TEST_CHANNEL_OPTIONS,
-            'show': TEST_SHOW_OPTIONS,
-            'hour': TEST_HOUR_OPTIONS,
-            'dayofweek': TEST_DAYOFWEEK_OPTIONS,
-            'iscommercial': TEST_IS_COMMERCIAL_OPTIONS,
-            'onscreen.face': TEST_ONSCREEN_FACE_OPTIONS,
-            'caption.window': TEST_TEXT_WINDOW_OPTIONS,
-            'caption.window': [None, 'united states of america'],
-        }, _check_count_result, n=10)
 
     _combination_test_get(
         client, '/search', {
@@ -222,7 +204,7 @@ def test_count_video_time(client: FlaskClient) -> None:
             'hour': TEST_HOUR_OPTIONS,
             'dayofweek': TEST_DAYOFWEEK_OPTIONS,
             'iscommercial': TEST_IS_COMMERCIAL_OPTIONS,
-            'onscreen.face': TEST_ONSCREEN_FACE_OPTIONS,
+            'onscreen.face1': TEST_FACE_OPTIONS,
             'caption.window': TEST_TEXT_WINDOW_OPTIONS,
             'caption.window': [None, 'united states of america'],
         }, _check_count_result, n=100)
@@ -264,39 +246,23 @@ def test_search_mentions_in_videos(client: FlaskClient) -> None:
             # General options
             'text': TEST_COMMON_TEXT_OPTIONS,
             'iscommercial': TEST_IS_COMMERCIAL_OPTIONS,
-            'onscreen.face': TEST_ONSCREEN_FACE_OPTIONS
+            'onscreen.face1': TEST_FACE_OPTIONS
         }, _check_search_in_video_result)
 
 
 def test_search_face_time_in_videos(client: FlaskClient) -> None:
-    # Non-person facetime
     _combination_test_get(
         client, '/search-videos', {
             'ids': TEST_VIDEO_IDS,
             # Count options
             'count': ['face time'],
-            'gender': [None, 'female'],
-            'role': [None, 'host'],
+            'face': TEST_FACE_OPTIONS,
             # General options
             'iscommercial': TEST_IS_COMMERCIAL_OPTIONS,
-            'onscreen.face': TEST_ONSCREEN_FACE_OPTIONS,
+            'onscreen.face1': TEST_FACE_OPTIONS,
             'caption.window': TEST_TEXT_WINDOW_OPTIONS,
             'caption.text': [None] + TEST_COMMON_TEXT_OPTIONS
         }, _check_search_in_video_result, n=100)
-
-    # Person facetime
-    _combination_test_get(
-        client, '/search-videos', {
-            'ids': TEST_VIDEO_IDS,
-            # Count options
-            'count': ['face time'],
-            'person': ['donald trump'],
-            # General options
-            'iscommercial': TEST_IS_COMMERCIAL_OPTIONS,
-            'onscreen.face': TEST_ONSCREEN_FACE_OPTIONS,
-            'caption.window': TEST_TEXT_WINDOW_OPTIONS,
-            'caption.text': [None] + TEST_COMMON_TEXT_OPTIONS
-        }, _check_search_in_video_result, n=10)
 
 
 def test_search_time_in_videos(client: FlaskClient) -> None:
@@ -307,7 +273,7 @@ def test_search_time_in_videos(client: FlaskClient) -> None:
             'count': ['screen time'],
             # General options
             'iscommercial': TEST_IS_COMMERCIAL_OPTIONS,
-            'onscreen.face': TEST_ONSCREEN_FACE_OPTIONS,
+            'onscreen.face1': TEST_FACE_OPTIONS,
             'caption.window': TEST_TEXT_WINDOW_OPTIONS,
             'caption.text': [None] + TEST_COMMON_TEXT_OPTIONS
         }, _check_search_in_video_result)

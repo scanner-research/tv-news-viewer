@@ -32,10 +32,7 @@ class SearchParameter(Enum):
     detailed = 'detailed'
 
     mention_text = 'text'
-
-    face_gender = 'gender'
-    face_role = 'role'
-    face_person = 'person'
+    face = 'face'
 
     channel = 'channel'
     show = 'show'

@@ -377,17 +377,19 @@
               {{ parameters.onscreen_face.value }}<b>n</b>
             </td>
             <td>
-              at least one matching face on screen <br> (height &ge; 20%)</td>
+              at least one matching face on screen <br>
+              (height &ge; 20%). Separated by commas.
+            </td>
             <td>
-              all, (wo)men, (fe)male, (non)hosts, <br>
-              (fe)male (non)hosts, <br>
-              name of person <a href="/people" target="_blank">(list of people)</a>
+              gender: (fe)male,<br>
+              role: (non)host,<br>
+              person: name of person <a href="/people" target="_blank">(list of people)</a>
             </td>
             <td>n/a</td>
             <td>
-              {{ parameters.onscreen_face.value }}="men" <br>
-              {{ parameters.onscreen_face.value }}1="male hosts" <br>
-              {{ parameters.onscreen_face.value }}2="Barack Obama"
+              {{ parameters.onscreen_face.value }}1="gender:male" <br>
+              {{ parameters.onscreen_face.value }}1="gender:male,role:host" <br>
+              {{ parameters.onscreen_face.value }}2="name:Barack Obama"
             </td>
           </tr>
         </table>
@@ -467,11 +469,11 @@
             <td>COUNT {{ countables.facetime.value }} OF all faces</td>
             <td><i>total face time</i></td>
           </tr>
-            <td>COUNT {{ countables.facetime.value }} OF female hosts WHERE {{ parameters.channel.value }}="FOX"</td>
+            <td>COUNT {{ countables.facetime.value }} OF gender:female,role:host WHERE {{ parameters.channel.value }}="FOX"</td>
             <td><i>face time of female hosts on FOX News</i></td>
           </tr>
           <tr>
-            <td>COUNT {{ countables.facetime.value }} OF Barack Obama WHERE {{ parameters.channel.value }}="FOX"</td>
+            <td>COUNT {{ countables.facetime.value }} OF person:Barack Obama WHERE {{ parameters.channel.value }}="FOX"</td>
             <td><i>face time of Barack Obama on FOX News</i></td>
           </tr>
           <tr>
@@ -617,34 +619,21 @@
 
         let onscreen_face = current_query.main_args['{{ parameters.onscreen_face.value }}1'];
         if (onscreen_face) {
-          var gender = null;
-          var role = null;
-          var person = null;
-          if (onscreen_face == 'all' || onscreen_face.match(/^(fe)?male$/i)) {
-            gender = onscreen_face;
-          } else if (onscreen_face.match(/^(non)?host$/i)) {
-            role = onscreen_face;
-          } else if (onscreen_face.match(/^person:/i)) {
-            person = onscreen_face.slice(onscreen_face.indexOf(':') + 1);
-          } else {
-            let [a, b] = onscreen_face.split(':');
-            gender = a;
-            role = b;
-          }
-          if (gender) {
+          let face_params = parseFaceFilterString(onscreen_face);
+          if (face_params.gender) {
             query_builder.find(
               `[name="{{ parameters.onscreen_face.value }}1:gender"]`
-            ).val(gender);
+            ).val(face_params.gender);
           }
-          if (role) {
+          if (face_params.role) {
             query_builder.find(
               `[name="{{ parameters.onscreen_face.value }}1:role"]`
-            ).val(role);
+            ).val(face_params.role);
           }
-          if (person) {
+          if (face_params.person) {
             query_builder.find(
               `[name="{{ parameters.onscreen_face.value }}1:person"]`
-            ).val(person);
+            ).val(face_params.person);
           }
         }
 
@@ -707,24 +696,17 @@
       let face_role = builder.find('[name="{{ parameters.onscreen_face.value }}1:role"]').val();
       let face_person = builder.find('[name="{{ parameters.onscreen_face.value }}1:person"]').val();
       if (face_person || face_role || face_gender) {
-        var face_str;
+        let face_params = [];
         if (face_person) {
-          if (face_role || face_gender) {
-            alertAndThrow('"gender and role" cannot be specified simultaneously with "person"');
-          }
-          face_str = face_person;
-        } else {
-          if (face_role) {
-            if (face_gender == 'all') {
-              face_str = face_role;
-            } else {
-              face_str = `${face_gender ? face_gender + ' ' : ''}${face_role}`;
-            }
-          } else {
-            face_str = face_gender;
-          }
+          face_params.push('person:' + face_person);
         }
-        filters.push(`{{ parameters.onscreen_face.value }}1="${face_str}"`);
+        if (face_gender) {
+          face_params.push('gender:' + face_gender);
+        }
+        if (face_role) {
+          face_params.push('role:' + face_role);
+        }
+        filters.push(`{{ parameters.onscreen_face.value }}1="${face_params.join(',')}"`);
       }
       let is_commercial = builder.find('[name="{{ parameters.is_commercial.value }}"]').val();
       if (is_commercial != 'false') {
@@ -738,7 +720,9 @@
       if (normalize) {
         new_where += ` ${QUERY_KEYWORDS.normalize}`;
       }
-      search_table_row.find('input[name="where"]').val(new_where);
+      let where_input = search_table_row.find('input[name="where"]');
+      where_input.val(new_where);
+      onWhereUpdate(where_input);
       toggleQueryBuilder(element);
     }
 
@@ -763,14 +747,15 @@
       let where_str = $.trim($(element).val());
       if (where_str.endsWith(QUERY_KEYWORDS.normalize)) {
         if (count_var == '{{ countables.videotime.value }}') {
-          $(element).val(`${where_str} ${QUERY_KEYWORDS.all}`);
+          $(element).val(`${where_str} (${QUERY_KEYWORDS.all})`);
         } else {
-          let no_normlize_where_str = $.trim(where_str.slice(0, where_str.indexOf(QUERY_KEYWORDS.normalize)));
-          var new_where = `${where_str} ${QUERY_KEYWORDS.all}`;
+          let no_normlize_where_str = $.trim(
+            where_str.slice(0, where_str.indexOf(QUERY_KEYWORDS.normalize)));
+          var norm_query = QUERY_KEYWORDS.all;
           if (count_var != '{{ countables.mentions.value }}' && no_normlize_where_str.length > 0) {
-            new_where += ` WHERE ${no_normlize_where_str}`;
+            norm_query += ` WHERE ${no_normlize_where_str}`;
           }
-          $(element).val(new_where);
+          $(element).val(`${where_str} (${norm_query})`);
         }
       }
     }
@@ -793,14 +778,14 @@
             <div class="input-group-prepend">
               <span class="input-group-text" name="count-type-prefix"></span>
             </div>
-            <div class="countable-only" style="width: 200px;">
+            <div class="countable-only">
               <input type="text" class="form-control" name="countable"
                      placeholder="${QUERY_KEYWORDS.all}">
             </div>
             <div class="input-group-prepend countable-only">
               <span class="input-group-text">WHERE</span>
             </div>
-            <input type="text" class="form-control" name="where" placeholder="${QUERY_KEYWORDS.all}"
+            <input type="text" class="form-control" name="where" placeholder="no filters ..."
                    onchange="onWhereUpdate(this);">
           </div>
         </td>`);
@@ -961,8 +946,8 @@
       }
     } else {
       initChartOptions();
-      addRow({text: 'WHERE onscreen.face1=men'});
-      addRow({text: 'WHERE onscreen.face1=women'});
+      addRow({text: 'WHERE onscreen.face1="person: hillary clinton"'});
+      addRow({text: 'WHERE onscreen.face1="person: donald trump"'});
     }
   </script>
 </body>
