@@ -259,7 +259,7 @@ function translateFilterDict(filters, no_err) {
         if (show) {
           result[k] = show;
         } else {
-          throw Error(`Unknown show: ${v}`);
+          if (!no_err) throw Error(`Unknown show: ${v}`);
         }
       }
     } else if (k == '{{ parameters.day_of_week.value }}'
