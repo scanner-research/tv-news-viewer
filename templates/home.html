@@ -37,17 +37,18 @@
     }
     #search-table input[name=where] {
       text-align: left;
-      font-size: 14px;
+      font-size: 12px;
     }
     #search-table input[name=countable] {
       text-align: center;
-      font-size: 14px;
+      font-size: 12px;
       border-radius: 0;
     }
     #search-table .input-group, .input-group-prepend, .input-group-text, .form-control {
       height: 30px;
       padding-top: 0px;
       padding-bottom: 0px;
+      font-size: 12px;
     }
     #search-table .query-td {
       width: 95%;
@@ -57,7 +58,7 @@
     }
     #search-table .hint-span {
       padding-left: 10px;
-      font-size: small;
+      font-size: 12px;
     }
     #search-table .color-box {
       margin: auto;
@@ -68,31 +69,31 @@
       width: 35px;
       height: 30px;
       text-align: center;
-      font-size: 14px;
+      font-size: 12px;
     }
     #add-row-btn {
       width: 35px;
       height: 30px;
       text-align: center;
-      font-size: 14px;
+      font-size: 12px;
     }
     .chart-options {
       text-align: left;
-      font-size: 14px;
+      font-size: 12px;
     }
     .chart-options input, select, .filter-option {
       text-align: center;
-      font-size: 14px;
+      font-size: 12px;
     }
     .chart-options hr {
-      margin-top: 0.5rem;
-      margin-bottom: 0.5rem;
+      margin-top: 0.25rem;
+      margin-bottom: 0.25rem;
     }
     .chart-options .datepicker {
       width: 100px;
     }
     #search {
-      font-size: 14px;
+      font-size: 12px;
     }
     #query-help {
       padding: 10px;
@@ -378,18 +379,18 @@
             </td>
             <td>
               at least one matching face on screen <br>
-              (height &ge; 20%). Separated by commas.
+              (height &ge; 20%). Options separated by commas.
             </td>
             <td>
               gender: (fe)male,<br>
               role: (non)host,<br>
-              person: name of person <a href="/people" target="_blank">(list of people)</a>
+              person: <i>name</i> <a href="/people" target="_blank">(list of people)</a>
             </td>
             <td>n/a</td>
             <td>
               {{ parameters.onscreen_face.value }}1="gender:male" <br>
               {{ parameters.onscreen_face.value }}2="gender:male,role:host" <br>
-              {{ parameters.onscreen_face.value }}3="name:Barack Obama"
+              {{ parameters.onscreen_face.value }}3="person:Barack Obama"
             </td>
           </tr>
         </table>
@@ -411,7 +412,7 @@
             <td><i>seconds of commercials</i></td>
           </tr>
           <tr>
-            <td>COUNT {{ countables.videotime.value }} WHERE {{ parameters.onscreen_face.value }}="women" AND {{ parameters.caption_text.value }}="science"</td>
+            <td>COUNT {{ countables.videotime.value }} WHERE {{ parameters.onscreen_face.value }}1="gender:female, role:host" AND {{ parameters.caption_text.value }}="science"</td>
             <td><i>seconds of video where a female host is onscreen and the word "science" is mentioned</i></td>
           </tr>
         </table>
@@ -431,13 +432,15 @@
             <td>query1 NORMALIZE query2</td>
             <td><i>divide query1's results by query2's results.<br>
                 If query2 is blank, default normalization is applied.</i></td>
-            <td>"united states" NORMALIZE (all WHERE ... )</td>
+            <td>"united states" NORMALIZE (all WHERE ...)</td>
           </tr>
           <tr>
             <td>SUBTRACT</td>
             <td>query1 SUBTRACT query2</td>
             <td><i>subtract query2's results from query1's results</i></td>
-            <td>"united" SUBTRACT "united states"</td>
+            <td>
+              "united" WHERE ... SUBTRACT ("united states" WHERE ...)
+            </td>
           </tr>
         </table>
       </div>
@@ -504,20 +507,28 @@
           </tr>
           <tr>
             <td>{{ countables.facetime.value }}</td>
-            <td>screen time for faces (height &ge; 20%)</td>
             <td>
-              all, (wo)men, (non)hosts, (fe)male (non)hosts, <br>
-              name of person <a href="/people" target="_blank">(list of people)</a>
+              screen time for faces (height &ge; 20%)<br>
+              Options separated by commas.
+            </td>
+            <td>
+              gender: (fe)male,<br>
+              role: (non)host,<br>
+              person: <i>name</i> <a href="/people" target="_blank">(list of people)</a>
             </td>
             <td>all</td>
-            <td>male hosts<br>Barack Obama</td>
+            <td>
+              "gender:male" <br>
+              "gender:male,role:host" <br>
+              "person:Barack Obama"
+            </td>
           </tr>
           <tr>
             <td>{{ countables.mentions.value }}</td>
             <td>phrase mentions in the captions</td>
             <td><a href="https://github.com/scanner-research/caption-index/blob/master/captions/query.py" target="_blank">grammar</a></td>
             <td>n/a</td>
-            <td>affordable care act</td>
+            <td>"affordable care act"</td>
           </tr>
         </table>
       </div>
@@ -901,12 +912,9 @@
         });
 
       $('#shade').show();
-      $('#search').prop('disabled', true);
-
       let search_results = {};
       function onDone() {
         $('#shade').hide();
-        $('#search').prop('disabled', false);
         displaySearchResults(chart_options, lines, search_results);
       }
 
