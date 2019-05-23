@@ -491,7 +491,7 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
                 name="{{ parameters.onscreen_face.value }}1:role" data-width="fit">
           <option value="" selected="selected"></option>
           <option value="host">host</option>
-          <option value="non-host">non-host</option>
+          <option value="nonhost">nonhost</option>
         </select>
         or person
         <select class="chosen-select"

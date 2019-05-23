@@ -1,0 +1,139 @@
+#search-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0px 4px;
+}
+#search-table th {
+  text-align: center;
+}
+#search-table input[name=where] {
+  text-align: left;
+  font-size: 12px;
+}
+#search-table input[name=countable] {
+  text-align: center;
+  font-size: 12px;
+  border-radius: 0;
+}
+#search-table .input-group, .input-group-prepend, .input-group-text, .form-control {
+  height: 30px;
+  padding-top: 0px;
+  padding-bottom: 0px;
+  font-size: 12px;
+}
+#search-table .query-td {
+  width: 95%;
+}
+#search-table .option-td {
+  padding-left: 10px;
+}
+#search-table .hint-span {
+  padding-left: 10px;
+  font-size: 12px;
+}
+#search-table .color-box {
+  margin: auto;
+  width: 40px;
+  min-height: 30px;
+}
+#search-table .remove-row-btn {
+  width: 35px;
+  height: 30px;
+  text-align: center;
+  font-size: 12px;
+}
+#add-row-btn {
+  width: 35px;
+  height: 30px;
+  text-align: center;
+  font-size: 12px;
+}
+.chart-options {
+  text-align: left;
+  font-size: 12px;
+}
+.chart-options input, select, .filter-option {
+  text-align: center;
+  font-size: 12px;
+}
+.chart-options hr {
+  margin-top: 0.25rem;
+  margin-bottom: 0.25rem;
+}
+.chart-options .datepicker {
+  width: 100px;
+}
+#search {
+  font-size: 12px;
+}
+#query-help {
+  padding: 10px;
+  background-color: #F4F4F4;
+  border-spacing: 5px;
+  display: none;
+}
+#query-help table {
+  width: 100%;
+  border-spacing: 2px;
+  table-layout: auto;
+}
+#query-help th {
+  text-align: left;
+}
+#query-help td, th {
+  text-align: left;
+  padding-left: 10px;
+  padding-right: 10px;
+}
+#query-help tr:nth-child(odd) {
+  background-color: #DAD7CB;
+}
+#query-help tr:nth-child(even) {
+  background-color: #F9F6EF;
+}
+#embed-area textarea {
+  width: 100%;
+  margin: auto;
+  display: none;
+}
+#chart {
+  width: 100%;
+  text-align: center;
+}
+#shade {
+  background-color: #000000;
+  display: none;
+  opacity: 0.5;
+  height: 100%;
+  width: 100%;
+  position: fixed;
+  top: 0px;
+  right: 0px;
+  bottom: 0px;
+  left: 0px;
+}
+.query-builder {
+  padding: 10px;
+  border-left: solid #DAD7CB 1px;
+  border-right: solid #DAD7CB 1px;
+  border-bottom: solid #DAD7CB 1px;
+}
+.query-builder table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 2px;
+}
+.query-builder input {
+  text-align: center;
+  width: auto;
+  display: inline;
+}
+.query-builder th {
+  text-align: right;
+}
+.query-builder td[type=key-col] {
+  text-align: right;
+}
+.query-builder td[type=value-col] {
+  text-align: left;
+}

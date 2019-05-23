@@ -356,13 +356,8 @@ def build_app(
 
     @app.route('/')
     def root() -> Response:
-        start_date = max(min(v.date for v in video_dict.values()), MIN_DATE)
-        end_date = min(max(v.date for v in video_dict.values()), MAX_DATE)
         return render_template(
             'home.html', countables=Countable, parameters=SearchParameter,
-            host=request.host, aggregate='month',
-            start_date=format_date(start_date),
-            end_date=format_date(end_date), shows=all_shows,
             default_text_window=DEFAULT_TEXT_WINDOW,
             default_is_commercial=DEFAULT_IS_COMMERCIAL.name)
 
@@ -390,6 +385,18 @@ def build_app(
     def get_chart_js() -> Response:
         resp = make_response(render_template(
             'js/chart.js', countables=Countable))
+        resp.headers['Content-type'] = 'text/javascript'
+        resp.cache_control.max_age = cache_seconds
+        return resp
+
+    @app.route('/static/js/home.js')
+    def get_home_js() -> Response:
+        start_date = max(min(v.date for v in video_dict.values()), MIN_DATE)
+        end_date = min(max(v.date for v in video_dict.values()), MAX_DATE)
+        resp = make_response(render_template(
+            'js/home.js', parameters=SearchParameter, countables=Countable,
+            host=request.host, start_date=format_date(start_date),
+            end_date=format_date(end_date)))
         resp.headers['Content-type'] = 'text/javascript'
         resp.cache_control.max_age = cache_seconds
         return resp
