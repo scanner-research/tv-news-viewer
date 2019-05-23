@@ -818,7 +818,7 @@ def build_app(
             caption_query = request.args.get(
                 SearchParameter.caption_text, '', type=str).strip()
             caption_window = request.args.get(
-                SearchParameter.caption_window.value, DEFAULT_TEXT_WINDOW,
+                SearchParameter.caption_window, DEFAULT_TEXT_WINDOW,
                 type=int)
             results = _count_time_in_videos(
                 videos, caption_query, caption_window, is_commercial,
