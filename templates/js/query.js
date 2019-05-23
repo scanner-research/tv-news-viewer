@@ -228,20 +228,20 @@ function translateFilterDict(filters, no_err) {
   Object.keys(filters).forEach(k => {
     let v = filters[k];
     let v_up = v.toUpperCase();
-    if (k == '{{ parameters.caption_text.value }}') {
+    if (k == '{{ parameters.caption_text }}') {
       result[k] = v;
     } else if (
-        k == '{{ parameters.face.value }}'
-        || k.match(/^{{ parameters.onscreen_face.value }}\d+/)) {
+        k == '{{ parameters.face }}'
+        || k.match(/^{{ parameters.onscreen_face }}\d+/)) {
       result[k] = v;
-    } else if (k == '{{ parameters.caption_window.value }}') {
+    } else if (k == '{{ parameters.caption_window }}') {
       let i = parseInt(v);
       if (Number.isNaN(i)) {
         if (!no_err) throw Error(`Invalid window value: ${i}`);
       } else {
         result[k] = i;
       }
-    } else if (k == '{{ parameters.channel.value }}') {
+    } else if (k == '{{ parameters.channel }}') {
       if (v_up == 'ALL') {
         // pass
       } else if (v_up == 'FOX') {
@@ -251,7 +251,7 @@ function translateFilterDict(filters, no_err) {
       } else {
         if (!no_err) throw Error(`Unknown channel: ${v}`);
       }
-    } else if (k == '{{ parameters.show.value }}') {
+    } else if (k == '{{ parameters.show }}') {
       if (v_up == 'ALL') {
         // pass
       } else {
@@ -262,10 +262,10 @@ function translateFilterDict(filters, no_err) {
           if (!no_err) throw Error(`Unknown show: ${v}`);
         }
       }
-    } else if (k == '{{ parameters.day_of_week.value }}'
-               || k == '{{ parameters.hour.value }}') {
+    } else if (k == '{{ parameters.day_of_week }}'
+               || k == '{{ parameters.hour }}') {
       result[k] = v;
-    } else if (k == '{{ parameters.is_commercial.value }}') {
+    } else if (k == '{{ parameters.is_commercial }}') {
       try {
         result[k] = parseTernary(v);
       } catch (e) {
@@ -356,15 +356,15 @@ class SearchableQuery {
   }
 
   search(chart_options, onSuccess, onError) {
-    if (this.default_count_var != chart_options.{{ parameters.count.value }}) {
+    if (this.default_count_var != chart_options.{{ parameters.count }}) {
       throw Error('Count variable changed');
     }
 
     function getParams(args, detailed) {
       let obj = Object.assign({detailed: detailed}, args);
-      obj.{{ parameters.start_date.value }} = chart_options.start_date;
-      obj.{{ parameters.end_date.value }} = chart_options.end_date;
-      obj.{{ parameters.aggregate.value }} = chart_options.aggregate;
+      obj.{{ parameters.start_date }} = chart_options.start_date;
+      obj.{{ parameters.end_date }} = chart_options.end_date;
+      obj.{{ parameters.aggregate }} = chart_options.aggregate;
       return obj;
     }
 
@@ -403,8 +403,8 @@ class SearchableQuery {
 
   searchInVideos(video_ids, onSuccess, onError) {
     let args = Object.assign({
-      {{ parameters.count.value }}: this.count,
-      {{ parameters.video_ids.value }}: JSON.stringify(video_ids)
+      {{ parameters.count }}: this.count,
+      {{ parameters.video_ids }}: JSON.stringify(video_ids)
     }, this.main_args);
     return $.ajax({
       url: '/search-videos',
@@ -424,7 +424,7 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
     <tr>
       <td type="key-col">the channel is</td>
       <td type="value-col">
-        <select class="chosen-select" name="{{ parameters.channel.value }}" data-width="fit">
+        <select class="chosen-select" name="{{ parameters.channel }}" data-width="fit">
           <option value="" selected="selected">CNN, FOX, or MSNBC</option>
           <option value="CNN">CNN</option>
           <option value="FOX">FOX</option>
@@ -435,7 +435,7 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
     <tr>
       <td type="key-col">the show is</td>
       <td type="value-col">
-        <select class="chosen-select" name="{{ parameters.show.value }}" data-width="fit">
+        <select class="chosen-select" name="{{ parameters.show }}" data-width="fit">
           <option value="" selected="selected">All shows</option>
           {% for show in shows %}
           <option value="{{ show }}">{{ show }}</option>
@@ -446,17 +446,17 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
     <tr>
       <td type="key-col">the hour of day is between</td>
       <td type="value-col"><input type="text" class="form-control no-enter-submit"
-          name="{{ parameters.hour.value }}" value="" placeholder="0-23"></td>
+          name="{{ parameters.hour }}" value="" placeholder="0-23"></td>
     </tr>
     <tr>
       <td type="key-col">the day of week is</td>
       <td type="value-col"><input type="text" class="form-control no-enter-submit"
-          name="{{ parameters.day_of_week.value }}" value="" placeholder="mon-sun"></td>
+          name="{{ parameters.day_of_week }}" value="" placeholder="mon-sun"></td>
     </tr>
     <tr>
       <td type="key-col">is in commercial</td>
       <td type="value-col">
-        <select class="chosen-select" name="{{ parameters.is_commercial.value }}"
+        <select class="chosen-select" name="{{ parameters.is_commercial }}"
                 data-width="fit">
           <option value="false" selected="selected">false</option>
           <option value="true">true</option>
@@ -470,11 +470,11 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
       </td>
       <td type="value-col">
         <input type="text" class="form-control no-enter-submit"
-               name="{{ parameters.caption_text.value }}"
+               name="{{ parameters.caption_text }}"
                value="" placeholder="keyword or phrase">
         within
         <input type="number" class="form-control no-enter-submit"
-               name="{{ parameters.caption_window.value }}"
+               name="{{ parameters.caption_window }}"
                min="0" max="3600" placeholder="{{ default_text_window }}"> seconds
       </td>
     </tr>
@@ -482,20 +482,20 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
       <td type="key-col">(optional) an on-screen face matches</td>
       <td type="value-col">
         <select class="chosen-select"
-                name="{{ parameters.onscreen_face.value }}1:gender" data-width="fit">
+                name="{{ parameters.onscreen_face }}1:gender" data-width="fit">
           <option value="" selected="selected"></option>
           <option value="male">male</option>
           <option value="female">female</option>
         </select>
         <select class="chosen-select"
-                name="{{ parameters.onscreen_face.value }}1:role" data-width="fit">
+                name="{{ parameters.onscreen_face }}1:role" data-width="fit">
           <option value="" selected="selected"></option>
           <option value="host">host</option>
           <option value="nonhost">nonhost</option>
         </select>
         or person
         <select class="chosen-select"
-                name="{{ parameters.onscreen_face.value }}1:person" data-width="fit">
+                name="{{ parameters.onscreen_face }}1:person" data-width="fit">
           <option value="" selected="selected"></option>
           {% for person in people %}
           <option value="{{ person }}">{{ person }}</option>

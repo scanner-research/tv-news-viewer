@@ -56,15 +56,15 @@ def assert_param_not_set(
 
 def get_video_filter() -> Optional[VideoFilterFn]:
     start_date = parse_date(
-        request.args.get(SearchParameter.start_date.value, None, type=str))
+        request.args.get(SearchParameter.start_date, None, type=str))
     end_date = parse_date(
-        request.args.get(SearchParameter.end_date.value, None, type=str))
-    channel = request.args.get(SearchParameter.channel.value, None, type=str)
-    show = request.args.get(SearchParameter.show.value, None, type=str)
+        request.args.get(SearchParameter.end_date, None, type=str))
+    channel = request.args.get(SearchParameter.channel, None, type=str)
+    show = request.args.get(SearchParameter.show, None, type=str)
     hours = parse_hour_set(
-        request.args.get(SearchParameter.hour.value, None, type=str))
+        request.args.get(SearchParameter.hour, None, type=str))
     daysofweek = parse_day_of_week_set(
-        request.args.get(SearchParameter.day_of_week.value, None, type=str))
+        request.args.get(SearchParameter.day_of_week, None, type=str))
 
     if start_date or end_date or channel or show or hours or daysofweek:
         def video_filter(video: Video) -> bool:
@@ -94,7 +94,7 @@ def get_video_filter() -> Optional[VideoFilterFn]:
 
 
 def get_aggregate_fn() -> AggregateFn:
-    agg = request.args.get(SearchParameter.aggregate.value, None, type=str)
+    agg = request.args.get(SearchParameter.aggregate, None, type=str)
     e = Aggregate[agg] if agg else Aggregate.day
     if e == Aggregate.day:
         return lambda d: d
@@ -109,12 +109,12 @@ def get_aggregate_fn() -> AggregateFn:
 
 def get_is_commercial() -> Ternary:
     value = request.args.get(
-        SearchParameter.is_commercial.value, None, type=str)
+        SearchParameter.is_commercial, None, type=str)
     return Ternary[value] if value else DEFAULT_IS_COMMERCIAL
 
 
 def get_countable() -> Countable:
-    value = request.args.get(SearchParameter.count.value, None, type=str)
+    value = request.args.get(SearchParameter.count, None, type=str)
     if value is None:
         raise InvalidUsage('no count variable specified')
     return Countable(value)
@@ -175,7 +175,7 @@ def get_onscreen_face_isetmaps(
 ) -> Optional[List[MmapIntervalSetMapping]]:
     result = None
     for k in request.args:
-        if k.startswith(SearchParameter.onscreen_face.value):
+        if k.startswith(SearchParameter.onscreen_face):
             filter_str = request.args.get(k, '', type=str).strip().lower()
             isetmap = get_onscreen_face_isetmap(
                 face_intervals, all_person_intervals, filter_str)
@@ -185,16 +185,6 @@ def get_onscreen_face_isetmaps(
                 else:
                     result.append(isetmap)
     return result
-
-
-def get_onscreen_face_filter(
-    face_intervals: FaceIntervals, all_person_intervals: AllPersonIntervals
-) -> Optional[OnScreenFilterFn]:
-    isetmaps = get_onscreen_face_isetmaps(face_intervals, all_person_intervals)
-    if isetmaps is None:
-        return None
-    return lambda v, t: all(isetmap.is_contained(v, t, True)
-                            for isetmap in isetmaps)
 
 
 def get_face_time_filter_mask(
@@ -229,7 +219,7 @@ def get_face_time_agg_fn(
     face_intervals: FaceIntervals,
     all_person_intervals: AllPersonIntervals
 ) -> FaceTimeAggregateFn:
-    face_str = request.args.get(SearchParameter.face.value, '', type=str)
+    face_str = request.args.get(SearchParameter.face, '', type=str)
     gender, role, person = parse_face_filter_str(face_str)
     payload_mask, payload_value = get_face_time_filter_mask(gender, role)
 
@@ -252,7 +242,7 @@ def get_face_time_intersect_fn(
     face_intervals: FaceIntervals,
     all_person_intervals: AllPersonIntervals
 ) -> FaceTimeIntersectFn:
-    face_str = request.args.get(SearchParameter.face.value, '', type=str)
+    face_str = request.args.get(SearchParameter.face, '', type=str)
     gender, role, person = parse_face_filter_str(face_str)
     payload_mask, payload_value = get_face_time_filter_mask(gender, role)
 
@@ -311,6 +301,12 @@ def merge_close_intervals(
             curr_i = i
     if curr_i is not None:
         yield curr_i
+
+
+def has_onscreen_face(
+    v: Video, t: int, isetmaps: List[MmapIntervalSetMapping]
+) -> bool:
+    return all(isetmap.is_contained(v.id, t, True) for isetmap in isetmaps)
 
 
 def build_app(
@@ -420,11 +416,15 @@ def build_app(
             else:
                 return index.document_length(document) - commercial_tokens
 
+    def _in_commercial(v: Video, p: CaptionIndex.Posting) -> bool:
+        return commercial_isetmap.is_contained(
+            v.id, int((p.start + p.end) / 2 * 1000), True)
+
     def _count_mentions(
         accumulator: DateAccumulator,
         text_query_str: str, is_commercial: Ternary,
         video_filter: Optional[VideoFilterFn],
-        onscreen_face_filter: Optional[OnScreenFilterFn]
+        onscreen_face_isetmaps: Optional[List[MmapIntervalSetMapping]]
     ) -> None:
         missing_videos = 0
         matched_videos = 0
@@ -447,27 +447,29 @@ def build_app(
                     continue
 
                 postings = result.postings
-                if onscreen_face_filter:
+                if onscreen_face_isetmaps:
                     postings = [
-                        p for p in postings
-                        if onscreen_face_filter(
-                            video.id, milliseconds((p.start + p.end) / 2))]
+                        p for p in postings if has_onscreen_face(
+                            video, milliseconds((p.start + p.end) / 2),
+                            onscreen_face_isetmaps
+                        )]
 
                 if is_commercial != Ternary.both:
-
-                    def in_commercial(p: CaptionIndex.Posting) -> int:
-                        return 1 if commercial_isetmap.is_contained(
-                            video.id, int((p.start + p.end) / 2 * 1000), True
-                        ) else 0
-
                     if is_commercial == Ternary.true:
-                        total = sum(in_commercial(p) for p in postings)
+                        total = sum(int(_in_commercial(video, p))
+                                    for p in postings)
                     else:
-                        total = sum(1 - in_commercial(p) for p in postings)
+                        total = sum(1 - int(_in_commercial(video, p))
+                                    for p in postings)
                 else:
                     total = len(postings)
                 accumulator.add(video.date, video.id, total)
         else:
+            if onscreen_face_isetmaps:
+                raise InvalidUsage(
+                    'Not implemented: all text and face filter. '
+                    'Please remove onscreen.face to proceed.')
+
             for document in documents:
                 video = video_dict.get(document.name)
                 if video is None:
@@ -478,10 +480,6 @@ def build_app(
                 if video_filter is not None and not video_filter(video):
                     filtered_videos += 1
                     continue
-
-                if onscreen_face_filter:
-                    raise InvalidUsage(
-                        'Not implemented: empty text and face filter')
 
                 accumulator.add(
                     video.date, video.id, _get_document_token_count(
@@ -578,40 +576,41 @@ def build_app(
         accumulator = (
             DetailedDateAccumulator(aggregate_fn)
             if request.args.get(
-                SearchParameter.detailed.value, 'true', type=str
+                SearchParameter.detailed, 'true', type=str
             ) == 'true' else SimpleDateAcumulator(aggregate_fn))
         if countable == Countable.mentions:
             assert_param_not_set(
-                SearchParameter.caption_text.value, countable.value,
+                SearchParameter.caption_text, countable.value,
                 Countable.facetime.value + ' or ' + Countable.videotime.value)
             assert_param_not_set(
-                SearchParameter.caption_window.value, countable.value,
+                SearchParameter.caption_window, countable.value,
                 Countable.facetime.value + ' or ' + Countable.videotime.value)
             assert_param_not_set(
-                SearchParameter.face.value, countable.value,
+                SearchParameter.face, countable.value,
                 Countable.facetime.value)
 
             text_query = request.args.get(
-                SearchParameter.mention_text.value, '', type=str).strip()
+                SearchParameter.mention_text, '', type=str).strip()
             _count_mentions(
                 accumulator,
                 text_query, is_commercial, video_filter,
-                get_onscreen_face_filter(face_intervals, all_person_intervals))
+                get_onscreen_face_isetmaps(
+                    face_intervals, all_person_intervals))
 
         elif (countable == Countable.videotime
               or countable == Countable.facetime):
             assert_param_not_set(
-                SearchParameter.mention_text.value, countable.value,
+                SearchParameter.mention_text, countable.value,
                 Countable.mentions.value)
             if countable == Countable.videotime:
                 assert_param_not_set(
-                    SearchParameter.face.value, countable.value,
+                    SearchParameter.face, countable.value,
                     Countable.facetime.value)
 
             caption_query = request.args.get(
-                SearchParameter.caption_text.value, '', type=str).strip()
+                SearchParameter.caption_text, '', type=str).strip()
             caption_window = request.args.get(
-                SearchParameter.caption_window.value, DEFAULT_TEXT_WINDOW,
+                SearchParameter.caption_window, DEFAULT_TEXT_WINDOW,
                 type=int)
             _count_time(
                 accumulator,
@@ -657,9 +656,37 @@ def build_app(
     def _count_mentions_in_videos(
         videos: List[Video],
         text_query_str: str, is_commercial: Ternary,
-        onscreen_face_filter: Optional[OnScreenFilterFn]
+        onscreen_face_isetmaps: Optional[List[MmapIntervalSetMapping]]
     ) -> List[JsonObject]:
         results = []
+
+        def helper(
+            video: Video, postings: List['CaptionIndex.Posting']
+        ) -> None:
+            postings = PostingUtil.deoverlap(postings)
+
+            if onscreen_face_isetmaps:
+                postings = [
+                    p for p in postings if has_onscreen_face(
+                        video, milliseconds((p.start + p.end) / 2),
+                        onscreen_face_isetmaps
+                    )]
+
+            if is_commercial != Ternary.both:
+                is_commercial_bool = is_commercial == Ternary.true
+                postings = [
+                    p for p in postings
+                    if is_commercial_bool == _in_commercial(video, p)]
+
+            if len(postings) > 0:
+                results.append({
+                    'metadata': _video_to_dict(video),
+                    'intervals': [
+                        (p.start, p.end) for p in postings
+                    ],
+                    'captions': _get_captions(document)
+                })
+
         if text_query_str:
             # Run the query on the selected videos
             for result in Query(text_query_str.upper()).execute(
@@ -669,42 +696,17 @@ def build_app(
                 document = documents[result.id]
                 video = video_dict[document.name]
                 postings = result.postings
-
-                if onscreen_face_filter:
-                    postings = [
-                        p for p in postings
-                        if onscreen_face_filter(
-                            video.id, milliseconds((p.start + p.end) / 2))]
-
-                if is_commercial != Ternary.both:
-
-                    def in_commercial(p: CaptionIndex.Posting) -> bool:
-                        return commercial_isetmap.is_contained(
-                            video.id, int((p.start + p.end) / 2 * 1000), True)
-
-                    is_commercial_bool = is_commercial == Ternary.true
-                    postings = [p for p in postings
-                                if is_commercial_bool == in_commercial(p)]
-
-                if len(postings) > 0:
-                    results.append({
-                        'metadata': _video_to_dict(video),
-                        'intervals': [
-                            (p.start, p.end) for p in postings
-                        ],
-                        'captions': _get_captions(document)
-                    })
+                helper(video, postings)
         else:
-            if onscreen_face_filter:
-                raise InvalidUsage(
-                    'not implemented: empty text and face filter')
-            if is_commercial != Ternary.both:
-                raise InvalidUsage(
-                    'not implemented: empty text and commercial filter')
+            # Empty query
+            for video in videos:
+                document = document_by_name.get(video.name)
+                intervals = index.intervals(document) if document else []
 
-            # Return the entire video
-            for v in videos:
-                results.append(_get_entire_video(v))
+                if onscreen_face_isetmaps or is_commercial != Ternary.both:
+                    helper(video, intervals)
+                else:
+                    results.append(_get_entire_video(video))
         return results
 
     def _count_time_in_videos(
@@ -778,7 +780,7 @@ def build_app(
 
     @app.route('/search-videos')
     def search_videos() -> Response:
-        ids = request.args.get(SearchParameter.video_ids.value, None, type=str)
+        ids = request.args.get(SearchParameter.video_ids, None, type=str)
         if not ids:
             raise InvalidUsage('must specify video ids')
         videos = [video_by_id[i] for i in json.loads(ids)]
@@ -787,33 +789,34 @@ def build_app(
 
         if countable == Countable.mentions:
             text_query = request.args.get(
-                SearchParameter.mention_text.value, '', type=str).strip()
+                SearchParameter.mention_text, '', type=str).strip()
             assert_param_not_set(
-                SearchParameter.caption_text.value, countable.value,
+                SearchParameter.caption_text, countable.value,
                 Countable.facetime.value + ' or ' + Countable.videotime.value)
             assert_param_not_set(
-                SearchParameter.caption_window.value, countable.value,
+                SearchParameter.caption_window, countable.value,
                 Countable.facetime.value + ' or ' + Countable.videotime.value)
             assert_param_not_set(
-                SearchParameter.face.value,
+                SearchParameter.face,
                 countable.value, Countable.facetime.value)
 
             results = _count_mentions_in_videos(
                 videos, text_query, is_commercial,
-                get_onscreen_face_filter(face_intervals, all_person_intervals))
+                get_onscreen_face_isetmaps(
+                    face_intervals, all_person_intervals))
 
         elif (countable == Countable.videotime
               or countable == Countable.facetime):
             assert_param_not_set(
-                SearchParameter.mention_text.value, countable.value,
+                SearchParameter.mention_text, countable.value,
                 Countable.mentions.value)
             if countable == Countable.videotime:
                 assert_param_not_set(
-                    SearchParameter.face.value,
+                    SearchParameter.face,
                     countable.value, Countable.facetime.value)
 
             caption_query = request.args.get(
-                SearchParameter.caption_text.value, '', type=str).strip()
+                SearchParameter.caption_text, '', type=str).strip()
             caption_window = request.args.get(
                 SearchParameter.caption_window.value, DEFAULT_TEXT_WINDOW,
                 type=int)

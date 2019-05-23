@@ -24,7 +24,7 @@ class Ternary(Enum):
     both = 'both'
 
 
-class SearchParameter(Enum):
+class SearchParameter:
     count = 'count'
     aggregate = 'aggregate'
     start_date = 'start_date'
@@ -87,6 +87,5 @@ JsonObject = Dict[str, object]
 
 VideoFilterFn = Callable[[Video], bool]
 AggregateFn = Callable[[datetime], datetime]
-OnScreenFilterFn = Callable[[int, int], bool]
 FaceTimeAggregateFn = Callable[[Video, List[Interval]], float]
 FaceTimeIntersectFn = Callable[[Video, List[Interval]], List[Interval]]

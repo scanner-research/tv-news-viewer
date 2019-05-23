@@ -69,7 +69,6 @@ function setQueryBoxForMode() {
   });
   $('#search-table span[name="count-type-prefix"]').text(`COUNT ${prefix_str}`);
 }
-$('#countVar').change(setQueryBoxForMode);
 
 function toggleQueryHelp() {
   if ($('#toggle-help').text().includes('show')) {
@@ -137,35 +136,35 @@ function toggleQueryBuilder(element) {
       }
     };
 
-    var channel = current_query.main_args['{{ parameters.channel.value }}'];
+    var channel = current_query.main_args['{{ parameters.channel }}'];
     if (channel) {
-      query_builder.find(`[name="{{ parameters.channel.value }}"]`).val(
+      query_builder.find(`[name="{{ parameters.channel }}"]`).val(
         channel.toUpperCase() == 'FOXNEWS' ? 'FOX' : channel);
     }
 
-    setIfDefined('{{ parameters.show.value }}');
-    setIfDefined('{{ parameters.hour.value }}');
-    setIfDefined('{{ parameters.day_of_week.value }}');
-    setIfDefined('{{ parameters.caption_text.value }}');
-    setIfDefined('{{ parameters.caption_window.value }}');
-    setIfDefined('{{ parameters.is_commercial.value }}');
+    setIfDefined('{{ parameters.show }}');
+    setIfDefined('{{ parameters.hour }}');
+    setIfDefined('{{ parameters.day_of_week }}');
+    setIfDefined('{{ parameters.caption_text }}');
+    setIfDefined('{{ parameters.caption_window }}');
+    setIfDefined('{{ parameters.is_commercial }}');
 
-    let onscreen_face = current_query.main_args['{{ parameters.onscreen_face.value }}1'];
+    let onscreen_face = current_query.main_args['{{ parameters.onscreen_face }}1'];
     if (onscreen_face) {
       let face_params = parseFaceFilterString(onscreen_face);
       if (face_params.gender) {
         query_builder.find(
-          `[name="{{ parameters.onscreen_face.value }}1:gender"]`
+          `[name="{{ parameters.onscreen_face }}1:gender"]`
         ).val(face_params.gender);
       }
       if (face_params.role) {
         query_builder.find(
-          `[name="{{ parameters.onscreen_face.value }}1:role"]`
+          `[name="{{ parameters.onscreen_face }}1:role"]`
         ).val(face_params.role);
       }
       if (face_params.person) {
         query_builder.find(
-          `[name="{{ parameters.onscreen_face.value }}1:person"]`
+          `[name="{{ parameters.onscreen_face }}1:person"]`
         ).val(face_params.person);
       }
     }
@@ -199,37 +198,37 @@ function populateQueryBox(element) {
   let builder = search_table_row.find('.query-builder');
   let filters = [];
 
-  let channel = builder.find('[name="{{ parameters.channel.value }}"]').val();
+  let channel = builder.find('[name="{{ parameters.channel }}"]').val();
   if (channel) {
-    filters.push(`{{ parameters.channel.value }}=${channel}`);
+    filters.push(`{{ parameters.channel }}=${channel}`);
   }
-  let show = builder.find('[name="{{ parameters.show.value }}"]').val();
+  let show = builder.find('[name="{{ parameters.show }}"]').val();
   if (show) {
-    filters.push(`{{ parameters.show.value }}="${show}"`);
+    filters.push(`{{ parameters.show }}="${show}"`);
   }
-  let hour = builder.find('[name="{{ parameters.hour.value }}"]').val();
+  let hour = builder.find('[name="{{ parameters.hour }}"]').val();
   if (hour) {
-    filters.push(`{{ parameters.hour.value }}=${hour}`);
+    filters.push(`{{ parameters.hour }}=${hour}`);
   }
-  let day_of_week = builder.find('[name="{{ parameters.day_of_week.value }}"]').val();
+  let day_of_week = builder.find('[name="{{ parameters.day_of_week }}"]').val();
   if (day_of_week) {
-    filters.push(`{{ parameters.day_of_week.value }}="${day_of_week}"`);
+    filters.push(`{{ parameters.day_of_week }}="${day_of_week}"`);
   }
 
   if ($('#countVar').val() != '{{ countables.mentions.value }}') {
-    let caption_text = builder.find('[name="{{ parameters.caption_text.value }}"]').val();
+    let caption_text = builder.find('[name="{{ parameters.caption_text }}"]').val();
     if (caption_text) {
-      filters.push(`{{ parameters.caption_text.value }}="${caption_text}"`);
+      filters.push(`{{ parameters.caption_text }}="${caption_text}"`);
     }
-    let caption_window = builder.find('[name="{{ parameters.caption_window.value }}"]').val();
+    let caption_window = builder.find('[name="{{ parameters.caption_window }}"]').val();
     if (caption_window) {
-      filters.push(`{{ parameters.caption_window.value }}=${caption_window}`);
+      filters.push(`{{ parameters.caption_window }}=${caption_window}`);
     }
   }
 
-  let face_gender = builder.find('[name="{{ parameters.onscreen_face.value }}1:gender"]').val();
-  let face_role = builder.find('[name="{{ parameters.onscreen_face.value }}1:role"]').val();
-  let face_person = builder.find('[name="{{ parameters.onscreen_face.value }}1:person"]').val();
+  let face_gender = builder.find('[name="{{ parameters.onscreen_face }}1:gender"]').val();
+  let face_role = builder.find('[name="{{ parameters.onscreen_face }}1:role"]').val();
+  let face_person = builder.find('[name="{{ parameters.onscreen_face }}1:person"]').val();
   if (face_person || face_role || face_gender) {
     let face_params = [];
     if (face_person) {
@@ -241,11 +240,11 @@ function populateQueryBox(element) {
     if (face_role) {
       face_params.push('role:' + face_role);
     }
-    filters.push(`{{ parameters.onscreen_face.value }}1="${face_params.join(',')}"`);
+    filters.push(`{{ parameters.onscreen_face }}1="${face_params.join(',')}"`);
   }
-  let is_commercial = builder.find('[name="{{ parameters.is_commercial.value }}"]').val();
+  let is_commercial = builder.find('[name="{{ parameters.is_commercial }}"]').val();
   if (is_commercial != 'false') {
-    filters.push(`{{ parameters.is_commercial.value }}=${is_commercial}`);
+    filters.push(`{{ parameters.is_commercial }}=${is_commercial}`);
   }
 
   let normalize = builder.find('[name="normalize"]').val() == 'true';
@@ -478,6 +477,7 @@ function search() {
 }
 
 /* Load initial plot */
+$('#countVar').change(setQueryBoxForMode);
 $(".chosen-select").chosen({width: 'auto'});
 let params = (new URL(document.location)).searchParams;
 if (params.get('data')) {
