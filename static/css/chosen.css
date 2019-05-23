@@ -1,0 +1,40 @@
+/* Flattened Chosen */
+.chzn-container-single .chzn-single {
+  background: #fff;
+  filter: none;
+  -webkit-border-radius: 0;
+  -moz-border-radius   : 0;
+  border-radius        : 0;
+}
+.chzn-container-single .chzn-search input {
+  background: #fff url('chosen-sprite.png') no-repeat 100% -20;
+}
+.chzn-container-single .chzn-drop {
+  -webkit-border-radius: 0;
+  -moz-border-radius   : 0;
+  border-radius        : 0;
+}
+.chzn-container-multi .chzn-choices {
+  background: #fff;
+}
+.chzn-container-multi .chzn-choices .search-choice {
+  -webkit-border-radius: 0;
+  -moz-border-radius   : 0;
+  border-radius        : 0;
+  background: #e4e4e4;
+}
+.chzn-container-multi .chzn-choices .search-choice.search-choice-disabled {
+  background: #e4e4e4;
+}
+.chzn-container .chzn-results .highlighted {
+  background: #3875d7;
+}
+.chzn-container-active.chzn-with-drop .chzn-single {
+  background: #eee;
+  -webkit-border-bottom-left-radius : 0;
+  -webkit-border-bottom-right-radius: 0;
+  -moz-border-radius-bottomleft : 0;
+  -moz-border-radius-bottomright: 0;
+  border-bottom-left-radius : 0;
+  border-bottom-right-radius: 0;
+}

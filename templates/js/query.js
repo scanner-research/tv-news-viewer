@@ -424,7 +424,7 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
     <tr>
       <td type="key-col">the channel is</td>
       <td type="value-col">
-        <select class="selectpicker" name="{{ parameters.channel.value }}" data-width="fit">
+        <select class="chosen-select" name="{{ parameters.channel.value }}" data-width="fit">
           <option value="" selected="selected">CNN, FOX, or MSNBC</option>
           <option value="CNN">CNN</option>
           <option value="FOX">FOX</option>
@@ -435,7 +435,7 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
     <tr>
       <td type="key-col">the show is</td>
       <td type="value-col">
-        <select class="selectpicker" name="{{ parameters.show.value }}" data-width="fit">
+        <select class="chosen-select" name="{{ parameters.show.value }}" data-width="fit">
           <option value="" selected="selected">All shows</option>
           {% for show in shows %}
           <option value="{{ show }}">{{ show }}</option>
@@ -456,7 +456,7 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
     <tr>
       <td type="key-col">is in commercial</td>
       <td type="value-col">
-        <select class="selectpicker" name="{{ parameters.is_commercial.value }}"
+        <select class="chosen-select" name="{{ parameters.is_commercial.value }}"
                 data-width="fit">
           <option value="false" selected="selected">false</option>
           <option value="true">true</option>
@@ -481,20 +481,20 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
     <tr>
       <td type="key-col">(optional) an on-screen face matches</td>
       <td type="value-col">
-        <select class="selectpicker"
+        <select class="chosen-select"
                 name="{{ parameters.onscreen_face.value }}1:gender" data-width="fit">
           <option value="" selected="selected"></option>
           <option value="male">male</option>
           <option value="female">female</option>
         </select>
-        <select class="selectpicker"
+        <select class="chosen-select"
                 name="{{ parameters.onscreen_face.value }}1:role" data-width="fit">
           <option value="" selected="selected"></option>
           <option value="host">host</option>
           <option value="non-host">non-host</option>
         </select>
         or person
-        <select class="selectpicker"
+        <select class="chosen-select"
                 name="{{ parameters.onscreen_face.value }}1:person" data-width="fit">
           <option value="" selected="selected"></option>
           {% for person in people %}
@@ -506,7 +506,7 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
     <tr>
       <td type="key-col">(optional) apply default normalization</td>
       <td type="value-col">
-        <select class="selectpicker" name="normalize" data-width="fit">
+        <select class="chosen-select" name="normalize" data-width="fit">
           <option value="false" selected="selected">no</option>
           <option value="true">yes</option>
         </select>
