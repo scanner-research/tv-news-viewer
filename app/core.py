@@ -771,7 +771,7 @@ def build_app(
                     postings = PostingUtil.deoverlap(PostingUtil.dilate(
                         postings, caption_window,
                         video.num_frames / video.fps))
-                helper(video, [(int(p.start * 1000), int(p.end * 1000))
+                helper(video, [(milliseconds(p.start), milliseconds(p.end))
                                for p in postings])
         else:
             for v in videos:
