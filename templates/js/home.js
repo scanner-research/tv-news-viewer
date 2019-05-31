@@ -175,11 +175,6 @@ function toggleQueryBuilder(element) {
 
     $('.no-enter-submit').keypress(e => e.which != 13);
 
-    // Set the color-box to be the height of the query box
-    search_table_row.find('.color-box').height(
-      search_table_row.find('td').height()
-    );
-
     // Activate select boxes
     $(".chosen-select").chosen({width: 'auto'});
   }
@@ -313,10 +308,10 @@ function addRow(query) {
 
   let new_row = $('<tr name="query">');
   new_row.attr('data-color', color);
-  new_row.append('<td><button type="button" class="btn btn-outline-secondary btn-sm remove-row-btn" onclick="removeRow(this);">-</button></td>')
+  new_row.append('<td valign="top"><button type="button" class="btn btn-outline-secondary btn-sm remove-row-btn" onclick="removeRow(this);">-</button></td>')
   let color_box = $('<div class="color-box" onloadedmetadata=""onclick="toggleQueryBuilder(this);">');
   color_box.css('background-color', color);
-  new_row.append($('<td>').append(color_box));
+  new_row.append($('<td valign="top">').append(color_box));
   new_row.append(`
     <td class="query-td">
       <div class="input-group">
