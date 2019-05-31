@@ -69,12 +69,12 @@ function loadJsonData(json_data, caption_data) {
 }
 
 
-function renderVGrid(json_data, caption_data, settings) {
+function renderVGrid(json_data, caption_data, settings, container) {
   let [database, interval_blocks] = loadJsonData(json_data, caption_data);
   ReactDOM.render(
     <VGrid interval_blocks={interval_blocks} database={database}
            settings={settings} />,
-    document.getElementById('videos'));
+    document.getElementById(container));
 }
 
 window.renderVGrid = renderVGrid;

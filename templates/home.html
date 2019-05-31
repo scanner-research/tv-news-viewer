@@ -26,12 +26,12 @@
   <script src="{{ url_for('static', filename='js/chart.js') }}" /></script>
   <script src="{{ url_for('static', filename='js/query.js') }}" /></script>
 
-  <title>Cable TV News Viewer</title>
+  <title>Stanford Cable TV News Analyzer</title>
 </head>
 <body>
   <div class="top-header">
     <div class="container">
-      <p>Stanford Cable TV News Viewer</p>
+      <p>Stanford Cable TV News Analyzer</p>
     </div>
   </div>
   <div class="container">
@@ -108,59 +108,59 @@
             <th>Example</th>
           </tr>
           <tr>
-            <td>{{ parameters.channel.value }}</td>
+            <td>{{ parameters.channel }}</td>
             <td>name of the channel</td>
             <td>CNN, FOX, MSNBC</td>
             <td>all</td>
-            <td>{{ parameters.channel.value }}=CNN</td>
+            <td>{{ parameters.channel }}=CNN</td>
           </tr>
           <tr>
-            <td>{{ parameters.show.value }}</td>
+            <td>{{ parameters.show }}</td>
             <td>name of the show</td>
             <td><a href="/shows" target="_blank">list of shows</a></td>
             <td>all</td>
-            <td>{{ parameters.show.value }}="CNN Newsroom"</td>
+            <td>{{ parameters.show }}="CNN Newsroom"</td>
           </tr>
           <tr>
-            <td>{{ parameters.hour.value }}</td>
+            <td>{{ parameters.hour }}</td>
             <td>ranges of hours in 24h format</td>
             <td>0-23 or 0, 1, 2, ...</td>
             <td>0-23</td>
-            <td>{{ parameters.hour.value }}="9-17"</td>
+            <td>{{ parameters.hour }}="9-17"</td>
           </tr>
           <tr>
-            <td>{{ parameters.day_of_week.value }}</td>
+            <td>{{ parameters.day_of_week }}</td>
             <td>range or list of days of the week</td>
             <td>mon-sun or mon, tue, ...</td>
             <td>all</td>
-            <td>{{ parameters.day_of_week.value }}="sat-sun"</td>
+            <td>{{ parameters.day_of_week }}="sat-sun"</td>
           </tr>
           <tr>
-            <td>{{ parameters.is_commercial.value }}</td>
+            <td>{{ parameters.is_commercial }}</td>
             <td>filter or select commercials</td>
             <td>true, false, both</td>
             <td>{{ default_is_commercial }}</td>
-            <td>{{ parameters.is_commercial.value }}={{ default_is_commercial }}</td>
+            <td>{{ parameters.is_commercial }}={{ default_is_commercial }}</td>
           </tr>
           <tr>
-            <td>{{ parameters.caption_text.value }}</td>
+            <td>{{ parameters.caption_text }}</td>
             <td>keywords nearby in the captions</td>
             <td>text query</td>
             <td>n/a</td>
-            <td>{{ parameters.caption_text.value }}="affordable care act"</td>
+            <td>{{ parameters.caption_text }}="affordable care act"</td>
           </tr>
           <tr>
-            <td>{{ parameters.caption_window.value }}</td>
+            <td>{{ parameters.caption_window }}</td>
             <td>threshold (in seconds) for nearby keywords</td>
             <td>non-negative integer</td>
             <td>{{ default_text_window }}</td>
-            <td>{{ parameters.caption_window.value }}={{ default_text_window }}</td>
+            <td>{{ parameters.caption_window }}={{ default_text_window }}</td>
           </tr>
           <tr>
             <td>
-              {{ parameters.onscreen_face.value }}1 <br>
-              {{ parameters.onscreen_face.value }}2 <br>
-              {{ parameters.onscreen_face.value }}<b>n</b>
+              {{ parameters.onscreen_face }}1 <br>
+              {{ parameters.onscreen_face }}2 <br>
+              {{ parameters.onscreen_face }}<b>n</b>
             </td>
             <td>
               at least one matching face on screen <br>
@@ -173,9 +173,9 @@
             </td>
             <td>n/a</td>
             <td>
-              {{ parameters.onscreen_face.value }}1="gender:male" <br>
-              {{ parameters.onscreen_face.value }}2="gender:male,role:host" <br>
-              {{ parameters.onscreen_face.value }}3="person:Barack Obama"
+              {{ parameters.onscreen_face }}1="gender:male" <br>
+              {{ parameters.onscreen_face }}2="gender:male,role:host" <br>
+              {{ parameters.onscreen_face }}3="person:Barack Obama"
             </td>
           </tr>
         </table>
@@ -193,11 +193,11 @@
             <td><i>total seconds of video</i></td>
           </tr>
           <tr>
-            <td>COUNT {{ countables.videotime.value }} WHERE {{ parameters.is_commercial.value }}=true</td>
+            <td>COUNT {{ countables.videotime.value }} WHERE {{ parameters.is_commercial }}=true</td>
             <td><i>seconds of commercials</i></td>
           </tr>
           <tr>
-            <td>COUNT {{ countables.videotime.value }} WHERE {{ parameters.onscreen_face.value }}1="gender:female, role:host" AND {{ parameters.caption_text.value }}="science"</td>
+            <td>COUNT {{ countables.videotime.value }} WHERE {{ parameters.onscreen_face }}1="gender:female, role:host" AND {{ parameters.caption_text }}="science"</td>
             <td><i>seconds of video where a female host is onscreen and the word "science" is mentioned</i></td>
           </tr>
         </table>
@@ -257,11 +257,11 @@
             <td>COUNT {{ countables.facetime.value }} OF all faces</td>
             <td><i>total face time</i></td>
           </tr>
-            <td>COUNT {{ countables.facetime.value }} OF gender:female,role:host WHERE {{ parameters.channel.value }}="FOX"</td>
+            <td>COUNT {{ countables.facetime.value }} OF gender:female,role:host WHERE {{ parameters.channel }}="FOX"</td>
             <td><i>face time of female hosts on FOX News</i></td>
           </tr>
           <tr>
-            <td>COUNT {{ countables.facetime.value }} OF person:Barack Obama WHERE {{ parameters.channel.value }}="FOX"</td>
+            <td>COUNT {{ countables.facetime.value }} OF person:Barack Obama WHERE {{ parameters.channel }}="FOX"</td>
             <td><i>face time of Barack Obama on FOX News</i></td>
           </tr>
           <tr>
@@ -270,7 +270,7 @@
             <td><i>total number of words</i></td>
           </tr>
           <tr>
-            <td>COUNT {{ countables.mentions.value }} OF obamacare WHERE {{ parameters.channel.value }}=CNN</td>
+            <td>COUNT {{ countables.mentions.value }} OF obamacare WHERE {{ parameters.channel }}=CNN</td>
             <td><i>mentions of "obamacare" on CNN</i></td>
           </tr>
           <tr>
