@@ -37,7 +37,7 @@
     }
 
     let n_pages = Math.ceil(QUERY_PARAMS.video_ids.length / VIDEOS_PER_PAGE);
-    var page_controls = `<b>Page ${page_i + 1} of ${n_pages}.<b>`;
+    var page_controls = `Page ${page_i + 1}/${n_pages}.`;
     if (page_i > 0) {
       page_controls += `&nbsp;
         <button type="button" class="btn btn-outline-secondary btn-sm"
@@ -51,8 +51,10 @@
 
     let text_html = `Showing results for ${count_var} of
       <font color="${QUERY_PARAMS.color}"><b>${QUERY_PARAMS.query}</b></font>
-      from ${video_ids.length} of ${QUERY_PARAMS.video_count} videos from ${QUERY_PARAMS.time}.<br>
-      ${PAGINATE && n_pages > 1 ? page_controls : ''}`;
+      from ${video_ids.length} of ${QUERY_PARAMS.video_count} videos from ${QUERY_PARAMS.time}.
+      <br>
+      <b>Press "f" to expand videos and "shift + p" to play.
+      ${PAGINATE && n_pages > 1 ? page_controls : ''}</b>`;
 
     $("#text-info").html(text_html);
     let query = new SearchableQuery(QUERY_PARAMS.query, QUERY_PARAMS.count, false);
