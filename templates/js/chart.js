@@ -55,7 +55,7 @@ function getVegaDateFormat(agg) {
   if (agg == 'year') {
     return '%Y';
   } else if (agg == 'month') {
-    return '%b `%y';
+    return '%b %Y';
   } else {
     return '%b %d, %Y';
   }
