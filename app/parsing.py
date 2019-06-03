@@ -73,22 +73,23 @@ def parse_face_filter_str(s: str) -> Tuple[Optional[str], Optional[str],
     gender = None
     role = None
     person = None
-    for kv in s.split(','):
-        kv = kv.strip()
-        if kv == '':
-            continue
-        try:
-            k, v = kv.split(':', 1)
-            k = k.strip()
-            v = v.strip()
-            if k == 'gender':
-                gender = v
-            elif k == 'role':
-                role = v
-            elif k == 'person':
-                person = v
-            else:
-                raise InvalidUsage('Invalid face filter: {}'.format(k))
-        except:
-            raise InvalidUsage('Failed to parse face filter: {}'.format(kv))
+    if s.lower() != 'all':
+        for kv in s.split(','):
+            kv = kv.strip()
+            if kv == '':
+                continue
+            try:
+                k, v = kv.split(':', 1)
+                k = k.strip()
+                v = v.strip()
+                if k == 'gender':
+                    gender = v
+                elif k == 'role':
+                    role = v
+                elif k == 'person':
+                    person = v
+                else:
+                    raise InvalidUsage('Invalid face filter: {}'.format(k))
+            except:
+                raise InvalidUsage('Failed to parse face filter: {}'.format(kv))
     return gender, role, person

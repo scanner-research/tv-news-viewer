@@ -197,6 +197,7 @@
       <tr>
         <td>values</td>
         <td>
+          all,<br>
           gender: (fe)male,<br>
           role: (non)host,<br>
           person: <i>name</i> <a href="/people" target="_blank">(list of people)</a>
@@ -209,9 +210,10 @@
       <tr>
         <td>example</td>
         <td>
-          {{ parameters.onscreen_face }}1="gender:male" <br>
-          {{ parameters.onscreen_face }}2="gender:male,role:host" <br>
-          {{ parameters.onscreen_face }}3="person:Barack Obama"
+          {{ parameters.onscreen_face }}1="all" <br>
+          {{ parameters.onscreen_face }}2="gender:male" <br>
+          {{ parameters.onscreen_face }}3="gender:male,role:host" <br>
+          {{ parameters.onscreen_face }}4="person:Barack Obama"
         </td>
       </tr>
     </tbody>
@@ -294,12 +296,14 @@
         Options separated by commas.
       </td>
       <td>
+        all,<br>
         gender: (fe)male,<br>
         role: (non)host,<br>
         person: <i>name</i> <a href="/people" target="_blank">(list of people)</a>
       </td>
       <td>all</td>
       <td>
+        "all"<br>
         "gender:male" <br>
         "gender:male,role:host" <br>
         "person:Barack Obama"
