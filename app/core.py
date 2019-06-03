@@ -5,6 +5,7 @@ Main application code
 from datetime import datetime, timedelta
 import os
 import json
+from collections import defaultdict
 from flask import (
     Flask, Response, jsonify, request, render_template, send_file,
     make_response)
@@ -260,15 +261,6 @@ def get_face_time_intersect_fn(
     return f
 
 
-def get_shows_by_channel(video_dict: Dict[str, Video]) -> Dict[str, List[str]]:
-    tmp_shows_by_channel: Dict[str, Set[str]] = {}
-    for v in video_dict.values():
-        if v.channel not in tmp_shows_by_channel:
-            tmp_shows_by_channel[v.channel] = set()
-        tmp_shows_by_channel[v.channel].add(v.show)
-    return {k: list(sorted(v)) for k, v in tmp_shows_by_channel.items()}
-
-
 def intersect_isetmap(
     video: Video, isetmap: MmapIntervalSetMapping,
     intervals: Optional[List[Interval]]
@@ -333,10 +325,7 @@ def build_app(
         d.name: d for d in documents
     }
 
-    shows_by_channel = get_shows_by_channel(video_dict)
-    all_shows: List[str] = list(sorted({
-        show for shows in shows_by_channel.values() for show in shows
-    }))
+    all_shows: List[str] = list(sorted({v.show for v in video_dict.values()}))
 
     @app.errorhandler(InvalidUsage)
     def _handle_invalid_usage(error: InvalidUsage) -> Response:
@@ -353,7 +342,7 @@ def build_app(
     @app.route('/')
     def root() -> Response:
         return render_template(
-            'home.html', countables=Countable, parameters=SearchParameter,
+            'home.html', countables=Countable,
             default_text_window=DEFAULT_TEXT_WINDOW,
             default_is_commercial=DEFAULT_IS_COMMERCIAL.name)
 
@@ -366,6 +355,30 @@ def build_app(
         return render_template(
             'videos.html', frameserver_endpoint=frameserver_endpoint,
             countables=Countable)
+
+    @app.route('/people')
+    def get_people() -> Response:
+        return render_template(
+            'people.html', people=sorted(all_person_intervals.keys()))
+
+    @app.route('/instructions')
+    def get_instructions() -> Response:
+        return render_template(
+            'instructions.html', host=request.host,
+            countables=Countable, parameters=SearchParameter,
+            default_text_window=DEFAULT_TEXT_WINDOW,
+            default_is_commercial=DEFAULT_IS_COMMERCIAL.name)
+
+    @app.route('/shows')
+    def get_shows() -> Response:
+        tmp = defaultdict(float)
+        for v in video_dict.values():
+            tmp[(v.channel, v.show)] += v.num_frames / v.fps
+        channel_and_show = [
+            (channel, show, round(seconds / 3600))
+            for (channel, show), seconds in tmp.items()]
+        channel_and_show.sort()
+        return render_template('shows.html', shows=channel_and_show)
 
     @app.route('/static/js/query.js')
     def get_query_js() -> Response:
@@ -858,13 +871,5 @@ def build_app(
         resp = jsonify(_get_captions(document))
         resp.cache_control.max_age = cache_seconds * 100
         return resp
-
-    @app.route('/shows')
-    def get_shows() -> Response:
-        return jsonify(shows_by_channel)
-
-    @app.route('/people')
-    def get_people() -> Response:
-        return jsonify(sorted(all_person_intervals.keys()))
 
     return app

@@ -70,23 +70,6 @@ function setQueryBoxForMode() {
   $('#search-table span[name="count-type-prefix"]').text(`COUNT ${prefix_str}`);
 }
 
-function toggleQueryHelp() {
-  if ($('#toggle-help').text().includes('show')) {
-    $('#query-help').show();
-    $('#toggle-help').text('hide help');
-  } else {
-    $('#query-help').hide();
-    $('#toggle-help').text('show help');
-  }
-}
-
-function hideQueryHelp() {
-  if (!$('#toggle-help').text().includes('show')) {
-    $('#query-help').hide();
-    $('#toggle-help').text('show help');
-  }
-}
-
 const EMBED_DIMS = {width: 1000, height: 400};
 
 function getRandomSample(arr) {
@@ -427,7 +410,6 @@ function getRawQueries(count_var) {
 function search() {
   $('.query-builder').each(function() {populateQueryBox($(this));});
   $('#vgrid').empty();
-  hideQueryHelp();
 
   let chart_options = getChartOptions();
   let lines = getRawQueries(chart_options.count).map(

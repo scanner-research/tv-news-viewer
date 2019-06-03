@@ -1,0 +1,346 @@
+{% extends "layout.html" %}
+
+{% block head %}
+  {{ super() }}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/instructions.css') }}" />
+{% endblock %}
+
+
+{% block content %}
+<div class="container">
+  <h5>What does this widget do?</h5>
+  <p>
+    This application allows you to count the screen time of visual events that
+    occur in a decade of American cable TV news (CNN, FOX, and MSNBC).
+    For instance, the following chart plots the amount of time where
+    the 2016 presidential candidates Donald Trump and Hillary Clinton
+    were visible on screen.
+  </p>
+  <iframe width="100%" height="370" src="http://{{ host }}/embed?width=800&height=270&data=%7B%22options%22%3A%7B%22start_date%22%3A%222010-01-01%22%2C%22end_date%22%3A%222018-04-01%22%2C%22count%22%3A%22screen%20time%22%2C%22aggregate%22%3A%22month%22%7D%2C%22queries%22%3A%5B%7B%22color%22%3A%22%234E79A7%22%2C%22text%22%3A%22COUNT%20%5C%22screen%20time%5C%22%20WHERE%20onscreen.face1%3D%5C%22person%3A%20hillary%20clinton%5C%22%22%7D%2C%7B%22color%22%3A%22%23F28E2B%22%2C%22text%22%3A%22COUNT%20%5C%22screen%20time%5C%22%20WHERE%20onscreen.face1%3D%5C%22person%3A%20donald%20trump%5C%22%22%7D%5D%7D"></iframe>
+  <p>
+    Let's take a closer look at the queries to generate the above chart. Each
+    query corresponds to a line on the chart. The first query
+    <span class="centered">
+      COUNT "screen time" WHERE onscreen.face1="person: hillary clinton"
+    </span>
+    computes all of the screen time when "Hillary Clinton"'s face is on screen
+    in any video, regardless of channel. If we wished to restrict our results
+    to only CNN videos, then we would modify the query with the following:
+    <span class="centered">
+      COUNT "screen time" WHERE onscreen.face1="person: hillary clinton"
+      <span class="red">AND channel="CNN"</span>
+    </span>
+    Now that we have seen a simple example, we will describe the full query
+    grammar.
+  </p>
+
+  <hr>
+
+  <h5>How do I write queries?</h5>
+  <p>
+    Screen time queries are broken in to several parts. A query has the form
+    <span class="centered">
+      <b>COUNT</b> "screen time" <b>WHERE</b>
+        filter1="value1" <b>AND</b> filter2="value2" <b>AND</b> ...
+    </span>
+    consisting of the data being counted ("screen time") and filters, separated
+    by "AND". In the earlier example, we saw two filters "onscreen.face1" and
+    "channel", and their respective values "person: hillary clinton" and "CNN".
+    The table below shows the filter options that the application currently supports.
+  </p>
+
+  <table>
+    <thead>
+      <tr>
+        <th colspan="3">Supprted filter options and their usage</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td rowspan="4">{{ parameters.channel }}</td>
+        <td>description</td>
+        <td>name of the channel</td>
+      </tr>
+      <tr>
+        <td>values</td>
+        <td>CNN, FOX, MSNBC</td>
+      </tr>
+      <tr>
+        <td>default</td>
+        <td>all</td>
+      </tr>
+      <tr>
+        <td>example</td>
+        <td>{{ parameters.channel }}="CNN"</td>
+      </tr>
+
+      <tr>
+        <td rowspan="4">{{ parameters.show }}</td>
+        <td>description</td>
+        <td>name of the show</td>
+      </tr>
+      <tr>
+        <td>values</td>
+        <td><a href="/shows" target="_blank">list of shows</a></td>
+      </tr>
+      <tr>
+        <td>default</td>
+        <td>all</td>
+      </tr>
+      <tr>
+        <td>example</td>
+        <td>{{ parameters.show }}="CNN Newsroom"</td>
+      </tr>
+
+      <tr>
+        <td rowspan="4">{{ parameters.hour }}</td>
+        <td>description</td>
+        <td>ranges (inclusive) of hours in 24h format</td>
+      </tr>
+      <tr>
+        <td>values</td>
+        <td>0-23 or 0, 1, 2, ...</td>
+      </tr>
+      <tr>
+        <td>default</td>
+        <td>0-23</td>
+      </tr>
+      <tr>
+        <td>example</td>
+        <td>{{ parameters.hour }}="9-17"</td>
+      </tr>
+
+      <tr>
+        <td rowspan="4">{{ parameters.day_of_week }}</td>
+        <td>description</td>
+        <td>range (inclusive) or list of days of the week</td>
+      </tr>
+      <tr>
+        <td>values</td>
+        <td>mon-sun or mon, tue, ...</td>
+      </tr>
+      <tr>
+        <td>default</td>
+        <td>all</td>
+      </tr>
+      <tr>
+        <td>example</td>
+        <td>{{ parameters.day_of_week }}="sat-sun"</td>
+      </tr>
+
+      <tr>
+        <td rowspan="4">{{ parameters.is_commercial }}</td>
+        <td>description</td>
+        <td>filter or select commercials</td>
+      </tr>
+      <tr>
+        <td>values</td>
+        <td>true, false, both</td>
+      </tr>
+      <tr>
+        <td>default</td>
+        <td>{{ default_is_commercial }}</td>
+      </tr>
+      <tr>
+        <td>example</td>
+        <td>{{ parameters.is_commercial }}={{ default_is_commercial }}</td>
+      </tr>
+
+      <tr>
+        <td rowspan="4">{{ parameters.caption_text }}</td>
+        <td>description</td>
+        <td>keywords nearby in the captions</td>
+      </tr>
+      <tr>
+        <td>values</td>
+        <td>keyword or phrase</td>
+      </tr>
+      <tr>
+        <td>default</td>
+        <td>n/a</td>
+      </tr>
+      <tr>
+        <td>example</td>
+        <td>{{ parameters.caption_text }}="affordable care act"</td>
+      </tr>
+
+      <tr>
+        <td rowspan="4">{{ parameters.caption_window }}</td>
+        <td>description</td>
+        <td>threshold (in seconds) for nearby keywords</td>
+      </tr>
+      <tr>
+        <td>values</td>
+        <td>keyword or phrase</td>
+      </tr>
+      <tr>
+        <td>default</td>
+        <td>{{ default_text_window }}</td>
+      </tr>
+      <tr>
+        <td>example</td>
+        <td>{{ parameters.caption_window }}={{ default_text_window }}</td>
+      </tr>
+
+      <tr>
+        <td rowspan="4">
+          {{ parameters.onscreen_face }}1 <br>
+          {{ parameters.onscreen_face }}2 <br>
+          {{ parameters.onscreen_face }}<b>n</b>
+        </td>
+        <td>description</td>
+        <td>
+          at least one matching face on screen (height &ge; 20%).
+          Options separated by commas.
+        </td>
+      </tr>
+      <tr>
+        <td>values</td>
+        <td>
+          gender: (fe)male,<br>
+          role: (non)host,<br>
+          person: <i>name</i> <a href="/people" target="_blank">(list of people)</a>
+        </td>
+      </tr>
+      <tr>
+        <td>default</td>
+        <td>n/a</td>
+      </tr>
+      <tr>
+        <td>example</td>
+        <td>
+          {{ parameters.onscreen_face }}1="gender:male" <br>
+          {{ parameters.onscreen_face }}2="gender:male,role:host" <br>
+          {{ parameters.onscreen_face }}3="person:Barack Obama"
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <hr>
+
+  <h5>How to I normalize my queries?</h5>
+  <p>
+    So far, all of the queries have returned raw counts. In order to express
+    queries such as the proportion of screen time where there is a man or woman
+    on screen, we need to introduce a NORMALIZE operator.
+    This used in the following way:
+
+    <span class="centered">
+      query1 <b>NORMALIZE</b> query2
+    </span>
+
+    Succintly put, NORMALIZE allows you to normalize one query by another query.
+    For instance, to express the proportion of the dataset that is CNN, we can
+    write:
+
+    <span class="centered">
+      COUNT "screen time" WHERE channel="CNN" NORMALIZE (COUNT "screen time" WHERE all)
+    </span>
+
+    This is verbose. As a shorthand, we can write:
+
+    <span class="centered">
+      COUNT "screen time" WHERE channel="CNN" NORMALIZE (all)
+    </span>
+
+    Likewise, to express the proportion of time when a man is on screen on CNN,
+    we can write:
+
+    <iframe width="100%" height="370" src="http://{{ host }}/embed?width=800&height=270&data=%7B%22options%22%3A%7B%22start_date%22%3A%222010-01-01%22%2C%22end_date%22%3A%222018-04-01%22%2C%22count%22%3A%22screen%20time%22%2C%22aggregate%22%3A%22month%22%7D%2C%22queries%22%3A%5B%7B%22color%22%3A%22%234E79A7%22%2C%22text%22%3A%22COUNT%20%5C%22screen%20time%5C%22%20WHERE%20onscreen.face1%3D%5C%22gender%3A%20male%5C%22%20AND%20channel%3D%5C%22CNN%5C%22%20NORMALIZE%20(WHERE%20channel%3D%5C%22CNN%5C%22)%22%7D%5D%7D"></iframe>
+
+    If you write a query that ends in NORMALIZE, then the system will autofill
+    a default normalization option.
+  </p>
+</div>
+
+<div class="container">
+  <hr>
+  <h5>Other counting modes</h5>
+
+  <p>
+    You can also count "{{ countables.facetime.value }}" and "{{ countables.mentions.value }}". For instance,
+
+    <ul><b>COUNT</b> {{ countables.facetime.value }} <b>OF</b> faces being counted <b>WHERE</b> filters on screen time</ul>
+    <ul><b>COUNT</b> {{ countables.mentions.value }} <b>OF</b> text being counted <b>WHERE</b> filters on screen time</ul>
+
+    Adding <b>NORMALIZE</b> at the end of a query will apply the default
+    normalization.
+  </p>
+
+  <div class="container">
+    <h6>Example queries</h6>
+    <table>
+      <tr>
+        <th>Counting</th>
+        <th>Query</th>
+        <th>English meaning</th>
+      </tr>
+      <tr>
+        <td rowspan="3">{{ countables.facetime.value }}</td>
+        <td>COUNT {{ countables.facetime.value }} OF all faces</td>
+        <td><i>total face time</i></td>
+      </tr>
+      <tr>
+        <td>COUNT {{ countables.facetime.value }} OF gender:female,role:host WHERE {{ parameters.channel }}="FOX"</td>
+        <td><i>face time of female hosts on FOX News</i></td>
+      </tr>
+      <tr>
+        <td>COUNT {{ countables.facetime.value }} OF person:Barack Obama WHERE {{ parameters.channel }}="FOX"</td>
+        <td><i>face time of Barack Obama on FOX News</i></td>
+      </tr>
+      <tr>
+        <td rowspan="3">{{ countables.mentions.value }}</td>
+        <td>COUNT {{ countables.mentions.value }} OF all words</td>
+        <td><i>total number of words</i></td>
+      </tr>
+      <tr>
+        <td>COUNT {{ countables.mentions.value }} OF obamacare WHERE {{ parameters.channel }}=CNN</td>
+        <td><i>mentions of "obamacare" on CNN</i></td>
+      </tr>
+      <tr>
+        <td>COUNT {{ countables.mentions.value }} OF obamacare WHERE {{ parameters.onscreen_face.value }}="Barack Obama"</td>
+        <td><i>mentions of "obamacare" when Barack Obama's face is on screen</i></td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="container">
+    <h6>Supported count queries</h6>
+    <table>
+      <tr>
+        <th>Mode</th>
+        <th>Description</th>
+        <th>Values</th>
+        <th>Default</th>
+        <th>Example</th>
+      </tr>
+      <tr>
+        <td>{{ countables.facetime.value }}</td>
+        <td>
+          screen time for faces (height &ge; 20%)<br>
+          Options separated by commas.
+        </td>
+        <td>
+          gender: (fe)male,<br>
+          role: (non)host,<br>
+          person: <i>name</i> <a href="/people" target="_blank">(list of people)</a>
+        </td>
+        <td>all</td>
+        <td>
+          "gender:male" <br>
+          "gender:male,role:host" <br>
+          "person:Barack Obama"
+        </td>
+      </tr>
+      <tr>
+        <td>{{ countables.mentions.value }}</td>
+        <td>phrase mentions in the captions</td>
+        <td><a href="https://github.com/scanner-research/caption-index/blob/master/captions/query.py" target="_blank">grammar</a></td>
+        <td>n/a</td>
+        <td>"affordable care act"</td>
+      </tr>
+    </table>
+  </div>
+</div>
+{% endblock %}

@@ -1,338 +1,79 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.11/lodash.min.js"></script>
+{% extends "layout.html" %}
+
+{% block head %}
+  {{ super() }}
   <script src="https://cdn.jsdelivr.net/npm/vega@5.3.4"></script>
   <script src="https://cdn.jsdelivr.net/npm/vega-lite@3.1.0"></script>
   <script src="https://cdn.jsdelivr.net/npm/vega-embed@4.0.0"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.15.0/umd/popper.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pegjs/0.9.0/peg.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/chosen/1.8.7/chosen.jquery.js"></script>
 
-  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
-  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.8.0/css/bootstrap-datepicker.min.css" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.8.0/js/bootstrap-datepicker.min.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/chosen/1.8.7/chosen.css" />
 
-  <link href="https://fonts.googleapis.com/css?family=Source+Serif+Pro" rel="stylesheet">
-
-  <link rel="shortcut icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}" />
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
   <link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}" />
   <script src="{{ url_for('static', filename='js/constant.js') }}" /></script>
   <script src="{{ url_for('static', filename='js/chart.js') }}" /></script>
   <script src="{{ url_for('static', filename='js/query.js') }}" /></script>
+{% endblock %}
 
-  <title>Stanford Cable TV News Analyzer</title>
-</head>
-<body>
-  <div class="top-header">
-    <div class="container">
-      <p>Stanford Cable TV News Analyzer</p>
-    </div>
-  </div>
-  <div class="container">
-    <form action="javascript:void(0);" onsubmit="search();">
-      <table id="search-table">
-        <tr name="controls" class="chart-options">
-          <td colspan="3" class="option-td">
-            I would like to count&nbsp;
-            <select class="chosen-select" id="countVar" data-width="fit">
-              <option value="{{ countables.videotime.value }}" selected="selected">{{ countables.videotime.value }}</option>
-              <option value="{{ countables.facetime.value }}">{{ countables.facetime.value }}</option>
-              <option value="{{ countables.mentions.value }}">{{ countables.mentions.value }}</option>
-            </select>.
-            &nbsp;
-            <span class="hint-span">
-              (Click the color box for the query editor or click
-               <a href="#" onclick="toggleQueryHelp(); return false;" id="toggle-help">show help</a>.
-               To reset, click <a href="#" onclick="clearQueries(); return false;">clear queries</a>.)
-            </span>
-            <hr>
-          </td>
-        </tr>
-        <tr name="controls" class="chart-options">
-          <td>
-            <button type="button" class="btn btn-outline-secondary btn-sm" id='add-row-btn'>+</button>
-          </td>
-          <td></td>
-          <td class="option-td">
-            between &nbsp;
-            <input type="text" class="datepicker" id="startDate">
-            &nbsp; and &nbsp;
-            <input type="text" class="datepicker" id="endDate">
-            &nbsp; aggregated by &nbsp;
-            <select class="chosen-select" id="aggregateBy" data-width="fit">
-              <option value="year">year</option>
-              <option value="month" selected="selected">month</option>
-              <option value="week">week</option>
-              <option value="day">day</option>
-            </select>
-            . &nbsp;
-            <input type="submit" class="btn btn-primary btn-sm" value="Search the news!">
-          </td>
-        </tr>
-      </table>
-    </form>
-  </div>
+{% block content %}
+<div class="container">
+  <form action="javascript:void(0);" onsubmit="search();">
+    <table id="search-table">
+      <tr name="controls" class="chart-options">
+        <td colspan="3" class="option-td">
+          I would like to count&nbsp;
+          <select class="chosen-select" id="countVar" data-width="fit">
+            <option value="{{ countables.videotime.value }}" selected="selected">{{ countables.videotime.value }}</option>
+            <option value="{{ countables.facetime.value }}">{{ countables.facetime.value }}</option>
+            <option value="{{ countables.mentions.value }}">{{ countables.mentions.value }}</option>
+          </select>.
+          &nbsp;
+          <span class="hint-span">
+            (Click the color box for the query editor or click <a href="/instructions" target="_blank">show help</a>.
+             To reset, click <a href="#" onclick="clearQueries(); return false;">clear queries</a>.)
+          </span>
+          <hr>
+        </td>
+      </tr>
+      <tr name="controls" class="chart-options">
+        <td>
+          <button type="button" class="btn btn-outline-secondary btn-sm" id='add-row-btn'>+</button>
+        </td>
+        <td></td>
+        <td class="option-td">
+          between &nbsp;
+          <input type="text" class="datepicker" id="startDate">
+          &nbsp; and &nbsp;
+          <input type="text" class="datepicker" id="endDate">
+          &nbsp; aggregated by &nbsp;
+          <select class="chosen-select" id="aggregateBy" data-width="fit">
+            <option value="year">year</option>
+            <option value="month" selected="selected">month</option>
+            <option value="week">week</option>
+            <option value="day">day</option>
+          </select>
+          . &nbsp;
+          <input type="submit" class="btn btn-primary btn-sm" value="Search the news!">
+        </td>
+      </tr>
+    </table>
+  </form>
+</div>
 
-  <div class="container" id="query-help">
-    <h5>Query help <a href="#" onclick="toggleQueryHelp(); return false;" id="toggle-help">(hide)</a></h5>
+<div class="container" id="chart-area">
+  <div id="chart"></div>
+</div>
 
-    <div class="container">
-      <p>
-        Screen time queries in the viewer have the following form:
+<div class="container" id="embed-area">
+  <p name="text"></p>
+  <textarea readonly rows="3" name="embed"></textarea>
+</div>
 
-        <ul><b>COUNT</b> screen time <b>WHERE</b> filter1="value1" <b>AND</b> filter2="value2" <b>AND</b> ...</ul>
+<div class="container" id="vgrid"></div>
 
-        This will match all video segments that pass the filter and find the
-        screen time. Multiple filters are joined by <b>AND</b>. You can normalize
-        a query with respect to the <b>WHERE</b> clause by adding <b>NORMALIZE</b>
-        to the end of a query. This will rewrite the query with the default
-        normalization. If this is not the desired behavior, the normalizing query
-        can also be written manually. See the <it>normalization and
-        subtraction</it> section below.
-      </p>
+<div id="shade">&nbsp;</div>
 
-      <div class="container">
-        <h6>Supported screen time filters</h6>
-        <table>
-          <tr>
-            <th>Name</th>
-            <th>Description</th>
-            <th>Values</th>
-            <th>Default</th>
-            <th>Example</th>
-          </tr>
-          <tr>
-            <td>{{ parameters.channel }}</td>
-            <td>name of the channel</td>
-            <td>CNN, FOX, MSNBC</td>
-            <td>all</td>
-            <td>{{ parameters.channel }}=CNN</td>
-          </tr>
-          <tr>
-            <td>{{ parameters.show }}</td>
-            <td>name of the show</td>
-            <td><a href="/shows" target="_blank">list of shows</a></td>
-            <td>all</td>
-            <td>{{ parameters.show }}="CNN Newsroom"</td>
-          </tr>
-          <tr>
-            <td>{{ parameters.hour }}</td>
-            <td>ranges of hours in 24h format</td>
-            <td>0-23 or 0, 1, 2, ...</td>
-            <td>0-23</td>
-            <td>{{ parameters.hour }}="9-17"</td>
-          </tr>
-          <tr>
-            <td>{{ parameters.day_of_week }}</td>
-            <td>range or list of days of the week</td>
-            <td>mon-sun or mon, tue, ...</td>
-            <td>all</td>
-            <td>{{ parameters.day_of_week }}="sat-sun"</td>
-          </tr>
-          <tr>
-            <td>{{ parameters.is_commercial }}</td>
-            <td>filter or select commercials</td>
-            <td>true, false, both</td>
-            <td>{{ default_is_commercial }}</td>
-            <td>{{ parameters.is_commercial }}={{ default_is_commercial }}</td>
-          </tr>
-          <tr>
-            <td>{{ parameters.caption_text }}</td>
-            <td>keywords nearby in the captions</td>
-            <td>text query</td>
-            <td>n/a</td>
-            <td>{{ parameters.caption_text }}="affordable care act"</td>
-          </tr>
-          <tr>
-            <td>{{ parameters.caption_window }}</td>
-            <td>threshold (in seconds) for nearby keywords</td>
-            <td>non-negative integer</td>
-            <td>{{ default_text_window }}</td>
-            <td>{{ parameters.caption_window }}={{ default_text_window }}</td>
-          </tr>
-          <tr>
-            <td>
-              {{ parameters.onscreen_face }}1 <br>
-              {{ parameters.onscreen_face }}2 <br>
-              {{ parameters.onscreen_face }}<b>n</b>
-            </td>
-            <td>
-              at least one matching face on screen <br>
-              (height &ge; 20%). Options separated by commas.
-            </td>
-            <td>
-              gender: (fe)male,<br>
-              role: (non)host,<br>
-              person: <i>name</i> <a href="/people" target="_blank">(list of people)</a>
-            </td>
-            <td>n/a</td>
-            <td>
-              {{ parameters.onscreen_face }}1="gender:male" <br>
-              {{ parameters.onscreen_face }}2="gender:male,role:host" <br>
-              {{ parameters.onscreen_face }}3="person:Barack Obama"
-            </td>
-          </tr>
-        </table>
-      </div>
-
-      <div class="container">
-        <h6>Example screen time queries</h6>
-        <table>
-          <tr>
-            <th>Query</th>
-            <th>English meaning</th>
-          </tr>
-          <tr>
-            <td>COUNT {{ countables.videotime.value }} WHERE all video</td>
-            <td><i>total seconds of video</i></td>
-          </tr>
-          <tr>
-            <td>COUNT {{ countables.videotime.value }} WHERE {{ parameters.is_commercial }}=true</td>
-            <td><i>seconds of commercials</i></td>
-          </tr>
-          <tr>
-            <td>COUNT {{ countables.videotime.value }} WHERE {{ parameters.onscreen_face }}1="gender:female, role:host" AND {{ parameters.caption_text }}="science"</td>
-            <td><i>seconds of video where a female host is onscreen and the word "science" is mentioned</i></td>
-          </tr>
-        </table>
-      </div>
-
-      <div class="container">
-        <h6>Normalization and subtraction</h6>
-        <table>
-          <tr>
-            <th>Keyword</th>
-            <th>Syntax</th>
-            <th>Description</th>
-            <th>Example</th>
-          </tr>
-          <tr>
-            <td>NORMALIZE</td>
-            <td>query1 NORMALIZE query2</td>
-            <td><i>divide query1's results by query2's results.<br>
-                If query2 is blank, default normalization is applied.</i></td>
-            <td>"united states" NORMALIZE (all WHERE ...)</td>
-          </tr>
-          <tr>
-            <td>SUBTRACT</td>
-            <td>query1 SUBTRACT query2</td>
-            <td><i>subtract query2's results from query1's results</i></td>
-            <td>
-              "united" WHERE ... SUBTRACT ("united states" WHERE ...)
-            </td>
-          </tr>
-        </table>
-      </div>
-    </div>
-    <hr>
-    <div class="container">
-      <h5>Other counting modes</h5>
-
-      <p>
-        You can also count "{{ countables.facetime.value }}" and "{{ countables.mentions.value }}". For instance,
-
-        <ul><b>COUNT</b> {{ countables.facetime.value }} <b>OF</b> faces being counted <b>WHERE</b> filters on screen time</ul>
-        <ul><b>COUNT</b> {{ countables.mentions.value }} <b>OF</b> text being counted <b>WHERE</b> filters on screen time</ul>
-
-        Adding <b>NORMALIZE</b> at the end of a query will apply the default
-        normalization.
-      </p>
-
-      <div class="container">
-        <h6>Example queries</h6>
-        <table>
-          <tr>
-            <th>Counting</th>
-            <th>Query</th>
-            <th>English meaning</th>
-          </tr>
-          <tr>
-            <td rowspan="3">{{ countables.facetime.value }}</td>
-            <td>COUNT {{ countables.facetime.value }} OF all faces</td>
-            <td><i>total face time</i></td>
-          </tr>
-            <td>COUNT {{ countables.facetime.value }} OF gender:female,role:host WHERE {{ parameters.channel }}="FOX"</td>
-            <td><i>face time of female hosts on FOX News</i></td>
-          </tr>
-          <tr>
-            <td>COUNT {{ countables.facetime.value }} OF person:Barack Obama WHERE {{ parameters.channel }}="FOX"</td>
-            <td><i>face time of Barack Obama on FOX News</i></td>
-          </tr>
-          <tr>
-            <td rowspan="3">{{ countables.mentions.value }}</td>
-            <td>COUNT {{ countables.mentions.value }} OF all words</td>
-            <td><i>total number of words</i></td>
-          </tr>
-          <tr>
-            <td>COUNT {{ countables.mentions.value }} OF obamacare WHERE {{ parameters.channel }}=CNN</td>
-            <td><i>mentions of "obamacare" on CNN</i></td>
-          </tr>
-          <tr>
-            <td>COUNT {{ countables.mentions.value }} OF obamacare WHERE {{ parameters.onscreen_face.value }}="Barack Obama"</td>
-            <td><i>mentions of "obamacare" when Barack Obama's face is on screen</i></td>
-          </tr>
-        </table>
-      </div>
-
-      <div class="container">
-        <h6>Supported count queries</h6>
-        <table>
-          <tr>
-            <th>Mode</th>
-            <th>Description</th>
-            <th>Values</th>
-            <th>Default</th>
-            <th>Example</th>
-          </tr>
-          <tr>
-            <td>{{ countables.facetime.value }}</td>
-            <td>
-              screen time for faces (height &ge; 20%)<br>
-              Options separated by commas.
-            </td>
-            <td>
-              gender: (fe)male,<br>
-              role: (non)host,<br>
-              person: <i>name</i> <a href="/people" target="_blank">(list of people)</a>
-            </td>
-            <td>all</td>
-            <td>
-              "gender:male" <br>
-              "gender:male,role:host" <br>
-              "person:Barack Obama"
-            </td>
-          </tr>
-          <tr>
-            <td>{{ countables.mentions.value }}</td>
-            <td>phrase mentions in the captions</td>
-            <td><a href="https://github.com/scanner-research/caption-index/blob/master/captions/query.py" target="_blank">grammar</a></td>
-            <td>n/a</td>
-            <td>"affordable care act"</td>
-          </tr>
-        </table>
-      </div>
-    </div>
-  </div>
-
-  <div class="container" id="chart-area">
-    <div id="chart"></div>
-  </div>
-
-  <div class="container" id="embed-area">
-    <p name="text"></p>
-    <textarea readonly rows="3" name="embed"></textarea>
-  </div>
-
-  <div class="container" id="vgrid"></div>
-
-  <div id="shade">&nbsp;</div>
-
-  <script src="{{ url_for('static', filename='js/home.js') }}" /></script>
-</body>
-</html>
+<script src="{{ url_for('static', filename='js/home.js') }}" /></script>
+{% endblock %}

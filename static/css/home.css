@@ -66,35 +66,11 @@
 #search {
   font-size: 12px;
 }
-#query-help {
-  padding: 10px;
-  background-color: #F4F4F4;
-  border-spacing: 5px;
-  display: none;
-}
-#query-help table {
-  width: 100%;
-  border-spacing: 2px;
-  table-layout: auto;
-}
-#query-help th {
-  text-align: left;
-}
-#query-help td, th {
-  text-align: left;
-  padding-left: 10px;
-  padding-right: 10px;
-}
-#query-help tr:nth-child(odd) {
-  background-color: #DAD7CB;
-}
-#query-help tr:nth-child(even) {
-  background-color: #F9F6EF;
-}
 #embed-area textarea {
   width: 100%;
   margin: auto;
   display: none;
+  word-break: break-all;
 }
 #chart {
   width: 100%;

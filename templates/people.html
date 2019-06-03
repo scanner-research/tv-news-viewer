@@ -1,0 +1,42 @@
+{% extends "layout.html" %}
+
+{% block head %}
+{{ super() }}
+<style>
+table {
+  border-spacing: 2px;
+  table-layout: auto;
+}
+th {
+  text-align: left;
+}
+td, th {
+  text-align: left;
+  padding-left: 10px;
+  padding-right: 10px;
+}
+tr:nth-child(odd) {
+  background-color: #DAD7CB;
+}
+tr:nth-child(even) {
+  background-color: #F9F6EF;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+  <table>
+    <tr>
+      <th>Name</th>
+      <th>Total screen time (in minutes)</th>
+    </tr>
+    {% for person in people %}
+    <tr>
+      <td>{{ person }}</td>
+      <td></td>
+    </tr>
+    {% endfor %}
+  </table>
+</div>
+{% endblock %}
