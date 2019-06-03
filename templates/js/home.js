@@ -454,8 +454,6 @@ function search() {
 }
 
 /* Load initial plot */
-$('#countVar').change(setQueryBoxForMode);
-$(".chosen-select").chosen({width: 'auto'});
 let params = (new URL(document.location)).searchParams;
 if (params.get('data')) {
   let data = JSON.parse(decodeURIComponent(params.get('data')));
@@ -472,3 +470,5 @@ if (params.get('data')) {
   addRow({text: 'WHERE onscreen.face1="person: hillary clinton"'});
   addRow({text: 'WHERE onscreen.face1="person: donald trump"'});
 }
+$(".chosen-select").chosen({width: 'auto'});
+$('#countVar').change(setQueryBoxForMode);
