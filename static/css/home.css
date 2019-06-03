@@ -113,3 +113,10 @@
 .query-builder td[type=value-col] {
   text-align: left;
 }
+.chosen-container .chosen-drop {
+    min-width: 100%;
+    width: auto;
+}
+.chosen-container .chosen-drop ul {
+    white-space: nowrap;
+}

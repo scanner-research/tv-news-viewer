@@ -159,7 +159,7 @@ function toggleQueryBuilder(element) {
     $('.no-enter-submit').keypress(e => e.which != 13);
 
     // Activate select boxes
-    $(".chosen-select").chosen({width: 'auto', minWidth: '100px'});
+    $(".chosen-select").chosen({width: 'auto'});
   }
 }
 
