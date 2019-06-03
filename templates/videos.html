@@ -53,7 +53,7 @@
       <font color="${QUERY_PARAMS.color}"><b>${QUERY_PARAMS.query}</b></font>
       from ${video_ids.length} of ${QUERY_PARAMS.video_count} videos from ${QUERY_PARAMS.time}.
       <br>
-      <b>Press "f" to expand videos and "shift + p" to play.
+      <b>Press "f" to expand videos and "p" to play/pause.
       ${PAGINATE && n_pages > 1 ? page_controls : ''}</b>`;
 
     $("#text-info").html(text_html);
