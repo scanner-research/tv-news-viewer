@@ -1,2 +1,4 @@
 flask
 pytest
+Flask-HTTPAuth
+Flask-Cache

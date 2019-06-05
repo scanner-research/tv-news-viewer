@@ -9,6 +9,7 @@ from collections import defaultdict
 from flask import (
     Flask, Response, jsonify, request, render_template, send_file,
     make_response)
+from flask_httpauth import HTTPBasicAuth
 from typing import Dict, List, Set, Tuple, Optional, Iterable, Generator
 
 from captions import CaptionIndex, Documents, Lexicon   # type: ignore
@@ -303,8 +304,18 @@ def has_onscreen_face(
 
 def build_app(
     data_dir: str, index_dir: str, frameserver_endpoint: Optional[str],
-    cache_seconds: int
+    cache_seconds: int, credentials: LoginCredentials
 ) -> Flask:
+    if credentials:
+        auth = HTTPBasicAuth()
+
+        @auth.verify_password
+        def verify_password(username: str, password: str) -> bool:
+            return (username == credentials.username
+                    and password == credentials.password)
+    else:
+        auth = None
+
     (
         video_dict, commercial_isetmap, face_intervals, all_person_intervals
     ) = load_video_data(data_dir)
@@ -339,12 +350,21 @@ def build_app(
         response.status_code = 404
         return response
 
-    @app.route('/')
-    def root() -> Response:
+    def _root() -> Response:
         return render_template(
             'home.html', countables=Countable,
             default_text_window=DEFAULT_TEXT_WINDOW,
             default_is_commercial=DEFAULT_IS_COMMERCIAL.name)
+
+    if auth:
+        @app.route('/')
+        @auth.login_required
+        def root() -> Response:
+            return _root()
+    else:
+        @app.route('/')
+        def root() -> Response:
+            return _root()
 
     @app.route('/embed')
     def embed() -> Response:

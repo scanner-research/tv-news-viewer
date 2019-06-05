@@ -78,6 +78,11 @@ class PersonIntervals(NamedTuple):
     isetmap: MmapIntervalSetMapping
 
 
+class LoginCredentials(NamedTuple):
+    username: str
+    password: str
+
+
 AllPersonIntervals = Dict[str, PersonIntervals]
 
 Number = Union[int, float]

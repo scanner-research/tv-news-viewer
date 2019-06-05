@@ -7,6 +7,7 @@ import argparse
 from typing import Optional
 
 from app.core import build_app
+from app.types import LoginCredentials
 
 
 def get_args() -> argparse.Namespace:
@@ -27,7 +28,9 @@ def main(
     frameserver_endpoint: Optional[str]
 ) -> None:
     """Run a debugging server"""
-    app = build_app(data_dir, index_dir, frameserver_endpoint, 0)
+    app = build_app(
+        data_dir, index_dir, frameserver_endpoint, 0,
+        LoginCredentials('admin', 'password'))
     app.run(port=port, debug=True)
 
 
