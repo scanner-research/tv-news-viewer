@@ -466,16 +466,18 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
     </tr>
     <tr>
       <td type="key-col">
-        (optional) the captions contain
+        (optional) the transcript contains
       </td>
       <td type="value-col">
         <input type="text" class="form-control no-enter-submit"
                name="{{ parameters.caption_text }}"
-               value="" placeholder="keyword or phrase">
+               value="" placeholder="keyword or phrase"
+               style="width:400px;">
         within
         <input type="number" class="form-control no-enter-submit"
                name="{{ parameters.caption_window }}"
-               min="0" max="3600" placeholder="{{ default_text_window }}"> seconds
+               min="0" max="3600" placeholder="{{ default_text_window }}"
+               style="width:70px;"> seconds
       </td>
     </tr>
     <tr>
@@ -515,8 +517,10 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
     <tr>
       <td></td>
       <td>
+        <button type="button" class="btn btn-outline-primary btn-sm"
+                onclick="populateQueryBoxAndSearch(this);">search</button>
         <button type="button" class="btn btn-outline-danger btn-sm"
-                onclick="populateQueryBox(this);">populate query</button>
+                onclick="populateQueryBox(this);">populate query box</button>
         <button type="button" class="btn btn-outline-secondary btn-sm"
                 onclick="toggleQueryBuilder(this);">cancel</button>
       </td>

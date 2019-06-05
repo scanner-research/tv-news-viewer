@@ -100,13 +100,13 @@ function removeRow(element) {
 
 function toggleQueryBuilder(element) {
   let search_table_row = $(element).closest('tr[name="query"]');
+  let where_box = search_table_row.find('input[name="where"]');
   if (search_table_row.find('.query-builder').length > 0) {
     search_table_row.find('.query-builder').remove();
     search_table_row.find('.color-box').height('auto');
+    where_box.attr('disabled', false);
   } else {
     search_table_row.find('td:last').append(QUERY_BUILDER_HTML);
-
-    let where_box = search_table_row.find('input[name="where"]');
     var current_query = new SearchableQuery(
       `${QUERY_KEYWORDS.where} ${where_box.val()}`,
       $('#countVar').val(), true);
@@ -160,6 +160,9 @@ function toggleQueryBuilder(element) {
 
     // Activate select boxes
     $(".chosen-select").chosen({width: 'auto'});
+
+    // Disable where input
+    where_box.attr('disabled', true);
   }
 }
 
@@ -168,6 +171,9 @@ function clearQueries() {
     $(this).find('input[name="countable"]').val('');
     $(this).find('input[name="where"]').val('');
   });
+  $('#chart').empty();
+  $('#vgrid').empty();
+  $('#embed-area').hide();
   window.history.pushState({}, document.title, '/');
 }
 
@@ -210,13 +216,13 @@ function populateQueryBox(element) {
   if (face_person || face_role || face_gender) {
     let face_params = [];
     if (face_person) {
-      face_params.push('person:' + face_person);
+      face_params.push('person: ' + face_person);
     }
     if (face_gender) {
-      face_params.push('gender:' + face_gender);
+      face_params.push('gender: ' + face_gender);
     }
     if (face_role) {
-      face_params.push('role:' + face_role);
+      face_params.push('role: ' + face_role);
     }
     filters.push(`{{ parameters.onscreen_face }}1="${face_params.join(',')}"`);
   }
@@ -236,6 +242,11 @@ function populateQueryBox(element) {
   where_input.val(new_where);
   onWhereUpdate(where_input);
   toggleQueryBuilder(element);
+}
+
+function populateQueryBoxAndSearch(element) {
+  populateQueryBox(element);
+  search();
 }
 
 function getDefaultQuery() {
@@ -259,7 +270,7 @@ function onWhereUpdate(element) {
   let where_str = $.trim($(element).val());
   if (where_str.endsWith(QUERY_KEYWORDS.normalize)) {
     if (count_var == '{{ countables.videotime.value }}') {
-      $(element).val(`${where_str} (${QUERY_KEYWORDS.all})`);
+      $(element).val(`${where_str} ${QUERY_KEYWORDS.all}`);
     } else {
       let no_normlize_where_str = $.trim(
         where_str.slice(0, where_str.indexOf(QUERY_KEYWORDS.normalize)));
@@ -267,7 +278,7 @@ function onWhereUpdate(element) {
       if (count_var != '{{ countables.mentions.value }}' && no_normlize_where_str.length > 0) {
         norm_query += ` WHERE ${no_normlize_where_str}`;
       }
-      $(element).val(`${where_str} (${norm_query})`);
+      $(element).val(`${where_str} ${norm_query}`);
     }
   }
 
@@ -308,7 +319,7 @@ function addRow(query) {
         <div class="input-group-prepend countable-only">
           <span class="input-group-text">WHERE</span>
         </div>
-        <input type="text" class="form-control" name="where" placeholder="no filters ..."
+        <input type="text" class="form-control" name="where" placeholder="no filters"
                onchange="onWhereUpdate(this);">
       </div>
     </td>`);

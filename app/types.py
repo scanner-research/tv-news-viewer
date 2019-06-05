@@ -13,7 +13,7 @@ class Aggregate(Enum):
 
 
 class Countable(Enum):
-    mentions = 'caption occurences'
+    mentions = 'transcript mentions'
     facetime = 'face time'
     videotime = 'screen time'
 
@@ -39,8 +39,8 @@ class SearchParameter:
     hour = 'hour'
     day_of_week = 'dayofweek'
     onscreen_face = 'onscreen.face'
-    caption_text = 'caption.text'
-    caption_window = 'caption.window'
+    caption_text = 'transcript.text'
+    caption_window = 'transcript.window'
     is_commercial = 'iscommercial'
 
     video_ids = 'ids'
