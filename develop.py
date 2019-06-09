@@ -8,6 +8,7 @@ from typing import Optional
 
 from app.core import build_app
 from app.types import LoginCredentials
+from app.hash import sha256
 
 
 def get_args() -> argparse.Namespace:
@@ -30,7 +31,7 @@ def main(
     """Run a debugging server"""
     app = build_app(
         data_dir, index_dir, frameserver_endpoint, 0,
-        LoginCredentials('admin', 'password'))
+        LoginCredentials('admin', sha256('password')))
     app.run(port=port, debug=True)
 
 

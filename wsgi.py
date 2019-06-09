@@ -9,6 +9,7 @@ Example use:
 import json
 from app.core import build_app
 from app.types import LoginCredentials
+from app.hash import sha256
 
 CONFIG_FILE = 'config.json'
 
@@ -17,7 +18,7 @@ with open(CONFIG_FILE) as f:
 
 if 'username' in config:
     credentials = LoginCredentials(
-        config.get('username'), config.get('password'))
+        config.get('username'), sha256(config.get('password')))
 else:
     credentials = None
 
@@ -26,3 +27,4 @@ app = build_app(
     config.get('frameserver_endpoint'),
     config.get('cache_seconds', 30 * 24 * 3600),
     credentials)
+del config

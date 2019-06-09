@@ -80,7 +80,7 @@ class PersonIntervals(NamedTuple):
 
 class LoginCredentials(NamedTuple):
     username: str
-    password: str
+    password_hash: bytes
 
 
 AllPersonIntervals = Dict[str, PersonIntervals]

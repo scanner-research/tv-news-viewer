@@ -24,6 +24,7 @@ from .error import InvalidUsage, NotFound
 from .parsing import *
 from .sum import *
 from .load import get_video_name, load_video_data, load_index
+from. hash import sha256
 
 
 FILE_DIR = os.path.dirname(os.path.realpath(__file__))
@@ -312,7 +313,7 @@ def build_app(
         @auth.verify_password
         def verify_password(username: str, password: str) -> bool:
             return (username == credentials.username
-                    and password == credentials.password)
+                    and sha256(password) == credentials.password_hash)
     else:
         auth = None
 
