@@ -49,43 +49,44 @@ def load_video_data(data_dir: str) -> Tuple[
     commercials = MmapIntervalSetMapping(
         path.join(data_dir, 'commercials.iset.bin'))
 
-    face_dir = path.join(data_dir, 'face')
+    face_iset_dir = path.join(data_dir, 'derived', 'face')
     face_intervals = FaceIntervals(
         all_ilistmap=MmapIntervalListMapping(
             path.join(data_dir, 'faces.ilist.bin'), 1),
         all_isetmap=MmapIntervalSetMapping(
-            path.join(face_dir, 'all.iset.bin')),
+            path.join(face_iset_dir, 'all.iset.bin')),
         male_isetmap=MmapIntervalSetMapping(
-            path.join(face_dir, 'male.iset.bin')),
+            path.join(face_iset_dir, 'male.iset.bin')),
         female_isetmap=MmapIntervalSetMapping(
-            path.join(face_dir, 'female.iset.bin')),
+            path.join(face_iset_dir, 'female.iset.bin')),
         host_isetmap=MmapIntervalSetMapping(
-            path.join(face_dir, 'host.iset.bin')),
+            path.join(face_iset_dir, 'host.iset.bin')),
         nonhost_isetmap=MmapIntervalSetMapping(
-            path.join(face_dir, 'nonhost.iset.bin')),
+            path.join(face_iset_dir, 'nonhost.iset.bin')),
         male_host_isetmap=MmapIntervalSetMapping(
-            path.join(face_dir, 'male_host.iset.bin')),
+            path.join(face_iset_dir, 'male_host.iset.bin')),
         female_host_isetmap=MmapIntervalSetMapping(
-            path.join(face_dir, 'female_host.iset.bin')),
+            path.join(face_iset_dir, 'female_host.iset.bin')),
         male_nonhost_isetmap=MmapIntervalSetMapping(
-            path.join(face_dir, 'male_nonhost.iset.bin')),
+            path.join(face_iset_dir, 'male_nonhost.iset.bin')),
         female_nonhost_isetmap=MmapIntervalSetMapping(
-            path.join(face_dir, 'female_nonhost.iset.bin')))
+            path.join(face_iset_dir, 'female_nonhost.iset.bin')))
 
     def parse_person_name(fname: str) -> str:
         return fname.split('.', 1)[0]
 
-    person_dir = path.join(data_dir, 'people')
+    person_ilist_dir = path.join(data_dir, 'people')
+    person_iset_dir = path.join(data_dir, 'derived', 'people')
     person_names = {
         parse_person_name(person_file)
-        for person_file in os.listdir(person_dir)
+        for person_file in os.listdir(person_ilist_dir)
     }
     all_person_intervals = {
         person_name: PersonIntervals(
             ilistmap=MmapIntervalListMapping(
-                path.join(person_dir, person_name + '.ilist.bin'), 1),
+                path.join(person_ilist_dir, person_name + '.ilist.bin'), 1),
             isetmap=MmapIntervalSetMapping(
-                path.join(person_dir, person_name + '.iset.bin'))
+                path.join(person_iset_dir, person_name + '.iset.bin'))
         ) for person_name in person_names
     }
     return videos, commercials, face_intervals, all_person_intervals
