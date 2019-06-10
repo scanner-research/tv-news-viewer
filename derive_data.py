@@ -50,8 +50,11 @@ class IntervalAccumulator(object):
 
 
 # TODO(james): not sure this is actually catching any errors
-def error_callback(e):
-    raise e
+def build_error_callback(message):
+    def cb(e):
+        print(message)
+        raise e
+    return cb
 
 
 def derive_face_iset(
@@ -81,7 +84,7 @@ def derive_face_isets(
         workers.apply_async(
             derive_face_iset,
             (face_ilist_file, mask, value, os.path.join(outdir, outfile)),
-            error_callback=error_callback)
+            error_callback=build_error_callback('Failed on: ' + face_ilist_file))
 
     helper(0, 0, 'all.iset.bin')
     helper(0b1, 0b1, 'male.iset.bin')
@@ -176,7 +179,7 @@ def derive_person_isets(
                 os.path.join(person_ilist_dir, person_file),
                 os.path.join(outdir, person_name + '.iset.bin')
             ),
-            error_callback=error_callback)
+            error_callback=build_error_callback('Failed on: ' + person_name))
 
 
 def main(datadir: str) -> None:
@@ -197,7 +200,7 @@ def main(datadir: str) -> None:
                 os.path.join(datadir, 'faces.ilist.bin'),
                 os.path.join(outdir, 'num_faces.ilist.bin')
             ),
-            error_callback=error_callback)
+            error_callback=build_error_callback('Failed on: num faces ilist'))
 
         workers.close()
         workers.join()
