@@ -3,7 +3,7 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
   <table>
     <tr>
       <th style="text-align: right;">Include results where:</th>
-      <th></th>
+      <td><i style="color: gray;">(warning, your current query will be overwritten)</i></td>
     </tr>
     <tr>
       <td type="key-col">the channel is</td>
@@ -498,7 +498,7 @@ function getDataString(chart_options, lines) {
 }
 
 function getEmbedUrl(data) {
-  return `http://{{ host }}/embed?width=${EMBED_DIMS.width}&height=${EMBED_DIMS.height}&data=${data}`;
+  return `https://{{ host }}/embed?width=${EMBED_DIMS.width}&height=${EMBED_DIMS.height}&data=${data}`;
 }
 
 function getChartPath(data) {
@@ -526,7 +526,7 @@ function displaySearchResults(chart_options, lines, search_results) {
     setShareUrl = () => {
       var dummy = document.createElement('input');
       document.body.appendChild(dummy);
-      dummy.setAttribute('value', 'http://{{ host }}' + chart_path);
+      dummy.setAttribute('value', 'https://{{ host }}' + chart_path);
       dummy.select();
       document.execCommand("copy");
       document.body.removeChild(dummy);

@@ -40,10 +40,10 @@
 {% block header %}{% endblock %}
 
 {% block content %}
+<div class="container" id="options"></div>
 <div class="container">
   <table id="search-table"><tbody></tbody></table>
 </div>
-<div class="container" id="options"></div>
 <div class="container">
   <div id="chart"></div>
 </div>
@@ -64,7 +64,7 @@
       </tr>`;
       $('#search-table tbody').append(html);
     });
-    $('#options').html(`Showing results from <b>${chart_options.start_date}</b> to <b>${chart_options.end_date}</b> aggregated by <b>${chart_options.aggregate}</b>.`);
+    $('#options').html(`Showing results for the following from <b>${chart_options.start_date}</b> to <b>${chart_options.end_date}</b> aggregated by <b>${chart_options.aggregate}</b>.`);
   }
 
   let lines = data.queries.map(raw_query => {
