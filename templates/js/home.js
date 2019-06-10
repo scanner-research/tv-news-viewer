@@ -1,3 +1,132 @@
+
+const QUERY_BUILDER_HTML = `<div class="query-builder">
+  <table>
+    <tr>
+      <th style="text-align: right;">Include results where:</th>
+      <th></th>
+    </tr>
+    <tr>
+      <td type="key-col">the channel is</td>
+      <td type="value-col">
+        <select class="chosen-select" name="{{ parameters.channel }}" data-width="fit">
+          <option value="" selected="selected">All - CNN, FOX, or MSNBC</option>
+          <option value="CNN">CNN</option>
+          <option value="FOX">FOX</option>
+          <option value="MSNBC">MSNBC</option>
+        </select>
+      </td>
+    </tr>
+    <tr>
+      <td type="key-col">the show is</td>
+      <td type="value-col">
+        <select class="chosen-select" name="{{ parameters.show }}" data-width="fit">
+          <option value="" selected="selected">All shows</option>
+          {% for show in shows %}
+          <option value="{{ show }}">{{ show }}</option>
+          {% endfor %}
+        </select>
+      </td>
+    </tr>
+    <tr>
+      <td type="key-col">the hour of day is between</td>
+      <td type="value-col"><input type="text" class="form-control no-enter-submit"
+          name="{{ parameters.hour }}" value="" placeholder="0-23"></td>
+    </tr>
+    <tr>
+      <td type="key-col">the day of week is</td>
+      <td type="value-col"><input type="text" class="form-control no-enter-submit"
+          name="{{ parameters.day_of_week }}" value="" placeholder="mon-sun"></td>
+    </tr>
+    <tr disabled="true">
+      <td type="key-col">is in commercial</td>
+      <td type="value-col">
+        <select class="chosen-select" name="{{ parameters.is_commercial }}"
+                data-width="fit">
+          <option value="false" selected="selected">false</option>
+          <option value="true">true</option>
+          <option value="both">both</option>
+        </select>
+      </td>
+    </tr>
+    <tr>
+      <td type="key-col">
+        (optional) the transcript contains
+      </td>
+      <td type="value-col">
+        <input type="text" class="form-control no-enter-submit"
+               name="{{ parameters.caption_text }}"
+               value="" placeholder="keyword or phrase"
+               style="width:400px;">
+        within
+        <input type="number" class="form-control no-enter-submit"
+               name="{{ parameters.caption_window }}"
+               min="0" max="3600" placeholder="{{ default_text_window }}"
+               style="width:70px;"> seconds
+      </td>
+    </tr>
+    <tr>
+      <td type="key-col">
+        (optional) an on-screen face matches <br>
+        <i>(where height &ge; 20% of frame height)</i>
+      </td>
+      <td type="value-col">
+        <select class="chosen-select"
+                name="{{ parameters.onscreen_face }}1:gender" data-width="fit">
+          <option value="" selected="selected">gender n/a</option>
+          <option value="male">male</option>
+          <option value="female">female</option>
+        </select>
+        <select class="chosen-select"
+                name="{{ parameters.onscreen_face }}1:role" data-width="fit">
+          <option value="" selected="selected">role n/a</option>
+          <option value="host">host</option>
+          <option value="nonhost">nonhost</option>
+        </select>
+        or person
+        <select class="chosen-select"
+                name="{{ parameters.onscreen_face }}1:person" data-width="fit">
+          <option value="" selected="selected">n/a</option>
+          {% for person in people %}
+          <option value="{{ person }}">{{ person }}</option>
+          {% endfor %}
+        </select>
+        or any face
+        <input type="checkbox" name="{{ parameters.onscreen_face }}1:all">
+      </td>
+    </tr>
+    <tr>
+      <td type="key-col">(optional) there are</td>
+      <td type="value-col">
+        <input type="number" class="form-control no-enter-submit"
+               name="{{ parameters.onscreen_numfaces }}"
+               min="1" max="25" placeholder="n/a"
+               style="width:70px;">
+        faces on screen <i>(where height &ge; 20% of frame height)</i>
+      </td>
+    </tr>
+    <tr disabled="true">
+      <td type="key-col">(optional) normalize the query</td>
+      <td type="value-col">
+        <select class="chosen-select" name="normalize" data-width="fit">
+          <option value="false" selected="selected">no</option>
+          <option value="true">yes</option>
+        </select>
+      </td>
+    </tr>
+    <tr>
+      <td></td>
+      <td>
+        <button type="button" class="btn btn-outline-primary btn-sm"
+                onclick="populateQueryBoxAndSearch(this);">search</button>
+        <button type="button" class="btn btn-outline-danger btn-sm"
+                onclick="populateQueryBox(this);">populate query box</button>
+        <button type="button" class="btn btn-outline-secondary btn-sm"
+                onclick="toggleQueryBuilder(this);">cancel</button>
+      </td>
+    </tr>
+  </table>
+</div>`;
+
 function fromDatepickerStr(s) {
   let tokens = s.split('/');
   return `${tokens[2].padStart(2, '0')}-${tokens[0].padStart(2, '0')}-${tokens[1].padStart(2, '0')}`;
@@ -135,20 +264,26 @@ function toggleQueryBuilder(element) {
     let onscreen_face = current_query.main_args['{{ parameters.onscreen_face }}1'];
     if (onscreen_face) {
       let face_params = parseFaceFilterString(onscreen_face);
-      if (face_params.gender) {
+      if (face_params.all) {
         query_builder.find(
-          `[name="{{ parameters.onscreen_face }}1:gender"]`
-        ).val(face_params.gender);
-      }
-      if (face_params.role) {
-        query_builder.find(
-          `[name="{{ parameters.onscreen_face }}1:role"]`
-        ).val(face_params.role);
-      }
-      if (face_params.person) {
-        query_builder.find(
-          `[name="{{ parameters.onscreen_face }}1:person"]`
-        ).val(face_params.person);
+          `[name="{{ parameters.onscreen_face }}1:all"]`
+        ).prop('checked', true);
+      } else {
+        if (face_params.gender) {
+          query_builder.find(
+            `[name="{{ parameters.onscreen_face }}1:gender"]`
+          ).val(face_params.gender);
+        }
+        if (face_params.role) {
+          query_builder.find(
+            `[name="{{ parameters.onscreen_face }}1:role"]`
+          ).val(face_params.role);
+        }
+        if (face_params.person) {
+          query_builder.find(
+            `[name="{{ parameters.onscreen_face }}1:person"]`
+          ).val(face_params.person);
+        }
       }
     }
 
@@ -217,10 +352,13 @@ function populateQueryBox(element) {
     }
   }
 
+  let face_all = builder.find('[name="{{ parameters.onscreen_face }}1:all"]').is(':checked');
   let face_gender = builder.find('[name="{{ parameters.onscreen_face }}1:gender"]').val();
   let face_role = builder.find('[name="{{ parameters.onscreen_face }}1:role"]').val();
   let face_person = builder.find('[name="{{ parameters.onscreen_face }}1:person"]').val();
-  if (face_person || face_role || face_gender) {
+  if (face_all) {
+    filters.push(`{{ parameters.onscreen_face }}1="all"`);
+  } else if (face_person || face_role || face_gender) {
     let face_params = [];
     if (face_person) {
       face_params.push('person: ' + face_person);

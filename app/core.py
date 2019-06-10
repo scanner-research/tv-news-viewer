@@ -439,7 +439,9 @@ def build_app(
         resp = make_response(render_template(
             'js/home.js', parameters=SearchParameter, countables=Countable,
             host=request.host, start_date=format_date(start_date),
-            end_date=format_date(end_date)))
+            end_date=format_date(end_date),
+            people=sorted(all_person_intervals.keys())
+        ))
         resp.headers['Content-type'] = 'text/javascript'
         resp.cache_control.max_age = cache_seconds
         return resp

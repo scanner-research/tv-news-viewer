@@ -192,10 +192,15 @@ function parseTernary(s) {
 
 function parseFaceFilterString(s) {
   let result = {};
-  $.trim(s).toLowerCase().split(',').forEach(kv => {
-    let [k, v] = $.trim(kv).split(':').map(s => $.trim(s));
-    result[k] = v;
-  })
+  s = $.trim(s).toLowerCase();
+  if (s == 'all') {
+    result.all = true;
+  } else {
+    s.split(',').forEach(kv => {
+      let [k, v] = $.trim(kv).split(':').map(s => $.trim(s));
+      result[k] = v;
+    })
+  }
   return result;
 }
 
@@ -416,125 +421,3 @@ class SearchableQuery {
   }
 
 }
-
-const QUERY_BUILDER_HTML = `<div class="query-builder">
-  <table>
-    <tr>
-      <th style="text-align: right;">Include results where:</th>
-      <th></th>
-    </tr>
-    <tr>
-      <td type="key-col">the channel is</td>
-      <td type="value-col">
-        <select class="chosen-select" name="{{ parameters.channel }}" data-width="fit">
-          <option value="" selected="selected">All - CNN, FOX, or MSNBC</option>
-          <option value="CNN">CNN</option>
-          <option value="FOX">FOX</option>
-          <option value="MSNBC">MSNBC</option>
-        </select>
-      </td>
-    </tr>
-    <tr>
-      <td type="key-col">the show is</td>
-      <td type="value-col">
-        <select class="chosen-select" name="{{ parameters.show }}" data-width="fit">
-          <option value="" selected="selected">All shows</option>
-          {% for show in shows %}
-          <option value="{{ show }}">{{ show }}</option>
-          {% endfor %}
-        </select>
-      </td>
-    </tr>
-    <tr>
-      <td type="key-col">the hour of day is between</td>
-      <td type="value-col"><input type="text" class="form-control no-enter-submit"
-          name="{{ parameters.hour }}" value="" placeholder="0-23"></td>
-    </tr>
-    <tr>
-      <td type="key-col">the day of week is</td>
-      <td type="value-col"><input type="text" class="form-control no-enter-submit"
-          name="{{ parameters.day_of_week }}" value="" placeholder="mon-sun"></td>
-    </tr>
-    <tr>
-      <td type="key-col">is in commercial</td>
-      <td type="value-col">
-        <select class="chosen-select" name="{{ parameters.is_commercial }}"
-                data-width="fit">
-          <option value="false" selected="selected">false</option>
-          <option value="true">true</option>
-          <option value="both">both</option>
-        </select>
-      </td>
-    </tr>
-    <tr>
-      <td type="key-col">
-        (optional) the transcript contains
-      </td>
-      <td type="value-col">
-        <input type="text" class="form-control no-enter-submit"
-               name="{{ parameters.caption_text }}"
-               value="" placeholder="keyword or phrase"
-               style="width:400px;">
-        within
-        <input type="number" class="form-control no-enter-submit"
-               name="{{ parameters.caption_window }}"
-               min="0" max="3600" placeholder="{{ default_text_window }}"
-               style="width:70px;"> seconds
-      </td>
-    </tr>
-    <tr>
-      <td type="key-col">(optional) an on-screen face matches</td>
-      <td type="value-col">
-        <select class="chosen-select"
-                name="{{ parameters.onscreen_face }}1:gender" data-width="fit">
-          <option value="" selected="selected">gender n/a</option>
-          <option value="male">male</option>
-          <option value="female">female</option>
-        </select>
-        <select class="chosen-select"
-                name="{{ parameters.onscreen_face }}1:role" data-width="fit">
-          <option value="" selected="selected">role n/a</option>
-          <option value="host">host</option>
-          <option value="nonhost">nonhost</option>
-        </select>
-        or person
-        <select class="chosen-select"
-                name="{{ parameters.onscreen_face }}1:person" data-width="fit">
-          <option value="" selected="selected">n/a</option>
-          {% for person in people %}
-          <option value="{{ person }}">{{ person }}</option>
-          {% endfor %}
-        </select>
-      </td>
-    </tr>
-    <tr>
-      <td type="key-col">(optional) the number of faces on screen is</td>
-      <td type="value-col">
-        <input type="number" class="form-control no-enter-submit"
-               name="{{ parameters.onscreen_numfaces }}"
-               min="1" max="25" placeholder="n/a"
-               style="width:70px;">
-      </td>
-    </tr>
-    <tr>
-      <td type="key-col">(optional) apply default normalization</td>
-      <td type="value-col">
-        <select class="chosen-select" name="normalize" data-width="fit">
-          <option value="false" selected="selected">no</option>
-          <option value="true">yes</option>
-        </select>
-      </td>
-    </tr>
-    <tr>
-      <td></td>
-      <td>
-        <button type="button" class="btn btn-outline-primary btn-sm"
-                onclick="populateQueryBoxAndSearch(this);">search</button>
-        <button type="button" class="btn btn-outline-danger btn-sm"
-                onclick="populateQueryBox(this);">populate query box</button>
-        <button type="button" class="btn btn-outline-secondary btn-sm"
-                onclick="toggleQueryBuilder(this);">cancel</button>
-      </td>
-    </tr>
-  </table>
-</div>`;

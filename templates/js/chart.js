@@ -169,7 +169,7 @@ class Chart {
       y_axis_title = `# of ${unit}`;
     }
 
-    let raw_precision = this.options.count == '{{ countables.mentions.value }}' ? 0 : 4;
+    let raw_precision = this.options.count == '{{ countables.mentions.value }}' ? 0 : 2;
     function getPointValue(result, video_data, t) {
       var value = video_data.reduce((acc, x) => acc + x[1], 0);
       var value_str;
@@ -179,7 +179,7 @@ class Chart {
         if (denom) { // TODO: what if this is NaN
           value /= denom;
         }
-        value_str = value.toString();
+        value_str = value.toFixed(raw_precision + 2);
       } else {
         // Unit remains the same
         if (result.subtract) {
@@ -211,7 +211,8 @@ class Chart {
       return Object.keys(values).map(
         t => {
           let link_href = (ENABLE_PLAYBACK && values[t].length > 0) ?
-            `javascript:chartHrefHandler("${color}", "${t}", "${video_div_id}")` : null;
+            `javascript:chartHrefHandler("${color}", "${t}", "${video_div_id}")`
+            : null;
           let x = getPointValue(result, values[t], t);
           return {
             time: t, color: color, query: getSeriesName(color),
@@ -257,7 +258,7 @@ class Chart {
         },
         tooltip: [{
           field: 'time', type: 'temporal', timeUnit: 'utcyearmonthdate',
-          title: 'time', format: date_format
+          title: this.options.aggregate, format: date_format
         }].concat(series.map(x => ({field: x.name, type: 'nominal'}))),
       },
       layer: [{
@@ -323,7 +324,8 @@ class Chart {
           } : null,
           tooltip: [
             {field: 'time', type: 'temporal', timeUnit: 'utcyearmonthdate',
-             title: 'time', format: getVegaDateFormat(this.options.aggregate)},
+             title: this.options.aggregate,
+             format: getVegaDateFormat(this.options.aggregate)},
             {field: 'query', type: 'nominal'},
             {field: 'value_str', type: 'nominal', title: 'value'}
           ]
