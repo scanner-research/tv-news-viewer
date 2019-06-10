@@ -234,6 +234,8 @@ function translateFilterDict(filters, no_err) {
         k == '{{ parameters.face }}'
         || k.match(/^{{ parameters.onscreen_face }}\d+/)) {
       result[k] = v;
+    } else if (k == '{{ parameters.onscreen_numfaces }}') {
+      result[k] = parseInt(v);
     } else if (k == '{{ parameters.caption_window }}') {
       let i = parseInt(v);
       if (Number.isNaN(i)) {
@@ -425,7 +427,7 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
       <td type="key-col">the channel is</td>
       <td type="value-col">
         <select class="chosen-select" name="{{ parameters.channel }}" data-width="fit">
-          <option value="" selected="selected">CNN, FOX, or MSNBC</option>
+          <option value="" selected="selected">All - CNN, FOX, or MSNBC</option>
           <option value="CNN">CNN</option>
           <option value="FOX">FOX</option>
           <option value="MSNBC">MSNBC</option>
@@ -485,24 +487,33 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
       <td type="value-col">
         <select class="chosen-select"
                 name="{{ parameters.onscreen_face }}1:gender" data-width="fit">
-          <option value="" selected="selected"></option>
+          <option value="" selected="selected">gender n/a</option>
           <option value="male">male</option>
           <option value="female">female</option>
         </select>
         <select class="chosen-select"
                 name="{{ parameters.onscreen_face }}1:role" data-width="fit">
-          <option value="" selected="selected"></option>
+          <option value="" selected="selected">role n/a</option>
           <option value="host">host</option>
           <option value="nonhost">nonhost</option>
         </select>
         or person
         <select class="chosen-select"
                 name="{{ parameters.onscreen_face }}1:person" data-width="fit">
-          <option value="" selected="selected"></option>
+          <option value="" selected="selected">n/a</option>
           {% for person in people %}
           <option value="{{ person }}">{{ person }}</option>
           {% endfor %}
         </select>
+      </td>
+    </tr>
+    <tr>
+      <td type="key-col">(optional) the number of faces on screen is</td>
+      <td type="value-col">
+        <input type="number" class="form-control no-enter-submit"
+               name="{{ parameters.onscreen_numfaces }}"
+               min="1" max="25" placeholder="n/a"
+               style="width:70px;">
       </td>
     </tr>
     <tr>

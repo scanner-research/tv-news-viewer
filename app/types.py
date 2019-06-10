@@ -38,9 +38,13 @@ class SearchParameter:
     show = 'show'
     hour = 'hour'
     day_of_week = 'dayofweek'
+
     onscreen_face = 'onscreen.face'
+    onscreen_numfaces = 'onscreen.facecount'
+
     caption_text = 'transcript.text'
     caption_window = 'transcript.window'
+
     is_commercial = 'iscommercial'
 
     video_ids = 'ids'
@@ -62,6 +66,8 @@ class Video(NamedTuple):
 
 class FaceIntervals(NamedTuple):
     all_ilistmap: MmapIntervalListMapping
+    num_faces_ilistmap: MmapIntervalListMapping
+
     all_isetmap: MmapIntervalSetMapping
     male_isetmap: MmapIntervalSetMapping
     female_isetmap: MmapIntervalSetMapping

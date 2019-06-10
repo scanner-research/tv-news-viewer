@@ -3,6 +3,7 @@
 import argparse
 import os
 from multiprocessing import Pool
+from typing import List, Tuple
 
 from rs_intervalset import MmapIntervalListMapping
 from rs_intervalset.writer import (
@@ -93,8 +94,27 @@ def derive_face_isets(
     helper(0b11, 0, 'female_nonhost.iset.bin')
 
 
+IntervalAndPayload = Tuple[int, int, int]
+
+
 def derive_num_faces_ilist(face_ilist_file: str, outfile: str) -> None:
     ilistmap = MmapIntervalListMapping(face_ilist_file, 1)
+
+    def deoverlap(
+        intervals: List[IntervalAndPayload], fuzz: int = 250
+    ) -> List[IntervalAndPayload]:
+        result = []
+        for i in intervals:
+            if len(result) == 0:
+                result.append(i)
+            else:
+                last = result[-1]
+                if last[2] == i[2] and i[0] - last[1] <= fuzz:
+                    result[-1] = (min(i[0], last[0]), max(i[1], last[1]), i[2])
+                else:
+                    result.append(i)
+        return result
+
     with IntervalListMappingWriter(outfile, 1) as writer:
         for video_id in ilistmap.get_ids():
             intervals = []
@@ -118,7 +138,7 @@ def derive_num_faces_ilist(face_ilist_file: str, outfile: str) -> None:
                     del curr_interval_count
 
             if len(intervals) > 0:
-                writer.write(video_id, intervals)
+                writer.write(video_id, deoverlap(intervals))
 
 
 def derive_person_iset(person_ilist_file: str, outfile: str) -> None:

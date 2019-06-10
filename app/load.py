@@ -53,6 +53,8 @@ def load_video_data(data_dir: str) -> Tuple[
     face_intervals = FaceIntervals(
         all_ilistmap=MmapIntervalListMapping(
             path.join(data_dir, 'faces.ilist.bin'), 1),
+        num_faces_ilistmap=MmapIntervalListMapping(
+            path.join(data_dir, 'derived', 'num_faces.ilist.bin'), 1),
         all_isetmap=MmapIntervalSetMapping(
             path.join(face_iset_dir, 'all.iset.bin')),
         male_isetmap=MmapIntervalSetMapping(

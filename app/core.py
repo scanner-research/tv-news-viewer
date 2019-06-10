@@ -176,18 +176,31 @@ def get_onscreen_face_isetmap(
 def get_onscreen_face_isetmaps(
     face_intervals: FaceIntervals, all_person_intervals: AllPersonIntervals
 ) -> Optional[List[MmapIntervalSetMapping]]:
-    result = None
+    result = []
+
     for k in request.args:
-        if k.startswith(SearchParameter.onscreen_face):
+        if k == SearchParameter.onscreen_numfaces:
+            num_faces = request.args.get(
+                SearchParameter.onscreen_numfaces, type=int)
+            if num_faces < 1:
+                raise InvalidUsage('"{}" cannot be less than 1'.format(
+                                  SearchParameter.onscreen_numfaces))
+            if num_faces > 0xFF:
+                raise InvalidUsage('"{}" cannot be less than {}'.format(
+                                  SearchParameter.onscreen_numfaces, 0xFF))
+            result.append(
+                MmapIListToISetMapping(
+                    face_intervals.num_faces_ilistmap, 0xFF, num_faces,
+                    3000, 0))
+
+        elif k.startswith(SearchParameter.onscreen_face):
             filter_str = request.args.get(k, '', type=str).strip().lower()
             isetmap = get_onscreen_face_isetmap(
                 face_intervals, all_person_intervals, filter_str)
             if isetmap:
-                if result is None:
-                    result = [isetmap]
-                else:
-                    result.append(isetmap)
-    return result
+                result.append(isetmap)
+
+    return result if result else None
 
 
 def get_face_time_filter_mask(

@@ -152,6 +152,13 @@ function toggleQueryBuilder(element) {
       }
     }
 
+    let onscreen_numfaces = current_query.main_args['{{ parameters.onscreen_numfaces }}'];
+    if (onscreen_numfaces) {
+      query_builder.find(
+        `[name="{{ parameters.onscreen_numfaces }}"]`
+      ).val(onscreen_numfaces);
+    }
+
     if (current_query.normalize_args) {
       query_builder.find('[name="normalize"]').val('true');
     }
@@ -226,6 +233,12 @@ function populateQueryBox(element) {
     }
     filters.push(`{{ parameters.onscreen_face }}1="${face_params.join(',')}"`);
   }
+
+  let num_faces = builder.find('[name="{{ parameters.onscreen_numfaces }}"]').val();
+  if (num_faces) {
+    filters.push(`{{ parameters.onscreen_numfaces }}=${num_faces}`);
+  }
+
   let is_commercial = builder.find('[name="{{ parameters.is_commercial }}"]').val();
   if (is_commercial != 'false') {
     filters.push(`{{ parameters.is_commercial }}=${is_commercial}`);
