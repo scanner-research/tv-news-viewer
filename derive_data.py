@@ -172,6 +172,7 @@ def derive_person_isets(
     for person_file in os.listdir(person_ilist_dir):
         if not person_file.endswith('.ilist.bin'):
             print('Skipping:', person_file)
+            continue
         person_name = parse_person_name(person_file)
         workers.apply_async(
             derive_person_iset,
@@ -179,7 +180,7 @@ def derive_person_isets(
                 os.path.join(person_ilist_dir, person_file),
                 os.path.join(outdir, person_name + '.iset.bin')
             ),
-            error_callback=build_error_callback('Failed on: ' + person_name))
+            error_callback=build_error_callback('Failed on: ' + person_file))
 
 
 def main(datadir: str) -> None:
