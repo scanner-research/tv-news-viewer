@@ -179,7 +179,7 @@ class Chart {
         if (denom) { // TODO: what if this is NaN
           value /= denom;
         }
-        value_str = value.toFixed(raw_precision + 2);
+        value_str = value.toString();
       } else {
         // Unit remains the same
         if (result.subtract) {
