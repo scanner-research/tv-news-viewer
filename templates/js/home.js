@@ -584,7 +584,7 @@ function displaySearchResults(chart_options, lines, search_results) {
     };
 
     $('#embed-area p[name="text"]').html(
-      `<a href="#" onclick="setShareUrl(); return false;">Share</a>,
+      `<a href="#" onclick="setShareUrl(); return false;">Share</a> url,
        <a href="#" onclick="setEmbedUrl(); return false;">embed</a> chart, or
        <a href="${getDownloadUrl(search_results)}" download="data.json" type="text/json">download</a> the data.`
     );
