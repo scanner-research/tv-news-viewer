@@ -3,7 +3,9 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
   <table>
     <tr>
       <th style="text-align: right;">Include results where:</th>
-      <td><i style="color: gray;">(warning, your current query will be overwritten)</i></td>
+      <td>
+        <i style="color: gray;">(warning, your current query will be overwritten)</i>
+      </td>
     </tr>
     <tr>
       <td type="key-col">the channel is</td>
@@ -66,8 +68,7 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
     </tr>
     <tr>
       <td type="key-col">
-        (optional) an on-screen face matches <br>
-        <i>(where height &ge; 20% of frame height)</i>
+        (optional) an on-screen face matches
       </td>
       <td type="value-col">
         <select class="chosen-select"
@@ -92,6 +93,8 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
         </select>
         or any face
         <input type="checkbox" name="{{ parameters.onscreen_face }}1:all">
+        <br>
+        <i style="color: gray;">(where height &ge; 20% of frame height)</i>
       </td>
     </tr>
     <tr>
@@ -101,7 +104,7 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
                name="{{ parameters.onscreen_numfaces }}"
                min="1" max="25" placeholder="n/a"
                style="width:70px;">
-        faces on screen <i>(where height &ge; 20% of frame height)</i>
+        faces on screen <i style="color: gray;">(where height &ge; 20% of frame height)</i>
       </td>
     </tr>
     <tr disabled="true">

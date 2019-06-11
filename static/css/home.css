@@ -109,6 +109,7 @@
 }
 .query-builder td[type=key-col] {
   text-align: right;
+  vertical-align: top;
 }
 .query-builder td[type=value-col] {
   text-align: left;
