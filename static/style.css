@@ -7,15 +7,15 @@ a {
 .top-header {
   width: 100%;
   background-color: #8C1515;
+  font-family: 'Source Serif Pro', serif;
+  color: #F4F4F4;
 }
 .top-header img {
   height: 44px;
   vertical-align: bottom;
 }
-.top-header p {
-  font-family: 'Source Serif Pro', serif;
+.top-header h1 {
   font-size: 28px;
-  color: #F4F4F4;
   display: inline;
   vertical-align: bottom;
 }

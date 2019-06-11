@@ -22,7 +22,10 @@
   {% block header %}
   <div class="top-header">
     <div class="container">
-      <p>Stanford Cable TV News Analyzer</p>
+      <h1>Stanford Cable TV News Analyzer</h1>
+      {% if uptime %}
+        <span>(server uptime: {{ uptime }})</span>
+      {% endif %}
     </div>
   </div>
   {% endblock %}

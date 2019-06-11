@@ -5,6 +5,7 @@ Main application code
 from datetime import datetime, timedelta
 import os
 import json
+import time
 from collections import defaultdict
 from flask import (
     Flask, Response, jsonify, request, render_template, send_file,
@@ -320,6 +321,18 @@ def build_app(
     data_dir: str, index_dir: str, frameserver_endpoint: Optional[str],
     cache_seconds: int, credentials: LoginCredentials
 ) -> Flask:
+    server_start_time = time.time()
+
+    def _get_uptime() -> str:
+        s = time.time() - server_start_time
+        d = int(s / 86400)
+        s -= d * 86400
+        h = int(s / 3600)
+        s -= h * 3600
+        m = int(s / 60)
+        s -= m * 60
+        return '{}d {}h {}m {}s'.format(d, h, m, int(s))
+
     if credentials:
         auth = HTTPBasicAuth()
 
@@ -366,7 +379,8 @@ def build_app(
 
     def _root() -> Response:
         return render_template(
-            'home.html', countables=Countable,
+            'home.html', uptime=_get_uptime(),
+            countables=Countable,
             default_text_window=DEFAULT_TEXT_WINDOW,
             default_is_commercial=DEFAULT_IS_COMMERCIAL.name)
 
@@ -398,7 +412,7 @@ def build_app(
     @app.route('/instructions')
     def get_instructions() -> Response:
         return render_template(
-            'instructions.html', host=request.host,
+            'instructions.html', host=request.host, uptime=_get_uptime(),
             countables=Countable, parameters=SearchParameter,
             default_text_window=DEFAULT_TEXT_WINDOW,
             default_is_commercial=DEFAULT_IS_COMMERCIAL.name)
