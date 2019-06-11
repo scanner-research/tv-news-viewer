@@ -523,6 +523,37 @@ function alertAndThrow(msg) {
   throw Error(msg);
 }
 
+function getDownloadUrl(search_results) {
+  let json_obj = Object.values(search_results).map(search_result => {
+    let times = new Set(Object.keys(search_result.main));
+    if (search_result.normalize) {
+      Object.keys(search_result.normalize).forEach(x => times.add(x));
+    }
+    if (search_result.subtract) {
+      Object.keys(search_result.subtract).forEach(x => times.add(x));
+    }
+    return {
+      query: search_result.query,
+      unit: search_result.normalize ? 'ratio' : 'seconds',
+      data: Array.from(times).map(t => {
+        var value = _.get(search_result.main, t, []).reduce((acc, x) => acc + x[1], 0);
+        if (search_result.normalize) {
+          value /=  _.get(search_result.normalize, t, 0);
+        }
+        if (search_result.subtract) {
+          value /=  _.get(search_result.subtract, t, 0);
+        }
+        return (t, value);
+      })
+    };
+  });
+  let data_blob = new Blob(
+    [JSON.stringify(json_obj)],
+    {type: "text/json"}
+  );
+  return URL.createObjectURL(data_blob);
+}
+
 var setShareUrl, setEmbedUrl;
 
 function displaySearchResults(chart_options, lines, search_results) {
@@ -553,8 +584,9 @@ function displaySearchResults(chart_options, lines, search_results) {
     };
 
     $('#embed-area p[name="text"]').html(
-      `<a href="#" onclick="setShareUrl(); return false;">Share</a> or
-       <a href="#" onclick="setEmbedUrl(); return false;">embed</a> chart.`
+      `<a href="#" onclick="setShareUrl(); return false;">Share</a>,
+       <a href="#" onclick="setEmbedUrl(); return false;">embed</a> chart, or
+       <a href="${getDownloadUrl(search_results)}" download="data.json" type="text/json">download</a> the data.`
     );
     window.history.pushState(null, '', chart_path);
   } else {

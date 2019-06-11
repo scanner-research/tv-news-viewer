@@ -56,7 +56,7 @@
   <table>
     <tbody>
       <tr>
-        <th colspan="3">Supprted filter options and their usage</th>
+        <th colspan="3">Supported filter options and their usage</th>
       </tr>
     </tbody>
 
@@ -270,7 +270,7 @@
     This used in the following way:
 
     <span class="centered">
-      <tt>query1 <b>NORMALIZE</b> (query2)</tt>
+      <tt>query1 <b>NORMALIZE</b> query2</tt>
     </span>
 
     Succintly put, NORMALIZE allows you to normalize one query by another query.
@@ -279,14 +279,14 @@
 
     <span class="centered">
       <tt>
-        COUNT "screen time" WHERE channel="CNN" NORMALIZE (COUNT "screen time" WHERE all)
+        COUNT "screen time" WHERE channel="CNN" NORMALIZE (COUNT "screen time")
       </tt>
     </span>
 
     This is verbose. As a shorthand, we can write:
 
     <span class="centered">
-      <tt>COUNT "screen time" WHERE channel="CNN" NORMALIZE (all)</tt>
+      <tt>COUNT "screen time" WHERE channel="CNN" NORMALIZE all</tt>
     </span>
 
     Likewise, to express the proportion of time when a man is on screen on CNN,
@@ -303,7 +303,7 @@
     Addition is not supported yet. Subtraction can be expressed as:
 
     <span class="centered">
-      <tt>query1 <b>SUBTRACT</b> (query2)</tt>
+      <tt>query1 <b>SUBTRACT</b> query2</tt>
     </span>
   </p>
 </div>
