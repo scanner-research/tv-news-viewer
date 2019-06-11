@@ -432,7 +432,6 @@ def build_app(
     def get_query_js() -> Response:
         resp = make_response(render_template(
             'js/query.js', parameters=SearchParameter, countables=Countable,
-            default_text_window=DEFAULT_TEXT_WINDOW,
             shows=all_shows, people=sorted(all_person_intervals.keys())))
         resp.headers['Content-type'] = 'text/javascript'
         resp.cache_control.max_age = cache_seconds
@@ -453,8 +452,9 @@ def build_app(
         resp = make_response(render_template(
             'js/home.js', parameters=SearchParameter, countables=Countable,
             host=request.host, start_date=format_date(start_date),
-            end_date=format_date(end_date), shows=all_shows,
-            people=sorted(all_person_intervals.keys())
+            end_date=format_date(end_date),
+            default_text_window=DEFAULT_TEXT_WINDOW,
+            shows=all_shows, people=sorted(all_person_intervals.keys())
         ))
         resp.headers['Content-type'] = 'text/javascript'
         resp.cache_control.max_age = cache_seconds

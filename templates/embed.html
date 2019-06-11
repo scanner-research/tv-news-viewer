@@ -60,7 +60,7 @@
     lines.forEach(line => {
       let html = `<tr name='${line.color}'>
         <td><div class="color-box" style="background-color: ${line.color};"></div></td>
-        <td class="query-td">${line.query.query}</td>
+        <td class="query-td"><tt>${line.query.query}</tt></td>
       </tr>`;
       $('#search-table tbody').append(html);
     });

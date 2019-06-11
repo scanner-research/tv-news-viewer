@@ -21,14 +21,16 @@
     Let's take a closer look at the queries to generate the above chart. Each
     query corresponds to a line on the chart. The first query
     <span class="centered">
-      COUNT "screen time" WHERE onscreen.face1="person: hillary clinton"
+      <tt>COUNT "screen time" WHERE onscreen.face1="person: hillary clinton"</tt>
     </span>
     computes all of the screen time when "Hillary Clinton"'s face is on screen
     in any video, regardless of channel. If we wished to restrict our results
     to only CNN videos, then we would modify the query with the following:
     <span class="centered">
-      COUNT "screen time" WHERE onscreen.face1="person: hillary clinton"
-      <span class="red">AND channel="CNN"</span>
+      <tt>
+        COUNT "screen time" WHERE onscreen.face1="person: hillary clinton"
+        <span class="red">AND channel="CNN"</span>
+      </tt>
     </span>
     Now that we have seen a simple example, we will describe the full query
     grammar.
@@ -40,8 +42,10 @@
   <p>
     Screen time queries are broken in to several parts. A query has the form
     <span class="centered">
-      <b>COUNT</b> "screen time" <b>WHERE</b>
-        filter1="value1" <b>AND</b> filter2="value2" <b>AND</b> ...
+      <tt>
+        <b>COUNT</b> "screen time" <b>WHERE</b>
+          filter1="value1" <b>AND</b> filter2="value2" <b>AND</b> ...
+      </tt>
     </span>
     consisting of the data being counted ("screen time") and filters, separated
     by "AND". In the earlier example, we saw two filters "onscreen.face1" and
@@ -50,11 +54,12 @@
   </p>
 
   <table>
-    <thead>
+    <tbody>
       <tr>
         <th colspan="3">Supprted filter options and their usage</th>
       </tr>
-    </thead>
+    </tbody>
+
     <tbody>
       <tr>
         <td rowspan="4">{{ parameters.channel }}</td>
@@ -71,9 +76,11 @@
       </tr>
       <tr>
         <td>example</td>
-        <td>{{ parameters.channel }}="CNN"</td>
+        <td><tt>{{ parameters.channel }}="CNN"</tt></td>
       </tr>
+    </tbody>
 
+    <tbody>
       <tr>
         <td rowspan="4">{{ parameters.show }}</td>
         <td>description</td>
@@ -89,9 +96,11 @@
       </tr>
       <tr>
         <td>example</td>
-        <td>{{ parameters.show }}="CNN Newsroom"</td>
+        <td><tt>{{ parameters.show }}="CNN Newsroom"</tt></td>
       </tr>
+    </tbody>
 
+    <tbody>
       <tr>
         <td rowspan="4">{{ parameters.hour }}</td>
         <td>description</td>
@@ -107,9 +116,11 @@
       </tr>
       <tr>
         <td>example</td>
-        <td>{{ parameters.hour }}="9-17"</td>
+        <td><tt>{{ parameters.hour }}="9-17"</tt></td>
       </tr>
+    </tbody>
 
+    <tbody>
       <tr>
         <td rowspan="4">{{ parameters.day_of_week }}</td>
         <td>description</td>
@@ -125,9 +136,11 @@
       </tr>
       <tr>
         <td>example</td>
-        <td>{{ parameters.day_of_week }}="sat-sun"</td>
+        <td><tt>{{ parameters.day_of_week }}="sat-sun"</tt></td>
       </tr>
+    </tbody>
 
+    <tbody>
       <tr>
         <td rowspan="4">{{ parameters.is_commercial }}</td>
         <td>description</td>
@@ -143,9 +156,11 @@
       </tr>
       <tr>
         <td>example</td>
-        <td>{{ parameters.is_commercial }}={{ default_is_commercial }}</td>
+        <td><tt>{{ parameters.is_commercial }}={{ default_is_commercial }}</tt></td>
       </tr>
+    </tbody>
 
+    <tbody>
       <tr>
         <td rowspan="4">{{ parameters.caption_text }}</td>
         <td>description</td>
@@ -161,9 +176,11 @@
       </tr>
       <tr>
         <td>example</td>
-        <td>{{ parameters.caption_text }}="affordable care act"</td>
+        <td><tt>{{ parameters.caption_text }}="affordable care act"</tt></td>
       </tr>
+    </tbody>
 
+    <tbody>
       <tr>
         <td rowspan="4">{{ parameters.caption_window }}</td>
         <td>description</td>
@@ -179,9 +196,11 @@
       </tr>
       <tr>
         <td>example</td>
-        <td>{{ parameters.caption_window }}={{ default_text_window }}</td>
+        <td><tt>{{ parameters.caption_window }}={{ default_text_window }}</tt></td>
       </tr>
+    </tbody>
 
+    <tbody>
       <tr>
         <td rowspan="4">
           {{ parameters.onscreen_face }}1 <br>
@@ -210,13 +229,17 @@
       <tr>
         <td>example</td>
         <td>
-          {{ parameters.onscreen_face }}1="all" <br>
-          {{ parameters.onscreen_face }}2="gender:male" <br>
-          {{ parameters.onscreen_face }}3="gender:male,role:host" <br>
-          {{ parameters.onscreen_face }}4="person:Barack Obama"
+          <tt>
+            {{ parameters.onscreen_face }}1="all" <br>
+            {{ parameters.onscreen_face }}2="gender:male" <br>
+            {{ parameters.onscreen_face }}3="gender:male,role:host" <br>
+            {{ parameters.onscreen_face }}4="person:Barack Obama"
+          </tt>
         </td>
       </tr>
+    </tbody>
 
+    <tbody>
       <tr>
         <td rowspan="4">{{ parameters.onscreen_numfaces }}</td>
         <td>description</td>
@@ -232,7 +255,7 @@
       </tr>
       <tr>
         <td>example</td>
-        <td>{{ parameters.onscreen_numfaces }}=2</td>
+        <td><tt>{{ parameters.onscreen_numfaces }}=2</tt></td>
       </tr>
     </tbody>
   </table>
@@ -247,7 +270,7 @@
     This used in the following way:
 
     <span class="centered">
-      query1 <b>NORMALIZE</b> (query2)
+      <tt>query1 <b>NORMALIZE</b> (query2)</tt>
     </span>
 
     Succintly put, NORMALIZE allows you to normalize one query by another query.
@@ -255,13 +278,15 @@
     write:
 
     <span class="centered">
-      COUNT "screen time" WHERE channel="CNN" NORMALIZE (COUNT "screen time" WHERE all)
+      <tt>
+        COUNT "screen time" WHERE channel="CNN" NORMALIZE (COUNT "screen time" WHERE all)
+      </tt>
     </span>
 
     This is verbose. As a shorthand, we can write:
 
     <span class="centered">
-      COUNT "screen time" WHERE channel="CNN" NORMALIZE (all)
+      <tt>COUNT "screen time" WHERE channel="CNN" NORMALIZE (all)</tt>
     </span>
 
     Likewise, to express the proportion of time when a man is on screen on CNN,
@@ -278,7 +303,7 @@
     Addition is not supported yet. Subtraction can be expressed as:
 
     <span class="centered">
-      query1 <b>SUBTRACT</b> (query2)
+      <tt>query1 <b>SUBTRACT</b> (query2)</tt>
     </span>
   </p>
 </div>
@@ -292,102 +317,122 @@
     You can also count "{{ countables.facetime.value }}" and "{{ countables.mentions.value }}". For instance,
 
     <span class="centered">
+      <tt>
       <b>COUNT</b> "{{ countables.facetime.value }}" <b>OF</b> faces being counted <b>WHERE</b> filters on screen time
       <br>
       <b>COUNT</b> "{{ countables.mentions.value }}" <b>OF</b> text being counted <b>WHERE</b> filters on screen time
+      </tt>
     </span>
   </p>
 
   <h6>Supported counting options</h6>
   <table>
-    <tr>
-      <th>Count</th>
-      <th>Description</th>
-      <th>Values</th>
-      <th>Default</th>
-      <th>Example</th>
-    </tr>
-    <tr>
-      <td>{{ countables.facetime.value }}</td>
-      <td>
-        screen time for faces (height &ge; 20%)<br>
-        Options separated by commas.
-      </td>
-      <td>
-        all,<br>
-        gender: (fe)male,<br>
-        role: (non)host,<br>
-        person: <i>name</i> <a href="/people" target="_blank">(list of people)</a>
-      </td>
-      <td>all</td>
-      <td>
-        "all"<br>
-        "gender:male" <br>
-        "gender:male,role:host" <br>
-        "person:Barack Obama"
-      </td>
-    </tr>
-    <tr>
-      <td>{{ countables.mentions.value }}</td>
-      <td>phrase mentions in the captions</td>
-      <td><a href="https://github.com/scanner-research/caption-index/blob/master/captions/query.py" target="_blank">grammar</a></td>
-      <td>n/a</td>
-      <td>"affordable care act"</td>
-    </tr>
+    <tbody>
+      <tr>
+        <th>Count</th>
+        <th>Description</th>
+        <th>Values</th>
+        <th>Default</th>
+        <th>Example</th>
+      </tr>
+    </tbody>
+
+    <tbody>
+      <tr>
+        <td>{{ countables.facetime.value }}</td>
+        <td>
+          screen time for faces (height &ge; 20%)<br>
+          Options separated by commas.
+        </td>
+        <td>
+          all,<br>
+          gender: (fe)male,<br>
+          role: (non)host,<br>
+          person: <i>name</i> <a href="/people" target="_blank">(list of people)</a>
+        </td>
+        <td>all</td>
+        <td>
+          <tt>
+            "all"<br>
+            "gender:male" <br>
+            "gender:male,role:host" <br>
+            "person:Barack Obama"
+          </tt>
+        </td>
+      </tr>
+    </tbody>
+
+    <tbody>
+      <tr>
+        <td>{{ countables.mentions.value }}</td>
+        <td>phrase mentions in the captions</td>
+        <td><a href="https://github.com/scanner-research/caption-index/blob/master/captions/query.py" target="_blank">grammar</a></td>
+        <td>n/a</td>
+        <td><tt>"affordable care act"</tt></td>
+      </tr>
+    </tbody>
   </table>
 
   <br>
 
   <h6>Example queries</h6>
   <table>
-    <tr>
-      <th>Count</th>
-      <th>Example</th>
-    </tr>
-    <tr>
-      <td rowspan="3">{{ countables.facetime.value }}</td>
-      <td>
-        COUNT "{{ countables.facetime.value }}" OF all
-        <br>
-        <i>total face time</i>
-      </td>
-    </tr>
-    <tr>
-      <td>
-        COUNT "{{ countables.facetime.value }}" OF gender:female,role:host WHERE {{ parameters.channel }}="FOX"
-        <br>
-        <i>face time of female hosts on FOX News</i>
-      </td>
-    </tr>
-    <tr>
-      <td>
-        COUNT "{{ countables.facetime.value }}" OF person:Barack Obama WHERE {{ parameters.channel }}="FOX"
-        <br>
-        <i>face time of Barack Obama on FOX News</i>
-      </td>
-    </tr>
-    <tr>
-      <td rowspan="3">{{ countables.mentions.value }}</td>
-      <td>
-        COUNT "{{ countables.mentions.value }}" OF all
-        <br>
-        <i>total number of words</i>
-      </td>
-    </tr>
-    <tr>
-      <td>
-        COUNT "{{ countables.mentions.value }}" OF obamacare WHERE {{ parameters.channel }}=CNN
-        <br>
-        <i>mentions of "obamacare" on CNN</i>
-      </td>
-    </tr>
-    <tr>
-      <td>
-        COUNT "{{ countables.mentions.value }}" OF obamacare WHERE {{ parameters.onscreen_face.value }}="Barack Obama"
-        <br>
-        <i>mentions of "obamacare" when Barack Obama's face is on screen</i>
-      </td>
-    </tr>
+    <tbody>
+      <tr>
+        <th>Count</th>
+        <th>Example</th>
+      </tr>
+    </tbody>
+
+    <tbody>
+      <tr>
+        <td rowspan="3">{{ countables.facetime.value }}</td>
+        <td>
+          <tt>COUNT "{{ countables.facetime.value }}" OF all</tt>
+          <br>
+          <i>total face time</i>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <tt>COUNT "{{ countables.facetime.value }}" OF gender:female,role:host WHERE {{ parameters.channel }}="FOX"</tt>
+          <br>
+          <i>face time of female hosts on FOX News</i>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <tt>COUNT "{{ countables.facetime.value }}" OF person:Barack Obama WHERE {{ parameters.channel }}="FOX"</tt>
+          <br>
+          <i>face time of Barack Obama on FOX News</i>
+        </td>
+      </tr>
+    </tbody>
+
+    <tbody>
+      <tr>
+        <td rowspan="3">{{ countables.mentions.value }}</td>
+        <td>
+          <tt>COUNT "{{ countables.mentions.value }}" OF all</tt>
+          <br>
+          <i>total number of words</i>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <tt>COUNT "{{ countables.mentions.value }}" OF obamacare WHERE {{ parameters.channel }}=CNN</tt>
+          <br>
+          <i>mentions of "obamacare" on CNN</i>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <tt>COUNT "{{ countables.mentions.value }}" OF obamacare WHERE {{ parameters.onscreen_face }}1="person:Barack Obama"</tt>
+          <br>
+          <i>mentions of "obamacare" when Barack Obama's face is on screen</i>
+        </td>
+      </tr>
+    <tbody>
   </table>
 </div>
 {% endblock %}
