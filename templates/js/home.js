@@ -1,5 +1,9 @@
 
 const QUERY_BUILDER_HTML = `<div class="query-builder">
+  <div style="position:absolute;">
+    <button type="button" class="btn btn-outline-danger btn-sm"
+            onclick="closeQueryBuilder(this);">Close</button>
+  </div>
   <table>
     <tr>
       <th style="text-align: right;">Include results where:</th>
@@ -116,17 +120,6 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
         </select>
       </td>
     </tr>
-    <tr>
-      <td></td>
-      <td>
-        <button type="button" class="btn btn-outline-primary btn-sm"
-                onclick="populateQueryBoxAndSearch(this);">search</button>
-        <button type="button" class="btn btn-outline-danger btn-sm"
-                onclick="populateQueryBox(this);">populate query box</button>
-        <button type="button" class="btn btn-outline-secondary btn-sm"
-                onclick="toggleQueryBuilder(this);">cancel</button>
-      </td>
-    </tr>
   </table>
 </div>`;
 
@@ -230,84 +223,107 @@ function removeRow(element) {
   setRemoveButtonsState();
 }
 
-function toggleQueryBuilder(element) {
+function loadQueryBuilder(element) {
+  let search_table_row = $(element).closest('tr[name="query"]');
+  let where_box = search_table_row.find('input[name="where"]');
+  search_table_row.find('td:last').append(QUERY_BUILDER_HTML);
+  var current_query = new SearchableQuery(
+    `${QUERY_KEYWORDS.where} ${where_box.val()}`,
+    $('#countVar').val(), true);
+
+  let query_builder = search_table_row.find('.query-builder');
+  let setIfDefined = k => {
+    let v = current_query.main_args[k];
+    if (v) {
+      query_builder.find(`[name="${k}"]`).val(v);
+    }
+  };
+
+  var channel = current_query.main_args['{{ parameters.channel }}'];
+  if (channel) {
+    query_builder.find(`[name="{{ parameters.channel }}"]`).val(
+      channel.toUpperCase() == 'FOXNEWS' ? 'FOX' : channel);
+  }
+
+  setIfDefined('{{ parameters.show }}');
+  setIfDefined('{{ parameters.hour }}');
+  setIfDefined('{{ parameters.day_of_week }}');
+  setIfDefined('{{ parameters.caption_text }}');
+  setIfDefined('{{ parameters.caption_window }}');
+  setIfDefined('{{ parameters.is_commercial }}');
+
+  let onscreen_face = current_query.main_args['{{ parameters.onscreen_face }}1'];
+  if (onscreen_face) {
+    let face_params = parseFaceFilterString(onscreen_face);
+    if (face_params.all) {
+      query_builder.find(
+        `[name="{{ parameters.onscreen_face }}1:all"]`
+      ).prop('checked', true);
+    } else {
+      if (face_params.gender) {
+        query_builder.find(
+          `[name="{{ parameters.onscreen_face }}1:gender"]`
+        ).val(face_params.gender);
+      }
+      if (face_params.role) {
+        query_builder.find(
+          `[name="{{ parameters.onscreen_face }}1:role"]`
+        ).val(face_params.role);
+      }
+      if (face_params.person) {
+        query_builder.find(
+          `[name="{{ parameters.onscreen_face }}1:person"]`
+        ).val(face_params.person);
+      }
+    }
+  }
+
+  let onscreen_numfaces = current_query.main_args['{{ parameters.onscreen_numfaces }}'];
+  if (onscreen_numfaces) {
+    query_builder.find(
+      `[name="{{ parameters.onscreen_numfaces }}"]`
+    ).val(onscreen_numfaces);
+  }
+
+  if (current_query.normalize_args) {
+    query_builder.find('[name="normalize"]').val('true');
+  }
+
+  $('.no-enter-submit').keypress(e => e.which != 13);
+
+  // Activate select boxes
+  $(".chosen-select").chosen({width: 'auto'});
+
+  // Listen for change events
+  query_builder.find('input, select').change(function() {
+    updateQueryBox(element);
+  });
+
+  // Disable where input
+  where_box.attr('disabled', true);
+}
+
+function closeQueryBuilder(element) {
   let search_table_row = $(element).closest('tr[name="query"]');
   let where_box = search_table_row.find('input[name="where"]');
   if (search_table_row.find('.query-builder').length > 0) {
     search_table_row.find('.query-builder').remove();
     search_table_row.find('.color-box').height('auto');
     where_box.attr('disabled', false);
+  }
+}
+
+function toggleQueryBuilder(element) {
+  let search_table_row = $(element).closest('tr[name="query"]');
+  let where_box = search_table_row.find('input[name="where"]');
+  if (search_table_row.find('.query-builder').length > 0) {
+    closeQueryBuilder(element);
   } else {
-    search_table_row.find('td:last').append(QUERY_BUILDER_HTML);
-    var current_query = new SearchableQuery(
-      `${QUERY_KEYWORDS.where} ${where_box.val()}`,
-      $('#countVar').val(), true);
+    // Close other query builders
+    $('.query-builder').each(function() {closeQueryBuilder($(this));});
 
-    let query_builder = search_table_row.find('.query-builder');
-    let setIfDefined = k => {
-      let v = current_query.main_args[k];
-      if (v) {
-        query_builder.find(`[name="${k}"]`).val(v);
-      }
-    };
-
-    var channel = current_query.main_args['{{ parameters.channel }}'];
-    if (channel) {
-      query_builder.find(`[name="{{ parameters.channel }}"]`).val(
-        channel.toUpperCase() == 'FOXNEWS' ? 'FOX' : channel);
-    }
-
-    setIfDefined('{{ parameters.show }}');
-    setIfDefined('{{ parameters.hour }}');
-    setIfDefined('{{ parameters.day_of_week }}');
-    setIfDefined('{{ parameters.caption_text }}');
-    setIfDefined('{{ parameters.caption_window }}');
-    setIfDefined('{{ parameters.is_commercial }}');
-
-    let onscreen_face = current_query.main_args['{{ parameters.onscreen_face }}1'];
-    if (onscreen_face) {
-      let face_params = parseFaceFilterString(onscreen_face);
-      if (face_params.all) {
-        query_builder.find(
-          `[name="{{ parameters.onscreen_face }}1:all"]`
-        ).prop('checked', true);
-      } else {
-        if (face_params.gender) {
-          query_builder.find(
-            `[name="{{ parameters.onscreen_face }}1:gender"]`
-          ).val(face_params.gender);
-        }
-        if (face_params.role) {
-          query_builder.find(
-            `[name="{{ parameters.onscreen_face }}1:role"]`
-          ).val(face_params.role);
-        }
-        if (face_params.person) {
-          query_builder.find(
-            `[name="{{ parameters.onscreen_face }}1:person"]`
-          ).val(face_params.person);
-        }
-      }
-    }
-
-    let onscreen_numfaces = current_query.main_args['{{ parameters.onscreen_numfaces }}'];
-    if (onscreen_numfaces) {
-      query_builder.find(
-        `[name="{{ parameters.onscreen_numfaces }}"]`
-      ).val(onscreen_numfaces);
-    }
-
-    if (current_query.normalize_args) {
-      query_builder.find('[name="normalize"]').val('true');
-    }
-
-    $('.no-enter-submit').keypress(e => e.which != 13);
-
-    // Activate select boxes
-    $(".chosen-select").chosen({width: 'auto'});
-
-    // Disable where input
-    where_box.attr('disabled', true);
+    // Load new query builder
+    loadQueryBuilder(element);
   }
 }
 
@@ -322,7 +338,7 @@ function clearQueries() {
   window.history.pushState({}, document.title, '/');
 }
 
-function populateQueryBox(element) {
+function updateQueryBox(element) {
   let search_table_row = $(element).closest('tr[name="query"]');
   let builder = search_table_row.find('.query-builder');
   let filters = [];
@@ -395,12 +411,6 @@ function populateQueryBox(element) {
   let where_input = search_table_row.find('input[name="where"]');
   where_input.val(new_where);
   onWhereUpdate(where_input);
-  toggleQueryBuilder(element);
-}
-
-function populateQueryBoxAndSearch(element) {
-  populateQueryBox(element);
-  search();
 }
 
 function getDefaultQuery() {
@@ -573,7 +583,7 @@ function getRawQueries(count_var) {
 }
 
 function search() {
-  $('.query-builder').each(function() {populateQueryBox($(this));});
+  $('.query-builder').each(function() {closeQueryBuilder($(this));});
   $('#vgrid').empty();
 
   let chart_options = getChartOptions();
