@@ -543,7 +543,7 @@ function getDownloadUrl(search_results) {
         if (search_result.subtract) {
           value /=  _.get(search_result.subtract, t, 0);
         }
-        return (t, value);
+        return [t, value];
       })
     };
   });
