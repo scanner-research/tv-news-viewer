@@ -24,12 +24,9 @@
 <script>
   const PAGINATE = true;
   const VIDEOS_PER_PAGE = 10;
+  var USE_ARCHIVE = true;
   var QUERY_PARAMS = null;
   var CURR_PAGE = null;
-
-  const SERVE_FROM_INTERNET_ARCHIVE = (
-    {% if 'archive.org' in video_endpoint %}true{% else %}false{% endif %}
-  );
 
   function displayVideos(page_i) {
     let count_var = QUERY_PARAMS.count;
@@ -53,12 +50,22 @@
         onclick="displayVideos(${page_i + 1});">next</button>`;
     }
 
-    let text_html = `Showing results for
-      <font color="${QUERY_PARAMS.color}"><b>${QUERY_PARAMS.query}</b></font>
-      from ${video_ids.length} of ${QUERY_PARAMS.video_count} videos from ${QUERY_PARAMS.time}.
-      <br>
-      <b>Press "f" to expand videos and "p" to play/pause.
-      ${PAGINATE && n_pages > 1 ? page_controls : ''}</b>`;
+    var text_html;
+    if (USE_ARCHIVE) {
+      text_html = `Sampling clips for
+        <font color="${QUERY_PARAMS.color}"><b><tt>${QUERY_PARAMS.query}</tt></b></font>
+        from ${QUERY_PARAMS.time}.
+        <br>
+        <b>Clips are capped at 3 minutes. Press "f" to expand videos and "p" to play/pause.
+        ${PAGINATE && n_pages > 1 ? page_controls : ''}</b>`;
+    } else {
+      text_html = `Showing results for
+        <font color="${QUERY_PARAMS.color}"><b><tt>${QUERY_PARAMS.query}</tt></b></font>
+        from ${video_ids.length} of ${QUERY_PARAMS.video_count} videos from ${QUERY_PARAMS.time}.
+        <br>
+        <b>Press "f" to expand videos and "p" to play/pause.
+        ${PAGINATE && n_pages > 1 ? page_controls : ''}</b>`;
+    }
 
     $("#text-info").html(text_html);
     let query = new SearchableQuery(QUERY_PARAMS.query, QUERY_PARAMS.count, false);
@@ -77,22 +84,29 @@
       query.searchInVideos(
         video_ids,
         json_data => {
-          let vgrid_settings = {
-            {% if frameserver_endpoint is not none %}
-            frameserver_endpoint: '{{ frameserver_endpoint }}',
-            use_frameserver: true,
-            {% endif %}
-            video_endpoint: '{{ video_endpoint }}',
-            show_timeline: true,
-            show_captions: false,
-            show_metadata: false,
-            paginate: false
-          };
           try {
             $('#videos').empty();
             $('#videos').append(`<div id="videos-${page_i}">`);
+
+            let vgrid_settings = {
+              show_timeline: true,
+              show_captions: false,
+              show_metadata: false,
+              paginate: false
+            }
+            if (USE_ARCHIVE) {
+              vgrid_settings.video_endpoint = '{{ archive_video_endpoint }}';
+            } else {
+              vgrid_settings.video_endpoint = '{{ video_endpoint }}';
+
+              {% if frameserver_endpoint is not none %}
+              // FIXME: this reveals the frameserver
+              vgrid_settings.frameserver_endpoint = '{{ frameserver_endpoint }}';
+              vgrid_settings.use_frameserver = true;
+              {% endif %}
+            }
             renderVGrid(json_data, caption_data, vgrid_settings,
-                        SERVE_FROM_INTERNET_ARCHIVE, `videos-${page_i}`);
+                        USE_ARCHIVE, `videos-${page_i}`);
           } catch (e) {
             alert('Failed to load videos.');
             throw e;
@@ -106,7 +120,8 @@
     });
   }
 
-  function loadVideos(params) {
+  function loadVideos(params, serve_from_internet_archive) {
+    USE_ARCHIVE = serve_from_internet_archive;
     QUERY_PARAMS = params;
     CURR_PAGE = 0;
     displayVideos(CURR_PAGE);

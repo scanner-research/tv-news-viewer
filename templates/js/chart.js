@@ -1,6 +1,14 @@
 /* Embed a chart using vega-embed */
 
 const MAX_NEW_WINDOW_VIDEOS = 100;
+var SERVE_FROM_INTERNET_ARCHIVE = true;
+
+function test_auth() {
+  let img = new Image();
+  img.onload = () => { SERVE_FROM_INTERNET_ARCHIVE = false; };
+  img.src = "{{ video_endpoint }}/do_not_delete.jpg";
+}
+test_auth();
 
 String.prototype.replaceAll = function(search, replacement) {
     var target = this;
@@ -118,7 +126,7 @@ function chartHrefHandler(color, t, video_div_id) {
     let iframe_selector = video_div_id + ' iframe';
     let iframe = $(iframe_selector)[0];
     $(iframe_selector).on('load', () => {
-      iframe.contentWindow.loadVideos(params);
+      iframe.contentWindow.loadVideos(params, SERVE_FROM_INTERNET_ARCHIVE);
       function resizeIframe() {
         if (document.contains(iframe)) {
           iframe.height = iframe.contentWindow.document.body.scrollHeight + 35;

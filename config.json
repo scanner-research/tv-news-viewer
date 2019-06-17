@@ -1,6 +1,7 @@
 {
   "data_dir": "data",
   "index_dir": "index",
+  "video_endpoint": null,
   "frameserver_endpoint": null,
   "cache_seconds": 2592000
 }

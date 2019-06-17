@@ -11,8 +11,8 @@ from app.types import LoginCredentials
 from app.hash import sha256
 
 
-# DEFAULT_VIDEO_ENDPOINT = 'https://storage.cloud.google.com/esper'
-DEFAULT_VIDEO_ENDPOINT = 'https://ia801301.us.archive.org/0/items'
+DEFAULT_VIDEO_ENDPOINT = 'https://storage.cloud.google.com/esper'
+ARCHIVE_VIDEO_ENDPOINT = 'https://ia801301.us.archive.org/0/items'
 
 
 def get_args() -> argparse.Namespace:
@@ -37,7 +37,8 @@ def main(
 ) -> None:
     """Run a debugging server"""
     app = build_app(
-        data_dir, index_dir, video_endpoint, frameserver_endpoint, 0,
+        data_dir, index_dir, video_endpoint, frameserver_endpoint,
+        ARCHIVE_VIDEO_ENDPOINT, 0,
         LoginCredentials('admin', sha256('password')))
     app.run(port=port, debug=True)
 

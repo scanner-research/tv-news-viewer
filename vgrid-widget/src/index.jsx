@@ -89,7 +89,9 @@ function loadJsonDataForInternetArchive(json_data, caption_data) {
     let selected_interval = randomChoice(video_json.intervals);
     let block_start = Math.max(
       Math.floor(selected_interval[0] - INTERNET_ARCHIVE_PAD_START), 0);
-    let block_end = block_start + INTERNET_ARCHIVE_MAX_CLIP_LEN;
+    let block_end = Math.min(
+      block_start + INTERNET_ARCHIVE_MAX_CLIP_LEN,
+      video_json.metadata.num_frames / video_json.metadata.fps);
 
     videos.push({
       id: video_id,
@@ -141,7 +143,7 @@ function loadJsonDataForInternetArchive(json_data, caption_data) {
               spatial_type: SpatialType_Temporal.get_instance(),
               metadata: {
                 video: new Metadata_Generic(video_name),
-                clip: new Metadata_Generic(`${block_start}s to ${block_end}s`)
+                clip: new Metadata_Generic(`${block_start}-${block_end}s`)
               }
             }
           )
