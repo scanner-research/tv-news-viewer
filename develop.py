@@ -11,6 +11,10 @@ from app.types import LoginCredentials
 from app.hash import sha256
 
 
+# DEFAULT_VIDEO_ENDPOINT = 'https://storage.cloud.google.com/esper'
+DEFAULT_VIDEO_ENDPOINT = 'https://ia801301.us.archive.org/0/items'
+
+
 def get_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument('-p', '--port', default=8080,
@@ -21,16 +25,19 @@ def get_args() -> argparse.Namespace:
                         help='Directory of caption index. Default: index')
     parser.add_argument('--frameserver', dest='frameserver_endpoint', type=str,
                         help='Frameserver URL and path')
+    parser.add_argument('--videos', dest='video_endpoint', type=str,
+                        default=DEFAULT_VIDEO_ENDPOINT,
+                        help='Video server URL and path')
     return parser.parse_args()
 
 
 def main(
-    port: int, data_dir: str, index_dir: str,
-    frameserver_endpoint: Optional[str]
+    port: int, data_dir: str, index_dir: str, video_endpoint: str,
+    frameserver_endpoint: Optional[str],
 ) -> None:
     """Run a debugging server"""
     app = build_app(
-        data_dir, index_dir, frameserver_endpoint, 0,
+        data_dir, index_dir, video_endpoint, frameserver_endpoint, 0,
         LoginCredentials('admin', sha256('password')))
     app.run(port=port, debug=True)
 

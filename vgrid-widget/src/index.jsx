@@ -69,8 +69,97 @@ function loadJsonData(json_data, caption_data) {
 }
 
 
-function renderVGrid(json_data, caption_data, settings, container) {
-  let [database, interval_blocks] = loadJsonData(json_data, caption_data);
+function randomChoice(arr) {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
+
+const INTERNET_ARCHIVE_MAX_CLIP_LEN = 180;
+const INTERNET_ARCHIVE_PAD_START = 30;
+
+
+function loadJsonDataForInternetArchive(json_data, caption_data) {
+  let videos = [];
+  let interval_blocks = [];
+
+  json_data.forEach(video_json => {
+    let video_id = video_json.metadata.id;
+    let video_name = video_json.metadata.name;
+
+    let selected_interval = randomChoice(video_json.intervals);
+    let block_start = Math.max(
+      Math.floor(selected_interval[0] - INTERNET_ARCHIVE_PAD_START), 0);
+    let block_end = block_start + INTERNET_ARCHIVE_MAX_CLIP_LEN;
+
+    videos.push({
+      id: video_id,
+      width: video_json.metadata.width,
+      height: video_json.metadata.height,
+      fps: video_json.metadata.fps,
+      num_frames: (block_end - block_start) * video_json.metadata.fps,
+      path: `${video_name}/${video_name}.mp4?start=${block_start}&end=${block_end}&exact=1&ignore=x.mp4`
+    });
+
+    let filter_intervals = function(interval) {
+      return Math.min(block_end, interval[1]) - Math.max(block_start, interval[0]) > 0;
+    };
+
+    interval_blocks.push({
+      video_id: video_id,
+      interval_sets: [{
+        name: 'results',
+        interval_set: new IntervalSet(
+          video_json.intervals.filter(
+            filter_intervals
+          ).map(interval => {
+            let [start, end] = interval;
+            return new Interval(
+              new Bounds(Math.max(start - block_start, 0), end - block_start),
+              {spatial_type: SpatialType_Temporal.get_instance(), metadata: {}}
+            );
+          }))
+      }, {
+        name: '_captions',
+        interval_set: new IntervalSet(
+          _.get(caption_data, video_id, []).filter(
+            filter_intervals
+          ).map(
+            caption => {
+              let [start, end, text] = caption;
+              return new Interval(
+                new Bounds(Math.max(start - block_start, 0), end - block_start),
+                {spatial_type: new SpatialType_Caption(text), metadata: {}}
+              );
+            }
+          ))
+      }, {
+        name: '_metadata',
+        interval_set: new IntervalSet([
+          new Interval(
+            new Bounds(0, block_end - block_start),
+            {
+              spatial_type: SpatialType_Temporal.get_instance(),
+              metadata: {
+                video: new Metadata_Generic(video_name),
+                clip: new Metadata_Generic(`${block_start}s to ${block_end}s`)
+              }
+            }
+          )
+        ])
+      }]
+    });
+  });
+
+  let database = new Database([new Table('videos', videos)]);
+  return [database, interval_blocks];
+}
+
+
+function renderVGrid(json_data, caption_data, settings,
+                     serve_from_internet_archive, container) {
+  let [database, interval_blocks] = serve_from_internet_archive ?
+    loadJsonDataForInternetArchive(json_data, caption_data) :
+    loadJsonData(json_data, caption_data);
   ReactDOM.render(
     <VGrid interval_blocks={interval_blocks} database={database}
            settings={settings} />,

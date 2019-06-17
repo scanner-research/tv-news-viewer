@@ -27,6 +27,10 @@
   var QUERY_PARAMS = null;
   var CURR_PAGE = null;
 
+  const SERVE_FROM_INTERNET_ARCHIVE = (
+    {% if 'archive.org' in video_endpoint %}true{% else %}false{% endif %}
+  );
+
   function displayVideos(page_i) {
     let count_var = QUERY_PARAMS.count;
 
@@ -49,7 +53,7 @@
         onclick="displayVideos(${page_i + 1});">next</button>`;
     }
 
-    let text_html = `Showing results for 
+    let text_html = `Showing results for
       <font color="${QUERY_PARAMS.color}"><b>${QUERY_PARAMS.query}</b></font>
       from ${video_ids.length} of ${QUERY_PARAMS.video_count} videos from ${QUERY_PARAMS.time}.
       <br>
@@ -78,15 +82,17 @@
             frameserver_endpoint: '{{ frameserver_endpoint }}',
             use_frameserver: true,
             {% endif %}
-            video_endpoint: 'https://storage.cloud.google.com/esper',
+            video_endpoint: '{{ video_endpoint }}',
             show_timeline: true,
             show_captions: false,
+            show_metadata: false,
             paginate: false
           };
           try {
             $('#videos').empty();
             $('#videos').append(`<div id="videos-${page_i}">`);
-            renderVGrid(json_data, caption_data, vgrid_settings, `videos-${page_i}`);
+            renderVGrid(json_data, caption_data, vgrid_settings,
+                        SERVE_FROM_INTERNET_ARCHIVE, `videos-${page_i}`);
           } catch (e) {
             alert('Failed to load videos.');
             throw e;

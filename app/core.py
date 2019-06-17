@@ -318,7 +318,8 @@ def has_onscreen_face(
 
 
 def build_app(
-    data_dir: str, index_dir: str, frameserver_endpoint: Optional[str],
+    data_dir: str, index_dir: str, video_endpoint: str,
+    frameserver_endpoint: Optional[str],
     cache_seconds: int, credentials: LoginCredentials
 ) -> Flask:
     server_start_time = time.time()
@@ -401,8 +402,9 @@ def build_app(
     @app.route('/videos')
     def show_videos() -> Response:
         return render_template(
-            'videos.html', frameserver_endpoint=frameserver_endpoint,
-            countables=Countable)
+            'videos.html', countables=Countable,
+            video_endpoint=video_endpoint,
+            frameserver_endpoint=frameserver_endpoint)
 
     @app.route('/people')
     def get_people() -> Response:
