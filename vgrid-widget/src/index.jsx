@@ -92,6 +92,7 @@ function loadJsonDataForInternetArchive(json_data, caption_data) {
     let block_end = Math.min(
       block_start + INTERNET_ARCHIVE_MAX_CLIP_LEN,
       video_json.metadata.num_frames / video_json.metadata.fps);
+    let block_length = block_end - block_start;
 
     videos.push({
       id: video_id,
@@ -102,9 +103,17 @@ function loadJsonDataForInternetArchive(json_data, caption_data) {
       path: `${video_name}/${video_name}.mp4?start=${block_start}&end=${block_end}&exact=1&ignore=x.mp4`
     });
 
-    let filter_intervals = function(interval) {
-      return Math.min(block_end, interval[1]) - Math.max(block_start, interval[0]) > 0;
+    let filterIntervals = function(interval) {
+      let start = interval[0];
+      let end = interval[1];
+      return Math.min(block_end, end) - Math.max(block_start, start) >= 0;
     };
+
+    let makeBounds = function(start, end) {
+      return new Bounds(
+        Math.min(Math.max(start - block_start, 0), block_length),
+        Math.min(Math.max(end - block_start, 0), block_length));
+    }
 
     interval_blocks.push({
       video_id: video_id,
@@ -112,11 +121,11 @@ function loadJsonDataForInternetArchive(json_data, caption_data) {
         name: 'results',
         interval_set: new IntervalSet(
           video_json.intervals.filter(
-            filter_intervals
+            filterIntervals
           ).map(interval => {
             let [start, end] = interval;
             return new Interval(
-              new Bounds(Math.max(start - block_start, 0), end - block_start),
+              makeBounds(start, end),
               {spatial_type: SpatialType_Temporal.get_instance(), metadata: {}}
             );
           }))
@@ -124,12 +133,12 @@ function loadJsonDataForInternetArchive(json_data, caption_data) {
         name: '_captions',
         interval_set: new IntervalSet(
           _.get(caption_data, video_id, []).filter(
-            filter_intervals
+            filterIntervals
           ).map(
             caption => {
               let [start, end, text] = caption;
               return new Interval(
-                new Bounds(Math.max(start - block_start, 0), end - block_start),
+                makeBounds(start, end),
                 {spatial_type: new SpatialType_Caption(text), metadata: {}}
               );
             }
@@ -138,7 +147,7 @@ function loadJsonDataForInternetArchive(json_data, caption_data) {
         name: '_metadata',
         interval_set: new IntervalSet([
           new Interval(
-            new Bounds(0, block_end - block_start),
+            new Bounds(0, block_length),
             {
               spatial_type: SpatialType_Temporal.get_instance(),
               metadata: {
