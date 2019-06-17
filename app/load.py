@@ -12,7 +12,7 @@ from .parsing import *
 
 
 def get_video_name(s: str) -> str:
-    return Path(s).name.split('.')[0]
+    return os.path.splitext(Path(s).name)[0]
 
 
 def load_video_data(data_dir: str) -> Tuple[
