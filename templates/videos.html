@@ -28,6 +28,8 @@
   var QUERY_PARAMS = null;
   var CURR_PAGE = null;
 
+  const VGRID_USAGE = 'Click videos to expand videos and "p" to play/pause.';
+
   function displayVideos(page_i) {
     let count_var = QUERY_PARAMS.count;
 
@@ -56,15 +58,13 @@
         <font color="${QUERY_PARAMS.color}"><b><tt>${QUERY_PARAMS.query}</tt></b></font>
         from ${QUERY_PARAMS.time}.
         <br>
-        <b>Clips are capped at 3 minutes. Press "f" to expand videos and "p" to play/pause.
-        ${PAGINATE && n_pages > 1 ? page_controls : ''}</b>`;
+        <b>Clips are capped at 3 minutes. ${VGRID_USAGE} ${PAGINATE && n_pages > 1 ? page_controls : ''}</b>`;
     } else {
       text_html = `Showing results for
         <font color="${QUERY_PARAMS.color}"><b><tt>${QUERY_PARAMS.query}</tt></b></font>
         from ${video_ids.length} of ${QUERY_PARAMS.video_count} videos from ${QUERY_PARAMS.time}.
         <br>
-        <b>Press "f" to expand videos and "p" to play/pause.
-        ${PAGINATE && n_pages > 1 ? page_controls : ''}</b>`;
+        <b>${VGRID_USAGE} ${PAGINATE && n_pages > 1 ? page_controls : ''}</b>`;
     }
 
     $("#text-info").html(text_html);
