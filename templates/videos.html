@@ -16,7 +16,7 @@
 {% endblock %}
 
 {% block content %}
-<div class="container">
+<div>
   <p id="text-info"></p>
   <div id="videos"></div>
 </div>
@@ -28,7 +28,7 @@
   var QUERY_PARAMS = null;
   var CURR_PAGE = null;
 
-  const VGRID_USAGE = 'Click videos to expand videos and "p" to play/pause.';
+  const VGRID_USAGE = 'Click to expand videos and press "p" to play/pause.';
 
   function displayVideos(page_i) {
     let count_var = QUERY_PARAMS.count;
