@@ -169,15 +169,16 @@ class Chart {
     var y_axis_title;
     if (Object.values(this.search_results).some(v => v.has_normalization())) {
       if (Object.values(this.search_results).some(v => !v.has_normalization())) {
-        y_axis_title = `(WARNING!) Mixing normalized and raw ${unit}`;
+        y_axis_title = 'Unknown: normalized and raw units';
       } else {
-        y_axis_title = `(Normalized) # of ${unit} / # of ${unit}`;
+        y_axis_title = `Normalized fraction of ${unit}`;
       }
     } else {
-      y_axis_title = `# of ${unit}`;
+      y_axis_title = `Number of ${unit}`;
     }
 
     let raw_precision = this.options.count == '{{ countables.mentions.value }}' ? 0 : 2;
+    let exp_threshold = 0.001;
     function getPointValue(result, video_data, t) {
       var value = video_data.reduce((acc, x) => acc + x[1], 0);
       var value_str;
@@ -187,7 +188,7 @@ class Chart {
         if (denom) { // TODO: what if this is NaN
           value /= denom;
         }
-        value_str = value.toString();
+        value_str = value >= exp_threshold ? value.toFixed(5) : value.toExponential(2);
       } else {
         // Unit remains the same
         if (result.subtract) {

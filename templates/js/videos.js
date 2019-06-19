@@ -1,5 +1,5 @@
 const PAGINATE = true;
-const VIDEOS_PER_PAGE = 10;
+const VIDEOS_PER_PAGE = 5;
 var USE_ARCHIVE = true;
 var QUERY_PARAMS = null;
 var CURR_PAGE = null;

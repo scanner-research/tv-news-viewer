@@ -211,20 +211,20 @@ function getColor() {
 }
 
 function setRemoveButtonsState() {
-  let state = $('#search-table tr[name="query"]').length < 2;
+  let state = $('#search-table > tbody > tr').length < 2;
   $('#search-table td').find('button.remove-row-btn').each(function() {
     this.disabled = state;
   });
 }
 
 function removeRow(element) {
-  $(element).closest('tr[name="query"]').remove();
+  $(element).closest('tr').remove();
   $('#add-row-btn').prop('disabled', false);
   setRemoveButtonsState();
 }
 
 function loadQueryBuilder(element) {
-  let search_table_row = $(element).closest('tr[name="query"]');
+  let search_table_row = $(element).closest('tr');
   let where_box = search_table_row.find('input[name="where"]');
   search_table_row.find('td:last').append(QUERY_BUILDER_HTML);
   var current_query = new SearchableQuery(
@@ -304,7 +304,7 @@ function loadQueryBuilder(element) {
 }
 
 function closeQueryBuilder(element) {
-  let search_table_row = $(element).closest('tr[name="query"]');
+  let search_table_row = $(element).closest('tr');
   let where_box = search_table_row.find('input[name="where"]');
   if (search_table_row.find('.query-builder').length > 0) {
     search_table_row.find('.query-builder').remove();
@@ -314,7 +314,7 @@ function closeQueryBuilder(element) {
 }
 
 function toggleQueryBuilder(element) {
-  let search_table_row = $(element).closest('tr[name="query"]');
+  let search_table_row = $(element).closest('tr');
   let where_box = search_table_row.find('input[name="where"]');
   if (search_table_row.find('.query-builder').length > 0) {
     closeQueryBuilder(element);
@@ -388,7 +388,7 @@ function updateQueryBox(element) {
     if (face_role) {
       face_params.push('role: ' + face_role);
     }
-    filters.push(`{{ parameters.onscreen_face }}1="${face_params.join(',')}"`);
+    filters.push(`{{ parameters.onscreen_face }}1="${face_params.join(', ')}"`);
   }
 
   let num_faces = builder.find('[name="{{ parameters.onscreen_numfaces }}"]').val();
@@ -490,11 +490,11 @@ function addRow(query) {
   new_row.find('input[name="where"]').val(query_clauses.where);
   new_row.find('input[name="countable"]').val(query_clauses.count);
 
-  $('#search-table > tbody > tr').eq(
-    $('#search-table tr[name="query"]').length
-  ).after(new_row);
+  let tbody = $('#search-table > tbody');
+  tbody.append(new_row);
   setQueryBoxForMode();
-  if ($('#search-table tr[name="query"]').length >= DEFAULT_COLORS.length + 1) {
+
+  if (tbody.find('tr').length >= DEFAULT_COLORS.length) {
     $('#add-row-btn').prop('disabled', true);
   }
   setRemoveButtonsState();
@@ -554,7 +554,7 @@ function getDownloadUrl(search_results) {
   return URL.createObjectURL(data_blob);
 }
 
-var setShareUrl, setEmbedUrl;
+var setCopyUrl, setEmbedUrl;
 
 function displaySearchResults(chart_options, lines, search_results) {
   new Chart(chart_options, search_results, {
@@ -567,7 +567,7 @@ function displaySearchResults(chart_options, lines, search_results) {
     let chart_path = getChartPath(data_str);
     let embed_url = getEmbedUrl(data_str);
 
-    setShareUrl = () => {
+    setCopyUrl = () => {
       var dummy = document.createElement('input');
       document.body.appendChild(dummy);
       dummy.setAttribute('value', 'https://{{ host }}' + chart_path);
@@ -584,7 +584,7 @@ function displaySearchResults(chart_options, lines, search_results) {
     };
 
     $('#embed-area p[name="text"]').html(
-      `<a href="#" onclick="setShareUrl(); return false;">Share</a> url,
+      `<a href="#" onclick="setCopyUrl(); return false;">Copy</a> url,
        <a href="#" onclick="setEmbedUrl(); return false;">embed</a> chart, or
        <a href="${getDownloadUrl(search_results)}" download="data.json" type="text/json">download</a> the data.`
     );
@@ -598,7 +598,7 @@ function displaySearchResults(chart_options, lines, search_results) {
 
 function getRawQueries(count_var) {
   let queries = [];
-  $('#search-table tr[name="query"]').each(function() {
+  $('#search-table > tbody > tr').each(function() {
     if ($(this).attr('name')) {
       let where_str = $.trim($(this).find('input[name="where"]').val());
       var text;

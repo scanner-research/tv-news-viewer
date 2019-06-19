@@ -21,43 +21,48 @@
 <div class="container">
   <form action="javascript:void(0);" onsubmit="search();">
     <table id="search-table">
-      <tr name="controls" class="chart-options">
-        <td colspan="3" class="option-td">
-          I would like to count&nbsp;
-          <select class="chosen-select" id="countVar" data-width="fit">
-            <option value="{{ countables.videotime.value }}" selected="selected">{{ countables.videotime.value }}</option>
-            <option value="{{ countables.facetime.value }}">{{ countables.facetime.value }}</option>
-            <option value="{{ countables.mentions.value }}">{{ countables.mentions.value }}</option>
-          </select>.
-          &nbsp;
-          <span class="hint-span">
-            (Click the color box for the query editor or view the <a href="/instructions" target="_blank">instruction page</a>.
-             To reset, click <a href="#" onclick="clearQueries(); return false;">clear queries</a>.)
-          </span>
-          <hr>
-        </td>
-      </tr>
-      <tr name="controls" class="chart-options">
-        <td>
-          <button type="button" class="btn btn-outline-secondary btn-sm" id='add-row-btn'>+</button>
-        </td>
-        <td></td>
-        <td class="option-td">
-          between &nbsp;
-          <input type="text" class="datepicker" id="startDate">
-          &nbsp; and &nbsp;
-          <input type="text" class="datepicker" id="endDate">
-          &nbsp; aggregated by &nbsp;
-          <select class="chosen-select" id="aggregateBy" data-width="fit">
-            <option value="year">year</option>
-            <option value="month" selected="selected">month</option>
-            <option value="week">week</option>
-            <option value="day">day</option>
-          </select>
-          . &nbsp;
-          <input type="submit" class="btn btn-primary btn-sm" value="Search the news!">
-        </td>
-      </tr>
+      <thead>
+        <tr name="controls" class="chart-options">
+          <td colspan="3" class="option-td">
+            I would like to count&nbsp;
+            <select class="chosen-select" id="countVar" data-width="fit">
+              <option value="{{ countables.videotime.value }}" selected="selected">{{ countables.videotime.value }}</option>
+              <option value="{{ countables.facetime.value }}">{{ countables.facetime.value }}</option>
+              <option value="{{ countables.mentions.value }}">{{ countables.mentions.value }}</option>
+            </select>.
+            &nbsp;
+            <span class="hint-span">
+              (Click the color box for the query editor or view the <a href="/instructions" target="_blank">instruction page</a>.
+               To reset, click <a href="#" onclick="clearQueries(); return false;">clear queries</a>.)
+            </span>
+            <hr>
+          </td>
+        </tr>
+      </thead>
+      <tbody></tbody>
+      <tfoot>
+        <tr name="controls" class="chart-options">
+          <td>
+            <button type="button" class="btn btn-outline-secondary btn-sm" id='add-row-btn'>+</button>
+          </td>
+          <td></td>
+          <td class="option-td">
+            between &nbsp;
+            <input type="text" class="datepicker" id="startDate">
+            &nbsp; and &nbsp;
+            <input type="text" class="datepicker" id="endDate">
+            &nbsp; aggregated by &nbsp;
+            <select class="chosen-select" id="aggregateBy" data-width="fit">
+              <option value="year">year</option>
+              <option value="month" selected="selected">month</option>
+              <option value="week">week</option>
+              <option value="day">day</option>
+            </select>
+            . &nbsp;
+            <input type="submit" class="btn btn-primary btn-sm" value="Search the news!">
+          </td>
+        </tr>
+      </tfoot>
     </table>
   </form>
 </div>
