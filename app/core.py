@@ -401,12 +401,7 @@ def build_app(
 
     @app.route('/videos')
     def show_videos() -> Response:
-        use_archive = request.args.get('use_archive', True, type=bool)
-        return render_template(
-            'videos.html', countables=Countable,
-            video_endpoint=video_endpoint,
-            frameserver_endpoint=frameserver_endpoint,
-            archive_video_endpoint=archive_video_endpoint)
+        return render_template('videos.html')
 
     @app.route('/people')
     def get_people() -> Response:
@@ -464,6 +459,14 @@ def build_app(
         resp.headers['Content-type'] = 'text/javascript'
         resp.cache_control.max_age = cache_seconds
         return resp
+
+    @app.route('/static/js/videos.js')
+    def get_videos_js() -> Response:
+        return render_template(
+            'js/videos.js', countables=Countable,
+            video_endpoint=video_endpoint,
+            frameserver_endpoint=frameserver_endpoint,
+            archive_video_endpoint=archive_video_endpoint)
 
     def _get_document_token_count(
         video: Video, document: Documents.Document, is_commercial: Ternary
