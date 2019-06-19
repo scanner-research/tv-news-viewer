@@ -74,6 +74,16 @@ function randomChoice(arr) {
 }
 
 
+function format_time(s) {
+  let h = Math.floor(s / 3600);
+  s -= h * 3600;
+  let m = Math.floor(s / 60);
+  s -= m * 60;
+  let pad = x => x.toString().padStart(2, '0');
+  return `${pad(h)}h:${pad(m)}m:${pad(s)}s`;
+}
+
+
 const INTERNET_ARCHIVE_MAX_CLIP_LEN = 180;
 const INTERNET_ARCHIVE_PAD_START = 30;
 
@@ -147,12 +157,12 @@ function loadJsonDataForInternetArchive(json_data, caption_data) {
         name: '_metadata',
         interval_set: new IntervalSet([
           new Interval(
-            new Bounds(0, block_length),
+            new Bounds(0, block_length + 1),
             {
               spatial_type: SpatialType_Temporal.get_instance(),
               metadata: {
                 video: new Metadata_Generic(video_name),
-                clip: new Metadata_Generic(`${block_start}-${block_end}s`)
+                clip: new Metadata_Generic(`${format_time(block_start)} to ${format_time(block_end)}`)
               }
             }
           )
