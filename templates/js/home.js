@@ -327,17 +327,22 @@ function toggleQueryBuilder(element) {
   }
 }
 
-function clearQueries() {
-  $('tr[name="query"]').each(function() {
-    $(this).find('input[name="countable"]').val('');
-    $(this).find('input[name="where"]').val('');
-  });
+function clearChart() {
+  $('.query-builder').each(function() {closeQueryBuilder($(this));});
   $('#chart').empty();
   let vgrid_selector = $('#vgrid-area');
   vgrid_selector.empty();
   vgrid_selector.hide()
   $('#embed-area').hide();
+}
+
+function clearQueries() {
+  $('tr[name="query"]').each(function() {
+    $(this).find('input[name="countable"]').val('');
+    $(this).find('input[name="where"]').val('');
+  });
   window.history.pushState({}, document.title, '/');
+  clearChart();
 }
 
 function updateQueryBox(element) {
@@ -596,6 +601,7 @@ function displaySearchResults(chart_options, lines, search_results) {
     $('#embed-area p[name="text"]').empty();
     window.history.pushState(null, '', '')
   }
+  $('#embed-area').show();
 }
 
 function getRawQueries(count_var) {
@@ -617,10 +623,7 @@ function getRawQueries(count_var) {
 }
 
 function search() {
-  $('.query-builder').each(function() {closeQueryBuilder($(this));});
-  let vgrid_selector = $('#vgrid-area');
-  vgrid_selector.empty();
-  vgrid_selector.hide();
+  clearChart();
 
   let chart_options = getChartOptions();
   let lines = getRawQueries(chart_options.count).map(

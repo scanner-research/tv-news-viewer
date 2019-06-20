@@ -128,8 +128,7 @@ class Chart {
       new Date(this.options.start_date).getUTCFullYear()
     );
 
-    let date_format = getVegaDateFormat(this.options.aggregate);
-    let unit = this.options.count == '{{ countables.mentions.value }}' ? 'occurences' : 'minutes';
+    let unit = this.options.count == '{{ countables.mentions.value }}' ? 'mentions' : 'minutes';
 
     // Helper to compute values
     let raw_precision = this.options.count == '{{ countables.mentions.value }}' ? 0 : 2;
@@ -177,8 +176,7 @@ class Chart {
           ([t, v]) => {
             let x = getPointValue(result, v, t);
             return {
-              time: t, color: color, query: getSeriesName(color),
-              value: x.value, value_str: x.text,
+              time: t, color: color, value: x.value, value_str: x.text,
               size: v.length > 0 ? 30 : 0
             };
           }
@@ -186,20 +184,9 @@ class Chart {
       }
     );
 
-    // Data for hover
-    let series = Object.keys(this.search_results).map(
-      color => ({name: getSeriesName(color), color: color})
-    );
+    // Data for tooltips
     let all_times_set = new Set(line_data.map(x => x.time));
-    let tooltip_data = Array.from(all_times_set).map(t => {
-      let point = {time: t};
-      Object.entries(this.search_results).forEach(([color, result]) => {
-        let video_data = _.get(result.main, t, []);
-        let x = getPointValue(result, video_data, t);
-        point[getSeriesName(color)] = `${x.text} in ${video_data.length} videos`;
-      });
-      return point;
-    });
+    let tooltip_data = Array.from(all_times_set).map(t => {return {time: t};});
 
     // X axis settings
     let x_tick_count = Math.min(24, all_times_set.size);
@@ -237,10 +224,7 @@ class Chart {
             domain: [x_start_date, x_end_date]
           }
         },
-        tooltip: [{
-          field: 'time', type: 'temporal', timeUnit: 'utcyearmonthdate',
-          title: this.options.aggregate, format: date_format
-        }].concat(series.map(x => ({field: x.name, type: 'nominal'})))
+        tooltip: null
       },
       layer: [{
         data: {values: line_data},
@@ -280,15 +264,15 @@ class Chart {
       }]
     };
 
+    let moment_date_format = getMomentDateFormat(this.options.aggregate);
     let this_chart = this;
     function showVideos(t) {
       let video_div_selector = $(video_div_id);
       video_div_selector.empty();
       video_div_selector.show();
-      let date_format = getMomentDateFormat(this_chart.options.aggregate);
       video_div_selector.append(`<h5>Showing ${
         SERVE_FROM_INTERNET_ARCHIVE ? 'clips (up to 3 minutes)' : 'videos'
-      } from <b>${moment(t).format(date_format)}</b>.</h5> <p>${VGRID_INSTRUCTIONS}</p>`);
+      } from <b>${moment(t).format(moment_date_format)}</b>.</h5> <p>${VGRID_INSTRUCTIONS}</p>`);
       let count = this_chart.options.count;
       Object.entries(this_chart.search_results).forEach(([color, result]) => {
         let video_ids = result.main[t].map(x => x[0]);
@@ -309,9 +293,34 @@ class Chart {
 
     vegaEmbed(div_id, vega_spec, {actions: false}).then(
       ({spec, view}) => {
+        let tooltip = $('<div class="chart-tooltip">DUMMY TEXT</div>');
+        $(div_id).append(tooltip);
+
         view.addEventListener('mouseover', function (event, item) {
-          // TODO: use this to render tooltip
+          if (item) {
+            let t = new Date(item.datum.datum.time).toISOString().split('T')[0];
+            tooltip.empty();
+            tooltip.append(`<h6>${moment(t).format(moment_date_format)}</h6>`);
+            Object.entries(this_chart.search_results).forEach(
+              ([color, result]) => {
+                let video_data = _.get(result.main, t, []);
+                let x = getPointValue(result, video_data, t);
+                tooltip.append(
+                  $('<span />').append(
+                    $(`<code style="color:${color};" />`).append(result.query),
+                    '<br>',
+                    $('<i />').append(`${x.text} in ${video_data.length} videos`),
+                    '<br>'
+                  ));
+              })
+            tooltip.css('left', event.x + 10);
+            tooltip.css('top', event.y + 10);
+            tooltip.show();
+          } else {
+            tooltip.hide();
+          }
         });
+
         if (video_div_id) {
           view.addEventListener('click', function (event, item) {
             let t = new Date(item.datum.datum.time).toISOString().split('T')[0];
@@ -328,7 +337,9 @@ function resizeVideoIFrames() {
     let iframe = $(this)[0];
     if (iframe && document.contains(iframe)) {
       $(iframe).ready(function() {
-        iframe.height = iframe.contentWindow.document.body.scrollHeight + 10;
+        if (iframe.contentWindow.document.body) {
+          iframe.height = iframe.contentWindow.document.body.scrollHeight + 10;
+        }
       });
     }
   });
