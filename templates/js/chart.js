@@ -340,11 +340,11 @@ function resizeVideoIFrames() {
     if (iframe && document.contains(iframe)) {
       $(iframe).ready(function() {
         if (iframe.contentWindow.document.body) {
-          iframe.height = iframe.contentWindow.document.body.scrollHeight + 10;
+          iframe.height = iframe.contentWindow.document.body.scrollHeight;
         }
       });
     }
   });
-  setTimeout(resizeVideoIFrames, 250);
+  setTimeout(resizeVideoIFrames, 100);
 }
 resizeVideoIFrames();
