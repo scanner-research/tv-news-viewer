@@ -1,6 +1,6 @@
 /* Embed a chart using vega-embed */
 
-const VGRID_INSTRUCTIONS = 'Click to expand videos and press "p" to play/pause.';
+const VGRID_INSTRUCTIONS = 'Click to expand videos and press <kbd>p</kbd> to play/pause.';
 var SERVE_FROM_INTERNET_ARCHIVE = true;
 
 function test_auth() {
@@ -267,12 +267,13 @@ class Chart {
     let moment_date_format = getMomentDateFormat(this.options.aggregate);
     let this_chart = this;
     function showVideos(t) {
-      let video_div_selector = $(video_div_id);
-      video_div_selector.empty();
-      video_div_selector.show();
-      video_div_selector.append(`<h5>Showing ${
-        SERVE_FROM_INTERNET_ARCHIVE ? 'clips (up to 3 minutes)' : 'videos'
-      } from <b>${moment(t).format(moment_date_format)}</b>.</h5> <p>${VGRID_INSTRUCTIONS}</p>`);
+      let video_div_selector = $(video_div_id).empty();
+      let date_str = moment(t).format(moment_date_format);
+      let content_str = SERVE_FROM_INTERNET_ARCHIVE ? 'clips (up to 3 minutes)' : 'videos';
+      video_div_selector.append(
+        $('<h5 />').append(`Showing ${content_str} from <b>${date_str}</b>.`),
+        $('<p />').append(VGRID_INSTRUCTIONS)
+      );
       let count = this_chart.options.count;
       Object.entries(this_chart.search_results).forEach(([color, result]) => {
         let video_ids = result.main[t].map(x => x[0]);
@@ -283,33 +284,34 @@ class Chart {
           video_count: video_ids.length
         };
 
-        video_div_selector.append($(`<hr><iframe name="videos" color="${color}" src="/videos" width="100%" frameBorder="0">`));
+        video_div_selector.append('<hr>', $(`<iframe name="videos" color="${color}" src="/videos" width="100%" frameBorder="0">`));
         $(`${video_div_id} iframe[color="${color}"]`).on('load', function() {
           let iframe = $(this)[0];
           iframe.contentWindow.loadVideos(params, SERVE_FROM_INTERNET_ARCHIVE);
         });
       });
+      video_div_selector.show();
     }
 
     vegaEmbed(div_id, vega_spec, {actions: false}).then(
       ({spec, view}) => {
-        let tooltip = $('<div class="chart-tooltip">DUMMY TEXT</div>');
+        let tooltip = $('<div class="chart-tooltip" />');
         $(div_id).append(tooltip);
 
         view.addEventListener('mouseover', function (event, item) {
           if (item) {
             let t = new Date(item.datum.datum.time).toISOString().split('T')[0];
             tooltip.empty();
-            tooltip.append(`<h6>${moment(t).format(moment_date_format)}</h6>`);
+            tooltip.append($('<h6 />').text(moment(t).format(moment_date_format)));
             Object.entries(this_chart.search_results).forEach(
               ([color, result]) => {
                 let video_data = _.get(result.main, t, []);
                 let x = getPointValue(result, video_data, t);
                 tooltip.append(
                   $('<span />').append(
-                    $(`<code style="color:${color};" />`).append(result.query),
+                    $(`<code style="color:${color};" />`).text(result.query),
                     '<br>',
-                    $('<i />').append(`${x.text} in ${video_data.length} videos`),
+                    $('<i />').text(`${x.text} in ${video_data.length} videos`),
                     '<br>'
                   ));
               })

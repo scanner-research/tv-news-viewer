@@ -21,16 +21,16 @@
     Let's take a closer look at the queries to generate the above chart. Each
     query corresponds to a line on the chart. The first query
     <span class="centered">
-      <tt>COUNT "screen time" WHERE onscreen.face1="person: hillary clinton"</tt>
+      <code><b>COUNT</b> "screen time" <b>WHERE</b> onscreen.face1="person: hillary clinton"</code>
     </span>
     computes all of the screen time when "Hillary Clinton"'s face is on screen
     in any video, regardless of channel. If we wished to restrict our results
     to only CNN videos, then we would modify the query with the following:
     <span class="centered">
-      <tt>
-        COUNT "screen time" WHERE onscreen.face1="person: hillary clinton"
-        <span class="red">AND channel="CNN"</span>
-      </tt>
+      <code>
+        <b>COUNT</b> "screen time" <b>WHERE</b> onscreen.face1="person: hillary clinton"
+        <b>AND</b> channel="CNN"
+      </code>
     </span>
     Now that we have seen a simple example, we will describe the full query
     grammar.
@@ -42,10 +42,10 @@
   <p>
     Screen time queries are broken in to several parts. A query has the form
     <span class="centered">
-      <tt>
+      <code>
         <b>COUNT</b> "screen time" <b>WHERE</b>
           filter1="value1" <b>AND</b> filter2="value2" <b>AND</b> ...
-      </tt>
+      </code>
     </span>
     consisting of the data being counted ("screen time") and filters, separated
     by "AND". In the earlier example, we saw two filters "onscreen.face1" and
@@ -76,7 +76,7 @@
       </tr>
       <tr>
         <td>example</td>
-        <td><tt>{{ parameters.channel }}="CNN"</tt></td>
+        <td><code>{{ parameters.channel }}="CNN"</code></td>
       </tr>
     </tbody>
 
@@ -96,7 +96,7 @@
       </tr>
       <tr>
         <td>example</td>
-        <td><tt>{{ parameters.show }}="CNN Newsroom"</tt></td>
+        <td><code>{{ parameters.show }}="CNN Newsroom"</code></td>
       </tr>
     </tbody>
 
@@ -116,7 +116,7 @@
       </tr>
       <tr>
         <td>example</td>
-        <td><tt>{{ parameters.hour }}="9-17"</tt></td>
+        <td><code>{{ parameters.hour }}="9-17"</code></td>
       </tr>
     </tbody>
 
@@ -136,7 +136,7 @@
       </tr>
       <tr>
         <td>example</td>
-        <td><tt>{{ parameters.day_of_week }}="sat-sun"</tt></td>
+        <td><code>{{ parameters.day_of_week }}="sat-sun"</code></td>
       </tr>
     </tbody>
 
@@ -156,7 +156,7 @@
       </tr>
       <tr>
         <td>example</td>
-        <td><tt>{{ parameters.is_commercial }}={{ default_is_commercial }}</tt></td>
+        <td><code>{{ parameters.is_commercial }}={{ default_is_commercial }}</code></td>
       </tr>
     </tbody>
 
@@ -176,7 +176,7 @@
       </tr>
       <tr>
         <td>example</td>
-        <td><tt>{{ parameters.caption_text }}="affordable care act"</tt></td>
+        <td><code>{{ parameters.caption_text }}="affordable care act"</code></td>
       </tr>
     </tbody>
 
@@ -196,7 +196,7 @@
       </tr>
       <tr>
         <td>example</td>
-        <td><tt>{{ parameters.caption_window }}={{ default_text_window }}</tt></td>
+        <td><code>{{ parameters.caption_window }}={{ default_text_window }}</code></td>
       </tr>
     </tbody>
 
@@ -229,12 +229,12 @@
       <tr>
         <td>example</td>
         <td>
-          <tt>
+          <code>
             {{ parameters.onscreen_face }}1="all" <br>
             {{ parameters.onscreen_face }}2="gender:male" <br>
             {{ parameters.onscreen_face }}3="gender:male,role:host" <br>
             {{ parameters.onscreen_face }}4="person:Barack Obama"
-          </tt>
+          </code>
         </td>
       </tr>
     </tbody>
@@ -255,7 +255,7 @@
       </tr>
       <tr>
         <td>example</td>
-        <td><tt>{{ parameters.onscreen_numfaces }}=2</tt></td>
+        <td><code>{{ parameters.onscreen_numfaces }}=2</code></td>
       </tr>
     </tbody>
   </table>
@@ -270,7 +270,7 @@
     This used in the following way:
 
     <span class="centered">
-      <tt>query1 <b>NORMALIZE</b> query2</tt>
+      <code>query1 <b>NORMALIZE</b> query2</code>
     </span>
 
     Succintly put, NORMALIZE allows you to normalize one query by another query.
@@ -278,15 +278,15 @@
     write:
 
     <span class="centered">
-      <tt>
-        COUNT "screen time" WHERE channel="CNN" NORMALIZE (COUNT "screen time")
-      </tt>
+      <code>
+        <b>COUNT</b> "screen time" <b>WHERE</b> channel="CNN" <b>NORMALIZE</b> (<b>COUNT</b> "screen time")
+      </code>
     </span>
 
     This is verbose. As a shorthand, we can write:
 
     <span class="centered">
-      <tt>COUNT "screen time" WHERE channel="CNN" NORMALIZE all</tt>
+      <code><b>COUNT</b> "screen time" <b>WHERE</b> channel="CNN" <b>NORMALIZE</b> all</code>
     </span>
 
     Likewise, to express the proportion of time when a man is on screen on CNN,
@@ -294,8 +294,6 @@
 
     <iframe width="100%" height="370" src="//{{ host }}/embed?width=600&height=270&data=%7B%22options%22%3A%7B%22start_date%22%3A%222010-01-01%22%2C%22end_date%22%3A%222018-04-01%22%2C%22count%22%3A%22screen%20time%22%2C%22aggregate%22%3A%22month%22%7D%2C%22queries%22%3A%5B%7B%22color%22%3A%22%234E79A7%22%2C%22text%22%3A%22COUNT%20%5C%22screen%20time%5C%22%20WHERE%20onscreen.face1%3D%5C%22gender%3A%20male%5C%22%20AND%20channel%3D%5C%22CNN%5C%22%20NORMALIZE%20(WHERE%20channel%3D%5C%22CNN%5C%22)%22%7D%5D%7D"></iframe>
 
-    If you write a query that ends in NORMALIZE, then the system will autofill
-    a default normalization option.
   </p>
 
   <h5>Can I add and subtract queries?</h5>
@@ -303,7 +301,7 @@
     Addition is not supported yet. Subtraction can be expressed as:
 
     <span class="centered">
-      <tt>query1 <b>SUBTRACT</b> query2</tt>
+      <code>query1 <b>SUBTRACT</b> query2</code>
     </span>
   </p>
 </div>
@@ -317,11 +315,11 @@
     You can also count "{{ countables.facetime.value }}" and "{{ countables.mentions.value }}". For instance,
 
     <span class="centered">
-      <tt>
+      <code>
       <b>COUNT</b> "{{ countables.facetime.value }}" <b>OF</b> faces being counted <b>WHERE</b> filters on screen time
       <br>
       <b>COUNT</b> "{{ countables.mentions.value }}" <b>OF</b> text being counted <b>WHERE</b> filters on screen time
-      </tt>
+      </code>
     </span>
   </p>
 
@@ -352,12 +350,12 @@
         </td>
         <td>all</td>
         <td>
-          <tt>
+          <code>
             "all"<br>
             "gender:male" <br>
             "gender:male,role:host" <br>
             "person:Barack Obama"
-          </tt>
+          </code>
         </td>
       </tr>
     </tbody>
@@ -366,9 +364,9 @@
       <tr>
         <td>{{ countables.mentions.value }}</td>
         <td>phrase mentions in the captions</td>
-        <td><a href="https://github.com/scanner-research/caption-index/blob/master/captions/query.py" target="_blank">grammar</a></td>
+        <td><a href="hcodeps://github.com/scanner-research/caption-index/blob/master/captions/query.py" target="_blank">grammar</a></td>
         <td>n/a</td>
-        <td><tt>"affordable care act"</tt></td>
+        <td><code>"affordable care act"</code></td>
       </tr>
     </tbody>
   </table>
@@ -388,21 +386,21 @@
       <tr>
         <td rowspan="3">{{ countables.facetime.value }}</td>
         <td>
-          <tt>COUNT "{{ countables.facetime.value }}" OF all</tt>
+          <code><b>COUNT</b> "{{ countables.facetime.value }}" <b>OF</b> all</code>
           <br>
           <i>total face time</i>
         </td>
       </tr>
       <tr>
         <td>
-          <tt>COUNT "{{ countables.facetime.value }}" OF gender:female,role:host WHERE {{ parameters.channel }}="FOX"</tt>
+          <code><b>COUNT</b> "{{ countables.facetime.value }}" <b>OF</b> gender:female,role:host <b>WHERE</b> {{ parameters.channel }}="FOX"</code>
           <br>
           <i>face time of female hosts on FOX News</i>
         </td>
       </tr>
       <tr>
         <td>
-          <tt>COUNT "{{ countables.facetime.value }}" OF person:Barack Obama WHERE {{ parameters.channel }}="FOX"</tt>
+          <code><b>COUNT</b> "{{ countables.facetime.value }}" <b>OF</b> person:Barack Obama <b>WHERE</b> {{ parameters.channel }}="FOX"</code>
           <br>
           <i>face time of Barack Obama on FOX News</i>
         </td>
@@ -413,21 +411,21 @@
       <tr>
         <td rowspan="3">{{ countables.mentions.value }}</td>
         <td>
-          <tt>COUNT "{{ countables.mentions.value }}" OF all</tt>
+          <code><b>COUNT</b> "{{ countables.mentions.value }}" <b>OF</b> all</code>
           <br>
           <i>total number of words</i>
         </td>
       </tr>
       <tr>
         <td>
-          <tt>COUNT "{{ countables.mentions.value }}" OF obamacare WHERE {{ parameters.channel }}=CNN</tt>
+          <code><b>COUNT</b> "{{ countables.mentions.value }}" <b>OF</b> obamacare <b>WHERE</b> {{ parameters.channel }}=CNN</code>
           <br>
           <i>mentions of "obamacare" on CNN</i>
         </td>
       </tr>
       <tr>
         <td>
-          <tt>COUNT "{{ countables.mentions.value }}" OF obamacare WHERE {{ parameters.onscreen_face }}1="person:Barack Obama"</tt>
+          <code><b>COUNT</b> "{{ countables.mentions.value }}" <b>OF</b> obamacare <b>WHERE</b> {{ parameters.onscreen_face }}1="person:Barack Obama"</code>
           <br>
           <i>mentions of "obamacare" when Barack Obama's face is on screen</i>
         </td>

@@ -14,23 +14,16 @@ function displayVideos(page_i) {
   }
 
   let n_pages = Math.ceil(QUERY_PARAMS.video_ids.length / VIDEOS_PER_PAGE);
-  var page_controls = `Page ${page_i + 1}/${n_pages}.`;
-  if (page_i > 0) {
-    page_controls += `&nbsp;
-      <button type="button" class="btn btn-outline-secondary btn-sm"
-      onclick="displayVideos(${page_i - 1});">previous</button>`;
-  }
-  if (page_i + 1 < n_pages) {
-    page_controls += `&nbsp;
-      <button type="button" class="btn btn-outline-secondary btn-sm"
-      onclick="displayVideos(${page_i + 1});">next</button>`;
-  }
+  $("#text-info").empty().append(
+    $('<div class="btn-group" />').append(
+      page_i > 0 ? $(`<button type="button" class="btn btn-outline-secondary btn-sm" onclick="displayVideos(${page_i - 1});" />`).text('previous') : null,
+      page_i + 1 < n_pages ? $(`<button type="button" class="btn btn-outline-secondary btn-sm" onclick="displayVideos(${page_i + 1});" />`).text('next') : null,
+      $('<button type="button" class="btn btn-secondary btn-sm" disabled />').text(`Page ${page_i + 1}/${n_pages}`),
+    ),
+    '&nbsp;',
+    $(`<code style="color:${QUERY_PARAMS.color}"/>`).text(QUERY_PARAMS.query)
+  );
 
-  let text_html = `
-    <font color="${QUERY_PARAMS.color}"><b><tt>${QUERY_PARAMS.query}</tt></b></font>
-    <b>${PAGINATE && n_pages > 1 ? page_controls : ''}</b>`;
-
-  $("#text-info").html(text_html);
   let query = new SearchableQuery(QUERY_PARAMS.query, QUERY_PARAMS.count, false);
   console.log('Executing query:', query);
 
@@ -49,7 +42,7 @@ function displayVideos(page_i) {
       json_data => {
         try {
           $('#videos').empty();
-          $('#videos').append(`<div id="videos-${page_i}">`);
+          $('#videos').append(`<div id="videos-${page_i}" />`);
 
           let vgrid_settings = {
             show_timeline: true,

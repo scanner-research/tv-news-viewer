@@ -34,6 +34,9 @@
     width: 15px;
     height: 15px;
   }
+  code {
+    color: black;
+  }
 </style>
 {% endblock %}
 
@@ -58,13 +61,20 @@
   function renderText(lines) {
     // TODO: XSS attack here
     lines.forEach(line => {
-      let html = `<tr name='${line.color}'>
-        <td><div class="color-box" style="background-color: ${line.color};"></div></td>
-        <td class="query-td"><tt>${line.query.query}</tt></td>
-      </tr>`;
-      $('#search-table tbody').append(html);
+      $('#search-table tbody').append(
+        $('<tr />').append(
+          $('<td />').append(`<div class="color-box" style="background-color: ${line.color};" />`),
+          $('<td />').append($('<code />').text(line.query.query)))
+      );
     });
-    $('#options').html(`Showing results for the following from <b>${chart_options.start_date}</b> to <b>${chart_options.end_date}</b> aggregated by <b>${chart_options.aggregate}</b>.`);
+    $('#options').append(
+      'Showing results from ',
+      $('<b />').text(chart_options.start_date),
+      ' to ',
+      $('<b />').text(chart_options.end_date),
+      ' aggregated by ',
+      $('<b />').text(chart_options.aggregate)
+    );
   }
 
   let lines = data.queries.map(raw_query => {
