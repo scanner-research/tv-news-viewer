@@ -7,29 +7,12 @@
   <script src="{{ url_for('static', filename='js/constant.js') }}" /></script>
   <script src="{{ url_for('static', filename='js/query.js') }}" /></script>
   <script src="{{ url_for('static', filename='js/videos.js') }}" /></script>
-
-  <style>
-    #text-info {
-      padding-top: 25px;
-      text-align: center;
-    }
-  </style>
 {% endblock %}
 
-{% block content %}
+{% block body %}
 <div>
   <p id="text-info"></p>
   <div id="videos"></div>
 </div>
-
-<script>
-  if (window.location != window.parent.location) {
-    $('.top-header').hide();
-  } else {
-    let params = JSON.parse(decodeURIComponent((new URL(document.location)).searchParams.get('params')));
-    loadVideos(params);
-  }
-</script>
-
 <script src="{{ url_for('static', filename='vgrid/bundle.js') }}"></script>
 {% endblock %}

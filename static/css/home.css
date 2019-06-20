@@ -72,6 +72,13 @@
   display: none;
   word-break: break-all;
 }
+#vgrid-area {
+  text-align: center;
+  border-style: solid;
+  border-width: medium;
+  padding: 10px;
+  display: none;
+}
 #chart {
   width: 100%;
   text-align: center;

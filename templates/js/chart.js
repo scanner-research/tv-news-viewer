@@ -1,12 +1,12 @@
 /* Embed a chart using vega-embed */
 
-const MAX_NEW_WINDOW_VIDEOS = 100;
+const VGRID_INSTRUCTIONS = 'Click to expand videos and press "p" to play/pause.';
 var SERVE_FROM_INTERNET_ARCHIVE = true;
 
 function test_auth() {
   let img = new Image();
   img.onload = () => { SERVE_FROM_INTERNET_ARCHIVE = false; };
-  img.src = "{{ video_endpoint }}/do_not_delete.jpg";
+  img.src = '{{ video_endpoint }}/do_not_delete.jpg';
 }
 test_auth();
 
@@ -105,42 +105,9 @@ function getEndDate(date_str) {
 
 let secondsToMinutes = x => x / 60;
 
-// The currently loaded chart
-var current_chart;
-
-function chartHrefHandler(color, t, video_div_id) {
-  // Enable embedded player
-  let result = current_chart.search_results[color];
-  let video_ids = result.main[t].map(x => x[0]);
-  let date_format = getMomentDateFormat(current_chart.options.aggregate);
-  let params = {
-    time: moment(t).format(date_format), color: color,
-    count: current_chart.options.count, query: result.query,
-    video_ids: video_div_id != 'null' ? video_ids :
-      shuffle(video_ids).slice(0, MAX_NEW_WINDOW_VIDEOS),
-    video_count: video_ids.length
-  };
-  console.log('Click params:', params);
-  if (video_div_id != 'null') {
-    $(video_div_id).html($(`<iframe src="/videos" width="100%" frameBorder="0">`));
-    let iframe_selector = video_div_id + ' iframe';
-    let iframe = $(iframe_selector)[0];
-    $(iframe_selector).on('load', () => {
-      iframe.contentWindow.loadVideos(params, SERVE_FROM_INTERNET_ARCHIVE);
-      function resizeIframe() {
-        if (document.contains(iframe)) {
-          iframe.height = iframe.contentWindow.document.body.scrollHeight + 35;
-          setTimeout(resizeIframe, 250);
-        } else {
-          console.log('height timer terminated');
-        }
-      }
-      setTimeout(resizeIframe, 250)
-    });
-  } else {
-    let url = `/videos?params=${encodeURIComponent(JSON.stringify(params))}`;
-    window.open(url, '_blank');
-  }
+// FIXME: hack to make vega-lite work
+function sanitizeStringForVegalite(s) {
+  return s.replaceAll('[', '').replaceAll(']', '').replaceAll('"', '').replaceAll('.', '').replaceAll("'", '');
 }
 
 class Chart {
@@ -153,9 +120,7 @@ class Chart {
   load(div_id, video_div_id) {
     let getSeriesName = (color) => {
       let result = this.search_results[color];
-      // TODO: hack to make vega-lite work
-      let query = result.query.replaceAll('[', '').replaceAll(']', '').replaceAll('"', '').replaceAll('.', '').replaceAll("'", '');
-      return query;
+      return sanitizeStringForVegalite(result.query);
     };
 
     let year_span = (
@@ -166,17 +131,7 @@ class Chart {
     let date_format = getVegaDateFormat(this.options.aggregate);
     let unit = this.options.count == '{{ countables.mentions.value }}' ? 'occurences' : 'minutes';
 
-    var y_axis_title;
-    if (Object.values(this.search_results).some(v => v.has_normalization())) {
-      if (Object.values(this.search_results).some(v => !v.has_normalization())) {
-        y_axis_title = 'Unknown: normalized and raw units';
-      } else {
-        y_axis_title = `Normalized fraction of ${unit}`;
-      }
-    } else {
-      y_axis_title = `Number of ${unit}`;
-    }
-
+    // Helper to compute values
     let raw_precision = this.options.count == '{{ countables.mentions.value }}' ? 0 : 2;
     let exp_threshold = 0.001;
     function getPointValue(result, video_data, t) {
@@ -202,44 +157,43 @@ class Chart {
       return {value: value, text: value_str};
     }
 
-    let point_data = Object.keys(this.search_results).flatMap(color => {
-      let result = this.search_results[color];
-      var values = result.main;
-      // Fill in zeros for subtraction
-      if (result.subtract) {
-        Object.keys(result.subtract).forEach(t => {
-          if (!values.hasOwnProperty(t)) {
-            values[t] = [];
-          }
-        });
-      }
-      // Fill in zeros for points next to non-zero points
-      values = fillZeros(
-        values, this.options.aggregate, this.options.start_date,
-        this.options.end_date, []);
-      return Object.keys(values).map(
-        t => {
-          let link_href = (ENABLE_PLAYBACK && values[t].length > 0) ?
-            `javascript:chartHrefHandler("${color}", "${t}", "${video_div_id}")`
-            : null;
-          let x = getPointValue(result, values[t], t);
-          return {
-            time: t, color: color, query: getSeriesName(color),
-            value: x.value, value_str: x.text,
-            video_href: link_href, size: values[t].length > 0 ? 30 : 0
-          };
+    // Data for lines
+    let line_data = Object.entries(this.search_results).flatMap(
+      ([color, result]) => {
+        var values = result.main;
+        // Fill in zeros for subtraction
+        if (result.subtract) {
+          Object.keys(result.subtract).forEach(t => {
+            if (!values.hasOwnProperty(t)) {
+              values[t] = [];
+            }
+          });
         }
-      );
-    });
+        // Fill in zeros for points next to non-zero points
+        values = fillZeros(
+          values, this.options.aggregate, this.options.start_date,
+          this.options.end_date, []);
+        return Object.entries(values).map(
+          ([t, v]) => {
+            let x = getPointValue(result, v, t);
+            return {
+              time: t, color: color, query: getSeriesName(color),
+              value: x.value, value_str: x.text,
+              size: v.length > 0 ? 30 : 0
+            };
+          }
+        );
+      }
+    );
 
+    // Data for hover
     let series = Object.keys(this.search_results).map(
       color => ({name: getSeriesName(color), color: color})
     );
-    let set_t = new Set(point_data.map(x => x.time));
-    let tooltip_data = Array.from(set_t).map(t => {
+    let all_times_set = new Set(line_data.map(x => x.time));
+    let tooltip_data = Array.from(all_times_set).map(t => {
       let point = {time: t};
-      Object.keys(this.search_results).forEach(color => {
-        let result = this.search_results[color]
+      Object.entries(this.search_results).forEach(([color, result]) => {
         let video_data = _.get(result.main, t, []);
         let x = getPointValue(result, video_data, t);
         point[getSeriesName(color)] = `${x.text} in ${video_data.length} videos`;
@@ -247,10 +201,23 @@ class Chart {
       return point;
     });
 
-    let x_tick_count = Math.min(24, set_t.size);
+    // X axis settings
+    let x_tick_count = Math.min(24, all_times_set.size);
     let x_start_date = getStartDate(
       this.options.aggregate, this.options.start_date);
     let x_end_date = getEndDate(this.options.end_date);
+
+    // Y axis settings
+    var y_axis_title;
+    if (Object.values(this.search_results).some(v => v.has_normalization())) {
+      if (Object.values(this.search_results).some(v => !v.has_normalization())) {
+        y_axis_title = 'Unknown: normalized and raw units';
+      } else {
+        y_axis_title = `Normalized fraction of ${unit}`;
+      }
+    } else {
+      y_axis_title = `Number of ${unit}`;
+    }
 
     let vega_spec = {
       $schema: 'https://vega.github.io/schema/vega-lite/v3.json',
@@ -261,6 +228,11 @@ class Chart {
       encoding: {
         x: {
           timeUnit: 'utcyearmonthdate', field: 'time', type: 'temporal',
+          axis: {
+            titleFontSize: 12, labelFontSize: 12, tickCount: x_tick_count,
+            format: getVegaDateFormat(this.options.aggregate), title: null,
+            labelAngle: -30
+          },
           scale: {
             domain: [x_start_date, x_end_date]
           }
@@ -268,10 +240,10 @@ class Chart {
         tooltip: [{
           field: 'time', type: 'temporal', timeUnit: 'utcyearmonthdate',
           title: this.options.aggregate, format: date_format
-        }].concat(series.map(x => ({field: x.name, type: 'nominal'}))),
+        }].concat(series.map(x => ({field: x.name, type: 'nominal'})))
       },
       layer: [{
-        data: {values: point_data},
+        data: {values: line_data},
         mark: {
           type: 'line',
           interpolate: 'linear'
@@ -283,7 +255,12 @@ class Chart {
               domain: [x_start_date, x_end_date]
             }
           },
-          y: {field: 'value', type: 'quantitative'},
+          y: {
+            field: 'value', type: 'quantitative', title: y_axis_title,
+            axis: {
+              titleFontSize: 12, labelFontSize: 12, tickCount: 5
+            }
+          },
           color: {field: 'color', type: 'nominal', scale: null},
           size: {value: 2},
           opacity: {value: 0.6}
@@ -295,54 +272,66 @@ class Chart {
         },
         encoding: {
           color: {
-            condition:{
+            condition: {
               selection: {not: 'hover'}, value: 'transparent'
             }
           },
         }
-      }, {
-        data: {values: point_data},
-        mark: {
-          type: 'point',
-          filled: true
-        },
-        encoding: {
-          x: {
-            field: 'time', type: 'temporal', timeUnit: 'utcyearmonthdate',
-            title: null,
-            axis: {
-              titleFontSize: 12, labelFontSize: 12, tickCount: x_tick_count,
-              format: getVegaDateFormat(this.options.aggregate),
-              labelAngle: -30
-            },
-            scale: {
-              domain: [x_start_date, x_end_date]
-            }
-          },
-          y: {
-            field: 'value', type: 'quantitative', title: y_axis_title,
-            axis: {
-              titleFontSize: 12, labelFontSize: 12, tickCount: 5
-            }
-          },
-          color: {field: 'color', type: 'nominal', scale: null},
-          size: {field: 'size', type: 'quantitative', scale: null},
-          opacity: {value: 1},
-          href: ENABLE_PLAYBACK ? {
-            field: 'video_href', type: 'nominal'
-          } : null,
-          tooltip: [
-            {field: 'time', type: 'temporal', timeUnit: 'utcyearmonthdate',
-             title: this.options.aggregate,
-             format: getVegaDateFormat(this.options.aggregate)},
-            {field: 'query', type: 'nominal'},
-            {field: 'value_str', type: 'nominal', title: 'value'}
-          ]
-        }
       }]
     };
-    vegaEmbed(div_id, vega_spec, {actions: false});
 
-    current_chart = this;
+    let this_chart = this;
+    function showVideos(t) {
+      let video_div_selector = $(video_div_id);
+      video_div_selector.empty();
+      video_div_selector.show();
+      let date_format = getMomentDateFormat(this_chart.options.aggregate);
+      video_div_selector.append(`<h5>Showing ${
+        SERVE_FROM_INTERNET_ARCHIVE ? 'clips (up to 3 minutes)' : 'videos'
+      } from <b>${moment(t).format(date_format)}</b>.</h5> <p>${VGRID_INSTRUCTIONS}</p>`);
+      let count = this_chart.options.count;
+      Object.entries(this_chart.search_results).forEach(([color, result]) => {
+        let video_ids = result.main[t].map(x => x[0]);
+        let params = {
+          color: color, count: count, query: result.query,
+          video_ids: video_div_id ? video_ids :
+            shuffle(video_ids).slice(0, MAX_NEW_WINDOW_VIDEOS),
+          video_count: video_ids.length
+        };
+
+        video_div_selector.append($(`<hr><iframe name="videos" color="${color}" src="/videos" width="100%" frameBorder="0">`));
+        $(`${video_div_id} iframe[color="${color}"]`).on('load', function() {
+          let iframe = $(this)[0];
+          iframe.contentWindow.loadVideos(params, SERVE_FROM_INTERNET_ARCHIVE);
+        });
+      });
+    }
+
+    vegaEmbed(div_id, vega_spec, {actions: false}).then(
+      ({spec, view}) => {
+        view.addEventListener('mouseover', function (event, item) {
+          // TODO: use this to render tooltip
+        });
+        if (video_div_id) {
+          view.addEventListener('click', function (event, item) {
+            let t = new Date(item.datum.datum.time).toISOString().split('T')[0];
+            showVideos(t);
+          });
+        }
+      }
+    );
   }
 }
+
+function resizeVideoIFrames() {
+  $('iframe[name="videos"]').each(function() {
+    let iframe = $(this)[0];
+    if (iframe && document.contains(iframe)) {
+      $(iframe).ready(function() {
+        iframe.height = iframe.contentWindow.document.body.scrollHeight + 10;
+      });
+    }
+  });
+  setTimeout(resizeVideoIFrames, 250);
+}
+resizeVideoIFrames();

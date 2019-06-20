@@ -333,7 +333,9 @@ function clearQueries() {
     $(this).find('input[name="where"]').val('');
   });
   $('#chart').empty();
-  $('#vgrid').empty();
+  let vgrid_selector = $('#vgrid-area');
+  vgrid_selector.empty();
+  vgrid_selector.hide()
   $('#embed-area').hide();
   window.history.pushState({}, document.title, '/');
 }
@@ -559,7 +561,7 @@ var setCopyUrl, setEmbedUrl;
 function displaySearchResults(chart_options, lines, search_results) {
   new Chart(chart_options, search_results, {
     width: $("#chart-area").width(), height: EMBED_DIMS.height
-  }).load('#chart', '#vgrid');
+  }).load('#chart', '#vgrid-area');
 
   if (Object.keys(search_results).length == lines.length) {
     // Allow embedding if all queries are ok
@@ -616,7 +618,9 @@ function getRawQueries(count_var) {
 
 function search() {
   $('.query-builder').each(function() {closeQueryBuilder($(this));});
-  $('#vgrid').empty();
+  let vgrid_selector = $('#vgrid-area');
+  vgrid_selector.empty();
+  vgrid_selector.hide();
 
   let chart_options = getChartOptions();
   let lines = getRawQueries(chart_options.count).map(

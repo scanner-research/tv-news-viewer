@@ -3,8 +3,6 @@ const DEFAULT_COLORS = [
   '#EDC948', '#B07AA1', '#FF9DA7', '#9C755F', '#BAB0AC'
 ];
 
-const ENABLE_PLAYBACK = true;
-
 const DEFAULT_MENTIONS_QUERY = 'affordable care act';
 const DEFAULT_FACETIME_QUERY = 'barack obama';
 const DEFAULT_VIDEOTIME_QUERY = '';

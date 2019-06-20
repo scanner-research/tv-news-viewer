@@ -4,8 +4,6 @@ var USE_ARCHIVE = true;
 var QUERY_PARAMS = null;
 var CURR_PAGE = null;
 
-const VGRID_USAGE = 'Click to expand videos and press "p" to play/pause.';
-
 function displayVideos(page_i) {
   let count_var = QUERY_PARAMS.count;
 
@@ -28,20 +26,9 @@ function displayVideos(page_i) {
       onclick="displayVideos(${page_i + 1});">next</button>`;
   }
 
-  var text_html;
-  if (USE_ARCHIVE) {
-    text_html = `Sampling clips for
-      <font color="${QUERY_PARAMS.color}"><b><tt>${QUERY_PARAMS.query}</tt></b></font>
-      from ${QUERY_PARAMS.time}.
-      <br>
-      <b>Clips are capped at 3 minutes. ${VGRID_USAGE} ${PAGINATE && n_pages > 1 ? page_controls : ''}</b>`;
-  } else {
-    text_html = `Showing results for
-      <font color="${QUERY_PARAMS.color}"><b><tt>${QUERY_PARAMS.query}</tt></b></font>
-      from ${video_ids.length} of ${QUERY_PARAMS.video_count} videos from ${QUERY_PARAMS.time}.
-      <br>
-      <b>${VGRID_USAGE} ${PAGINATE && n_pages > 1 ? page_controls : ''}</b>`;
-  }
+  let text_html = `
+    <font color="${QUERY_PARAMS.color}"><b><tt>${QUERY_PARAMS.query}</tt></b></font>
+    <b>${PAGINATE && n_pages > 1 ? page_controls : ''}</b>`;
 
   $("#text-info").html(text_html);
   let query = new SearchableQuery(QUERY_PARAMS.query, QUERY_PARAMS.count, false);
