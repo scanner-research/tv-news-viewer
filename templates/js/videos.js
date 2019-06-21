@@ -15,13 +15,13 @@ function displayVideos(page_i) {
 
   let n_pages = Math.ceil(QUERY_PARAMS.video_ids.length / VIDEOS_PER_PAGE);
   $("#text-info").empty().append(
-    $('<div class="btn-group" />').append(
-      page_i > 0 ? $(`<button type="button" class="btn btn-outline-secondary btn-sm" onclick="displayVideos(${page_i - 1});" />`).text('previous') : null,
-      page_i + 1 < n_pages ? $(`<button type="button" class="btn btn-outline-secondary btn-sm" onclick="displayVideos(${page_i + 1});" />`).text('next') : null,
-      $('<button type="button" class="btn btn-secondary btn-sm" disabled />').text(`Page ${page_i + 1}/${n_pages}`),
-    ),
-    '&nbsp;',
     $(`<code style="color:${QUERY_PARAMS.color}"/>`).text(QUERY_PARAMS.query)
+  );
+
+  $("#page-buttons").empty().append(
+    page_i > 0 ? $(`<button type="button" class="btn btn-outline-secondary btn-sm" onclick="displayVideos(${page_i - 1});" />`).text('previous') : null,
+    page_i + 1 < n_pages ? $(`<button type="button" class="btn btn-outline-secondary btn-sm" onclick="displayVideos(${page_i + 1});" />`).text('next') : null,
+    $('<button type="button" class="btn btn-secondary btn-sm" disabled />').text(`Page ${page_i + 1} / ${n_pages}`)
   );
 
   let query = new SearchableQuery(QUERY_PARAMS.query, QUERY_PARAMS.count, false);

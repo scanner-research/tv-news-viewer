@@ -33,3 +33,9 @@ a {
   color: black;
   text-align: left;
 }
+.chart-tooltip span {
+  display: block;
+}
+.chart-tooltip h6 {
+  display: inline-block;
+}
