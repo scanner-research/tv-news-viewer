@@ -41,8 +41,7 @@ function displayVideos(page_i) {
       video_ids,
       json_data => {
         try {
-          $('#videos').empty();
-          $('#videos').append(`<div id="videos-${page_i}" />`);
+          $('#videos').empty().append(`<div id="videos-${page_i}" />`);
 
           let vgrid_settings = {
             show_timeline: true,

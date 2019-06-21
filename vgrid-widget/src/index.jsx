@@ -15,6 +15,7 @@ function loadJsonData(json_data, caption_data) {
   json_data.forEach(video_json => {
     let video_id = video_json.metadata.id;
     let video_name = video_json.metadata.name;
+    let duration = video_json.metadata.num_frames / video_json.metadata.fps;
 
     videos.push({
       id: video_id,
@@ -40,7 +41,7 @@ function loadJsonData(json_data, caption_data) {
       }, {
         name: '_captions',
         interval_set: new IntervalSet(
-          _.get(caption_data, video_id, []).map(
+          _.get(caption_data, video_id, [[0, duration, 'No captions found.']]).map(
             caption => {
               let [start, end, text] = caption;
               return new Interval(
@@ -53,7 +54,7 @@ function loadJsonData(json_data, caption_data) {
         name: '_metadata',
         interval_set: new IntervalSet([
           new Interval(
-            new Bounds(0, video_json.metadata.num_frames / video_json.metadata.fps),
+            new Bounds(0, duration + 1),
             {
               spatial_type: SpatialType_Temporal.get_instance(),
               metadata: {video: new Metadata_Generic(video_name)}
@@ -80,7 +81,7 @@ function format_time(s) {
   let m = Math.floor(s / 60);
   s -= m * 60;
   let pad = x => x.toString().padStart(2, '0');
-  return `${pad(h)}h:${pad(m)}m:${pad(s)}s`;
+  return `${pad(h)}h ${pad(m)}m ${pad(Math.floor(s))}s`;
 }
 
 
@@ -142,7 +143,7 @@ function loadJsonDataForInternetArchive(json_data, caption_data) {
       }, {
         name: '_captions',
         interval_set: new IntervalSet(
-          _.get(caption_data, video_id, []).filter(
+          _.get(caption_data, video_id, [[block_start, block_end, 'No captions found.']]).filter(
             filterIntervals
           ).map(
             caption => {
