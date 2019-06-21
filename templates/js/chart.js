@@ -1,6 +1,6 @@
 /* Embed a chart using vega-embed */
 
-const VGRID_INSTRUCTIONS = 'Click to expand videos and press <kbd>p</kbd> to play/pause.';
+const VGRID_INSTRUCTIONS = 'Click to expand videos and press <kbd>space</kbd> to play/pause.';
 var SERVE_FROM_INTERNET_ARCHIVE = true;
 
 function test_auth() {
@@ -298,7 +298,7 @@ class Chart {
         let tooltip = $('<div class="chart-tooltip" />');
         $(div_id).append(tooltip);
 
-        view.addEventListener('mouseover', function (event, item) {
+        view.addEventListener('mouseover', function(event, item) {
           if (item) {
             let t = new Date(item.datum.datum.time).toISOString().split('T')[0];
             tooltip.empty();
@@ -324,7 +324,7 @@ class Chart {
         });
 
         if (video_div_id) {
-          view.addEventListener('click', function (event, item) {
+          view.addEventListener('click', function(event, item) {
             let t = new Date(item.datum.datum.time).toISOString().split('T')[0];
             showVideos(t);
           });
@@ -348,3 +348,8 @@ function resizeVideoIFrames() {
   setTimeout(resizeVideoIFrames, 100);
 }
 resizeVideoIFrames();
+
+// Invalidate all tooltips
+$(window).scroll(function() {
+  $('.chart-tooltip').hide();
+});

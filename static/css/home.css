@@ -35,6 +35,7 @@
   margin: auto;
   width: 40px;
   min-height: 30px;
+  cursor: pointer;
 }
 #search-table .remove-row-btn {
   width: 35px;
@@ -83,6 +84,9 @@
 #chart {
   width: 100%;
   text-align: center;
+}
+#chart canvas {
+  cursor: pointer;
 }
 #shade {
   background-color: #000000;
