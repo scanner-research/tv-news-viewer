@@ -47,12 +47,19 @@ function displayVideos(page_i) {
             show_timeline: true,
             show_captions: false,
             show_metadata: false,
-            paginate: false
+            paginate: false,
+            // FIXME: vgrid not using these constants properly
+            vblock_constants: {
+              timeline_height: 50,
+              timeline_height_expanded: 100
+            }
           }
           if (USE_ARCHIVE) {
             vgrid_settings.video_endpoint = '{{ archive_video_endpoint }}';
+            vgrid_settings.show_timeline_controls = false;
           } else {
             vgrid_settings.video_endpoint = '{{ video_endpoint }}';
+            vgrid_settings.show_timeline_controls = true;
 
             {% if frameserver_endpoint is not none %}
             // FIXME: this reveals the frameserver

@@ -284,7 +284,7 @@ class Chart {
           video_count: video_ids.length
         };
 
-        video_div_selector.append('<hr>', $(`<iframe name="videos" color="${color}" src="/videos" width="100%" frameBorder="0">`));
+        video_div_selector.append('<hr>', $(`<iframe class="vgrid-iframe" color="${color}" src="/videos" width="100%" frameBorder="0">`));
         $(`${video_div_id} iframe[color="${color}"]`).on('load', function() {
           let iframe = $(this)[0];
           iframe.contentWindow.loadVideos(params, SERVE_FROM_INTERNET_ARCHIVE);
@@ -335,7 +335,7 @@ class Chart {
 }
 
 function resizeVideoIFrames() {
-  $('iframe[name="videos"]').each(function() {
+  $('.vgrid-iframe').each(function() {
     let iframe = $(this)[0];
     if (iframe && document.contains(iframe)) {
       $(iframe).ready(function() {
