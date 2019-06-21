@@ -28,6 +28,7 @@ function loadJsonData(json_data, caption_data) {
 
     interval_blocks.push({
       video_id: video_id,
+      title: video_name,
       interval_sets: [{
         name: 'results',
         interval_set: new IntervalSet(
@@ -50,17 +51,6 @@ function loadJsonData(json_data, caption_data) {
               );
             }
           ))
-      }, {
-        name: '_metadata',
-        interval_set: new IntervalSet([
-          new Interval(
-            new Bounds(0, duration + 1),
-            {
-              spatial_type: SpatialType_Temporal.get_instance(),
-              metadata: {video: new Metadata_Generic(video_name)}
-            }
-          )
-        ])
       }]
     });
   });
@@ -81,7 +71,11 @@ function format_time(s) {
   let m = Math.floor(s / 60);
   s -= m * 60;
   let pad = x => x.toString().padStart(2, '0');
-  return `${pad(h)}h ${pad(m)}m ${pad(Math.floor(s))}s`;
+  var ret = `${pad(m)}m ${pad(Math.floor(s))}s`;
+  if (h > 0) {
+    ret = `${h}h ` + ret;
+  }
+  return ret;
 }
 
 
@@ -128,6 +122,7 @@ function loadJsonDataForInternetArchive(json_data, caption_data) {
 
     interval_blocks.push({
       video_id: video_id,
+      title: `${video_name} (from ${format_time(block_start)} to ${format_time(block_end)})`,
       interval_sets: [{
         name: 'results',
         interval_set: new IntervalSet(
@@ -154,20 +149,6 @@ function loadJsonDataForInternetArchive(json_data, caption_data) {
               );
             }
           ))
-      }, {
-        name: '_metadata',
-        interval_set: new IntervalSet([
-          new Interval(
-            new Bounds(0, block_length + 1),
-            {
-              spatial_type: SpatialType_Temporal.get_instance(),
-              metadata: {
-                video: new Metadata_Generic(video_name),
-                clip: new Metadata_Generic(`${format_time(block_start)} to ${format_time(block_end)}`)
-              }
-            }
-          )
-        ])
       }]
     });
   });
