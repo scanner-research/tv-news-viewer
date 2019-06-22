@@ -46,6 +46,9 @@
   text-align: center;
   font-size: 12px;
 }
+#search-table .query-text {
+  font-family: monospace;
+}
 
 #add-row-btn {
   width: 35px;

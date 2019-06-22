@@ -499,13 +499,13 @@ function addRow(query) {
     $('<td class="query-td" />').append(
       $('<div class="input-group" />').append(
         $('<div class="input-group-prepend noselect" onclick="toggleQueryBuilder(this);" />').css('cursor', 'pointer').append(
-          $('<span class="input-group-text" name="count-type-prefix" />')),
+          $('<span class="input-group-text query-text" name="count-type-prefix" />')),
         $('<div class="countable-only" />').append(
-            `<input type="text" class="form-control" name="countable" placeholder="${QUERY_KEYWORDS.all}" />`
+            `<input type="text" class="form-control query-text" name="countable" placeholder="${QUERY_KEYWORDS.all}" />`
           ).val(query_clauses.count),
         $('<div class="input-group-prepend countable-only noselect" />').append(
-          $('<span class="input-group-text" />').text('WHERE')),
-        $('<input type="text" class="form-control" name="where" placeholder="no filters" onchange="onWhereUpdate(this);"/>').val(query_clauses.where)
+          $('<span class="input-group-text query-text" />').text('WHERE')),
+        $('<input type="text" class="form-control query-text" name="where" placeholder="no filters" onchange="onWhereUpdate(this);"/>').val(query_clauses.where)
       )
     )
   );
