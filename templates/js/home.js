@@ -201,10 +201,14 @@ function getRandomSample(arr) {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
-function getColor() {
-  for (var i in DEFAULT_COLORS) {
-    if ($(`#search-table tr[data-color='${DEFAULT_COLORS[i]}']`).length == 0) {
-      return DEFAULT_COLORS[i];
+function getColor(start_idx) {
+  if (!start_idx) {
+    start_idx = 0;
+  }
+  for (var i = 0; i < DEFAULT_COLORS.length; i++) {
+    let color_idx = (i + start_idx) %  DEFAULT_COLORS.length;
+    if ($(`#search-table tr[data-color='${DEFAULT_COLORS[color_idx]}']`).length == 0) {
+      return DEFAULT_COLORS[color_idx];
     }
   }
   throw Error('All colors used');
@@ -338,8 +342,12 @@ function clearChart() {
 
 function clearQueries() {
   $('tr[name="query"]').each(function() {
-    $(this).find('input[name="countable"]').val('');
-    $(this).find('input[name="where"]').val('');
+    if ($(this).index() > 0) {
+      removeRow($(this));
+    } else {
+      $(this).find('input[name="countable"]').val('');
+      $(this).find('input[name="where"]').val('');
+    }
   });
   window.history.pushState({}, document.title, '/');
   clearChart();
@@ -438,20 +446,21 @@ function getDefaultQuery() {
 function onWhereUpdate(element) {
   // Rewrite query with default normalization if necessary
   let count_var = $('#countVar').val();
-  let where_str = $.trim($(element).val());
-  if (where_str.endsWith(QUERY_KEYWORDS.normalize)) {
-    if (count_var == '{{ countables.videotime.value }}') {
-      $(element).val(`${where_str} ${QUERY_KEYWORDS.all}`);
-    } else {
-      let no_normlize_where_str = $.trim(
-        where_str.slice(0, where_str.indexOf(QUERY_KEYWORDS.normalize)));
-      var norm_query = QUERY_KEYWORDS.all;
-      if (count_var != '{{ countables.mentions.value }}' && no_normlize_where_str.length > 0) {
-        norm_query += ` WHERE ${no_normlize_where_str}`;
-      }
-      $(element).val(`${where_str} ${norm_query}`);
-    }
-  }
+
+  // let where_str = $.trim($(element).val());
+  // if (where_str.endsWith(QUERY_KEYWORDS.normalize)) {
+  //   if (count_var == '{{ countables.videotime.value }}') {
+  //     $(element).val(`${where_str} ${QUERY_KEYWORDS.all}`);
+  //   } else {
+  //     let no_normlize_where_str = $.trim(
+  //       where_str.slice(0, where_str.indexOf(QUERY_KEYWORDS.normalize)));
+  //     var norm_query = QUERY_KEYWORDS.all;
+  //     if (count_var != '{{ countables.mentions.value }}' && no_normlize_where_str.length > 0) {
+  //       norm_query += ` WHERE ${no_normlize_where_str}`;
+  //     }
+  //     $(element).val(`${where_str} ${norm_query}`);
+  //   }
+  // }
 
   // Check the query
   let query = `COUNT "${count_var}" WHERE ${$(element).val()}`;
@@ -465,37 +474,41 @@ function onWhereUpdate(element) {
   $(element).css('background-color', err ? '#fee7e2' : '');
 }
 
+function changeRowColor(element) {
+  let query_row = $(element).closest('tr[name="query"]');
+  let old_color = query_row.attr('data-color');
+  let old_color_idx = DEFAULT_COLORS.indexOf(old_color);
+  let new_color = getColor(old_color_idx + 1);
+  query_row.find('.color-box').css('background-color', new_color);
+  query_row.attr('data-color', new_color);
+}
+
 function addRow(query) {
   let color = _.get(query, 'color', getColor());
   let text = _.get(query, 'text', getDefaultQuery());
   let count_var = $('#countVar').val();
   let query_clauses = new SearchableQuery(text, count_var).clauses();
 
-  let new_row = $('<tr name="query">');
-  new_row.attr('data-color', color);
-  new_row.append('<td valign="top"><button type="button" class="btn btn-outline-secondary btn-sm remove-row-btn" onclick="removeRow(this);">-</button></td>')
-  let color_box = $('<div class="color-box" onloadedmetadata=""onclick="toggleQueryBuilder(this);">');
-  color_box.css('background-color', color);
-  new_row.append($('<td valign="top">').append(color_box));
-  new_row.append(`
-    <td class="query-td">
-      <div class="input-group">
-        <div class="input-group-prepend">
-          <span class="input-group-text" name="count-type-prefix"></span>
-        </div>
-        <div class="countable-only">
-          <input type="text" class="form-control" name="countable"
-                 placeholder="${QUERY_KEYWORDS.all}">
-        </div>
-        <div class="input-group-prepend countable-only">
-          <span class="input-group-text">WHERE</span>
-        </div>
-        <input type="text" class="form-control" name="where" placeholder="no filters"
-               onchange="onWhereUpdate(this);">
-      </div>
-    </td>`);
-  new_row.find('input[name="where"]').val(query_clauses.where);
-  new_row.find('input[name="countable"]').val(query_clauses.count);
+  let new_row = $('<tr name="query">').attr('data-color', color).append(
+    $('<td valign="top"/>').append(
+      $('<button type="button" class="btn btn-outline-secondary btn-sm remove-row-btn" onclick="removeRow(this);" />').text('-')
+    ),
+    $('<td valign="top">').append(
+      $('<div class="color-box" onclick="changeRowColor(this);" />').css('background-color', color)
+    ),
+    $('<td class="query-td" />').append(
+      $('<div class="input-group" />').append(
+        $('<div class="input-group-prepend noselect" onclick="toggleQueryBuilder(this);" />').css('cursor', 'pointer').append(
+          $('<span class="input-group-text" name="count-type-prefix" />')),
+        $('<div class="countable-only" />').append(
+            `<input type="text" class="form-control" name="countable" placeholder="${QUERY_KEYWORDS.all}" />`
+          ).val(query_clauses.count),
+        $('<div class="input-group-prepend countable-only noselect" />').append(
+          $('<span class="input-group-text" />').text('WHERE')),
+        $('<input type="text" class="form-control" name="where" placeholder="no filters" onchange="onWhereUpdate(this);"/>').val(query_clauses.where)
+      )
+    )
+  );
 
   let tbody = $('#search-table > tbody');
   tbody.append(new_row);
@@ -683,6 +696,7 @@ if (params.get('data')) {
   initChartOptions();
   addRow({text: 'WHERE onscreen.face1="person: hillary clinton"'});
   addRow({text: 'WHERE onscreen.face1="person: donald trump"'});
+  search();
 }
 $(".chosen-select").chosen({width: 'auto'});
 $('#countVar').change(setQueryBoxForMode);

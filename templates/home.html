@@ -24,16 +24,18 @@
       <thead>
         <tr name="controls" class="chart-options">
           <td colspan="3" class="option-td">
-            I would like to count&nbsp;
-            <select class="chosen-select" id="countVar" data-width="fit">
-              <option value="{{ countables.videotime.value }}" selected="selected">{{ countables.videotime.value }}</option>
-              <option value="{{ countables.facetime.value }}">{{ countables.facetime.value }}</option>
-              <option value="{{ countables.mentions.value }}">{{ countables.mentions.value }}</option>
-            </select>.
-            &nbsp;
+            <span class="count-span">
+              I would like to count&nbsp;
+              <select class="chosen-select" id="countVar" data-width="fit">
+                <option value="{{ countables.videotime.value }}" selected="selected">{{ countables.videotime.value }}</option>
+                <option value="{{ countables.facetime.value }}">{{ countables.facetime.value }}</option>
+                <option value="{{ countables.mentions.value }}">{{ countables.mentions.value }}</option>
+              </select>.
+              &nbsp;
+            </span>
             <span class="hint-span">
-              (Click the color box for the query editor or view the <a href="/instructions" target="_blank">instruction page</a>.
-               To reset, click <a href="#" onclick="clearQueries(); return false;">clear queries</a>.)
+              To get started, click the query prefix for the interactive editor or read the <a href="/instructions" target="_blank">instruction and query-syntax</a> page.
+              To reset, click <a href="#" onclick="clearQueries(); return false;">clear queries</a>.
             </span>
             <hr>
           </td>
@@ -78,7 +80,10 @@
 
 <div class="container" id="vgrid-area"></div>
 
-<div id="shade">&nbsp;</div>
+<div id="shade">
+  <div class="dark"></div>
+  <div class="text">&#8987;</div>
+</div>
 
 <script src="{{ url_for('static', filename='js/home.js') }}" /></script>
 {% endblock %}

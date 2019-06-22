@@ -38,6 +38,9 @@ Query
   / a:CountClause Blank b:WhereClause ? {
     return {count_var: null, count: a, where: b ? b : {}};
   }
+  / Blank {
+    return {count_var: null, count: null, where: {}};
+  }
 
 Query2
   = "(" Blank a:Query Blank ")" { return a; }
