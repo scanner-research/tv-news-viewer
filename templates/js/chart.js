@@ -295,29 +295,32 @@ class Chart {
 
     vegaEmbed(div_id, vega_spec, {actions: false}).then(
       ({spec, view}) => {
-        let tooltip = $('<div class="chart-tooltip" />');
+        let tooltip = $('<div class="chart-tooltip" />').append(
+          $('<span />').append(
+            $('<h6 name="time" />'),
+            video_div_id ? '&nbsp; Click to view videos.' : null
+          ));
+        Object.entries(this_chart.search_results).forEach(
+          ([color, result]) => {
+            tooltip.append(
+              $('<span />').append(
+                $(`<code />`).css('color', color).text(result.query)));
+            tooltip.append(
+              $('<span />').append($('<i />').attr('color', color)));
+          })
         $(div_id).append(tooltip);
 
         view.addEventListener('mouseover', function(event, item) {
           if (item) {
             let t = new Date(item.datum.datum.time).toISOString().split('T')[0];
-            tooltip.empty();
-            tooltip.append(
-              $('<span />').append(
-                $('<h6 />').text(moment(t).format(moment_date_format)),
-                video_div_id ? '&nbsp; Click to view videos.' : null
-              ));
+            let t_str = moment(t).format(moment_date_format);
+            tooltip.find('h6[name="time"]').text(t_str);
             Object.entries(this_chart.search_results).forEach(
               ([color, result]) => {
                 let video_data = _.get(result.main, t, []);
                 let x = getPointValue(result, video_data, t);
-                tooltip.append(
-                  $('<span />').append(
-                    $(`<code style="color:${color};" />`).text(result.query)));
-                tooltip.append(
-                  $('<span />').append(
-                    $('<i />').text(`${x.text} in ${video_data.length} videos`)));
-              })
+                tooltip.find(`i[color="${color}"]`).text(`${x.text} in ${video_data.length} videos`);
+              });
             tooltip.css('left', event.x + 10);
             tooltip.css('top', event.y + 10);
             tooltip.show();
