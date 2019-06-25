@@ -463,7 +463,7 @@ def build_app(
     @app.route('/static/js/videos.js')
     def get_videos_js() -> Response:
         return render_template(
-            'js/videos.js', countables=Countable,
+            'js/videos.js', countables=Countable, parameters=SearchParameter,
             video_endpoint=video_endpoint,
             frameserver_endpoint=frameserver_endpoint,
             archive_video_endpoint=archive_video_endpoint)

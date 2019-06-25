@@ -2,13 +2,13 @@
 const QUERY_BUILDER_HTML = `<div class="query-builder">
   <div style="position:absolute;">
     <button type="button" class="btn btn-outline-danger btn-sm"
-            onclick="closeQueryBuilder(this);">Close</button>
+            onclick="closeQueryBuilder(this);">&times;</button>
   </div>
   <table>
     <tr>
       <th style="text-align: right;">Include results where:</th>
       <td>
-        <i style="color: gray;">(warning, your current query will be overwritten)</i>
+        <i style="color: gray;">*optional (warning, your current query will be overwritten)</i>
       </td>
     </tr>
     <tr>
@@ -56,23 +56,25 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
     </tr>
     <tr>
       <td type="key-col">
-        (optional) the transcript contains
+        *the transcript contains
       </td>
       <td type="value-col">
         <input type="text" class="form-control no-enter-submit"
                name="{{ parameters.caption_text }}"
                value="" placeholder="keyword or phrase"
                style="width:400px;">
-        within
-        <input type="number" class="form-control no-enter-submit"
-               name="{{ parameters.caption_window }}"
-               min="0" max="3600" placeholder="{{ default_text_window }}"
-               style="width:70px;"> seconds
+        <span class="nowrap">
+          within
+          <input type="number" class="form-control no-enter-submit"
+                 name="{{ parameters.caption_window }}"
+                 min="0" max="3600" placeholder="{{ default_text_window }}"
+                 style="width:70px;"> seconds
+        </span>
       </td>
     </tr>
     <tr>
       <td type="key-col">
-        (optional) an on-screen face matches
+        *an on-screen face of
       </td>
       <td type="value-col">
         <select class="chosen-select"
@@ -102,7 +104,7 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
       </td>
     </tr>
     <tr>
-      <td type="key-col">(optional) there are</td>
+      <td type="key-col">*there are</td>
       <td type="value-col">
         <input type="number" class="form-control no-enter-submit"
                name="{{ parameters.onscreen_numfaces }}"
@@ -112,7 +114,7 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
       </td>
     </tr>
     <tr disabled="true">
-      <td type="key-col">(optional) normalize the query</td>
+      <td type="key-col">*normalize the query</td>
       <td type="value-col">
         <select class="chosen-select" name="normalize" data-width="fit">
           <option value="false" selected="selected">no</option>

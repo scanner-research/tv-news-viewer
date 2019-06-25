@@ -48,3 +48,10 @@ a {
             user-select: none; /* Non-prefixed version, currently
                                   supported by Chrome and Opera */
 }
+.nowrap {
+  white-space: nowrap;
+}
+.btn:focus, .btn:active, .form-control:focus, .form-control:active {
+  outline: none !important;
+  box-shadow: none !important;
+}

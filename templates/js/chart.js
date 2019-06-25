@@ -311,7 +311,7 @@ class Chart {
         $(div_id).append(tooltip);
 
         view.addEventListener('mouseover', function(event, item) {
-          if (item) {
+          if (item && item.datum) {
             let t = new Date(item.datum.datum.time).toISOString().split('T')[0];
             let t_str = moment(t).format(moment_date_format);
             tooltip.find('h6[name="time"]').text(t_str);

@@ -26,7 +26,11 @@
 
 {% block body %}
 <div>
-  <div id="page-buttons" class="btn-group"></div>
+  <div id="page-buttons" class="btn-group">
+    <button name="previous" type="button" class="btn btn-outline-secondary btn-sm">Previous</button>
+    <button name="next" type="button" class="btn btn-outline-secondary btn-sm">Next</button>
+    <button name="info" type="button" class="btn btn-secondary btn-sm" disabled></button>
+  </div>
   <p id="text-info"></p>
   <div id="videos"></div>
 </div>

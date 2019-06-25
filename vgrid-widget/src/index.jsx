@@ -7,10 +7,15 @@ import {
 
 import '@wcrichto/vgrid/dist/vgrid.css';
 
+const HIGHLIGHT_STYLE = {backgroundColor: 'yellow'};
 
-function loadJsonData(json_data, caption_data) {
+function loadJsonData(json_data, caption_data, highlight_words) {
   let videos = [];
   let interval_blocks = [];
+
+  function shouldHighlight(text) {
+    return text.split(' ').some(t => highlight_words.has($.trim(t).toLowerCase()));
+  }
 
   json_data.forEach(video_json => {
     let video_id = video_json.metadata.id;
@@ -42,13 +47,17 @@ function loadJsonData(json_data, caption_data) {
       }, {
         name: '_captions',
         interval_set: new IntervalSet(
-          _.get(caption_data, video_id, [[0, duration, 'No captions found.']]).map(
+          _.get(caption_data, video_id, [[0, duration, 'No captions found.']]).flatMap(
             caption => {
               let [start, end, text] = caption;
-              return new Interval(
-                new Bounds(start, end),
-                {spatial_type: new SpatialType_Caption(text), metadata: {}}
-              );
+              let bounds = new Bounds(start, end);
+              return text.split(' ').map(token =>
+                new Interval(
+                  bounds, {
+                    spatial_type: new SpatialType_Caption(token, shouldHighlight(token) ? HIGHLIGHT_STYLE : null),
+                    metadata: {}
+                  }
+                ));
             }
           ))
       }]
@@ -83,9 +92,13 @@ const INTERNET_ARCHIVE_MAX_CLIP_LEN = 180;
 const INTERNET_ARCHIVE_PAD_START = 30;
 
 
-function loadJsonDataForInternetArchive(json_data, caption_data) {
+function loadJsonDataForInternetArchive(json_data, caption_data, highlight_words) {
   let videos = [];
   let interval_blocks = [];
+
+  function shouldHighlight(text) {
+    return text.split(' ').some(t => highlight_words.has($.trim(t).toLowerCase()));
+  }
 
   json_data.forEach(video_json => {
     let video_id = video_json.metadata.id;
@@ -140,13 +153,17 @@ function loadJsonDataForInternetArchive(json_data, caption_data) {
         interval_set: new IntervalSet(
           _.get(caption_data, video_id, [[block_start, block_end, 'No captions found.']]).filter(
             filterIntervals
-          ).map(
+          ).flatMap(
             caption => {
               let [start, end, text] = caption;
-              return new Interval(
-                makeBounds(start, end),
-                {spatial_type: new SpatialType_Caption(text), metadata: {}}
-              );
+              let bounds = makeBounds(start, end);
+              return text.split(' ').map(token =>
+                new Interval(
+                  bounds, {
+                    spatial_type: new SpatialType_Caption(token, shouldHighlight(token) ? HIGHLIGHT_STYLE : null),
+                    metadata: {}
+                  }
+                ));
             }
           ))
       }]
@@ -158,11 +175,11 @@ function loadJsonDataForInternetArchive(json_data, caption_data) {
 }
 
 
-function renderVGrid(json_data, caption_data, settings,
+function renderVGrid(json_data, caption_data, settings, highlight_words,
                      serve_from_internet_archive, container) {
   let [database, interval_blocks] = serve_from_internet_archive ?
-    loadJsonDataForInternetArchive(json_data, caption_data) :
-    loadJsonData(json_data, caption_data);
+    loadJsonDataForInternetArchive(json_data, caption_data, highlight_words) :
+    loadJsonData(json_data, caption_data, highlight_words);
   ReactDOM.render(
     <VGrid interval_blocks={interval_blocks} database={database}
            settings={settings} />,
