@@ -31,6 +31,28 @@ function loadJsonData(json_data, caption_data, highlight_words) {
       path: `tvnews/videos/${video_name}.mp4`
     });
 
+    let empty_interval = new Interval(
+      new Bounds(0, duration), {
+        spatial_type: new SpatialType_Caption('No captions found.', null),
+        metadata: {}
+      }
+    );
+
+    let caption_intervals = _.get(caption_data, video_id, []).flatMap(
+      caption => {
+        let [start, end, text] = caption;
+        let bounds = new Bounds(start, end);
+        return text.split(' ').map(token =>
+          new Interval(
+            bounds, {
+              spatial_type: new SpatialType_Caption(token, shouldHighlight(token) ? HIGHLIGHT_STYLE : null),
+              metadata: {}
+            }
+          )
+        );
+      }
+    );
+
     interval_blocks.push({
       video_id: video_id,
       title: video_name,
@@ -46,20 +68,7 @@ function loadJsonData(json_data, caption_data, highlight_words) {
           }))
       }, {
         name: '_captions',
-        interval_set: new IntervalSet(
-          _.get(caption_data, video_id, [[0, duration, 'No captions found.']]).flatMap(
-            caption => {
-              let [start, end, text] = caption;
-              let bounds = new Bounds(start, end);
-              return text.split(' ').map(token =>
-                new Interval(
-                  bounds, {
-                    spatial_type: new SpatialType_Caption(token, shouldHighlight(token) ? HIGHLIGHT_STYLE : null),
-                    metadata: {}
-                  }
-                ));
-            }
-          ))
+        interval_set: new IntervalSet(caption_intervals.length > 0 ? caption_intervals : [empty_interval])
       }]
     });
   });
@@ -131,7 +140,31 @@ function loadJsonDataForInternetArchive(json_data, caption_data, highlight_words
       return new Bounds(
         Math.min(Math.max(start - block_start, 0), block_length),
         Math.min(Math.max(end - block_start, 0), block_length));
-    }
+    };
+
+    let empty_interval = new Interval(
+      makeBounds(block_start, block_end), {
+        spatial_type: new SpatialType_Caption('No captions found.', null),
+        metadata: {}
+      }
+    );
+
+    let caption_intervals = _.get(caption_data, video_id, []).filter(
+      filterIntervals
+    ).flatMap(
+      caption => {
+        let [start, end, text] = caption;
+        let bounds = makeBounds(start, end);
+        return text.split(' ').map(token =>
+          new Interval(
+            bounds, {
+              spatial_type: new SpatialType_Caption(token, shouldHighlight(token) ? HIGHLIGHT_STYLE : null),
+              metadata: {}
+            }
+          )
+        );
+      }
+    );
 
     interval_blocks.push({
       video_id: video_id,
@@ -150,22 +183,7 @@ function loadJsonDataForInternetArchive(json_data, caption_data, highlight_words
           }))
       }, {
         name: '_captions',
-        interval_set: new IntervalSet(
-          _.get(caption_data, video_id, [[block_start, block_end, 'No captions found.']]).filter(
-            filterIntervals
-          ).flatMap(
-            caption => {
-              let [start, end, text] = caption;
-              let bounds = makeBounds(start, end);
-              return text.split(' ').map(token =>
-                new Interval(
-                  bounds, {
-                    spatial_type: new SpatialType_Caption(token, shouldHighlight(token) ? HIGHLIGHT_STYLE : null),
-                    metadata: {}
-                  }
-                ));
-            }
-          ))
+        interval_set: new IntervalSet(caption_intervals.length > 0 ? caption_intervals : [empty_interval])
       }]
     });
   });
