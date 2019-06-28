@@ -276,11 +276,10 @@ class Chart {
       );
       let count = this_chart.options.count;
       Object.entries(this_chart.search_results).forEach(([color, result]) => {
-        let video_ids = result.main[t].map(x => x[0]);
+        let video_ids = shuffle(result.main[t].map(x => x[0]));
         let params = {
           color: color, count: count, query: result.query,
-          video_ids: video_div_id ? video_ids :
-            shuffle(video_ids).slice(0, MAX_NEW_WINDOW_VIDEOS),
+          video_ids: video_div_id ? video_ids : video_ids.slice(0, MAX_NEW_WINDOW_VIDEOS),
           video_count: video_ids.length
         };
 
