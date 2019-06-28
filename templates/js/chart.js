@@ -15,12 +15,27 @@ String.prototype.replaceAll = function(search, replacement) {
     return target.split(search).join(replacement);
 };
 
-function shuffle(a) {
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [a[i], a[j]] = [a[j], a[i]];
+const EPSILON = 1e-4;
+
+function weighted_shuffle(data) {
+  let result = [];
+  while (data.length > 0) {
+    let total = data.reduce((acc, x) => acc + x[1], 0.);
+    var sample = Math.random() * total - EPSILON;
+    for (var i = 0; i < data.length; i++) {
+      sample -= data[i][1];
+      if (sample < 0) {
+        result.push(data[i]);
+        if (i < data.length - 1) {
+          data[i] = data.pop();
+        } else {
+          data.pop();
+        }
+        break;
+      }
+    }
   }
-  return a;
+  return result;
 }
 
 function fillZeros(data, unit, start, end, default_value) {
@@ -276,7 +291,8 @@ class Chart {
       );
       let count = this_chart.options.count;
       Object.entries(this_chart.search_results).forEach(([color, result]) => {
-        let video_ids = shuffle(result.main[t].map(x => x[0]));
+        let shuffled_results = weighted_shuffle([...result.main[t]]);
+        let video_ids = shuffled_results.map(x => x[0]);
         let params = {
           color: color, count: count, query: result.query,
           video_ids: video_div_id ? video_ids : video_ids.slice(0, MAX_NEW_WINDOW_VIDEOS),
