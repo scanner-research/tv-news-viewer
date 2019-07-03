@@ -39,7 +39,7 @@ def main(
     app = build_app(
         data_dir, index_dir, video_endpoint, frameserver_endpoint,
         ARCHIVE_VIDEO_ENDPOINT, 0,
-        LoginCredentials('admin', sha256('password')))
+        [LoginCredentials('admin', sha256('password'))])
     app.run(port=port, debug=True)
 
 

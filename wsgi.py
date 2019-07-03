@@ -16,16 +16,16 @@ CONFIG_FILE = 'config.json'
 with open(CONFIG_FILE) as f:
     config = json.load(f)
 
-if 'username' in config:
-    credentials = LoginCredentials(
-        config.get('username'), sha256(config.get('password')))
+if 'auth' in config and len(config['auth']) > 0:
+    auth_users = [LoginCredentials(user['username'], sha256(user['password']))
+                  for user in config['auth']]
 else:
-    credentials = None
+    auth_users = None
 
 app = build_app(
     config['data_dir'], config['index_dir'],
     config.get('video_endpoint'), config.get('frameserver_endpoint'),
     config.get('archive_video_endpoint'),
     config.get('cache_seconds', 30 * 24 * 3600),
-    credentials)
+    auth_users)
 del config

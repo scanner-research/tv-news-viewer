@@ -320,7 +320,7 @@ def has_onscreen_face(
 def build_app(
     data_dir: str, index_dir: str, video_endpoint: str,
     frameserver_endpoint: Optional[str], archive_video_endpoint: Optional[str],
-    cache_seconds: int, credentials: LoginCredentials
+    cache_seconds: int, authorized_users: List[LoginCredentials]
 ) -> Flask:
     server_start_time = time.time()
 
@@ -334,13 +334,16 @@ def build_app(
         s -= m * 60
         return '{}d {}h {}m {}s'.format(d, h, m, int(s))
 
-    if credentials:
+    if authorized_users:
         auth = HTTPBasicAuth()
 
         @auth.verify_password
         def verify_password(username: str, password: str) -> bool:
-            return (username == credentials.username
-                    and sha256(password) == credentials.password_hash)
+            for l in authorized_users:
+                if username == l.username:
+                    return sha256(password) == l.password_hash
+            return False
+
     else:
         auth = None
 
