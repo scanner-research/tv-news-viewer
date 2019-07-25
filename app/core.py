@@ -35,6 +35,7 @@ STATIC_DIR = os.path.join(FILE_DIR, '..', 'static')
 
 MIN_DATE = datetime(2010, 1, 1)
 MAX_DATE = datetime(2018, 4, 1)
+DEFAULT_AGGREGATE_BY = 'month'
 DEFAULT_TEXT_WINDOW = 0
 DEFAULT_IS_COMMERCIAL = Ternary.false
 
@@ -384,7 +385,7 @@ def build_app(
     def _root() -> Response:
         return render_template(
             'home.html', uptime=_get_uptime(),
-            countables=Countable,
+            countables=Countable, default_agg_by=DEFAULT_AGGREGATE_BY,
             default_text_window=DEFAULT_TEXT_WINDOW,
             default_is_commercial=DEFAULT_IS_COMMERCIAL.name)
 

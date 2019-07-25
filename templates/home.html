@@ -55,10 +55,10 @@
             <input type="text" class="datepicker" id="endDate">
             &nbsp; aggregated by &nbsp;
             <select class="chosen-select" id="aggregateBy" data-width="fit">
-              <option value="year">year</option>
-              <option value="month" selected="selected">month</option>
-              <option value="week">week</option>
-              <option value="day">day</option>
+              <option value="year" {% if default_agg_by == "year" %}selected="selected"{% endif %}>year</option>
+              <option value="month" {% if default_agg_by == "month" %}selected="selected"{% endif %}>month</option>
+              <option value="week" {% if default_agg_by == "week" %}selected="selected"{% endif %}>week</option>
+              <option value="day" {% if default_agg_by == "day" %}selected="selected"{% endif %}>day</option>
             </select>
             . &nbsp;
             <input type="submit" class="btn btn-primary btn-sm" value="Search the news!">
