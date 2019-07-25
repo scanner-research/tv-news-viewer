@@ -1,4 +1,5 @@
 import math
+import re
 import os
 from os import path
 from pathlib import Path
@@ -74,23 +75,30 @@ def load_video_data(data_dir: str) -> Tuple[
         female_nonhost_isetmap=MmapIntervalSetMapping(
             path.join(face_iset_dir, 'female_nonhost.iset.bin')))
 
-    def parse_person_name(fname: str) -> str:
-        return fname.split('.', 1)[0]
+    def parse_person_file_prefix(fname: str) -> str:
+        return path.splitext(path.splitext(fname)[0])[0]
 
     person_ilist_dir = path.join(data_dir, 'people')
     person_iset_dir = path.join(data_dir, 'derived', 'people')
-    person_names = {
-        parse_person_name(person_file)
+    person_file_prefixes = {
+        parse_person_file_prefix(person_file)
         for person_file in os.listdir(person_ilist_dir)
     }
-    all_person_intervals = {
-        person_name: PersonIntervals(
-            ilistmap=MmapIntervalListMapping(
-                path.join(person_ilist_dir, person_name + '.ilist.bin'), 1),
-            isetmap=MmapIntervalSetMapping(
-                path.join(person_iset_dir, person_name + '.iset.bin'))
-        ) for person_name in person_names
-    }
+
+    all_person_intervals = {}
+    for person_file_prefix in person_file_prefixes:
+        person_name = re.sub(r'[^\w :]', r'', person_file_prefix.lower())
+        try:
+            person_intervals = PersonIntervals(
+                ilistmap=MmapIntervalListMapping(
+                    path.join(
+                        person_ilist_dir,
+                        person_file_prefix + '.ilist.bin'), 1),
+                isetmap=MmapIntervalSetMapping(
+                    path.join(person_iset_dir, person_file_prefix + '.iset.bin')))
+            all_person_intervals[person_name] = person_intervals
+        except Exception as e:
+            print('Unable to load: {} - {}'.format(person_name, e))
     return videos, commercials, face_intervals, all_person_intervals
 
 

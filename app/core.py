@@ -25,7 +25,7 @@ from .error import InvalidUsage, NotFound
 from .parsing import *
 from .sum import *
 from .load import get_video_name, load_video_data, load_index
-from. hash import sha256
+from .hash import sha256
 
 
 FILE_DIR = os.path.dirname(os.path.realpath(__file__))

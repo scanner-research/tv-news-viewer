@@ -167,7 +167,7 @@ def derive_person_isets(
     mkdir_if_not_exists(outdir)
 
     def parse_person_name(fname: str) -> str:
-        return fname.split('.', 1)[0]
+        return os.path.splitext(os.path.splitext(fname)[0])[0]
 
     for person_file in os.listdir(person_ilist_dir):
         if not person_file.endswith('.ilist.bin'):

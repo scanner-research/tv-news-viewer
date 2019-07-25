@@ -120,11 +120,6 @@ function getEndDate(date_str) {
 
 let secondsToMinutes = x => x / 60;
 
-// FIXME: hack to make vega-lite work
-function sanitizeStringForVegalite(s) {
-  return s.replaceAll('[', '').replaceAll(']', '').replaceAll('"', '').replaceAll('.', '').replaceAll("'", '');
-}
-
 class Chart {
   constructor(chart_options, search_results, dimenisons) {
     this.dimensions = dimenisons;
@@ -133,11 +128,6 @@ class Chart {
   }
 
   load(div_id, video_div_id) {
-    let getSeriesName = (color) => {
-      let result = this.search_results[color];
-      return sanitizeStringForVegalite(result.query);
-    };
-
     let year_span = (
       new Date(this.options.end_date).getUTCFullYear() -
       new Date(this.options.start_date).getUTCFullYear()
@@ -289,8 +279,11 @@ class Chart {
         $('<h5 />').append(`Showing ${content_str} from <b>${date_str}</b>.`),
         $('<p />').append(VGRID_INSTRUCTIONS)
       );
+
       let count = this_chart.options.count;
-      Object.entries(this_chart.search_results).forEach(([color, result]) => {
+      Object.entries(this_chart.search_results).sort(
+        (a, b) => a[1].query >= b[1].query
+      ).forEach(([color, result]) => {
         let shuffled_results = weighted_shuffle([...result.main[t]]);
         let video_ids = shuffled_results.map(x => x[0]);
         let params = {
