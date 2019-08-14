@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 import os
 import json
 import time
-from collections import defaultdict
+from collections import defaultdict, namedtuple
 from flask import (
     Flask, Response, jsonify, request, render_template, send_file,
     make_response)
@@ -409,8 +409,12 @@ def build_app(
 
     @app.route('/people')
     def get_people() -> Response:
+        Person = namedtuple('person', ['name', 'screen_time'])
         return render_template(
-            'people.html', people=sorted(all_person_intervals.keys()))
+            'people.html', people=sorted([
+                Person(name, round(intervals.isetmap.sum() / 60000, 1))
+                for name, intervals in all_person_intervals.items()
+            ], key=lambda x: x.name))
 
     @app.route('/instructions')
     def get_instructions() -> Response:
