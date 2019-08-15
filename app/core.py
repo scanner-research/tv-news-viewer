@@ -33,13 +33,6 @@ TEMPLATE_DIR = os.path.join(FILE_DIR, '..', 'templates')
 STATIC_DIR = os.path.join(FILE_DIR, '..', 'static')
 
 
-MIN_DATE = datetime(2010, 1, 1)
-MAX_DATE = datetime(2018, 4, 1)
-DEFAULT_AGGREGATE_BY = 'month'
-DEFAULT_TEXT_WINDOW = 0
-DEFAULT_IS_COMMERCIAL = Ternary.false
-
-
 def milliseconds(s: float) -> int:
     return int(s * 1000)
 
@@ -110,12 +103,6 @@ def get_aggregate_fn() -> AggregateFn:
     elif e == Aggregate.year:
         return lambda d: datetime(d.year, 1, 1)
     raise InvalidUsage('invalid aggregation parameter: {}'.format(agg))
-
-
-def get_is_commercial() -> Ternary:
-    value = request.args.get(
-        SearchParameter.is_commercial, None, type=str)
-    return Ternary[value] if value else DEFAULT_IS_COMMERCIAL
 
 
 def get_countable() -> Countable:
@@ -321,9 +308,19 @@ def has_onscreen_face(
 def build_app(
     data_dir: str, index_dir: str, video_endpoint: str,
     frameserver_endpoint: Optional[str], archive_video_endpoint: Optional[str],
-    cache_seconds: int, authorized_users: List[LoginCredentials]
+    cache_seconds: int, authorized_users: Optional[List[LoginCredentials]],
+    min_date: datetime, max_date: datetime,
+    min_person_screen_time: int,
+    default_aggregate_by: str,
+    default_text_window: int,
+    default_is_commercial: Ternary
 ) -> Flask:
     server_start_time = time.time()
+
+    def _get_is_commercial() -> Ternary:
+        value = request.args.get(
+            SearchParameter.is_commercial, None, type=str)
+        return Ternary[value] if value else default_is_commercial
 
     def _get_uptime() -> str:
         s = time.time() - server_start_time
@@ -385,9 +382,9 @@ def build_app(
     def _root() -> Response:
         return render_template(
             'home.html', uptime=_get_uptime(),
-            countables=Countable, default_agg_by=DEFAULT_AGGREGATE_BY,
-            default_text_window=DEFAULT_TEXT_WINDOW,
-            default_is_commercial=DEFAULT_IS_COMMERCIAL.name)
+            countables=Countable, default_agg_by=default_aggregate_by,
+            default_text_window=default_text_window,
+            default_is_commercial=default_is_commercial.name)
 
     if auth:
         @app.route('/')
@@ -407,22 +404,27 @@ def build_app(
     def show_videos() -> Response:
         return render_template('videos.html')
 
+    # List of people to expose
+    Person = namedtuple('person', ['name', 'screen_time'])
+    people = list(filter(
+        lambda x: x.screen_time * 60 > min_person_screen_time, [
+            Person(name, round(intervals.isetmap.sum() / 60000, 2))
+            for name, intervals in all_person_intervals.items()
+        ]))
+    people.sort(key=lambda x: x.name)
+
     @app.route('/people')
     def get_people() -> Response:
-        Person = namedtuple('person', ['name', 'screen_time'])
         return render_template(
-            'people.html', people=sorted([
-                Person(name, round(intervals.isetmap.sum() / 60000, 1))
-                for name, intervals in all_person_intervals.items()
-            ], key=lambda x: x.name))
+            'people.html', people=people)
 
     @app.route('/instructions')
     def get_instructions() -> Response:
         return render_template(
             'instructions.html', host=request.host, uptime=_get_uptime(),
             countables=Countable, parameters=SearchParameter,
-            default_text_window=DEFAULT_TEXT_WINDOW,
-            default_is_commercial=DEFAULT_IS_COMMERCIAL.name)
+            default_text_window=default_text_window,
+            default_is_commercial=default_is_commercial.name)
 
     @app.route('/shows')
     def get_shows() -> Response:
@@ -439,7 +441,7 @@ def build_app(
     def get_query_js() -> Response:
         resp = make_response(render_template(
             'js/query.js', parameters=SearchParameter, countables=Countable,
-            shows=all_shows, people=sorted(all_person_intervals.keys())))
+            shows=all_shows, people=[x.name for x in people]))
         resp.headers['Content-type'] = 'text/javascript'
         resp.cache_control.max_age = cache_seconds
         return resp
@@ -455,14 +457,14 @@ def build_app(
 
     @app.route('/static/js/home.js')
     def get_home_js() -> Response:
-        start_date = max(min(v.date for v in video_dict.values()), MIN_DATE)
-        end_date = min(max(v.date for v in video_dict.values()), MAX_DATE)
+        start_date = max(min(v.date for v in video_dict.values()), min_date)
+        end_date = min(max(v.date for v in video_dict.values()), max_date)
         resp = make_response(render_template(
             'js/home.js', parameters=SearchParameter, countables=Countable,
             host=request.host, start_date=format_date(start_date),
             end_date=format_date(end_date),
-            default_text_window=DEFAULT_TEXT_WINDOW,
-            shows=all_shows, people=sorted(all_person_intervals.keys())
+            default_text_window=default_text_window,
+            shows=all_shows, people=[x.name for x in people]
         ))
         resp.headers['Content-type'] = 'text/javascript'
         resp.cache_control.max_age = cache_seconds
@@ -650,7 +652,7 @@ def build_app(
         video_filter = get_video_filter()
         countable = get_countable()
         aggregate_fn = get_aggregate_fn()
-        is_commercial = get_is_commercial()
+        is_commercial = _get_is_commercial()
 
         accumulator = (
             DetailedDateAccumulator(aggregate_fn)
@@ -689,7 +691,7 @@ def build_app(
             caption_query = request.args.get(
                 SearchParameter.caption_text, '', type=str).strip()
             caption_window = request.args.get(
-                SearchParameter.caption_window, DEFAULT_TEXT_WINDOW,
+                SearchParameter.caption_window, default_text_window,
                 type=int)
             _count_time(
                 accumulator,
@@ -864,7 +866,7 @@ def build_app(
             raise InvalidUsage('must specify video ids')
         videos = [video_by_id[i] for i in json.loads(ids)]
         countable = get_countable()
-        is_commercial = get_is_commercial()
+        is_commercial = _get_is_commercial()
 
         if countable == Countable.mentions:
             text_query = request.args.get(
@@ -897,7 +899,7 @@ def build_app(
             caption_query = request.args.get(
                 SearchParameter.caption_text, '', type=str).strip()
             caption_window = request.args.get(
-                SearchParameter.caption_window, DEFAULT_TEXT_WINDOW,
+                SearchParameter.caption_window, default_text_window,
                 type=int)
             results = _count_time_in_videos(
                 videos, caption_query, caption_window, is_commercial,

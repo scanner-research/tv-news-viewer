@@ -5,9 +5,10 @@ Run a development server
 
 import argparse
 from typing import Optional
+from datetime import datetime
 
 from app.core import build_app
-from app.types import LoginCredentials
+from app.types import LoginCredentials, Ternary
 from app.hash import sha256
 
 
@@ -39,7 +40,13 @@ def main(
     app = build_app(
         data_dir, index_dir, video_endpoint, frameserver_endpoint,
         ARCHIVE_VIDEO_ENDPOINT, 0,
-        [LoginCredentials('admin', sha256('password'))])
+        [LoginCredentials('admin', sha256('password'))],
+        min_date=datetime(2010, 1, 1),
+        max_date=datetime(2018, 4, 1),
+        min_person_screen_time=600,
+        default_aggregate_by='month',
+        default_text_window=0,
+        default_is_commercial=Ternary.false)
     app.run(port=port, debug=True)
 
 

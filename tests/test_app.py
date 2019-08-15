@@ -6,12 +6,14 @@ import json
 import os
 import pytest
 import random
+from datetime import datetime
 from urllib.parse import urlencode
 from typing import Dict, List, Optional, Callable
 from flask import Response
 from flask.testing import FlaskClient
 
 from app.core import build_app
+from app.types import Ternary
 
 
 CONFIG_FILE = os.path.join(os.path.dirname(os.path.realpath(__file__)),
@@ -26,8 +28,17 @@ def client():
 
     flask_app = build_app(
         config['data_dir'], config['index_dir'],
+        config.get('video_endpoint'),
         config.get('frameserver_endpoint'),
-        config.get('cache_seconds', 30 * 24 * 3600))
+        config.get('archive_video_endpoint'),
+        config.get('cache_seconds', 30 * 24 * 3600),
+        authorized_users=None,
+        min_date=datetime(2010, 1, 1),
+        max_date=datetime(2018, 4, 1),
+        min_person_screen_time=600,
+        default_aggregate_by='month',
+        default_text_window=0,
+        default_is_commercial=Ternary.false)
 
     with flask_app.test_client() as test_client:
         yield test_client
@@ -139,7 +150,7 @@ def _check_count_result(
 def test_count_mentions(client: FlaskClient) -> None:
     _combination_test_get(
         client, '/search', {
-            'count': ['caption occurences'],
+            'count': ['transcript mentions'],
             'text': ['united states of america'],
             # General options
             'detailed': TEST_DETAILED_OPTIONS,
@@ -155,7 +166,7 @@ def test_count_mentions(client: FlaskClient) -> None:
         }, _check_count_result, n=100)
     _combination_test_get(
         client, '/search', {
-            'count': ['caption occurences'],
+            'count': ['transcript mentions'],
             'normalize': ['true'],
             'aggregate': TEST_AGGREGATE_OPTIONS,
         }, _check_count_result)
@@ -242,7 +253,7 @@ def test_search_mentions_in_videos(client: FlaskClient) -> None:
         client, '/search-videos', {
             'ids': TEST_VIDEO_IDS,
             # Count options
-            'count': ['caption occurences'],
+            'count': ['transcript mentions'],
             # General options
             'text': TEST_COMMON_TEXT_OPTIONS,
             'iscommercial': TEST_IS_COMMERCIAL_OPTIONS,
