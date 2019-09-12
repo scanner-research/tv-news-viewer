@@ -157,6 +157,12 @@
 .query-builder td[type=value-col] {
   text-align: left;
 }
+.query-builder td[type=info-header] {
+  text-align: center;
+  padding-top: 20px;
+  padding-bottom: 5px;
+  font-weight: bold;
+}
 .query-builder tr[disabled="true"] {
   display: none;
 }

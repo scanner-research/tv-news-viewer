@@ -15,28 +15,32 @@ td, th {
   padding-left: 10px;
   padding-right: 10px;
 }
-tr:nth-child(odd) {
-  background-color: #DAD7CB;
-}
-tr:nth-child(even) {
-  background-color: #F9F6EF;
-}
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="container">
-  <table>
-    <tr>
-      <th>Name</th>
-      <th>Total screen time (in minutes)</th>
-    </tr>
-    {% for person in people %}
-    <tr>
-      <td>{{ person.name }}</td>
-      <td>{{ person.screen_time }}</td>
-    </tr>
-    {% endfor %}
+  <table class="table table-hover table-striped table-bordered table-sm">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Total screen time (in minutes)</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for person in people %}
+      <tr>
+        <td>{{ person.name }}</td>
+        <td>{{ person.screen_time }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
   </table>
+
+  <script>
+    $(document).ready(function() {
+      $('.table').DataTable({pageLength: 25});
+    });
+  </script>
 </div>
 {% endblock %}

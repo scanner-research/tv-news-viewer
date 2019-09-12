@@ -12,12 +12,6 @@ td, th {
   padding-left: 10px;
   padding-right: 10px;
 }
-tbody:nth-child(odd) {
-  background-color: #DAD7CB;
-}
-tbody:nth-child(even) {
-  background-color: #F9F6EF;
-}
 iframe {
   border-width: 0px;
 }

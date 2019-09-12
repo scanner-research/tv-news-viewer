@@ -476,6 +476,12 @@ def build_app(
     def get_people() -> Response:
         return render_template('people.html', people=people)
 
+    @app.route('/person-attributes')
+    def get_person_attributes() -> Response:
+        return render_template(
+            'person-attributes.html',
+            person_attributes=person_attributes.attr_dict)
+
     @app.route('/instructions')
     def get_instructions() -> Response:
         return render_template(

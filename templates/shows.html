@@ -15,18 +15,12 @@ td, th {
   padding-left: 10px;
   padding-right: 10px;
 }
-tr:nth-child(odd) {
-  background-color: #DAD7CB;
-}
-tr:nth-child(even) {
-  background-color: #F9F6EF;
-}
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="container">
-  <table>
+  <table class="table table-hover table-striped table-bordered table-sm">
     <tr>
       <th>Channel</th>
       <th>Show</th>
@@ -40,5 +34,11 @@ tr:nth-child(even) {
     </tr>
     {% endfor %}
   </table>
+
+  <script>
+    $(document).ready(function() {
+      $('.table').DataTable({pageLength: 25});
+    });
+  </script>
 </div>
 {% endblock %}

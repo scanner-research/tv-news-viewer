@@ -1,0 +1,66 @@
+{% extends "layout.html" %}
+
+{% block head %}
+{{ super() }}
+<style>
+table {
+  border-spacing: 2px;
+  table-layout: auto;
+}
+th {
+  text-align: left;
+}
+td, th {
+  text-align: left;
+  padding-left: 10px;
+  padding-right: 10px;
+}
+.person-list {
+  display: none;
+}
+.person-entry {
+  float: left;
+  padding-left: 10px;
+  padding-right: 10px;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+  <table class="table table-hover table-striped table-bordered table-sm">
+    <thead>
+    <tr>
+      <th>Name</th>
+      <th>Count</th>
+      <th>People with attribute</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for attr, people in person_attributes.items() %}
+      <tr>
+        <td>{{ attr }}</td>
+        <td>{{ people|length }}</td>
+        <td>
+          <a href="javascript:void(0)" class="toggle-link">show/hide</a>
+          <div class="person-list">
+          {% for person in people %}
+            <span class="person-entry">{{ person }}</span>
+          {% endfor %}
+          </div>
+        </td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+
+  <script>
+    $('.toggle-link').click(function() {
+      $(this).parent().find('.person-list').toggle();
+    });
+    $(document).ready(function() {
+      $('.table').DataTable({pageLength: 25});
+    });
+  </script>
+</div>
+{% endblock %}

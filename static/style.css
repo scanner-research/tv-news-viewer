@@ -1,6 +1,10 @@
 a {
   color: #B1040E;
 }
+a:hover {
+  font-weight: bold;
+  color: #8D3C1E;
+}
 .container {
   padding: 4px;
 }
@@ -9,6 +13,10 @@ a {
   background-color: #8C1515;
   font-family: 'Source Serif Pro', serif;
   color: #F4F4F4;
+}
+.top-header a {
+  color: inherit; /* blue colors for links too */
+  text-decoration: inherit; /* no underline */
 }
 .top-header img {
   height: 44px;

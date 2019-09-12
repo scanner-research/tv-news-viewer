@@ -13,6 +13,10 @@ from .types import *
 from .parsing import *
 
 
+MAX_PERSON_ATTRIBUTE_LEN = 20
+MIN_PERSON_ATTRIBUTE_LEN = 3
+
+
 def get_video_name(s: str) -> str:
     return os.path.splitext(Path(s).name)[0]
 
@@ -106,11 +110,14 @@ def load_video_data(data_dir: str) -> Tuple[
 
     with open(path.join(data_dir, 'people.wikidata.json')) as f:
         # TODO: dont hardcode aws
-        raw_person_attributes = {
-            'aws ' + k.lower(): [
-                z for z in [re.sub(r'\W+', '', x.lower()) for x in v] if z
-            ] for k, v in json.load(f).items()
-        }
+        raw_person_attributes = {}
+        for name, attrs in json.load(f).items():
+            filtered_attrs = []
+            for attr in attrs:
+                attr = re.sub(r'\W+', '', attr.lower())
+                if len(attr) > MIN_PERSON_ATTRIBUTE_LEN and len(attr) < MAX_PERSON_ATTRIBUTE_LEN:
+                    filtered_attrs.append(attr)
+            raw_person_attributes['aws ' + name.lower()] = filtered_attrs
         person_attributes = PersonAttributes(raw_person_attributes)
 
     return videos, commercials, face_intervals, all_person_intervals, \

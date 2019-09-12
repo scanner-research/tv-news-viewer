@@ -8,7 +8,7 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
     <tr>
       <th style="text-align: right;">Include results where:</th>
       <td>
-        <i style="color: gray;">*optional (warning, your current query will be overwritten)</i>
+        <i style="color: gray;">*Warning! Your current query will be overwritten on changes.</i>
       </td>
     </tr>
     <tr>
@@ -51,9 +51,15 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
         </select>
       </td>
     </tr>
+
+    <tr>
+      <td colspan="2" type="info-header">
+        The following (optional) filter implement text search on time-aligned transcripts.
+      </td>
+    </tr>
     <tr>
       <td type="key-col">
-        *the transcript contains
+        the transcript contains
       </td>
       <td type="value-col">
         <input type="text" class="form-control no-enter-submit"
@@ -69,9 +75,16 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
         </span>
       </td>
     </tr>
+
+    <tr>
+      <td colspan="2" type="info-header">
+        The following (optional) on-screen face filters apply to faces with bounding
+        box heights &ge; 20% of frame height.
+      </td>
+    </tr>
     <tr>
       <td type="key-col">
-        *an on-screen face of
+        a face matching
       </td>
       <td type="value-col">
         <select class="chosen-select"
@@ -90,15 +103,17 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
                 name="{{ parameters.onscreen_face }}1:attr" data-width="fit">
           <option value="" selected="selected">attr n/a</option>
         </select>
-        or person
+      </td>
+    </tr>
+    <tr>
+      <td type="key-col">
+        a named person
+      </td>
+      <td>
         <select class="chosen-select"
                 name="{{ parameters.onscreen_face }}1:person" data-width="fit">
           <option value="" selected="selected">n/a</option>
         </select>
-        or any face
-        <input type="checkbox" name="{{ parameters.onscreen_face }}1:all">
-        <br>
-        <i style="color: gray;">(where height &ge; 20% of frame height)</i>
       </td>
     </tr>
     <tr>
@@ -106,9 +121,9 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
       <td type="value-col">
         <input type="number" class="form-control no-enter-submit"
                name="{{ parameters.onscreen_numfaces }}"
-               min="1" max="25" placeholder="n/a"
+               min="1" max="25" placeholder="n"
                style="width:70px;">
-        faces on screen <i style="color: gray;">(where height &ge; 20% of frame height)</i>
+        faces on-screen or any face <input type="checkbox" name="{{ parameters.onscreen_face }}1:all">
       </td>
     </tr>
     <tr disabled="true">
@@ -239,7 +254,6 @@ function buildQueryBuilder() {
   );
   return builder;
 }
-// const QUERY_BUILDER = buildQueryBuilder();
 
 function loadQueryBuilder(element) {
   let search_table_row = $(element).closest('tr');
