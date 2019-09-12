@@ -2,37 +2,40 @@
 
 {% block head %}
 {{ super() }}
-<style>
-table {
-  border-spacing: 2px;
-  table-layout: auto;
-}
-th {
-  text-align: left;
-}
-td, th {
-  text-align: left;
-  padding-left: 10px;
-  padding-right: 10px;
-}
-</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.10.19/js/jquery.dataTables.min.js" integrity="sha256-t5ZQTZsbQi8NxszC10CseKjJ5QeMw5NINtOXQrESGSU=" crossorigin="anonymous"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.10.19/css/dataTables.bootstrap4.min.css" integrity="sha256-F+DaKAClQut87heMIC6oThARMuWne8+WzxIDT7jXuPA=" crossorigin="anonymous" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.10.19/js/dataTables.bootstrap4.min.js" integrity="sha256-hJ44ymhBmRPJKIaKRf3DSX5uiFEZ9xB/qx8cNbJvIMU=" crossorigin="anonymous"></script>
 {% endblock %}
 
 {% block content %}
 <div class="container">
+  <h1>
+    List of shows
+  </h1>
+
+  <p>
+    This page contains a list of shows present in the data set.
+    Shows in this list can be used to filter for screen time pertaining to
+    faces using the <code>show="..."</code> predicate.
+  </p>
+
   <table class="table table-hover table-striped table-bordered table-sm">
-    <tr>
-      <th>Channel</th>
-      <th>Show</th>
-      <th>Total screen time (in hours)</th>
-    </tr>
-    {% for show in shows %}
-    <tr>
-      <td>{{ show.0 }}</td>
-      <td>{{ show.1 }}</td>
-      <td>{{ show.2 }}</td>
-    </tr>
-    {% endfor %}
+    <thead>
+      <tr>
+        <th>Channel</th>
+        <th>Show</th>
+        <th>Total screen time (in hours)</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for show in shows %}
+      <tr>
+        <td>{{ show.0 }}</td>
+        <td>{{ show.1 }}</td>
+        <td>{{ show.2 }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
   </table>
 
   <script>

@@ -1,31 +1,13 @@
-a {
-  color: #B1040E;
-}
-a:hover {
-  font-weight: bold;
-  color: #8D3C1E;
-}
 .container {
-  padding: 4px;
+  padding: 10px;
 }
 .top-header {
   width: 100%;
-  background-color: #8C1515;
   font-family: 'Source Serif Pro', serif;
-  color: #F4F4F4;
 }
 .top-header a {
   color: inherit; /* blue colors for links too */
   text-decoration: inherit; /* no underline */
-}
-.top-header img {
-  height: 44px;
-  vertical-align: bottom;
-}
-.top-header h1 {
-  font-size: 28px;
-  display: inline;
-  vertical-align: bottom;
 }
 .chart-tooltip {
   display: none;

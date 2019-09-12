@@ -33,6 +33,8 @@ FILE_DIR = os.path.dirname(os.path.realpath(__file__))
 TEMPLATE_DIR = os.path.join(FILE_DIR, '..', 'templates')
 STATIC_DIR = os.path.join(FILE_DIR, '..', 'static')
 
+MAX_PERSON_ATTRIBUTE_QUERY = 5000
+
 
 def milliseconds(s: float) -> int:
     return int(s * 1000)
@@ -140,6 +142,8 @@ def get_onscreen_face_isetmap(
                 ilistmaps.append(person_intervals.ilistmap)
         if len(ilistmaps) == 0:
             raise InvalidUsage('attr: "{}" has no people associated with it')
+        elif len(ilistmaps) > MAX_PERSON_ATTRIBUTE_QUERY:
+            raise InvalidUsage('attr: query disallowed: too many people matched')
         payload_mask, payload_value = get_face_time_filter_mask(gender, role)
         isetmap = MmapUnionIlistsToISetMapping(
             ilistmaps, payload_mask, payload_value, 3000, 100)
@@ -256,6 +260,8 @@ def get_face_time_agg_fn(
                 ilistmaps.append(person_intervals.ilistmap)
         if len(ilistmaps) == 0:
             raise InvalidUsage('attr: "{}" has no people associated with it')
+        elif len(ilistmaps) > MAX_PERSON_ATTRIBUTE_QUERY:
+            raise InvalidUsage('attr: query disallowed. too many people matched')
 
         def f(video: Video, intervals: List[Interval]) -> List[Interval]:
             result = 0
@@ -300,6 +306,8 @@ def get_face_time_intersect_fn(
                 ilistmaps.append(person_intervals.ilistmap)
         if len(ilistmaps) == 0:
             raise InvalidUsage('attr: "{}" has no people associated with it')
+        elif len(ilistmaps) > MAX_PERSON_ATTRIBUTE_QUERY:
+            raise InvalidUsage('attr: query disallowed: too many people matched')
 
         def f(video: Video, intervals: List[Interval]) -> List[Interval]:
             intervals = []
@@ -490,6 +498,14 @@ def build_app(
             default_text_window=default_text_window,
             default_is_commercial=default_is_commercial.name)
 
+    @app.route('/methodology')
+    def get_methodology() -> Response:
+        return render_template('methodology.html')
+
+    @app.route('/about-us')
+    def get_about_us() -> Response:
+        return render_template('about-us.html')
+
     @app.route('/shows')
     def get_shows() -> Response:
         tmp = defaultdict(float)
@@ -503,9 +519,12 @@ def build_app(
 
     @app.route('/static/js/values.js')
     def get_values_js() -> Response:
-        return render_template(
+        resp = make_response(render_template(
             'js/values.js', shows=all_shows, people=[x.name for x in people],
-            person_attributes=person_attributes.attrs)
+            person_attributes=person_attributes.attrs))
+        resp.headers['Content-type'] = 'text/javascript'
+        resp.cache_control.max_age = cache_seconds
+        return resp
 
     @app.route('/static/js/query.js')
     def get_query_js() -> Response:
@@ -1007,7 +1026,7 @@ def build_app(
         if not document:
             raise NotFound('captions for video id: {}'.format(i))
         resp = jsonify(_get_captions(document))
-        resp.cache_control.max_age = cache_seconds * 100
+        resp.cache_control.max_age = cache_seconds * 1000
         return resp
 
     return app

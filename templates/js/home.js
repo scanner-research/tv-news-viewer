@@ -107,7 +107,7 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
     </tr>
     <tr>
       <td type="key-col">
-        a named person
+        a person
       </td>
       <td>
         <select class="chosen-select"
@@ -117,13 +117,13 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
       </td>
     </tr>
     <tr>
-      <td type="key-col">*there are</td>
+      <td type="key-col">there are</td>
       <td type="value-col">
         <input type="number" class="form-control no-enter-submit"
                name="{{ parameters.onscreen_numfaces }}"
                min="1" max="25" placeholder="n"
                style="width:70px;">
-        faces on-screen or any face <input type="checkbox" name="{{ parameters.onscreen_face }}1:all">
+        faces on-screen or any face <input type="checkbox" name="{{ parameters.onscreen_face }}1:all"> is on-screen
       </td>
     </tr>
     <tr disabled="true">

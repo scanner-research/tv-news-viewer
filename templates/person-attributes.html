@@ -2,19 +2,11 @@
 
 {% block head %}
 {{ super() }}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.10.19/js/jquery.dataTables.min.js" integrity="sha256-t5ZQTZsbQi8NxszC10CseKjJ5QeMw5NINtOXQrESGSU=" crossorigin="anonymous"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.10.19/css/dataTables.bootstrap4.min.css" integrity="sha256-F+DaKAClQut87heMIC6oThARMuWne8+WzxIDT7jXuPA=" crossorigin="anonymous" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.10.19/js/dataTables.bootstrap4.min.js" integrity="sha256-hJ44ymhBmRPJKIaKRf3DSX5uiFEZ9xB/qx8cNbJvIMU=" crossorigin="anonymous"></script>
+
 <style>
-table {
-  border-spacing: 2px;
-  table-layout: auto;
-}
-th {
-  text-align: left;
-}
-td, th {
-  text-align: left;
-  padding-left: 10px;
-  padding-right: 10px;
-}
 .person-list {
   display: none;
 }
@@ -28,6 +20,22 @@ td, th {
 
 {% block content %}
 <div class="container">
+  <h1>
+    List of person-attributes
+  </h1>
+
+  <p>
+    This page contains a list of attributes obtained from dbpedia using names
+    of faces identified using AWS Rekognition Celebrity detection.
+  </p>
+
+  <p>
+    Attributes in this list can be used to filter for screen time pertaining to
+    faces using the <code>onscreen.face1="attr: ..."</code> predicate. Note that
+    this filter will only apply to faces for which we have an associated
+    identity. The result is a union of all people who have the tag in question.
+  </p>
+
   <table class="table table-hover table-striped table-bordered table-sm">
     <thead>
     <tr>

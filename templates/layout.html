@@ -9,11 +9,6 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pegjs/0.9.0/peg.js"></script>
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
-
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.10.19/js/jquery.dataTables.min.js" integrity="sha256-t5ZQTZsbQi8NxszC10CseKjJ5QeMw5NINtOXQrESGSU=" crossorigin="anonymous"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.10.19/css/dataTables.bootstrap4.min.css" integrity="sha256-F+DaKAClQut87heMIC6oThARMuWne8+WzxIDT7jXuPA=" crossorigin="anonymous" />
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.10.19/js/dataTables.bootstrap4.min.js" integrity="sha256-hJ44ymhBmRPJKIaKRf3DSX5uiFEZ9xB/qx8cNbJvIMU=" crossorigin="anonymous"></script>
-
   <link href="https://fonts.googleapis.com/css?family=Source+Serif+Pro" rel="stylesheet">
 
   <link rel="shortcut icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}" />
@@ -27,16 +22,56 @@
 <body>
   {% block header %}
   <div class="top-header">
-    <div class="container">
-      <a href='/'><h1>Stanford Cable TV News Analyzer</h1></a>
-      {% if uptime %}
-        <span><tt>(server uptime: {{ uptime }})</tt></span>
-      {% endif %}
-    </div>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+      <span class="navbar-brand">Stanford Cable TV News Analyzer</span>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav mr-auto">
+          <li class="nav-item">
+            <a class="nav-link" href="/">Home</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/instructions">Instructions</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/methodology">Methodology</a>
+          </li>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+              Query Options
+            </a>
+            <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+              <a class="dropdown-item" href="/shows">List of shows</a>
+              <a class="dropdown-item" href="/people">List of people</a>
+              <a class="dropdown-item" href="/person-attributes">List of person-attributes</a>
+            </div>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/about-us">About Us</a>
+          </li>
+          {% if uptime %}
+          <li class="nav-item disabled">
+            <tt class="nav-link">(server uptime: {{ uptime }})</tt>
+          </li>
+          {% endif %}
+        </ul>
+      </div>
+    </nav>
+
   </div>
   {% endblock %}
 
   {% block content %}{% endblock %}
+
+  <script>
+    let is_chrome = !!window.chrome && (!!window.chrome.webstore || !!window.chrome.runtime);
+    if (!is_chrome) {
+      alert('Unsupported browser. This page only supports Chrome.');
+    }
+  </script>
 </body>
 {% endblock %}
 </html>

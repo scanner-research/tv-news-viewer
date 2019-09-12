@@ -2,24 +2,34 @@
 
 {% block head %}
 {{ super() }}
-<style>
-table {
-  border-spacing: 2px;
-  table-layout: auto;
-}
-th {
-  text-align: left;
-}
-td, th {
-  text-align: left;
-  padding-left: 10px;
-  padding-right: 10px;
-}
-</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.10.19/js/jquery.dataTables.min.js" integrity="sha256-t5ZQTZsbQi8NxszC10CseKjJ5QeMw5NINtOXQrESGSU=" crossorigin="anonymous"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.10.19/css/dataTables.bootstrap4.min.css" integrity="sha256-F+DaKAClQut87heMIC6oThARMuWne8+WzxIDT7jXuPA=" crossorigin="anonymous" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.10.19/js/dataTables.bootstrap4.min.js" integrity="sha256-hJ44ymhBmRPJKIaKRf3DSX5uiFEZ9xB/qx8cNbJvIMU=" crossorigin="anonymous"></script>
 {% endblock %}
 
 {% block content %}
 <div class="container">
+  <h1>
+    List of people, identified by face
+  </h1>
+
+  <p>
+    This page contains a list of people that have been identified by ourselves
+    and using the AWS Rekognition Celebrity detection API. It is important to
+    note that the accuracy of these detections is the result of computer
+    vision models and is subject to noise and potential bias in the model.
+  </p>
+
+  <p>
+    Names in this list can be used to filter for screen time pertaining to
+    faces using the <code>onscreen.face1="person: ..."</code> predicate.
+  </p>
+
+  <p>
+    This list of names is by no means complete, and accounts for only
+    approximately 40% of the faces in the dataset.
+  </p>
+
   <table class="table table-hover table-striped table-bordered table-sm">
     <thead>
       <tr>
