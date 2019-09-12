@@ -6,11 +6,7 @@ const QUERY_KEYWORDS = {
   all: 'all'
 }
 
-//
-// Query grammar
-// =============
-// Build this using peg.js
-//
+/* FIXME: this grammar is weird due to disabled counting modes */
 const QUERY_GRAMMAR = `
 Start
   = Blank a:Query Blank "NORMALIZE"i Blank b:Query2 Blank {
@@ -43,7 +39,9 @@ Query
   }
 
 Query2
-  = "(" Blank a:Query Blank ")" { return a; }
+  = "(" Blank a:AndList Blank ")" { return {count_var: null, count: null, where: a}; }
+  / a:AndList { return {count_var: null, count: null, where: a}; }
+  / "(" Blank a:Query Blank ")" { return a; }
   / a:Query { return a; }
 
 CountVarName
