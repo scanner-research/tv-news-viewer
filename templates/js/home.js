@@ -27,9 +27,6 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
       <td type="value-col">
         <select class="chosen-select" name="{{ parameters.show }}" data-width="fit">
           <option value="" selected="selected">All shows</option>
-          {% for show in shows %}
-          <option value="{{ show }}">{{ show }}</option>
-          {% endfor %}
         </select>
       </td>
     </tr>
@@ -89,13 +86,14 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
           <option value="host">host</option>
           <option value="nonhost">nonhost</option>
         </select>
+        <select class="chosen-select"
+                name="{{ parameters.onscreen_face }}1:attr" data-width="fit">
+          <option value="" selected="selected">attr n/a</option>
+        </select>
         or person
         <select class="chosen-select"
                 name="{{ parameters.onscreen_face }}1:person" data-width="fit">
           <option value="" selected="selected">n/a</option>
-          {% for person in people %}
-          <option value="{{ person }}">{{ person }}</option>
-          {% endfor %}
         </select>
         or any face
         <input type="checkbox" name="{{ parameters.onscreen_face }}1:all">
@@ -229,10 +227,25 @@ function removeRow(element) {
   setRemoveButtonsState();
 }
 
+function buildQueryBuilder() {
+  let builder = $(QUERY_BUILDER_HTML);
+  let show_select = builder.find('select[name="{{ parameters.show }}"]');
+  ALL_SHOWS.forEach(x => show_select.append($('<option>').val(x).text(x)));
+  let person_select = builder.find('select[name="{{ parameters.onscreen_face }}1:person"]');
+  ALL_PEOPLE.forEach(x => person_select.append($('<option>').val(x).text(x)));
+  let person_attr_select = builder.find('select[name="{{ parameters.onscreen_face }}1:attr"]');
+  ALL_PERSON_ATTRIBUTES.forEach(
+    x => person_attr_select.append($('<option>').val(x).text(x))
+  );
+  return builder;
+}
+// const QUERY_BUILDER = buildQueryBuilder();
+
 function loadQueryBuilder(element) {
   let search_table_row = $(element).closest('tr');
   let where_box = search_table_row.find('input[name="where"]');
-  search_table_row.find('td:last').append(QUERY_BUILDER_HTML);
+
+  search_table_row.find('td:last').append(buildQueryBuilder());
   var current_query = new SearchableQuery(
     `${QUERY_KEYWORDS.where} ${where_box.val()}`,
     $('#countVar').val(), true);
@@ -275,6 +288,11 @@ function loadQueryBuilder(element) {
         query_builder.find(
           `[name="{{ parameters.onscreen_face }}1:role"]`
         ).val(face_params.role);
+      }
+      if (face_params.attr) {
+        query_builder.find(
+          `[name="{{ parameters.onscreen_face }}1:attr"]`
+        ).val(face_params.attr);
       }
       if (face_params.person) {
         query_builder.find(
@@ -391,10 +409,11 @@ function updateQueryBox(element) {
   let face_all = builder.find('[name="{{ parameters.onscreen_face }}1:all"]').is(':checked');
   let face_gender = builder.find('[name="{{ parameters.onscreen_face }}1:gender"]').val();
   let face_role = builder.find('[name="{{ parameters.onscreen_face }}1:role"]').val();
+  let face_attr = builder.find('[name="{{ parameters.onscreen_face }}1:attr"]').val();
   let face_person = builder.find('[name="{{ parameters.onscreen_face }}1:person"]').val();
   if (face_all) {
     filters.push(`{{ parameters.onscreen_face }}1="all"`);
-  } else if (face_person || face_role || face_gender) {
+  } else if (face_person || face_role || face_gender || face_attr) {
     let face_params = [];
     if (face_person) {
       face_params.push('person: ' + face_person);
@@ -404,6 +423,9 @@ function updateQueryBox(element) {
     }
     if (face_role) {
       face_params.push('role: ' + face_role);
+    }
+    if (face_attr) {
+      face_params.push('attr: ' + face_attr);
     }
     filters.push(`{{ parameters.onscreen_face }}1="${face_params.join(', ')}"`);
   }

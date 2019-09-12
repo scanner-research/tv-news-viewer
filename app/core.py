@@ -18,7 +18,8 @@ from captions.util import PostingUtil                   # type: ignore
 from captions.query import Query                        # type: ignore
 from rs_intervalset import (                            # type: ignore
     MmapIntervalSetMapping, MmapIntervalListMapping)
-from rs_intervalset.wrapper import MmapIListToISetMapping
+from rs_intervalset.wrapper import (
+    MmapIListToISetMapping, MmapUnionIlistsToISetMapping)
 
 from .types import *
 from .error import InvalidUsage, NotFound
@@ -114,10 +115,12 @@ def get_countable() -> Countable:
 
 def get_onscreen_face_isetmap(
     face_intervals: FaceIntervals, all_person_intervals: AllPersonIntervals,
-    key: str
+    person_attributes: PersonAttributes, key: str
 ) -> Optional[MmapIntervalSetMapping]:
-    gender, role, person = parse_face_filter_str(key)
+    gender, role, person, person_attr = parse_face_filter_str(key)
     if person is not None:
+        if person_attr:
+            raise InvalidUsage('Cannot use "attr:" with "person:"')
         person_intervals = all_person_intervals.get(person, None)
         if person_intervals is None:
             raise InvalidUsage('{} is not a valid person'.format(key))
@@ -129,6 +132,17 @@ def get_onscreen_face_isetmap(
             isetmap = MmapIListToISetMapping(
                 person_intervals.ilistmap, payload_mask, payload_value,
                 3000, 100)
+    elif person_attr is not None:
+        ilistmaps = []
+        for person_name in person_attributes.attr_to_names(person_attr):
+            person_intervals = all_person_intervals.get(person_name, None)
+            if person_intervals is not None:
+                ilistmaps.append(person_intervals.ilistmap)
+        if len(ilistmaps) == 0:
+            raise InvalidUsage('attr: "{}" has no people associated with it')
+        payload_mask, payload_value = get_face_time_filter_mask(gender, role)
+        isetmap = MmapUnionIlistsToISetMapping(
+            ilistmaps, payload_mask, payload_value, 3000, 100)
     else:
         if gender is None:
             if role is None:
@@ -163,7 +177,8 @@ def get_onscreen_face_isetmap(
 
 
 def get_onscreen_face_isetmaps(
-    face_intervals: FaceIntervals, all_person_intervals: AllPersonIntervals
+    face_intervals: FaceIntervals, all_person_intervals: AllPersonIntervals,
+    person_attributes: PersonAttributes
 ) -> Optional[List[MmapIntervalSetMapping]]:
     result = []
 
@@ -185,7 +200,8 @@ def get_onscreen_face_isetmaps(
         elif k.startswith(SearchParameter.onscreen_face):
             filter_str = request.args.get(k, '', type=str).strip().lower()
             isetmap = get_onscreen_face_isetmap(
-                face_intervals, all_person_intervals, filter_str)
+                face_intervals, all_person_intervals, person_attributes,
+                filter_str)
             if isetmap:
                 result.append(isetmap)
 
@@ -222,46 +238,88 @@ def get_face_time_filter_mask(
 
 def get_face_time_agg_fn(
     face_intervals: FaceIntervals,
-    all_person_intervals: AllPersonIntervals
+    all_person_intervals: AllPersonIntervals,
+    person_attributes: PersonAttributes
 ) -> FaceTimeAggregateFn:
     face_str = request.args.get(SearchParameter.face, '', type=str)
-    gender, role, person = parse_face_filter_str(face_str)
+    gender, role, person, person_attr = parse_face_filter_str(face_str)
     payload_mask, payload_value = get_face_time_filter_mask(gender, role)
 
-    if person is not None:
-        person_intervals = all_person_intervals.get(person, None)
-        if person_intervals is None:
-            raise InvalidUsage('{} is not a valid person'.format(person))
-        ilistmap = person_intervals.ilistmap
-    else:
-        ilistmap = face_intervals.all_ilistmap
+    if person_attr:
+        if person is not None:
+            raise InvalidUsage('Cannot use "attr:" with "person:"')
 
-    def f(video: Video, intervals: List[Interval]) -> float:
-        return ilistmap.intersect_sum(
-            video.id, intervals, payload_mask, payload_value, True
-        ) / 1000
+        ilistmaps = []
+        for person_name in person_attributes.attr_to_names(person_attr):
+            person_intervals = all_person_intervals.get(person_name, None)
+            if person_intervals is not None:
+                ilistmaps.append(person_intervals.ilistmap)
+        if len(ilistmaps) == 0:
+            raise InvalidUsage('attr: "{}" has no people associated with it')
+
+        def f(video: Video, intervals: List[Interval]) -> List[Interval]:
+            result = 0
+            # FIXME: this double counts
+            for ilistmap in ilistmaps:
+                result += ilistmap.intersect_sum(
+                    video.id, intervals, payload_mask, payload_value, True)
+            return result
+    else:
+        if person is not None:
+            person_intervals = all_person_intervals.get(person, None)
+            if person_intervals is None:
+                raise InvalidUsage('{} is not a valid person'.format(person))
+            ilistmap = person_intervals.ilistmap
+        else:
+            ilistmap = face_intervals.all_ilistmap
+
+        def f(video: Video, intervals: List[Interval]) -> float:
+            return ilistmap.intersect_sum(
+                video.id, intervals, payload_mask, payload_value, True
+            ) / 1000
     return f
 
 
 def get_face_time_intersect_fn(
     face_intervals: FaceIntervals,
-    all_person_intervals: AllPersonIntervals
+    all_person_intervals: AllPersonIntervals,
+    person_attributes: PersonAttributes
 ) -> FaceTimeIntersectFn:
     face_str = request.args.get(SearchParameter.face, '', type=str)
-    gender, role, person = parse_face_filter_str(face_str)
+    gender, role, person, person_attr = parse_face_filter_str(face_str)
     payload_mask, payload_value = get_face_time_filter_mask(gender, role)
 
-    if person:
-        person_isetmap = all_person_intervals.get(person, None)
-        if person_isetmap is None:
-            raise InvalidUsage('{} is not a valid person'.format(person))
-        ilistmap = person_isetmap.ilistmap
-    else:
-        ilistmap = face_intervals.all_ilistmap
+    if person_attr:
+        if person is not None:
+            raise InvalidUsage('Cannot use "attr:" with "person:"')
 
-    def f(video: Video, intervals: List[Interval]) -> List[Interval]:
-        return ilistmap.intersect(
-            video.id, intervals, payload_mask, payload_value, True)
+        ilistmaps = []
+        for person_name in person_attributes.attr_to_names(person_attr):
+            person_intervals = all_person_intervals.get(person_name, None)
+            if person_intervals is not None:
+                ilistmaps.append(person_intervals.ilistmap)
+        if len(ilistmaps) == 0:
+            raise InvalidUsage('attr: "{}" has no people associated with it')
+
+        def f(video: Video, intervals: List[Interval]) -> List[Interval]:
+            intervals = []
+            for ilistmap in ilistmaps:
+                intervals.extend(ilistmap.intersect(
+                    video.id, intervals, payload_mask, payload_value, True))
+            intervals.sort()
+            return intervals
+    else:
+        if person:
+            person_isetmap = all_person_intervals.get(person, None)
+            if person_isetmap is None:
+                raise InvalidUsage('{} is not a valid person'.format(person))
+            ilistmap = person_isetmap.ilistmap
+        else:
+            ilistmap = face_intervals.all_ilistmap
+
+        def f(video: Video, intervals: List[Interval]) -> List[Interval]:
+            return ilistmap.intersect(
+                video.id, intervals, payload_mask, payload_value, True)
     return f
 
 
@@ -346,7 +404,8 @@ def build_app(
         auth = None
 
     (
-        video_dict, commercial_isetmap, face_intervals, all_person_intervals
+        video_dict, commercial_isetmap, face_intervals, all_person_intervals,
+        person_attributes
     ) = load_video_data(data_dir)
     index, documents, lexicon = load_index(index_dir)
 
@@ -415,8 +474,7 @@ def build_app(
 
     @app.route('/people')
     def get_people() -> Response:
-        return render_template(
-            'people.html', people=people)
+        return render_template('people.html', people=people)
 
     @app.route('/instructions')
     def get_instructions() -> Response:
@@ -437,11 +495,17 @@ def build_app(
         channel_and_show.sort()
         return render_template('shows.html', shows=channel_and_show)
 
+    @app.route('/static/js/values.js')
+    def get_values_js() -> Response:
+        return render_template(
+            'js/values.js', shows=all_shows, people=[x.name for x in people],
+            person_attributes=person_attributes.attrs)
+
     @app.route('/static/js/query.js')
     def get_query_js() -> Response:
         resp = make_response(render_template(
-            'js/query.js', parameters=SearchParameter, countables=Countable,
-            shows=all_shows, people=[x.name for x in people]))
+            'js/query.js', parameters=SearchParameter, countables=Countable
+        ))
         resp.headers['Content-type'] = 'text/javascript'
         resp.cache_control.max_age = cache_seconds
         return resp
@@ -463,8 +527,7 @@ def build_app(
             'js/home.js', parameters=SearchParameter, countables=Countable,
             host=request.host, start_date=format_date(start_date),
             end_date=format_date(end_date),
-            default_text_window=default_text_window,
-            shows=all_shows, people=[x.name for x in people]
+            default_text_window=default_text_window
         ))
         resp.headers['Content-type'] = 'text/javascript'
         resp.cache_control.max_age = cache_seconds
@@ -676,7 +739,7 @@ def build_app(
                 accumulator,
                 text_query, is_commercial, video_filter,
                 get_onscreen_face_isetmaps(
-                    face_intervals, all_person_intervals))
+                    face_intervals, all_person_intervals, person_attributes))
 
         elif (countable == Countable.videotime
               or countable == Countable.facetime):
@@ -698,9 +761,10 @@ def build_app(
                 caption_query, caption_window,
                 is_commercial, video_filter,
                 None if countable == Countable.videotime else
-                get_face_time_agg_fn(face_intervals, all_person_intervals),
+                get_face_time_agg_fn(
+                    face_intervals, all_person_intervals, person_attributes),
                 get_onscreen_face_isetmaps(
-                    face_intervals, all_person_intervals))
+                    face_intervals, all_person_intervals, person_attributes))
 
         else:
             raise NotImplementedError('unreachable code')
@@ -884,7 +948,7 @@ def build_app(
             results = _count_mentions_in_videos(
                 videos, text_query, is_commercial,
                 get_onscreen_face_isetmaps(
-                    face_intervals, all_person_intervals))
+                    face_intervals, all_person_intervals, person_attributes))
 
         elif (countable == Countable.videotime
               or countable == Countable.facetime):
@@ -905,9 +969,9 @@ def build_app(
                 videos, caption_query, caption_window, is_commercial,
                 None if countable == Countable.videotime
                 else get_face_time_intersect_fn(
-                    face_intervals, all_person_intervals),
+                    face_intervals, all_person_intervals, person_attributes),
                 get_onscreen_face_isetmaps(
-                    face_intervals, all_person_intervals))
+                    face_intervals, all_person_intervals, person_attributes))
 
         else:
             raise NotImplementedError('unreachable code')

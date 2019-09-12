@@ -89,6 +89,31 @@ class LoginCredentials(NamedTuple):
     password_hash: bytes
 
 
+class PersonAttributes(object):
+
+    def __init__(self, name_to_attrs: Dict[str, List[str]]):
+        self._name_to_attrs = name_to_attrs
+        attr_to_names = {}
+        for k, vs in name_to_attrs.items():
+            for v in vs:
+                if v not in attr_to_names:
+                    attr_to_names[v] = []
+                attr_to_names[v].append(k)
+        self._attr_to_names = attr_to_names
+
+    def attr_to_names(self, attr: str) -> List[str]:
+        return self._attr_to_names.get(attr)
+
+    def name_to_attrs(self, name: str) -> List[str]:
+        return self._name_to_attrs.get(name)
+
+    @property
+    def attrs(self) -> List[str]:
+        ret = list(self._attr_to_names.keys())
+        ret.sort()
+        return ret
+
+
 AllPersonIntervals = Dict[str, PersonIntervals]
 
 Number = Union[int, float]

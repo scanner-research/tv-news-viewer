@@ -1,6 +1,7 @@
 import math
 import re
 import os
+import json
 from os import path
 from pathlib import Path
 
@@ -20,7 +21,8 @@ def load_video_data(data_dir: str) -> Tuple[
     Dict[str, Video],
     MmapIntervalSetMapping,
     FaceIntervals,
-    AllPersonIntervals
+    AllPersonIntervals,
+    PersonAttributes
 ]:
     print('Loading video data: please wait...')
     videos = {}
@@ -95,11 +97,24 @@ def load_video_data(data_dir: str) -> Tuple[
                         person_ilist_dir,
                         person_file_prefix + '.ilist.bin'), 1),
                 isetmap=MmapIntervalSetMapping(
-                    path.join(person_iset_dir, person_file_prefix + '.iset.bin')))
+                    path.join(
+                        person_iset_dir,
+                        person_file_prefix + '.iset.bin')))
             all_person_intervals[person_name] = person_intervals
         except Exception as e:
             print('Unable to load: {} - {}'.format(person_name, e))
-    return videos, commercials, face_intervals, all_person_intervals
+
+    with open(path.join(data_dir, 'people.wikidata.json')) as f:
+        # TODO: dont hardcode aws
+        raw_person_attributes = {
+            'aws ' + k.lower(): [
+                z for z in [re.sub(r'\W+', '', x.lower()) for x in v] if z
+            ] for k, v in json.load(f).items()
+        }
+        person_attributes = PersonAttributes(raw_person_attributes)
+
+    return videos, commercials, face_intervals, all_person_intervals, \
+        person_attributes
 
 
 def load_index(index_dir: str) -> Tuple[CaptionIndex, Documents, Lexicon]:

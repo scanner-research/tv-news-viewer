@@ -173,14 +173,6 @@ Blank
 const QUERY_PARSER = PEG.buildParser(QUERY_GRAMMAR);
 const QUERY_CLAUSE_PARSER = PEG.buildParser(QUERY_CLAUSE_GRAMMAR);
 
-const ALL_SHOWS = [
-  {% for show in shows %}"{{ show }}",{% endfor %}
-];
-
-const ALL_PEOPLE = [
-  {% for person in people %}"{{ person }}",{% endfor %}
-];
-
 function parseTernary(s) {
   if (s.match(/^true$/i)) {
     return 'true';
