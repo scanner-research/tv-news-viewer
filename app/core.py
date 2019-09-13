@@ -472,11 +472,13 @@ def build_app(
         return render_template('videos.html')
 
     # List of people to expose
-    Person = namedtuple('person', ['name', 'screen_time'])
+    Person = namedtuple('person', ['name', 'screen_time', 'attributes'])
     people = list(filter(
         lambda x: x.screen_time * 60 > min_person_screen_time, [
-            Person(name, round(intervals.isetmap.sum() / 60000, 2))
-            for name, intervals in all_person_intervals.items()
+            Person(
+                name, round(intervals.isetmap.sum() / 60000, 2),
+                person_attributes.name_to_attrs(name)
+            ) for name, intervals in all_person_intervals.items()
         ]))
     people.sort(key=lambda x: x.name)
 

@@ -5,6 +5,14 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.10.19/js/jquery.dataTables.min.js" integrity="sha256-t5ZQTZsbQi8NxszC10CseKjJ5QeMw5NINtOXQrESGSU=" crossorigin="anonymous"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.10.19/css/dataTables.bootstrap4.min.css" integrity="sha256-F+DaKAClQut87heMIC6oThARMuWne8+WzxIDT7jXuPA=" crossorigin="anonymous" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.10.19/js/dataTables.bootstrap4.min.js" integrity="sha256-hJ44ymhBmRPJKIaKRf3DSX5uiFEZ9xB/qx8cNbJvIMU=" crossorigin="anonymous"></script>
+
+<style>
+.attribute-entry {
+  float: left;
+  padding-left: 10px;
+  padding-right: 10px;
+  }
+</style>
 {% endblock %}
 
 {% block content %}
@@ -35,6 +43,7 @@
       <tr>
         <th>Name</th>
         <th>Total screen time (in minutes)</th>
+        <th>Person-attributes</th>
       </tr>
     </thead>
     <tbody>
@@ -42,6 +51,11 @@
       <tr>
         <td>{{ person.name }}</td>
         <td>{{ person.screen_time }}</td>
+        <td>
+          {% for attr in person.attributes %}
+          <span class="attribute-entry">{{ attr }}</span>
+          {% endfor %}
+        </td>
       </tr>
       {% endfor %}
     </tbody>

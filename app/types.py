@@ -105,7 +105,7 @@ class PersonAttributes(object):
         return self._attr_to_names.get(attr)
 
     def name_to_attrs(self, name: str) -> List[str]:
-        return self._name_to_attrs.get(name)
+        return self._name_to_attrs.get(name, [])
 
     @property
     def attrs(self) -> List[str]:
