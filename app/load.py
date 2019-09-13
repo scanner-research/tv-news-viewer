@@ -13,7 +13,7 @@ from .types import *
 from .parsing import *
 
 
-MAX_PERSON_ATTRIBUTE_LEN = 20
+MAX_PERSON_ATTRIBUTE_LEN = 50
 MIN_PERSON_ATTRIBUTE_LEN = 3
 
 
