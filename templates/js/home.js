@@ -89,19 +89,18 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
       <td type="value-col">
         <select class="chosen-select"
                 name="{{ parameters.onscreen_face }}1:gender" data-width="fit">
-          <option value="" selected="selected">gender n/a</option>
+          <option value="" selected="selected">gender not selected</option>
           <option value="male">male</option>
           <option value="female">female</option>
         </select>
         <select class="chosen-select"
                 name="{{ parameters.onscreen_face }}1:role" data-width="fit">
-          <option value="" selected="selected">role n/a</option>
+          <option value="" selected="selected">role not selected</option>
           <option value="host">host</option>
           <option value="nonhost">nonhost</option>
         </select>
-        <select class="chosen-select"
+        <select multiple class="chosen-select chosen-mulitple-select" data-placeholder="no attributes selected"
                 name="{{ parameters.onscreen_face }}1:attr" data-width="fit">
-          <option value="" selected="selected">attr n/a</option>
         </select>
       </td>
     </tr>
@@ -112,7 +111,7 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
       <td>
         <select class="chosen-select"
                 name="{{ parameters.onscreen_face }}1:person" data-width="fit">
-          <option value="" selected="selected">n/a</option>
+          <option value="" selected="selected">not selected</option>
         </select>
       </td>
     </tr>
@@ -306,7 +305,7 @@ function loadQueryBuilder(element) {
       if (face_params.attr) {
         query_builder.find(
           `[name="{{ parameters.onscreen_face }}1:attr"]`
-        ).val(face_params.attr);
+        ).val(face_params.attr.split('&').map(x => $.trim(x)));
       }
       if (face_params.person) {
         query_builder.find(
@@ -327,10 +326,10 @@ function loadQueryBuilder(element) {
     query_builder.find('[name="normalize"]').val('true');
   }
 
-  $('.no-enter-submit').keypress(e => e.which != 13);
+  query_builder.find('.no-enter-submit').keypress(e => e.which != 13);
 
   // Activate select boxes
-  $(".chosen-select").chosen({width: 'auto'});
+  query_builder.find('.chosen-select').chosen({width: 'auto'});
 
   // Listen for change events
   query_builder.find('input, select').change(function() {
@@ -439,7 +438,7 @@ function updateQueryBox(element) {
       face_params.push('role: ' + face_role);
     }
     if (face_attr) {
-      face_params.push('attr: ' + face_attr);
+      face_params.push('attr: ' + face_attr.join(' & '));
     }
     filters.push(`{{ parameters.onscreen_face }}1="${face_params.join(', ')}"`);
   }

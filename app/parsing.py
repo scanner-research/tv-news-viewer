@@ -90,7 +90,7 @@ def parse_face_filter_str(s: str) -> Tuple[Optional[str], Optional[str],
                 elif k == 'person':
                     person = v
                 elif k == 'attr':
-                    attr = v
+                    attr = [x.strip() for x in v.split('&')]
                 else:
                     raise InvalidUsage('Invalid face filter: {}'.format(k))
             except:

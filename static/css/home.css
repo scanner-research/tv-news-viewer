@@ -166,6 +166,9 @@
 .query-builder tr[disabled="true"] {
   display: none;
 }
+.chosen-container-multi {
+  min-width: 200px;
+}
 .chosen-container .chosen-drop {
   min-width: 100%;
   width: auto;

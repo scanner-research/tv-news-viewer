@@ -115,13 +115,43 @@ def get_countable() -> Countable:
     return Countable(value)
 
 
+def person_attrs_to_ilistmaps(
+    all_person_intervals: AllPersonIntervals,
+    person_attributes: PersonAttributes,
+    query_attributes: List[str]
+) -> List[MmapIntervalListMapping]:
+    selected_names = None
+    for query_attr in query_attributes:
+        people_with_attr = person_attributes.attr_to_names(query_attr)
+        if not people_with_attr:
+            raise InvalidUsage(
+                'attr: "{}" has no people associated with it'.format(query_attr))
+
+        if selected_names is None:
+            selected_names = set(people_with_attr)
+        else:
+            selected_names = selected_names.intersection(people_with_attr)
+
+    ilistmaps = []
+    for person_name in selected_names:
+        person_intervals = all_person_intervals.get(person_name, None)
+        if person_intervals is not None:
+            ilistmaps.append(person_intervals.ilistmap)
+        else:
+            print('attr: missing person {}'.format(person_name))
+
+    if len(ilistmaps) > MAX_PERSON_ATTRIBUTE_QUERY:
+        raise InvalidUsage('attr: query disallowed: too many people matched')
+    return ilistmaps
+
+
 def get_onscreen_face_isetmap(
     face_intervals: FaceIntervals, all_person_intervals: AllPersonIntervals,
     person_attributes: PersonAttributes, key: str
 ) -> Optional[MmapIntervalSetMapping]:
-    gender, role, person, person_attr = parse_face_filter_str(key)
+    gender, role, person, person_attrs = parse_face_filter_str(key)
     if person is not None:
-        if person_attr:
+        if person_attrs:
             raise InvalidUsage('Cannot use "attr:" with "person:"')
         person_intervals = all_person_intervals.get(person, None)
         if person_intervals is None:
@@ -134,16 +164,9 @@ def get_onscreen_face_isetmap(
             isetmap = MmapIListToISetMapping(
                 person_intervals.ilistmap, payload_mask, payload_value,
                 3000, 100)
-    elif person_attr is not None:
-        ilistmaps = []
-        for person_name in person_attributes.attr_to_names(person_attr):
-            person_intervals = all_person_intervals.get(person_name, None)
-            if person_intervals is not None:
-                ilistmaps.append(person_intervals.ilistmap)
-        if len(ilistmaps) == 0:
-            raise InvalidUsage('attr: "{}" has no people associated with it')
-        elif len(ilistmaps) > MAX_PERSON_ATTRIBUTE_QUERY:
-            raise InvalidUsage('attr: query disallowed: too many people matched')
+    elif person_attrs is not None:
+        ilistmaps = person_attrs_to_ilistmaps(
+            all_person_intervals, person_attributes, person_attrs)
         payload_mask, payload_value = get_face_time_filter_mask(gender, role)
         isetmap = MmapUnionIlistsToISetMapping(
             ilistmaps, payload_mask, payload_value, 3000, 100)
@@ -246,22 +269,15 @@ def get_face_time_agg_fn(
     person_attributes: PersonAttributes
 ) -> FaceTimeAggregateFn:
     face_str = request.args.get(SearchParameter.face, '', type=str)
-    gender, role, person, person_attr = parse_face_filter_str(face_str)
+    gender, role, person, person_attrs = parse_face_filter_str(face_str)
     payload_mask, payload_value = get_face_time_filter_mask(gender, role)
 
-    if person_attr:
+    if person_attrs:
         if person is not None:
             raise InvalidUsage('Cannot use "attr:" with "person:"')
 
-        ilistmaps = []
-        for person_name in person_attributes.attr_to_names(person_attr):
-            person_intervals = all_person_intervals.get(person_name, None)
-            if person_intervals is not None:
-                ilistmaps.append(person_intervals.ilistmap)
-        if len(ilistmaps) == 0:
-            raise InvalidUsage('attr: "{}" has no people associated with it')
-        elif len(ilistmaps) > MAX_PERSON_ATTRIBUTE_QUERY:
-            raise InvalidUsage('attr: query disallowed. too many people matched')
+        ilistmaps = person_attrs_to_ilistmaps(
+            all_person_intervals, person_attributes, person_attrs)
 
         def f(video: Video, intervals: List[Interval]) -> List[Interval]:
             result = 0
@@ -292,22 +308,15 @@ def get_face_time_intersect_fn(
     person_attributes: PersonAttributes
 ) -> FaceTimeIntersectFn:
     face_str = request.args.get(SearchParameter.face, '', type=str)
-    gender, role, person, person_attr = parse_face_filter_str(face_str)
+    gender, role, person, person_attrs = parse_face_filter_str(face_str)
     payload_mask, payload_value = get_face_time_filter_mask(gender, role)
 
-    if person_attr:
+    if person_attrs:
         if person is not None:
             raise InvalidUsage('Cannot use "attr:" with "person:"')
 
-        ilistmaps = []
-        for person_name in person_attributes.attr_to_names(person_attr):
-            person_intervals = all_person_intervals.get(person_name, None)
-            if person_intervals is not None:
-                ilistmaps.append(person_intervals.ilistmap)
-        if len(ilistmaps) == 0:
-            raise InvalidUsage('attr: "{}" has no people associated with it')
-        elif len(ilistmaps) > MAX_PERSON_ATTRIBUTE_QUERY:
-            raise InvalidUsage('attr: query disallowed: too many people matched')
+        ilistmaps = person_attrs_to_ilistmaps(
+            all_person_intervals, person_attributes, person_attrs)
 
         def f(video: Video, intervals: List[Interval]) -> List[Interval]:
             intervals = []
