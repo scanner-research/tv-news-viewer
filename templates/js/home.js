@@ -437,7 +437,7 @@ function updateQueryBox(element) {
     if (face_role) {
       face_params.push('role: ' + face_role);
     }
-    if (face_attr) {
+    if (face_attr && face_attr.length > 0) {
       face_params.push('attr: ' + face_attr.join(' & '));
     }
     filters.push(`{{ parameters.onscreen_face }}1="${face_params.join(', ')}"`);
