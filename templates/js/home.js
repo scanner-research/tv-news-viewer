@@ -14,7 +14,7 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
     <tr>
       <td type="key-col">the channel is</td>
       <td type="value-col">
-        <select class="chosen-select" name="{{ parameters.channel }}" data-width="fit">
+        <select class="chosen-select chosen-basic-select" name="{{ parameters.channel }}" data-width="fit">
           <option value="" selected="selected">All - CNN, FOX, or MSNBC</option>
           <option value="CNN">CNN</option>
           <option value="FOX">FOX</option>
@@ -25,7 +25,7 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
     <tr>
       <td type="key-col">the show is</td>
       <td type="value-col">
-        <select class="chosen-select" name="{{ parameters.show }}" data-width="fit">
+        <select class="chosen-select chosen-basic-select" name="{{ parameters.show }}" data-width="fit">
           <option value="" selected="selected">All shows</option>
         </select>
       </td>
@@ -79,39 +79,56 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
     <tr>
       <td colspan="2" type="info-header">
         The following (optional) on-screen face filters apply to faces with bounding
-        box heights &ge; 20% of frame height.
+        box heights &ge; 20% of frame height. <br>
+        Note: this will update <code>onscreen.face1="..."</code>.
+        You can filter on multiple faces by editing the querybox manually.
       </td>
     </tr>
     <tr>
       <td type="key-col">
-        a face matching
+        gender
       </td>
       <td type="value-col">
-        <select class="chosen-select"
+        <select multiple class="chosen-select chosen-single-select"
+                data-placeholder="no filter selected"
                 name="{{ parameters.onscreen_face }}1:gender" data-width="fit">
-          <option value="" selected="selected">gender not selected</option>
           <option value="male">male</option>
           <option value="female">female</option>
         </select>
-        <select class="chosen-select"
+      </td>
+    </tr>
+    <tr>
+      <td type="key-col">
+        is TV host
+      </td>
+      <td type="value-col">
+        <select multiple class="chosen-select chosen-single-select"
+                data-placeholder="no filter selected"
                 name="{{ parameters.onscreen_face }}1:role" data-width="fit">
-          <option value="" selected="selected">role not selected</option>
           <option value="host">host</option>
           <option value="nonhost">nonhost</option>
-        </select>
-        <select multiple class="chosen-select chosen-mulitple-select" data-placeholder="no attributes selected"
-                name="{{ parameters.onscreen_face }}1:attr" data-width="fit">
         </select>
       </td>
     </tr>
     <tr>
       <td type="key-col">
-        a person
+        a person, by name
       </td>
       <td>
-        <select class="chosen-select"
+        <select multiple class="chosen-select chosen-single-select"
+                data-placeholder="no filter selected"
                 name="{{ parameters.onscreen_face }}1:person" data-width="fit">
-          <option value="" selected="selected">not selected</option>
+        </select>
+      </td>
+    </tr>
+    <tr>
+      <td type="key-col">
+        a person, with attributes
+      </td>
+      <td type="value-col">
+        <select multiple class="chosen-select chosen-basic-select"
+                data-placeholder="no attribute filters selected"
+                name="{{ parameters.onscreen_face }}1:attr" data-width="fit">
         </select>
       </td>
     </tr>
@@ -329,7 +346,10 @@ function loadQueryBuilder(element) {
   query_builder.find('.no-enter-submit').keypress(e => e.which != 13);
 
   // Activate select boxes
-  query_builder.find('.chosen-select').chosen({width: 'auto'});
+  query_builder.find('.chosen-single-select').chosen({
+    width: 'auto', max_selected_options: 1
+  });
+  query_builder.find('.chosen-basic-select').chosen({width: 'auto'});
 
   // Listen for change events
   query_builder.find('input, select').change(function() {
@@ -428,19 +448,21 @@ function updateQueryBox(element) {
     filters.push(`{{ parameters.onscreen_face }}1="all"`);
   } else if (face_person || face_role || face_gender || face_attr) {
     let face_params = [];
-    if (face_person) {
-      face_params.push('person: ' + face_person);
+    if (face_person && face_person.length > 0) {
+      face_params.push('person: ' + face_person[0]);
     }
-    if (face_gender) {
-      face_params.push('gender: ' + face_gender);
+    if (face_gender && face_gender.length > 0) {
+      face_params.push('gender: ' + face_gender[0]);
     }
-    if (face_role) {
-      face_params.push('role: ' + face_role);
+    if (face_role && face_role.length > 0) {
+      face_params.push('role: ' + face_role[0]);
     }
     if (face_attr && face_attr.length > 0) {
       face_params.push('attr: ' + face_attr.join(' & '));
     }
-    filters.push(`{{ parameters.onscreen_face }}1="${face_params.join(', ')}"`);
+    if (face_params.length > 0) {
+      filters.push(`{{ parameters.onscreen_face }}1="${face_params.join(', ')}"`);
+    }
   }
 
   let num_faces = builder.find('[name="{{ parameters.onscreen_numfaces }}"]').val();
