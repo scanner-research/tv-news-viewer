@@ -23,7 +23,7 @@
   {% block header %}
   <div class="top-header">
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
-      <span class="navbar-brand">Stanford Cable TV News Analyzer</span>
+      <span class="navbar-brand">Stanford Cable TV News Viewer</span>
       <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
@@ -34,7 +34,7 @@
             <a class="nav-link" href="/">Home</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="/instructions">Instructions</a>
+            <a class="nav-link" href="/instructions">Instructions/Getting Started</a>
           </li>
           <li class="nav-item">
             <a class="nav-link" href="/methodology">Methodology</a>
@@ -54,7 +54,7 @@
           </li>
           {% if uptime %}
           <li class="nav-item disabled">
-            <tt class="nav-link">(server uptime: {{ uptime }})</tt>
+            <tt class="nav-link">(last server reboot: {{ uptime }})</tt>
           </li>
           {% endif %}
         </ul>
