@@ -8,7 +8,7 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
     <tr>
       <th style="text-align: right;">Include results where:</th>
       <td>
-        <i style="color: gray;">*Warning! Your current query will be overwritten on changes.</i>
+        <i style="color: gray;">Warning! Your current query will be overwritten on changes.</i>
       </td>
     </tr>
     <tr>
@@ -135,11 +135,13 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
     <tr>
       <td type="key-col">there are</td>
       <td type="value-col">
-        <input type="number" class="form-control no-enter-submit"
+        <input type="number" class="form-control no-enter-submit num-faces-input"
                name="{{ parameters.onscreen_numfaces }}"
-               min="1" max="25" placeholder="n"
-               style="width:70px;">
-        faces on-screen or any face <input type="checkbox" name="{{ parameters.onscreen_face }}1:all"> is on-screen
+               min="1" max="25" placeholder="enter a number">
+        faces on-screen or any face
+        <input type="checkbox"
+               name="{{ parameters.onscreen_face }}1:all">
+        is on-screen
       </td>
     </tr>
     <tr disabled="true">
@@ -258,13 +260,17 @@ function removeRow(element) {
   setRemoveButtonsState();
 }
 
-function buildQueryBuilder() {
+function getQueryBuilder() {
   let builder = $(QUERY_BUILDER_HTML);
   let show_select = builder.find('select[name="{{ parameters.show }}"]');
   ALL_SHOWS.forEach(x => show_select.append($('<option>').val(x).text(x)));
-  let person_select = builder.find('select[name="{{ parameters.onscreen_face }}1:person"]');
+  let person_select = builder.find(
+    'select[name="{{ parameters.onscreen_face }}1:person"]'
+  );
   ALL_PEOPLE.forEach(x => person_select.append($('<option>').val(x).text(x)));
-  let person_attr_select = builder.find('select[name="{{ parameters.onscreen_face }}1:attr"]');
+  let person_attr_select = builder.find(
+    'select[name="{{ parameters.onscreen_face }}1:attr"]'
+  );
   ALL_PERSON_ATTRIBUTES.forEach(
     x => person_attr_select.append($('<option>').val(x).text(x))
   );
@@ -275,7 +281,7 @@ function loadQueryBuilder(element) {
   let search_table_row = $(element).closest('tr');
   let where_box = search_table_row.find('input[name="where"]');
 
-  search_table_row.find('td:last').append(buildQueryBuilder());
+  search_table_row.find('td:last').append(getQueryBuilder());
   var current_query = new SearchableQuery(
     `${QUERY_KEYWORDS.where} ${where_box.val()}`,
     $('#countVar').val(), true);
@@ -319,15 +325,14 @@ function loadQueryBuilder(element) {
           `[name="{{ parameters.onscreen_face }}1:role"]`
         ).val(face_params.role);
       }
-      if (face_params.attr) {
-        query_builder.find(
-          `[name="{{ parameters.onscreen_face }}1:attr"]`
-        ).val(face_params.attr.split('&').map(x => $.trim(x)));
-      }
       if (face_params.person) {
         query_builder.find(
           `[name="{{ parameters.onscreen_face }}1:person"]`
         ).val(face_params.person);
+      } else if (face_params.attr) {
+        query_builder.find(
+          `[name="{{ parameters.onscreen_face }}1:attr"]`
+        ).val(face_params.attr.split('&').map(x => $.trim(x)));
       }
     }
   }
@@ -448,16 +453,15 @@ function updateQueryBox(element) {
     filters.push(`{{ parameters.onscreen_face }}1="all"`);
   } else if (face_person || face_role || face_gender || face_attr) {
     let face_params = [];
-    if (face_person && face_person.length > 0) {
-      face_params.push('person: ' + face_person[0]);
-    }
     if (face_gender && face_gender.length > 0) {
       face_params.push('gender: ' + face_gender[0]);
     }
     if (face_role && face_role.length > 0) {
       face_params.push('role: ' + face_role[0]);
     }
-    if (face_attr && face_attr.length > 0) {
+    if (face_person && face_person.length > 0) {
+      face_params.push('person: ' + face_person[0]);
+    } else if (face_attr && face_attr.length > 0) {
       face_params.push('attr: ' + face_attr.join(' & '));
     }
     if (face_params.length > 0) {
@@ -521,11 +525,27 @@ function onWhereUpdate(element) {
   //   }
   // }
 
+
+  function checkFaceFilters(filters) {
+    Object.keys(filters).forEach(k => {
+      if (k.match(/^{{ parameters.onscreen_face }}\d+/)) {
+        face_filter = parseFaceFilterString(filters[k]);
+      }
+    });
+  }
+
   // Check the query
   let query = `COUNT "${count_var}" WHERE ${$(element).val()}`;
   var err = false;
   try {
-    new SearchableQuery(query, count_var, false);
+    let parsed_query = new SearchableQuery(query, count_var, false);
+    checkFaceFilters(parsed_query.main_args);
+    if (parsed_query.normalize_args) {
+      checkFaceFilters(parsed_query.normalize_args);
+    }
+    if (parsed_query.subtract_args) {
+      checkFaceFilters(parsed_query.subtract_args);
+    }
   } catch (e) {
     console.log(e);
     err = true;

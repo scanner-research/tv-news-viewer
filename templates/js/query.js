@@ -191,8 +191,15 @@ function parseFaceFilterString(s) {
   } else {
     s.split(',').forEach(kv => {
       let [k, v] = $.trim(kv).split(':').map(s => $.trim(s));
-      result[k] = v;
-    })
+      if (k == 'gender' || k == 'role' || k == 'person' || k == 'attr') {
+        result[k] = v;
+      } else {
+        throw Error(`${k} is not a valid filter`);
+      }
+    });
+    if (_.has(result, 'person') && _.has(result, 'attr')) {
+      throw Error('Cannot use both "person" and "attr" together');
+    }
   }
   return result;
 }
@@ -207,18 +214,6 @@ function findShow(v) {
     }
   }
   return show;
-}
-
-function findPerson(v) {
-  let v_up = v.toUpperCase();
-  var person = null;
-  for (var i in ALL_PEOPLE) {
-    if (ALL_PEOPLE[i].toUpperCase() == v_up) {
-      person = ALL_PEOPLE[i];
-      break;
-    }
-  }
-  return person;
 }
 
 function translateFilterDict(filters, no_err) {

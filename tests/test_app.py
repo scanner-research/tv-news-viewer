@@ -135,7 +135,7 @@ TEST_IS_COMMERCIAL_OPTIONS = [None, 'false', 'true', 'both']
 TEST_FACE_OPTIONS = [
     None, '', 'gender:female', 'role:host', 'person:wolf blitzer',
     'gender:female,role:host', 'role:host,person:wolf blitzer',
-    'gender:male,role:host,person:wolf blitzer',
+    'gender:male,role:host,person:wolf blitzer', 'attr:journalist'
 ]
 TEST_TEXT_WINDOW_OPTIONS = [None, '0', '15', '120']
 

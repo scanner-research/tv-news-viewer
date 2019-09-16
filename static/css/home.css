@@ -166,6 +166,9 @@
 .query-builder tr[disabled="true"] {
   display: none;
 }
+.query-builder .num-faces-input {
+  width: 150px;
+}
 .chosen-container-multi {
   min-width: 200px;
 }
