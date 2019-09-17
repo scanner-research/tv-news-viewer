@@ -44,6 +44,7 @@
               Query Options
             </a>
             <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+              <a class="dropdown-item" href="/videos">List of videos</a>
               <a class="dropdown-item" href="/shows">List of shows</a>
               <a class="dropdown-item" href="/people">List of people</a>
               <a class="dropdown-item" href="/person-attributes">List of person-attributes</a>
@@ -63,8 +64,10 @@
 
   {% if uptime %}
   <footer>
+    <div style="height: 50px;"><div>
     <div class="bottom-footer">
-      Last server reboot: {{ uptime }}
+      Last server update: {{ uptime }}. If something breaks, please
+      <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>R</kbd> to refresh without cache.
     </div>
   </footer>
   {% endif %}

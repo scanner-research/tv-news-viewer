@@ -1,39 +1,62 @@
 {% extends "layout.html" %}
 
 {% block head %}
-  {{ super() }}
-  <link rel="stylesheet" href="{{ url_for('static', filename='vgrid/index.css') }}" />
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
-  <script src="{{ url_for('static', filename='js/constant.js') }}" /></script>
-  <script src="{{ url_for('static', filename='js/values.js') }}" /></script>
-  <script src="{{ url_for('static', filename='js/query.js') }}" /></script>
-  <script src="{{ url_for('static', filename='js/videos.js') }}" /></script>
+{{ super() }}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.10.19/js/jquery.dataTables.min.js" integrity="sha256-t5ZQTZsbQi8NxszC10CseKjJ5QeMw5NINtOXQrESGSU=" crossorigin="anonymous"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.10.19/css/dataTables.bootstrap4.min.css" integrity="sha256-F+DaKAClQut87heMIC6oThARMuWne8+WzxIDT7jXuPA=" crossorigin="anonymous" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.10.19/js/dataTables.bootstrap4.min.js" integrity="sha256-hJ44ymhBmRPJKIaKRf3DSX5uiFEZ9xB/qx8cNbJvIMU=" crossorigin="anonymous"></script>
 
-  <style>
-    body {
-      overflow: hidden;
-    }
-    #text-info {
-      text-align: center;
-      margin-bottom: 0;
-    }
-    #page-buttons {
-      position: absolute;
-      bottom: 0;
-      right: 0;
-    }
-  </style>
+<style>
+.attribute-entry {
+  float: left;
+  padding-left: 10px;
+  padding-right: 10px;
+}
+</style>
 {% endblock %}
 
-{% block body %}
-<div>
-  <div id="page-buttons" class="btn-group">
-    <button name="previous" type="button" class="btn btn-outline-secondary btn-sm">Previous</button>
-    <button name="next" type="button" class="btn btn-outline-secondary btn-sm">Next</button>
-    <button name="info" type="button" class="btn btn-secondary btn-sm" disabled></button>
-  </div>
-  <p id="text-info"></p>
-  <div id="videos"></div>
+{% block content %}
+<div class="container">
+  <h1>
+    List of videos
+  </h1>
+
+  <p>
+    This page contains a list of videos currently in our system. The video
+    names can be used to correlate our data with their source at the
+    <a target="_blank" href="https://archive.org/">Internet Archive</a>.
+    The timestamp embedded in the video name is in UTC, whereas we use PST
+    for all queries.
+  </p>
+
+  <p>
+    The following is a <b>random sample</b> of {{ n }} videos from the data
+    set.
+  </p>
+
+  <table class="table table-hover table-striped table-bordered table-sm">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Duration (in minutes)</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for video in videos %}
+      <tr>
+        <td>{{ video.name }}</td>
+        <td>{{ (video.num_frames / video.fps / 60) | int }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <script>
+    $(document).ready(function() {
+      $('.table').DataTable({
+        pageLength: 25
+      });
+    });
+  </script>
 </div>
-<script src="{{ url_for('static', filename='vgrid/bundle.js') }}"></script>
 {% endblock %}

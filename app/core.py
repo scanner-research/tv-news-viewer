@@ -5,6 +5,7 @@ Main application code
 from datetime import datetime, timedelta
 import os
 import json
+import random
 import time
 from collections import defaultdict, namedtuple
 from flask import (
@@ -476,9 +477,9 @@ def build_app(
     def embed() -> Response:
         return render_template('embed.html')
 
-    @app.route('/videos')
+    @app.route('/video-embed')
     def show_videos() -> Response:
-        return render_template('videos.html')
+        return render_template('video-embed.html')
 
     # List of people to expose
     Person = namedtuple('person', ['name', 'screen_time', 'attributes'])
@@ -527,6 +528,13 @@ def build_app(
             for (channel, show), seconds in tmp.items()]
         channel_and_show.sort()
         return render_template('shows.html', shows=channel_and_show)
+
+    @app.route('/videos')
+    def get_videos() -> Response:
+        n_samples = 1000
+        return render_template(
+            'videos.html', n=n_samples,
+            videos=random.sample(list(video_dict.values()), n_samples))
 
     @app.route('/static/js/values.js')
     def get_values_js() -> Response:

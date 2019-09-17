@@ -1,6 +1,6 @@
 /* Embed a chart using vega-embed */
 
-const VGRID_INSTRUCTIONS = 'Click to expand videos and press <kbd>space</kbd> to play/pause.';
+const VGRID_INSTRUCTIONS = 'Click to expand videos and press <kbd>Space</kbd> to play/pause.';
 var SERVE_FROM_INTERNET_ARCHIVE = true;
 
 function test_auth() {
@@ -292,7 +292,7 @@ class Chart {
           video_count: video_ids.length
         };
 
-        video_div_selector.append('<hr>', $(`<iframe class="vgrid-iframe" color="${color}" src="/videos" width="100%" frameBorder="0">`));
+        video_div_selector.append('<hr>', $(`<iframe class="vgrid-iframe" color="${color}" src="/video-embed" width="100%" frameBorder="0">`));
         $(`${video_div_id} iframe[color="${color}"]`).on('load', function() {
           let iframe = $(this)[0];
           iframe.contentWindow.loadVideos(params, SERVE_FROM_INTERNET_ARCHIVE);

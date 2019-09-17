@@ -16,6 +16,7 @@
   width: 100%;
   font-family: 'Source Serif Pro', serif;
   padding-left: 10px;
+  padding-bottom: 5px;
 }
 .chart-tooltip {
   display: none;
