@@ -6,6 +6,7 @@ from datetime import datetime, timedelta
 import os
 import json
 import random
+import re
 import time
 from collections import defaultdict, namedtuple
 from flask import (
@@ -430,6 +431,13 @@ def build_app(
     app = Flask(__name__, template_folder=TEMPLATE_DIR,
                 static_folder=STATIC_DIR)
 
+    @app.template_filter('quoted')
+    def quoted(s):
+        l = re.findall('\'([^\']*)\'', str(s))
+        if l:
+            return l[0]
+        return None
+
     # Make sure document name equals video name
     documents = Documents([
         d._replace(name=get_video_name(d.name))
@@ -505,7 +513,7 @@ def build_app(
     @app.route('/instructions')
     def get_instructions() -> Response:
         return render_template(
-            'instructions.html', host=request.host, uptime=_get_uptime(),
+            'instructions.html', host=request.host,
             countables=Countable, parameters=SearchParameter,
             default_text_window=default_text_window,
             default_is_commercial=default_is_commercial.name)
