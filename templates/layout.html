@@ -34,7 +34,7 @@
             <a class="nav-link" href="/">Home</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="/instructions">Instructions/Getting Started</a>
+            <a class="nav-link" href="/instructions">Getting Started</a>
           </li>
           <li class="nav-item">
             <a class="nav-link" href="/methodology">Methodology</a>
@@ -52,11 +52,6 @@
           <li class="nav-item">
             <a class="nav-link" href="/about-us">About Us</a>
           </li>
-          {% if uptime %}
-          <li class="nav-item disabled">
-            <tt class="nav-link">(last server reboot: {{ uptime }})</tt>
-          </li>
-          {% endif %}
         </ul>
       </div>
     </nav>
@@ -65,6 +60,14 @@
   {% endblock %}
 
   {% block content %}{% endblock %}
+
+  {% if uptime %}
+  <footer>
+    <div class="bottom-footer">
+      Last server reboot: {{ uptime }}
+    </div>
+  </footer>
+  {% endif %}
 
   <script>
     let is_chrome = !!window.chrome && (!!window.chrome.webstore || !!window.chrome.runtime);

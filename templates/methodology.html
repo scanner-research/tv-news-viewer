@@ -2,35 +2,92 @@
 
 {% block content %}
 <div class="container">
-  <h1>Methodology</h1>
+  <h1>Our Methods</h1>
   <p>
-    ...
+    This page details tour data set and methodology for extracting the metadata
+    surfaced by this web application.
   </p>
   <hr>
 </div>
 
 <div class="container">
-  <h5>The Dataset</h5>
+  <h4>The Dataset</h4>
   <p>
-    ...
+    Our data comes from the Internet Archive's
+    <a href="https://archive.org/details/tv">TV News Archive</a>, from
+    2010 onwards. We expose metadata for 3 major cable TV news channels
+    (CNN, FOX, and MSNBC), providing near 24/7 video for the last decade.
+    Up to 3 minutes of video may be played back. Metadata such as "show",
+    "airtime", and closed captions are provided by the Archive. For more
+    information about the TV News Archive, please consult the
+    <a href="https://archive.org/">Internet Archive</a> directly.
   </p>
   <hr>
 
-  <h5>Use of "AI" and Computer Vision</h5>
+  <h4>Use of "AI" and Computer Vision</h4>
   <p>
-    ...
+    We use "AI"-based methods to augment the basic metadata. The additional
+    metadata labels include bounding boxes on faces; gender and identity of
+    faces; whether a person is a host; etc. These detectors have imperfect
+    accuracy.
   </p>
 
   <hr>
   <h5>Faces</h5>
   <p>
-    ...
+    To detect faces in the video, we use
+    <a href="https://github.com/davidsandberg/facenet">FaceNet</a> on one frame
+    for every 3 seconds of video.
+    We use FaceNet embeddings to train a k-Nearest Neighbors classifier for
+    gender, which achieves 97% accuracy on independently sampled hold-out data.
+  </p>
+  <p>
+    When presenting results in the application, we restrict queries to faces
+    whose bounding boxes are at least 20% of the frame's height. This is to
+    filter our small faces that are in the backgrounds or in the chyrons.
+    The face detector's precision and recall on faces taller than 20% of the
+    frame's height is 98% and 97%, respecively.
+  </p>
+
+  <h5>Identity Labels</h5>
+  <p>
+    The majority of the idenitity labels are computed using Amazon's
+    Celebrity Recognition API provided under the
+    <a href="https://aws.amazon.com/rekognition/">AWS Rekognition</a>
+    service. AWS has provided this service free of charge for our purposes.
+    The labels from AWS are noisy; individuals who have similar appearances
+    will sometimes be confused with each other, leading to false positives,
+    and the detector will also sometimes miss instances of an individual.
+  </p>
+
+  <h5>Person-attributes</h5>
+  <p>
+    Metadata person-attributes are derived from
+    <a href="https://wiki.dbpedia.org/">DBpedia</a>, using their public
+    SPARQL API. We associate metadata from DBpedia with the names of faces
+    provided by AWS Rekognition. This process is automatic and can have errors;
+    for instance, if multiple individuals share the same name, then the
+    attributes may correspond to the wrong person. Likewise, for some
+    individuals, no entries are available on DBpedia. This process also
+    only applies to faces for which we have a known face identity label.
   </p>
 
   <hr>
-  <h5>Transcripts</h5>
+  <h4>Transcripts</h4>
   <p>
-    ...
+    Closed captions are provided by the Internet Archive. We use the
+    <a href="https://lowerquality.com/gentle/">Gentle word aligner</a>
+    to closely align the words in the captions to the audio track.
+  </p>
+
+  <hr>
+  <h4>Commercials</h4>
+  <p>
+    The video data set includes content and commericals. Commercials are
+    excluded from the query results. To exclude commercials, we use a
+    complex-events query that incorporates information from the visual frames
+    and the transcripts. The commercial detector's precision and recall are
+    93.0% and 96.8%.
   </p>
 </div>
 {% endblock %}
