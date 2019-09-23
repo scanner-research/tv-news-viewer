@@ -304,10 +304,8 @@ class Chart {
     vegaEmbed(div_id, vega_spec, {actions: false}).then(
       ({spec, view}) => {
         let tooltip = $('<div class="chart-tooltip" />').append(
-          $('<span />').append(
-            $('<h6 name="time" />'),
-            video_div_id ? '&nbsp; Click to view videos.' : null
-          ));
+          $('<span />').append($('<h6 name="time" />')
+        ));
         Object.entries(this_chart.search_results).forEach(
           ([color, result]) => {
             tooltip.append(
