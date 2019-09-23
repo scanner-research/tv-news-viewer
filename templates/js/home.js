@@ -399,16 +399,18 @@ function clearChart() {
 }
 
 function clearQueries() {
-  $('tr[name="query"]').each(function() {
-    if ($(this).index() > 0) {
-      removeRow($(this));
-    } else {
-      $(this).find('input[name="countable"]').val('');
-      $(this).find('input[name="where"]').val('');
-    }
-  });
-  window.history.pushState({}, document.title, '/');
-  clearChart();
+  if (window.confirm('Warning! This will clear your current query(s).')) {
+    $('tr[name="query"]').each(function() {
+      if ($(this).index() > 0) {
+        removeRow($(this));
+      } else {
+        $(this).find('input[name="countable"]').val('');
+        $(this).find('input[name="where"]').val('');
+      }
+    });
+    window.history.pushState({}, document.title, '/');
+    clearChart();
+  }
 }
 
 function updateQueryBox(element) {
