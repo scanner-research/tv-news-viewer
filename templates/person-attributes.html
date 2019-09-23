@@ -67,7 +67,11 @@
       $(this).parent().find('.person-list').toggle();
     });
     $(document).ready(function() {
-      $('.table').DataTable({pageLength: 25});
+      $('.table').DataTable({
+        pageLength: 25, columns: [
+          {width: '20%'}, {width: '10%'}, null
+        ]
+      });
     });
   </script>
 </div>
