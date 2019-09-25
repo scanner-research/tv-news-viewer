@@ -240,14 +240,15 @@ def get_onscreen_face_isetmaps(
 def get_face_time_filter_mask(
     gender: Optional[str], role: Optional[str]
 ) -> Tuple[int, int]:
-    payload_value = 0
     payload_mask = 0
+    payload_value = 0
+
     if gender:
         gender = gender.strip().lower()
         if gender and gender != 'all':
-            payload_mask |= 0b1
+            payload_mask |= 1
             if gender == 'male':
-                payload_value |= 0b1
+                payload_value |= 1
             elif gender == 'female':
                 pass
             else:
@@ -255,9 +256,9 @@ def get_face_time_filter_mask(
     if role:
         role = role.strip().lower()
         if role and role != 'all':
-            payload_mask |= 0b10
+            payload_mask |= 1 << 1
             if role == 'host':
-                payload_value |= 0b10
+                payload_value |= 1 << 1
             elif role == 'nonhost':
                 pass
             else:

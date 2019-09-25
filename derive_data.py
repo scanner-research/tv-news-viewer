@@ -151,8 +151,11 @@ def derive_person_iset(person_ilist_file: str, outfile: str) -> None:
     with IntervalSetMappingWriter(outfile) as writer:
         for video_id in ilistmap.get_ids():
             acc = IntervalAccumulator()
+
             for interval in ilistmap.intersect(
-                video_id, [(0, U32_MAX)], 0, 0, False
+                video_id, [(0, U32_MAX)],
+                0, 0,              # Keep all faces
+                False
             ):
                 acc.add(*interval)
             result = acc.get()

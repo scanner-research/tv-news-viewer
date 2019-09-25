@@ -35,9 +35,11 @@
               &nbsp;
             </span>
             <span class="hint-span">
-              Read the <a href="/instructions" target="_blank">getting started</a> page for query-syntax;
-              click <kbd>COUNT screen time WHERE</kbd> to open the interactive editor;
-              and <b>click the chart to show video</b>.
+              Read the <a href="/instructions" target="_blank">getting started</a> page for query-syntax; click
+              <div class="input-group-prepend noselect" style="display: inline;">
+                <span class="input-group-text" style="display: inherit; padding-top: 4px; padding-bottom: 4px;">COUNT screen time WHERE</span>
+              </div>
+              to open the interactive editor; and click the chart to show video.
             </span>
             <hr>
           </td>
@@ -63,8 +65,8 @@
               <option value="day" {% if default_agg_by == "day" %}selected="selected"{% endif %}>day</option>
             </select>
             . &nbsp;
-            <input type="submit" class="btn btn-primary btn-sm" value="Search the news!">
-            <input type="submit" class="btn btn-danger btn-sm" value="Reset" onclick="clearQueries(); return false;">
+            <input type="submit" class="btn btn-secondary btn-sm" value="Search the news!">
+            <input type="submit" class="btn btn-secondary btn-sm" value="Reset" onclick="clearQueries(); return false;">
           </td>
         </tr>
       </tfoot>

@@ -6,7 +6,7 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
   </div>
   <table>
     <tr>
-      <th style="text-align: right;">Include results where:</th>
+      <th style="text-align: right;">Find video segments where:</th>
       <td>
         <i style="color: gray;">Warning! Your current query will be overwritten on changes.</i>
       </td>
@@ -82,15 +82,20 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
 
     <tr>
       <td colspan="2" type="info-header">
-        The following (optional) on-screen face filters apply to faces with bounding
-        box heights &ge; 20% of frame height. <br>
+        The following (optional) filters find video with on-screen faces. <br>
         Note: this will update <code>onscreen.face1="..."</code>.
-        You can filter on multiple faces by editing the querybox manually.
+        To filter on multiple faces, edit the querybox manually.
       </td>
     </tr>
     <tr>
       <td type="key-col">
-        gender
+        the screen has a face that:
+      </td>
+      <td type="value-col"></td>
+    </tr>
+    <tr>
+      <td type="key-col">
+        has gender
       </td>
       <td type="value-col">
         <select multiple class="chosen-select chosen-single-select"
@@ -103,7 +108,7 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
     </tr>
     <tr>
       <td type="key-col">
-        is TV host
+        is a TV host
       </td>
       <td type="value-col">
         <select multiple class="chosen-select chosen-single-select"
@@ -116,7 +121,7 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
     </tr>
     <tr>
       <td type="key-col">
-        a person, by name
+        is a person, by name
       </td>
       <td>
         <select multiple class="chosen-select chosen-single-select"
@@ -127,7 +132,7 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
     </tr>
     <tr>
       <td type="key-col">
-        a person, with attributes
+        is a person, with attributes
       </td>
       <td type="value-col">
         <select multiple class="chosen-select chosen-basic-select"

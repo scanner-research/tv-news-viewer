@@ -115,9 +115,14 @@ def load_video_data(data_dir: str) -> Tuple[
             filtered_attrs = []
             for attr in attrs:
                 attr = re.sub(r'\W+', '', attr.lower())
-                if len(attr) > MIN_PERSON_ATTRIBUTE_LEN and len(attr) < MAX_PERSON_ATTRIBUTE_LEN:
+                if (
+                    len(attr) > MIN_PERSON_ATTRIBUTE_LEN
+                    and len(attr) < MAX_PERSON_ATTRIBUTE_LEN
+                ):
                     filtered_attrs.append(attr)
-            raw_person_attributes['aws ' + name.lower()] = filtered_attrs
+            name_lower = 'aws' + name.lower()
+            if name_lower in all_person_intervals:
+                raw_person_attributes[name_lower] = filtered_attrs
         person_attributes = PersonAttributes(raw_person_attributes)
 
     return videos, commercials, face_intervals, all_person_intervals, \
