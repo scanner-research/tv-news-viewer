@@ -120,7 +120,7 @@ def load_video_data(data_dir: str) -> Tuple[
                     and len(attr) < MAX_PERSON_ATTRIBUTE_LEN
                 ):
                     filtered_attrs.append(attr)
-            name_lower = 'aws' + name.lower()
+            name_lower = 'aws ' + name.lower()
             if name_lower in all_person_intervals:
                 raw_person_attributes[name_lower] = filtered_attrs
         person_attributes = PersonAttributes(raw_person_attributes)
