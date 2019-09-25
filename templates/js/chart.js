@@ -365,3 +365,8 @@ resizeVideoIFrames();
 $(window).scroll(function() {
   $('.chart-tooltip').hide();
 });
+$(window).mousemove(function(e){
+  if ($(e.target).parent().is('canvas')) {
+    $('.chart-tooltip').hide();
+  }
+});
