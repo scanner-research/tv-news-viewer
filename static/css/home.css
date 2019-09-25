@@ -28,8 +28,7 @@
   padding-left: 10px;
 }
 #search-table .hint-span {
-  padding-left: 10px;
-  font-size: 12px;
+  font-size: 14px;
 }
 #search-table .count-span {
   display: none;
@@ -49,27 +48,25 @@
 #search-table .query-text {
   font-family: monospace;
 }
-
-#add-row-btn {
+#search-table .add-row-btn {
   width: 35px;
   height: 30px;
   text-align: center;
-  font-size: 12px;
+  font-size: 14px;
 }
-
-.chart-options {
+#search-table .chart-options {
   text-align: left;
-  font-size: 12px;
+  font-size: 14px;
 }
-.chart-options input, select, .filter-option {
+#search-table .chart-options input, select, .filter-option {
   text-align: center;
-  font-size: 12px;
+  font-size: 14px;
 }
-.chart-options hr {
+#search-table .chart-options hr {
   margin-top: 0.25rem;
   margin-bottom: 0.25rem;
 }
-.chart-options .datepicker {
+#search-table .chart-options .datepicker {
   width: 100px;
 }
 

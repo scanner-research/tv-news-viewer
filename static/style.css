@@ -1,9 +1,11 @@
+body {
+  font-family: 'Source Serif Pro', serif;
+}
 .container {
   padding: 10px;
 }
 .top-header {
   width: 100%;
-  font-family: 'Source Serif Pro', serif;
 }
 .top-header a {
   color: inherit; /* blue colors for links too */
@@ -14,7 +16,6 @@
   left: 0;
   bottom: 0;
   width: 100%;
-  font-family: 'Source Serif Pro', serif;
   padding-left: 10px;
   padding-bottom: 5px;
 }

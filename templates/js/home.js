@@ -260,7 +260,7 @@ function setRemoveButtonsState() {
 
 function removeRow(element) {
   $(element).closest('tr').remove();
-  $('#add-row-btn').prop('disabled', false);
+  $('#search-table .add-row-btn').prop('disabled', false);
   setRemoveButtonsState();
 }
 
@@ -584,13 +584,13 @@ function addRow(query) {
   setQueryBoxForMode();
 
   if (tbody.find('tr').length >= DEFAULT_COLORS.length) {
-    $('#add-row-btn').prop('disabled', true);
+    $('#search-table .add-row-btn').prop('disabled', true);
   }
   setRemoveButtonsState();
 
   onWhereUpdate(new_row.find('input[name="where"]'));
 }
-$('#add-row-btn').click(() => {addRow();});
+$('#search-table .add-row-btn').click(() => {addRow();});
 
 function getDataString(chart_options, lines) {
   return encodeURIComponent(JSON.stringify({
