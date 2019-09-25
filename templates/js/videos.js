@@ -11,8 +11,9 @@ function queryKeywords(query) {
   }
   let words = new Set();
   Object.entries(query.main_args).forEach(([k, v]) => {
+    console.log(k);
     if (k == '{{ parameters.caption_text }}') {
-      v.split(' ').filter(word_filter).forEach(w => { words.add(w); });
+      v.split(/[\s&|\^]+/).filter(word_filter).forEach(w => { words.add(w.toLowerCase()); });
     } else if (k != '{{ parameters.onscreen_numfaces }}' &&
                k.startsWith('{{ parameters.onscreen_face }}')) {
       let f = parseFaceFilterString(v.toLowerCase());

@@ -54,7 +54,7 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
 
     <tr>
       <td colspan="2" type="info-header">
-        The following (optional) filter implement text search on time-aligned transcripts.
+        The following (optional) filters video by text from time-aligned transcripts.
       </td>
     </tr>
     <tr>
@@ -62,17 +62,21 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
         the transcript contains
       </td>
       <td type="value-col">
-        <input type="text" class="form-control no-enter-submit"
+        <textarea type="text" class="form-control no-enter-submit"
                name="{{ parameters.caption_text }}"
                value="" placeholder="keyword or phrase"
-               style="width:400px;">
-        <span class="nowrap">
-          within
-          <input type="number" class="form-control no-enter-submit"
-                 name="{{ parameters.caption_window }}"
-                 min="0" max="3600" placeholder="{{ default_text_window }}"
-                 style="width:70px;"> seconds
-        </span>
+               rows="1"></textarea>
+      </td>
+    </tr>
+    <tr>
+      <td type="key-col">
+        within
+      </td>
+      <td type="value-col">
+        <input type="number" class="form-control"
+               name="{{ parameters.caption_window }}"
+               min="0" max="3600" placeholder="{{ default_text_window }}"
+               style="width:70px;"> seconds
       </td>
     </tr>
 
@@ -357,7 +361,7 @@ function loadQueryBuilder(element) {
   query_builder.find('.chosen-basic-select').chosen({width: 'auto'});
 
   // Listen for change events
-  query_builder.find('input, select').change(function() {
+  query_builder.find('input, select, textarea').change(function() {
     updateQueryBox(element);
   });
 
@@ -418,39 +422,33 @@ function updateQueryBox(element) {
   let builder = search_table_row.find('.query-builder');
   let filters = [];
 
-  let channel = builder.find('[name="{{ parameters.channel }}"]').val();
+  let channel = builder.find('select[name="{{ parameters.channel }}"]').val();
   if (channel) {
     filters.push(`{{ parameters.channel }}=${channel}`);
   }
-  let show = builder.find('[name="{{ parameters.show }}"]').val();
+  let show = builder.find('select[name="{{ parameters.show }}"]').val();
   if (show) {
     filters.push(`{{ parameters.show }}="${show}"`);
   }
-  let hour = builder.find('[name="{{ parameters.hour }}"]').val();
+  let hour = builder.find('input[name="{{ parameters.hour }}"]').val();
   if (hour) {
     filters.push(`{{ parameters.hour }}=${hour}`);
   }
-  let day_of_week = builder.find('[name="{{ parameters.day_of_week }}"]').val();
+  let day_of_week = builder.find('input[name="{{ parameters.day_of_week }}"]').val();
   if (day_of_week) {
     filters.push(`{{ parameters.day_of_week }}="${day_of_week}"`);
   }
 
-  if ($('#countVar').val() != '{{ countables.mentions.value }}') {
-    let caption_text = builder.find('[name="{{ parameters.caption_text }}"]').val();
-    if (caption_text) {
-      filters.push(`{{ parameters.caption_text }}="${caption_text}"`);
-    }
-    let caption_window = builder.find('[name="{{ parameters.caption_window }}"]').val();
-    if (caption_window) {
-      filters.push(`{{ parameters.caption_window }}=${caption_window}`);
-    }
+  let is_commercial = builder.find('select[name="{{ parameters.is_commercial }}"]').val();
+  if (is_commercial != 'false') {
+    filters.push(`{{ parameters.is_commercial }}=${is_commercial}`);
   }
 
-  let face_all = builder.find('[name="{{ parameters.onscreen_face }}1:all"]').is(':checked');
-  let face_gender = builder.find('[name="{{ parameters.onscreen_face }}1:gender"]').val();
-  let face_role = builder.find('[name="{{ parameters.onscreen_face }}1:role"]').val();
-  let face_attr = builder.find('[name="{{ parameters.onscreen_face }}1:attr"]').val();
-  let face_person = builder.find('[name="{{ parameters.onscreen_face }}1:person"]').val();
+  let face_all = builder.find('select[name="{{ parameters.onscreen_face }}1:all"]').is(':checked');
+  let face_gender = builder.find('select[name="{{ parameters.onscreen_face }}1:gender"]').val();
+  let face_role = builder.find('select[name="{{ parameters.onscreen_face }}1:role"]').val();
+  let face_attr = builder.find('select[name="{{ parameters.onscreen_face }}1:attr"]').val();
+  let face_person = builder.find('select[name="{{ parameters.onscreen_face }}1:person"]').val();
   if (face_all) {
     filters.push(`{{ parameters.onscreen_face }}1="all"`);
   } else if (face_person || face_role || face_gender || face_attr) {
@@ -471,14 +469,20 @@ function updateQueryBox(element) {
     }
   }
 
-  let num_faces = builder.find('[name="{{ parameters.onscreen_numfaces }}"]').val();
+  let num_faces = builder.find('input[name="{{ parameters.onscreen_numfaces }}"]').val();
   if (num_faces) {
     filters.push(`{{ parameters.onscreen_numfaces }}=${num_faces}`);
   }
 
-  let is_commercial = builder.find('[name="{{ parameters.is_commercial }}"]').val();
-  if (is_commercial != 'false') {
-    filters.push(`{{ parameters.is_commercial }}=${is_commercial}`);
+  if ($('#countVar').val() != '{{ countables.mentions.value }}') {
+    let caption_text = builder.find('textarea[name="{{ parameters.caption_text }}"]').val();
+    if (caption_text) {
+      filters.push(`{{ parameters.caption_text }}="${caption_text}"`);
+    }
+    let caption_window = builder.find('input[name="{{ parameters.caption_window }}"]').val();
+    if (caption_window) {
+      filters.push(`{{ parameters.caption_window }}=${caption_window}`);
+    }
   }
 
   let normalize = builder.find('[name="normalize"]').val() == 'true';
@@ -511,22 +515,6 @@ function getDefaultQuery() {
 function onWhereUpdate(element) {
   // Rewrite query with default normalization if necessary
   let count_var = $('#countVar').val();
-
-  // let where_str = $.trim($(element).val());
-  // if (where_str.endsWith(QUERY_KEYWORDS.normalize)) {
-  //   if (count_var == '{{ countables.videotime.value }}') {
-  //     $(element).val(`${where_str} ${QUERY_KEYWORDS.all}`);
-  //   } else {
-  //     let no_normlize_where_str = $.trim(
-  //       where_str.slice(0, where_str.indexOf(QUERY_KEYWORDS.normalize)));
-  //     var norm_query = QUERY_KEYWORDS.all;
-  //     if (count_var != '{{ countables.mentions.value }}' && no_normlize_where_str.length > 0) {
-  //       norm_query += ` WHERE ${no_normlize_where_str}`;
-  //     }
-  //     $(element).val(`${where_str} ${norm_query}`);
-  //   }
-  // }
-
 
   function checkFaceFilters(filters) {
     Object.keys(filters).forEach(k => {

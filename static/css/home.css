@@ -147,6 +147,10 @@
   width: auto;
   display: inline;
 }
+.query-builder textarea {
+  padding-top: 5px;
+  padding-bottom: 5px;
+}
 .query-builder th {
   text-align: right;
 }
