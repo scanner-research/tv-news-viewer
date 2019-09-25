@@ -54,7 +54,7 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
 
     <tr>
       <td colspan="2" type="info-header">
-        The following (optional) filters video by text from time-aligned transcripts.
+        Use the following filters to perform text search over the transcripts.
       </td>
     </tr>
     <tr>
@@ -82,7 +82,7 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
 
     <tr>
       <td colspan="2" type="info-header">
-        The following (optional) filters find video with on-screen faces. <br>
+        Use the following filters to find video segments with on-screen faces. <br>
         Note: this will update <code>onscreen.face1="..."</code>.
         To filter on multiple faces, edit the querybox manually.
       </td>
