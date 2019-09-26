@@ -191,14 +191,14 @@ function parseFaceFilterString(s) {
   } else {
     s.split(',').forEach(kv => {
       let [k, v] = $.trim(kv).split(':').map(s => $.trim(s));
-      if (k == 'gender' || k == 'role' || k == 'person' || k == 'attr') {
+      if (k == 'gender' || k == 'role' || k == 'person' || k == 'tag') {
         result[k] = v;
       } else {
         throw Error(`${k} is not a valid filter`);
       }
     });
-    if (_.has(result, 'person') && _.has(result, 'attr')) {
-      throw Error('Cannot use both "person" and "attr" together');
+    if (_.has(result, 'person') && _.has(result, 'tag')) {
+      throw Error('Cannot use both "person" and "tag" together');
     }
   }
   return result;

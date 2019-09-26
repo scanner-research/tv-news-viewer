@@ -73,7 +73,7 @@ def parse_face_filter_str(s: str) -> Tuple[Optional[str], Optional[str],
     gender = None
     role = None
     person = None
-    attr = None
+    tag = None
     if s.lower() != 'all':
         for kv in s.split(','):
             kv = kv.strip()
@@ -89,10 +89,10 @@ def parse_face_filter_str(s: str) -> Tuple[Optional[str], Optional[str],
                     role = v
                 elif k == 'person':
                     person = v
-                elif k == 'attr':
-                    attr = [x.strip() for x in v.split('&')]
+                elif k == 'tag':
+                    tag = [x.strip() for x in v.split('&')]
                 else:
                     raise InvalidUsage('Invalid face filter: {}'.format(k))
             except:
                 raise InvalidUsage('Failed to parse face filter: {}'.format(kv))
-    return gender, role, person, attr
+    return gender, role, person, tag

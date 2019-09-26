@@ -362,11 +362,12 @@ function resizeVideoIFrames() {
 resizeVideoIFrames();
 
 // Invalidate all tooltips
-$(window).scroll(function() {
+function hideTooltips() {
   $('.chart-tooltip').hide();
-});
+}
+$(window).scroll(hideTooltips);
 $(window).mousemove(function(e){
   if ($(e.target).parent().is('canvas')) {
-    $('.chart-tooltip').hide();
+    hideTooltips();
   }
 });

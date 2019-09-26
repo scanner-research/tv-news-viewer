@@ -89,33 +89,33 @@ class LoginCredentials(NamedTuple):
     password_hash: bytes
 
 
-class PersonAttributes(object):
+class AllPersonTags(object):
 
-    def __init__(self, name_to_attrs: Dict[str, List[str]]):
-        self._name_to_attrs = name_to_attrs
-        attr_to_names = {}
-        for k, vs in sorted(name_to_attrs.items()):
+    def __init__(self, name_to_tags: Dict[str, List[str]]):
+        self._name_to_tags = name_to_tags
+        tag_to_names = {}
+        for k, vs in sorted(name_to_tags.items()):
             for v in vs:
-                if v not in attr_to_names:
-                    attr_to_names[v] = []
-                attr_to_names[v].append(k)
-        self._attr_to_names = attr_to_names
+                if v not in tag_to_names:
+                    tag_to_names[v] = []
+                tag_to_names[v].append(k)
+        self._tag_to_names = tag_to_names
 
-    def attr_to_names(self, attr: str) -> List[str]:
-        return self._attr_to_names.get(attr)
+    def tag_to_names(self, tag: str) -> List[str]:
+        return self._tag_to_names.get(tag)
 
-    def name_to_attrs(self, name: str) -> List[str]:
-        return self._name_to_attrs.get(name, [])
+    def name_to_tags(self, name: str) -> List[str]:
+        return self._name_to_tags.get(name, [])
 
     @property
-    def attrs(self) -> List[str]:
-        ret = list(self._attr_to_names.keys())
+    def tags(self) -> List[str]:
+        ret = list(self._tag_to_names.keys())
         ret.sort()
         return ret
 
     @property
-    def attr_dict(self) -> Dict[str, List[str]]:
-        return self._attr_to_names
+    def tag_dict(self) -> Dict[str, List[str]]:
+        return self._tag_to_names
 
 
 AllPersonIntervals = Dict[str, PersonIntervals]

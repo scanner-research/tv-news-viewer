@@ -70,14 +70,14 @@
     and the detector will also sometimes miss instances of an individual.
   </p>
 
-  <h5>Person-attributes</h5>
+  <h5>Person-tags</h5>
   <p>
-    Metadata person-attributes are mined from
+    Metadata person-tags are downloaded from
     <a target="_blank" href="https://wiki.dbpedia.org/">DBpedia</a>, using their
     public SPARQL API. We associate metadata from DBpedia with the names of faces
     provided by AWS Rekognition. This process is automatic and can have errors;
     for instance, if multiple individuals share the same name, then the
-    attributes may correspond to the wrong person. Likewise, for some
+    tags may correspond to the wrong person. Likewise, for some
     individuals, no entries are available on DBpedia. This process also
     only applies to faces for which we have a known face identity label.
   </p>

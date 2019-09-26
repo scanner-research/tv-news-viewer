@@ -4,6 +4,7 @@ import os
 import json
 from os import path
 from pathlib import Path
+from typing import NamedTuple, Dict
 
 from captions import CaptionIndex, Documents, Lexicon   # type: ignore
 from rs_intervalset import (                            # type: ignore
@@ -21,13 +22,23 @@ def get_video_name(s: str) -> str:
     return os.path.splitext(Path(s).name)[0]
 
 
-def load_video_data(data_dir: str) -> Tuple[
-    Dict[str, Video],
-    MmapIntervalSetMapping,
-    FaceIntervals,
-    AllPersonIntervals,
-    PersonAttributes
-]:
+class VideoDataContext(NamedTuple):
+    """Wrapper object for video data"""
+    video_dict: Dict[str, Video]
+    commercial_isetmap: MmapIntervalSetMapping
+    face_intervals: FaceIntervals
+    all_person_intervals: AllPersonIntervals
+    all_person_tags: AllPersonTags
+
+
+class CaptionDataContext(NamedTuple):
+    """Wrapper object for caption data"""
+    index: CaptionIndex
+    documents: Documents
+    lexicon: Lexicon
+
+
+def load_video_data(data_dir: str) -> VideoDataContext:
     print('Loading video data: please wait...')
     videos = {}
     for v in load_json(path.join(data_dir, 'videos.json')):
@@ -110,30 +121,31 @@ def load_video_data(data_dir: str) -> Tuple[
 
     with open(path.join(data_dir, 'people.wikidata.json')) as f:
         # TODO: dont hardcode aws
-        raw_person_attributes = {}
-        for name, attrs in json.load(f).items():
-            filtered_attrs = []
-            for attr in attrs:
-                attr = re.sub(r'\W+', '', attr.lower())
+        raw_person_tags = {}
+        for name, tags in json.load(f).items():
+            filtered_tags = []
+            for tag in tags:
+                tag = re.sub(r'\W+', '', tag.lower())
                 if (
-                    len(attr) > MIN_PERSON_ATTRIBUTE_LEN
-                    and len(attr) < MAX_PERSON_ATTRIBUTE_LEN
+                    len(tag) > MIN_PERSON_ATTRIBUTE_LEN
+                    and len(tag) < MAX_PERSON_ATTRIBUTE_LEN
                 ):
-                    filtered_attrs.append(attr)
+                    filtered_tags.append(tag)
             name_lower = 'aws ' + name.lower()
             if name_lower in all_person_intervals:
-                raw_person_attributes[name_lower] = filtered_attrs
-        person_attributes = PersonAttributes(raw_person_attributes)
+                raw_person_tags[name_lower] = filtered_tags
+        all_person_tags = AllPersonTags(raw_person_tags)
 
-    return videos, commercials, face_intervals, all_person_intervals, \
-        person_attributes
+    return VideoDataContext(
+        videos, commercials, face_intervals, all_person_intervals,
+        all_person_tags)
 
 
-def load_index(index_dir: str) -> Tuple[CaptionIndex, Documents, Lexicon]:
+def load_index(index_dir: str) -> CaptionDataContext:
     print('Loading caption index: please wait...')
     documents = Documents.load(path.join(index_dir, 'docs.list'))
     lexicon = Lexicon.load(path.join(index_dir, 'words.lex'),
                            lazy_lemmas=False)
     index = CaptionIndex(path.join(index_dir, 'index.bin'),
                          lexicon, documents)
-    return index, documents, lexicon
+    return CaptionDataContext(index, documents, lexicon)

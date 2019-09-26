@@ -21,17 +21,17 @@
 {% block content %}
 <div class="container">
   <h1>
-    List of person-attributes
+    List of person-tags
   </h1>
 
   <p>
-    This page contains a list of attributes obtained from dbpedia using names
+    This page contains a list of tags obtained from dbpedia using names
     of faces identified using AWS Rekognition Celebrity detection.
   </p>
 
   <p>
-    Attributes in this list can be used to filter for screen time pertaining to
-    faces using the <code>onscreen.face1="attr: ..."</code> predicate. Note that
+    Tags in this list can be used to filter for screen time pertaining to
+    faces using the <code>onscreen.face1="tag: ..."</code> predicate. Note that
     this filter will only apply to faces for which we have an associated
     identity. The result is a union of all people who have the tag in question.
   </p>
@@ -41,13 +41,13 @@
     <tr>
       <th>Name</th>
       <th>Count</th>
-      <th>People with attribute</th>
+      <th>People with tag</th>
     </tr>
     </thead>
     <tbody>
-    {% for attr, people in person_attributes.items() %}
+    {% for tag, people in person_tags.items() %}
       <tr>
-        <td>{{ attr }}</td>
+        <td>{{ tag }}</td>
         <td>{{ people|length }}</td>
         <td>
           <a href="javascript:void(0)" class="toggle-link">show/hide</a>

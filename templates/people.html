@@ -7,7 +7,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.10.19/js/dataTables.bootstrap4.min.js" integrity="sha256-hJ44ymhBmRPJKIaKRf3DSX5uiFEZ9xB/qx8cNbJvIMU=" crossorigin="anonymous"></script>
 
 <style>
-.attribute-entry {
+.tag-entry {
   float: left;
   padding-left: 10px;
   padding-right: 10px;
@@ -43,7 +43,7 @@
       <tr>
         <th>Name</th>
         <th>Total screen time (in minutes)</th>
-        <th>Person-attributes</th>
+        <th>Person-tags</th>
       </tr>
     </thead>
     <tbody>
@@ -52,8 +52,8 @@
         <td>{{ person.name }}</td>
         <td>{{ person.screen_time }}</td>
         <td>
-          {% for attr in person.attributes %}
-          <span class="attribute-entry">{{ attr }}</span>
+          {% for tag in person.tags %}
+          <span class="tag-entry">{{ tag }}</span>
           {% endfor %}
         </td>
       </tr>
