@@ -12,7 +12,7 @@ from collections import defaultdict, namedtuple
 from flask import (
     Flask, Response, jsonify, request, render_template, send_file,
     make_response)
-from flask_httpauth import HTTPBasicAuth
+from flask_httpauth import HTTPBasicAuth                # type: ignore
 from typing import Dict, List, Set, Tuple, Optional, Iterable, Generator
 
 from captions import CaptionIndex, Documents, Lexicon   # type: ignore
@@ -20,7 +20,7 @@ from captions.util import PostingUtil                   # type: ignore
 from captions.query import Query                        # type: ignore
 from rs_intervalset import (                            # type: ignore
     MmapIntervalSetMapping, MmapIntervalListMapping)
-from rs_intervalset.wrapper import (
+from rs_intervalset.wrapper import (                    # type: ignore
     MmapIListToISetMapping, MmapUnionIlistsToISetMapping)
 
 from .types import *
