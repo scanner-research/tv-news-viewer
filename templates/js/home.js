@@ -562,14 +562,7 @@ function getDefaultQuery() {
   if ($('#search-table tr[name="query"]').length > 0) {
     return 'WHERE ' + $('#search-table input[type="text"][name="where"]:last').val();
   } else {
-    let count_var = $('#countVar').val();
-    if (count_var == '{{ countables.mentions.value }}') {
-      return DEFAULT_MENTIONS_QUERY;
-    } else if (count_var == '{{ countables.facetime.value }}') {
-      return DEFAULT_FACETIME_QUERY;
-    } else if (count_var == '{{ countables.videotime.value }}') {
-      return DEFAULT_VIDEOTIME_QUERY;
-    }
+    return 'WHERE';
   }
 }
 
@@ -635,7 +628,7 @@ function addRow(query) {
           ).val(query_clauses.count),
         $('<div class="input-group-prepend countable-only noselect" />').append(
           $('<span class="input-group-text query-text" />').text('WHERE')),
-        $('<input type="text" class="form-control query-text" name="where" placeholder="no filters (i.e., all the data)" onchange="onWhereUpdate(this);"/>').val(query_clauses.where)
+        $('<input type="text" class="form-control query-text" name="where" placeholder="enter search here (all the data, if blank)" onchange="onWhereUpdate(this);"/>').val(query_clauses.where)
       )
     ),
     $('<td valign="top"/>').append(
@@ -827,8 +820,7 @@ if (params.get('data')) {
   }
 } else {
   initChartOptions();
-  addRow({text: 'WHERE onscreen.face1="person: hillary clinton"'});
-  addRow({text: 'WHERE onscreen.face1="person: donald trump"'});
+  addRow();
   search();
 }
 $(".chosen-select").chosen({width: 'auto'});
