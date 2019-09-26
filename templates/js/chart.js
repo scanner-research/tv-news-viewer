@@ -284,7 +284,9 @@ class Chart {
       Object.entries(this_chart.search_results).sort(
         (a, b) => a[1].query >= b[1].query
       ).forEach(([color, result]) => {
-        let shuffled_results = weighted_shuffle([...result.main[t]]);
+        let shuffled_results = weighted_shuffle(
+          [..._.get(result.main, t, [])]
+        );
         let video_ids = shuffled_results.map(x => x[0]);
         let params = {
           color: color, count: count, query: result.query,
