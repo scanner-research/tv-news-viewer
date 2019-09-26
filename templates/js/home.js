@@ -1,9 +1,5 @@
 
 const QUERY_BUILDER_HTML = `<div class="query-builder">
-  <div style="position:absolute;">
-    <button type="button" class="btn btn-outline-danger btn-sm"
-            onclick="closeQueryBuilder(this);">&times;</button>
-  </div>
   <table>
     <tr>
       <th style="text-align: right;">Find video segments where:</th>
@@ -84,7 +80,7 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
       <td colspan="2" type="info-header">
         Use the following filters to find <b>on-screen faces</b>. <br>
         Note: this will update <code>onscreen.face1="..."</code>.
-        To filter on multiple faces, edit the querybox manually.
+        To filter on multiple faces, edit the search box manually.
       </td>
     </tr>
     <tr>
@@ -99,8 +95,8 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
       </td>
       <td type="value-col">
         <select multiple class="chosen-select chosen-single-select"
-                data-placeholder="no filter selected"
-                name="{{ parameters.onscreen_face }}1:gender" data-width="fit">
+                data-placeholder="no gender selected"
+                name="face1:gender" data-width="fit">
           <option value="male">male</option>
           <option value="female">female</option>
         </select>
@@ -112,8 +108,8 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
       </td>
       <td type="value-col">
         <select multiple class="chosen-select chosen-single-select"
-                data-placeholder="no filter selected"
-                name="{{ parameters.onscreen_face }}1:role" data-width="fit">
+                data-placeholder="no role selected"
+                name="face1:role" data-width="fit">
           <option value="host">host</option>
           <option value="nonhost">nonhost</option>
         </select>
@@ -124,17 +120,23 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
         is a person
       </td>
       <td>
-        by name
-        <select multiple class="chosen-select chosen-single-select"
-                data-placeholder="no filter selected"
-                name="{{ parameters.onscreen_face }}1:person" data-width="fit">
+        <select class="chosen-select chosen-single-select"
+                name="face1:person-or-tag">
+          <option selected value="person">with name</option>
+          <option value="tag">with tag</option>
         </select>
-        or
-        with metadata tags
-        <select multiple class="chosen-select chosen-basic-select"
-                data-placeholder="no filters selected"
-                name="{{ parameters.onscreen_face }}1:tag" data-width="fit">
-        </select>
+        <span>
+          <select multiple class="chosen-select chosen-single-select"
+                  data-placeholder="no names selected"
+                  name="face1:person" data-width="fit">
+          </select>
+        </span>
+        <span style="display: none;">
+          <select multiple class="chosen-select chosen-basic-select"
+                  data-placeholder="no tags selected"
+                  name="face1:tag" data-width="fit">
+          </select>
+        </span>
       </td>
     </tr>
     <tr>
@@ -144,8 +146,7 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
                name="{{ parameters.onscreen_numfaces }}"
                min="1" max="25" placeholder="enter a number">
         faces on-screen or any face
-        <input type="checkbox"
-               name="{{ parameters.onscreen_face }}1:all">
+        <input type="checkbox" name="face1:all">
         is on-screen
       </td>
     </tr>
@@ -260,35 +261,58 @@ function setRemoveButtonsState() {
 }
 
 function removeRow(element) {
-  $(element).closest('tr').remove();
+  let search_table_row = $(element).closest('tr');
+  closeQueryBuilder(search_table_row);
+  search_table_row.remove();
   $('#search-table .add-row-btn').prop('disabled', false);
   setRemoveButtonsState();
 }
 
+var _QUERY_BUILDER = null;
 function getQueryBuilder() {
-  let builder = $(QUERY_BUILDER_HTML);
-  let show_select = builder.find('select[name="{{ parameters.show }}"]');
-  ALL_SHOWS.forEach(x => show_select.append($('<option>').val(x).text(x)));
-  let person_select = builder.find(
-    'select[name="{{ parameters.onscreen_face }}1:person"]'
-  );
-  ALL_PEOPLE.forEach(x => person_select.append($('<option>').val(x).text(x)));
-  let person_tag_select = builder.find(
-    'select[name="{{ parameters.onscreen_face }}1:tag"]'
-  );
-  ALL_PERSON_TAGS.forEach(
-    x => person_tag_select.append($('<option>').val(x).text(x))
-  );
+  var builder = null;
+  if (_QUERY_BUILDER) {
+    builder = _QUERY_BUILDER;
+  } else {
+    builder = $(QUERY_BUILDER_HTML);
+    let show_select = builder.find('select[name="{{ parameters.show }}"]');
+    ALL_SHOWS.forEach(x => show_select.append($('<option>').val(x).text(x)));
+    let person_select = builder.find(
+      'select[name="face1:person"]'
+    );
+    ALL_PEOPLE.forEach(x => person_select.append($('<option>').val(x).text(x)));
+    let person_tag_select = builder.find(
+      'select[name="face1:tag"]'
+    );
+    ALL_PERSON_TAGS.forEach(
+      x => person_tag_select.append($('<option>').val(x).text(x))
+    );
+    _QUERY_BUILDER = builder;
+  }
+
+  // Reset the builder defaults
+  builder.find('[name="{{ parameters.channel }}"]').val('');
+  builder.find('[name="{{ parameters.show }}"]').val('');
+  builder.find('[name="{{ parameters.hour }}"]').val('');
+  builder.find('[name="{{ parameters.day_of_week }}"]').val('');
+  builder.find('[name="{{ parameters.is_commercial }}"]').val('false');
+  builder.find('[name="{{ parameters.caption_text }}"]').val('');
+  builder.find('[name="{{ parameters.caption_window }}"]').val('{{ default_text_window }}');
+  builder.find('[name="face1:gender"]').val(null);
+  builder.find('[name="face1:role"]').val(null);
+  builder.find('[name="face1:person-or-tag"]').val('person');
+  builder.find('[name="face1:person"]').val(null).parent().show();
+  builder.find('[name="face1:tag"]').val(null).parent().hide();
+  builder.find('[name="face1:all"]').prop('checked', false);
+  builder.find('[name="{{ parameters.onscreen_numfaces }}"]').val('');
+  builder.find('[name="normalize"]').prop('checked', false);
   return builder;
 }
 
-function loadQueryBuilder(element) {
-  hideTooltips();
-
-  let search_table_row = $(element).closest('tr');
+function loadQueryBuilder(search_table_row) {
   let where_box = search_table_row.find('input[name="where"]');
 
-  search_table_row.find('td:last').append(getQueryBuilder());
+  search_table_row.find('.query-td').append(getQueryBuilder());
   var current_query = new SearchableQuery(
     `${QUERY_KEYWORDS.where} ${where_box.val()}`,
     $('#countVar').val(), true);
@@ -303,7 +327,7 @@ function loadQueryBuilder(element) {
 
   var channel = current_query.main_args['{{ parameters.channel }}'];
   if (channel) {
-    query_builder.find(`[name="{{ parameters.channel }}"]`).val(
+    query_builder.find(`select[name="{{ parameters.channel }}"]`).val(
       channel.toUpperCase() == 'FOXNEWS' ? 'FOX' : channel);
   }
 
@@ -318,28 +342,33 @@ function loadQueryBuilder(element) {
   if (onscreen_face) {
     let face_params = parseFaceFilterString(onscreen_face);
     if (face_params.all) {
-      query_builder.find(
-        `[name="{{ parameters.onscreen_face }}1:all"]`
-      ).prop('checked', true);
+      query_builder.find(`input[name="face1:all"]`).prop('checked', true);
     } else {
       if (face_params.gender) {
         query_builder.find(
-          `[name="{{ parameters.onscreen_face }}1:gender"]`
-        ).val(face_params.gender);
+          `select[name="face1:gender"]`).val(face_params.gender);
       }
       if (face_params.role) {
-        query_builder.find(
-          `[name="{{ parameters.onscreen_face }}1:role"]`
-        ).val(face_params.role);
+        query_builder.find(`select[name="face1:role"]`).val(face_params.role);
       }
-      if (face_params.person) {
-        query_builder.find(
-          `[name="{{ parameters.onscreen_face }}1:person"]`
-        ).val(face_params.person);
-      } else if (face_params.tag) {
-        query_builder.find(
-          `[name="{{ parameters.onscreen_face }}1:tag"]`
-        ).val(face_params.tag.split('&').map(x => $.trim(x)));
+
+      let tag_select = query_builder.find(`select[name="face1:tag"]`);
+      let person_select = query_builder.find(`select[name="face1:person"]`);
+      let person_or_tag_select = query_builder.find(
+        `select[name="face1:person-or-tag"]`
+      );
+      if (face_params.tag) {
+        tag_select.val(face_params.tag.split('&').map(x => $.trim(x)));
+        tag_select.parent().show();
+        person_select.parent().hide();
+        person_or_tag_select.val('tag');
+      } else {
+        if (face_params.person) {
+          person_select.val(face_params.person);
+        }
+        person_select.parent().show();
+        tag_select.parent().hide();
+        person_or_tag_select.val('person');
       }
     }
   }
@@ -363,41 +392,62 @@ function loadQueryBuilder(element) {
   });
   query_builder.find('.chosen-basic-select').chosen({width: 'auto'});
 
+  query_builder.find('[name="face1:person-or-tag"]').change(function() {
+    let tag_select = $('select[name="face1:tag"]');
+    let person_select = $('select[name="face1:person"]');
+    if ($(this).val() == 'tag') {
+      tag_select.parent().show();
+      person_select.val(null).trigger("chosen:updated");
+      person_select.parent().hide();
+    } else {
+      person_select.parent().show();
+      tag_select.val(null).trigger("chosen:updated");
+      tag_select.parent().hide();
+    }
+    updateQueryBox(search_table_row);
+  });
+
   // Listen for change events
   query_builder.find('input, select, textarea').change(function() {
-    updateQueryBox(element);
+    updateQueryBox(search_table_row);
   });
 
   // Disable where input
   where_box.attr('disabled', true);
 }
 
-function closeQueryBuilder(element) {
-  let search_table_row = $(element).closest('tr');
+function closeQueryBuilder(search_table_row) {
   let where_box = search_table_row.find('input[name="where"]');
-  if (search_table_row.find('.query-builder').length > 0) {
-    search_table_row.find('.query-builder').remove();
-    search_table_row.find('.color-box').height('auto');
+  let query_builder = search_table_row.find('.query-builder');
+  if (query_builder.length > 0) {
+    query_builder.find('.chosen-select').chosen('destroy');
+    query_builder.remove();
     where_box.attr('disabled', false);
   }
 }
 
 function toggleQueryBuilder(element) {
+  hideTooltips();
+
   let search_table_row = $(element).closest('tr');
   let where_box = search_table_row.find('input[name="where"]');
   if (search_table_row.find('.query-builder').length > 0) {
-    closeQueryBuilder(element);
+    closeQueryBuilder(search_table_row);
   } else {
     // Close other query builders
-    $('.query-builder').each(function() {closeQueryBuilder($(this));});
+    $('.query-builder').each(function() {
+      closeQueryBuilder($(this).closest('tr'));
+    });
 
     // Load new query builder
-    loadQueryBuilder(element);
+    loadQueryBuilder(search_table_row);
   }
 }
 
 function clearChart() {
-  $('.query-builder').each(function() {closeQueryBuilder($(this));});
+  $('.query-builder').each(function() {
+    closeQueryBuilder($(this).closest('tr'));
+  });
   $('#chart').empty();
   let vgrid_selector = $('#vgrid-area');
   vgrid_selector.empty();
@@ -420,8 +470,7 @@ function clearQueries() {
   }
 }
 
-function updateQueryBox(element) {
-  let search_table_row = $(element).closest('tr[name="query"]');
+function updateQueryBox(search_table_row) {
   let builder = search_table_row.find('.query-builder');
   let filters = [];
 
@@ -447,26 +496,35 @@ function updateQueryBox(element) {
     filters.push(`{{ parameters.is_commercial }}=${is_commercial}`);
   }
 
-  let face_all = builder.find('select[name="{{ parameters.onscreen_face }}1:all"]').is(':checked');
-  let face_gender = builder.find('select[name="{{ parameters.onscreen_face }}1:gender"]').val();
-  let face_role = builder.find('select[name="{{ parameters.onscreen_face }}1:role"]').val();
-  let face_tag = builder.find('select[name="{{ parameters.onscreen_face }}1:tag"]').val();
-  let face_person = builder.find('select[name="{{ parameters.onscreen_face }}1:person"]').val();
+  let face_all = builder.find('input[name="face1:all"]').is(':checked');
   if (face_all) {
     filters.push(`{{ parameters.onscreen_face }}1="all"`);
-  } else if (face_person || face_role || face_gender || face_tag) {
+  } else {
     let face_params = [];
+
+    let face_gender = builder.find('select[name="face1:gender"]').val();
     if (face_gender && face_gender.length > 0) {
       face_params.push('gender: ' + face_gender[0]);
     }
+
+    let face_role = builder.find('select[name="face1:role"]').val();
     if (face_role && face_role.length > 0) {
       face_params.push('role: ' + face_role[0]);
     }
-    if (face_person && face_person.length > 0) {
-      face_params.push('person: ' + face_person[0]);
-    } else if (face_tag && face_tag.length > 0) {
-      face_params.push('tag: ' + face_tag.join(' & '));
+
+    let face_person_or_tag = builder.find('select[name="face1:person-or-tag"]').val();
+    if (face_person_or_tag == 'person') {
+      let face_person = builder.find('select[name="face1:person"]').val();
+      if (face_person && face_person.length > 0) {
+        face_params.push('person: ' + face_person[0]);
+      }
+    } else if (face_person_or_tag == 'tag') {
+      let face_tag = builder.find('select[name="face1:tag"]').val();
+      if (face_tag && face_tag.length > 0) {
+        face_params.push('tag: ' + face_tag.join(' & '));
+      }
     }
+
     if (face_params.length > 0) {
       filters.push(`{{ parameters.onscreen_face }}1="${face_params.join(', ')}"`);
     }
@@ -483,7 +541,7 @@ function updateQueryBox(element) {
       filters.push(`{{ parameters.caption_text }}="${caption_text}"`);
     }
     let caption_window = builder.find('input[name="{{ parameters.caption_window }}"]').val();
-    if (caption_window) {
+    if (caption_window && caption_window != 0) {
       filters.push(`{{ parameters.caption_window }}=${caption_window}`);
     }
   }
@@ -570,7 +628,7 @@ function addRow(query) {
     ),
     $('<td class="query-td" />').append(
       $('<div class="input-group" />').append(
-        $('<div class="input-group-prepend noselect" onclick="toggleQueryBuilder(this);" />').css('cursor', 'pointer').append(
+        $('<div class="input-group-prepend noselect" />').append(
           $('<span class="input-group-text query-text" name="count-type-prefix" />')),
         $('<div class="countable-only" />').append(
             `<input type="text" class="form-control query-text" name="countable" placeholder="${QUERY_KEYWORDS.all}" />`
@@ -579,7 +637,10 @@ function addRow(query) {
           $('<span class="input-group-text query-text" />').text('WHERE')),
         $('<input type="text" class="form-control query-text" name="where" placeholder="no filters (i.e., all the data)" onchange="onWhereUpdate(this);"/>').val(query_clauses.where)
       )
-    )
+    ),
+    $('<td valign="top"/>').append(
+      $('<button type="button" class="btn btn-outline-secondary btn-sm toggle-query-builder-btn" onclick="toggleQueryBuilder(this);" />').html('&#x2699;')
+    ),
   );
 
   let tbody = $('#search-table > tbody');
