@@ -481,7 +481,7 @@ function clearChart() {
 }
 
 function clearQueries() {
-  if (window.confirm('Warning! This will clear your current query(s).')) {
+  if (window.confirm('Warning! This will clear all of your current queries.')) {
     $('tr[name="query"]').each(function() {
       if ($(this).index() > 0) {
         removeRow($(this));

@@ -3,12 +3,14 @@
 const VGRID_INSTRUCTIONS = 'Click to expand videos and press <kbd>Space</kbd> to play/pause. <font color="#db5784">Red</font> bars indicate matched intervals (commercials are excluded).';
 var SERVE_FROM_INTERNET_ARCHIVE = true;
 
+{% if video_endpoint is not none %}
 function test_auth() {
   let img = new Image();
   img.onload = () => { SERVE_FROM_INTERNET_ARCHIVE = false; };
   img.src = '{{ video_endpoint }}/do_not_delete.jpg';
 }
 test_auth();
+{% endif %}
 
 String.prototype.replaceAll = function(search, replacement) {
     var target = this;

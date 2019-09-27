@@ -1,6 +1,9 @@
 body {
   font-family: 'Source Serif Pro', serif;
 }
+code {
+  color: black;
+}
 .container {
   padding: 10px;
 }
