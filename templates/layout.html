@@ -55,7 +55,7 @@
               <a class="dropdown-item"
                  href="/people">List of people</a>
               <a class="dropdown-item"
-                 href="/person-tags">List of person-tags</a>
+                 href="/person-tags">List of person tags</a>
             </div>
           </li>
           <li class="nav-item {% if self | quoted == 'about-us.html' %}active{% endif %}">
@@ -75,7 +75,8 @@
     <div style="height: 50px;"><div>
     <div class="bottom-footer">
       Last server update: {{ uptime }}. If something breaks, please
-      <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>R</kbd> to refresh without cache.
+      refresh the page with the browser cache disabled
+      (<kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>R</kbd> on PC; <kbd>Cmd-&#8984;</kbd> + <kbd>Shift</kbd> + <kbd>R</kbd> on Mac).
     </div>
   </footer>
   {% endif %}
@@ -83,7 +84,7 @@
   <script>
     let is_chrome = !!window.chrome && (!!window.chrome.webstore || !!window.chrome.runtime);
     if (!is_chrome) {
-      alert('Unsupported browser. This page only supports Chrome.');
+      alert('Unsupported browser. This page only supports Chrome for video playback.');
     }
   </script>
 </body>

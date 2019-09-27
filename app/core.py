@@ -461,10 +461,7 @@ def build_app(
 
     def _root() -> Response:
         return render_template(
-            'home.html', uptime=_get_uptime(),
-            countables=Countable, default_agg_by=default_aggregate_by,
-            default_text_window=default_text_window,
-            default_is_commercial=default_is_commercial.name)
+            'home.html', uptime=_get_uptime(), countables=Countable)
 
     if auth:
         @app.route('/')
@@ -580,6 +577,7 @@ def build_app(
             'js/home.js', parameters=SearchParameter, countables=Countable,
             host=request.host, start_date=format_date(start_date),
             end_date=format_date(end_date),
+            default_agg_by=default_aggregate_by,
             default_text_window=default_text_window
         ))
         resp.headers['Content-type'] = 'text/javascript'

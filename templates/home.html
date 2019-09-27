@@ -20,7 +20,7 @@
 
 {% block content %}
 <div class="container">
-  <form action="javascript:void(0);" onsubmit="search();">
+  <form action="javascript:void(0);">
     <table id="search-table">
       <thead>
         <tr name="controls" class="chart-options">
@@ -38,7 +38,7 @@
               Use this tool to search American cable TV news video from 2010 onwards.
               To begin, read the <a href="/instructions" target="_blank">getting started</a> guide.
               Click the +/- buttons to add or remove search rows below.
-              To toggle the advanced search editor for a row, click the &#x2699; button in each row.
+              To toggle the advanced search editor for a row, click the &#x1F4DD; button in each row.
               To show example videos for a data point, click the chart area.
             </span>
             <hr>
@@ -60,14 +60,14 @@
             <input type="text" class="datepicker" id="endDate">
             &nbsp; aggregated by &nbsp;
             <select class="chosen-select" id="aggregateBy" data-width="fit">
-              <option value="year" {% if default_agg_by == "year" %}selected="selected"{% endif %}>year</option>
-              <option value="month" {% if default_agg_by == "month" %}selected="selected"{% endif %}>month</option>
-              <option value="week" {% if default_agg_by == "week" %}selected="selected"{% endif %}>week</option>
-              <option value="day" {% if default_agg_by == "day" %}selected="selected"{% endif %}>day</option>
+              <option value="year">year</option>
+              <option value="month">month</option>
+              <option value="week">week</option>
+              <option value="day">day</option>
             </select>
             . &nbsp;
-            <input type="submit" class="btn btn-secondary btn-sm" value="Search the news!">
-            <input type="submit" class="btn btn-secondary btn-sm" value="Clear queries" onclick="clearQueries(); return false;">
+            <input type="submit" class="btn btn-secondary btn-sm" value="Search the news!" id="searchButton">
+            <input type="submit" class="btn btn-secondary btn-sm" value="Clear queries" id="resetButton">
           </td>
         </tr>
       </tfoot>

@@ -205,12 +205,14 @@ function getChartOptions() {
 function initChartOptions(chart_options) {
   var start_date = '{{ start_date }}';
   var end_date = '{{ end_date }}';
+  var aggregate_by = '{{ default_agg_by }}';
   if (chart_options) {
     start_date = chart_options.start_date;
     end_date = chart_options.end_date;
+    aggregate_by = chart_options.aggregate;
     $('#countVar').val(chart_options.count);
-    $('#aggregateBy').val(chart_options.aggregate);
   }
+  $('#aggregateBy').val(aggregate_by);
   $('#startDate').datepicker({
     format: 'mm/dd/yyyy',
     forceParse: false,
@@ -481,21 +483,6 @@ function clearChart() {
   $('#embed-area').hide();
 }
 
-function clearQueries() {
-  if (window.confirm('Warning! This will clear all of your current queries.')) {
-    $('tr[name="query"]').each(function() {
-      if ($(this).index() > 0) {
-        removeRow($(this));
-      } else {
-        $(this).find('input[name="countable"]').val('');
-        $(this).find('input[name="where"]').val('');
-      }
-    });
-    window.history.pushState({}, document.title, '/');
-    clearChart();
-  }
-}
-
 function updateQueryBox(search_table_row) {
   let builder = search_table_row.find('.query-builder');
   let filters = [];
@@ -643,7 +630,7 @@ function addRow(query) {
       $('<button type="button" class="btn btn-outline-secondary btn-sm remove-row-btn" onclick="removeRow(this);" />').text('-')
     ),
     $('<td valign="top"/>').append(
-      $('<button type="button" class="btn btn-outline-secondary btn-sm toggle-query-builder-btn" onclick="toggleQueryBuilder(this);" />').html('&#x2699;')
+      $('<button type="button" class="btn btn-outline-secondary btn-sm toggle-query-builder-btn" onclick="toggleQueryBuilder(this);" />').html('&#x1F4DD;')
     ),
     $('<td valign="top">').append(
       $('<div class="color-box" onclick="changeRowColor(this);" />').css('background-color', color)
@@ -856,3 +843,24 @@ if (params.get('data')) {
 }
 $(".chosen-select").chosen({width: 'auto'});
 $('#countVar').change(setQueryBoxForMode);
+$('#searchButton').click(search);
+
+$('#resetButton').click(function() {
+  if (window.confirm('Warning! This will clear all of your current queries.')) {
+    $('tr[name="query"]').each(function() {
+      if ($(this).index() > 0) {
+        removeRow($(this));
+      } else {
+        $(this).find('input[name="countable"]').val('');
+        $(this).find('input[name="where"]').val('');
+      }
+    });
+
+    // Reset to defaults
+    $('#aggregateBy').val('{{ default_agg_by }}').trigger("chosen:updated");
+    $('#startDate').val(toDatepickerStr('{{ start_date }}'));
+    $('#endDate').val(toDatepickerStr('{{ end_date }}'));
+    window.history.pushState({}, document.title, '/');
+    clearChart();
+  }
+});
