@@ -538,7 +538,8 @@ def build_app(
     def get_videos() -> Response:
         n_samples = 1000
         return render_template(
-            'videos.html', n=n_samples,
+            'videos.html', n='{:,}'.format(n_samples),
+            video_count='{:,}'.format(len(video_data_context.video_dict)),
             videos=random.sample(list(
                 video_data_context.video_dict.values()), n_samples))
 

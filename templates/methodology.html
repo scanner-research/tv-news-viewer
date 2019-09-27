@@ -15,11 +15,11 @@
   <p>
     Our data comes from the Internet Archive's
     <a target="_blank" href="https://archive.org/details/tv">TV News Archive</a>,
-    from 2010 onwards. We expose metadata for 3 major cable TV news channels
-    (CNN, FOX, and MSNBC), providing near 24/7 video for the last decade.
+    from 2010 onwards. We use metadata for the three major cable TV news channels
+    (CNN, FOX, and MSNBC) in the US, providing near 24/7 video for the last decade.
     Up to 3 minutes of video may be played back. Metadata such as "show",
-    "airtime", and closed captions are provided by the Archive. For more
-    information about the TV News Archive, please consult the
+    "airtime", and closed captions are provided by the Internet Archive. For
+    more information about the TV News Archive, please consult the
     <a target="_blank" href="https://archive.org/">Internet Archive</a>
     directly.
   </p>
@@ -28,20 +28,21 @@
   <h4>Use of "AI" and Computer Vision</h4>
   <p>
     We use "AI"-based methods to augment the basic metadata provided by the
-    Internet Archive. The additional metadata labels include bounding boxes
-    on faces; the gender and identity of detected faces;
-    whether a person is a host; etc. These detectors have imperfect
-    accuracy and can produce noisy labels.
+    Internet Archive. The additional metadata labels that are we computed with
+    these methods include bounding boxes on faces; the gender and identity
+    of detected faces; whether a person is a host; etc.
+    These detectors have imperfect accuracy and can produce noisy labels.
   </p>
 
   <hr>
   <h5>Faces</h5>
   <p>
-    To detect faces in the video, we use
+    To detect faces in the video, we use the
     <a target="_blank" href="https://github.com/davidsandberg/facenet">FaceNet</a>
-    on one frame for every 3 seconds of video.
-    We use FaceNet embeddings to train a k-Nearest Neighbors classifier for
-    gender, which achieves 97% accuracy on independently sampled hold-out data.
+    face detector on one frame for every 3 seconds of video.
+    We also compute FaceNet embedding vectors, and we use these to train a
+    k-Nearest Neighbors classifier for gender, which achieves 97% accuracy on
+    independently sampled hold-out data.
   </p>
 
   <!-- <p>
@@ -53,29 +54,29 @@
   </p> -->
 
   <p>
-    It is important to recognize that these accuracy statistics are averages
-    across a random sample of the data set. Confounding factors such as a
-    single person's appearance can skew the accuracy on particular slices of
-    the data set.
+    It is important to recognize that our gender label accuracy statistics
+    are averages across a random sample of the data set. Confounding factors
+    such as a single person's appearance can skew the accuracy on particular
+    slices of the data set.
   </p>
 
   <h5>Identity Labels</h5>
   <p>
     The majority of the idenitity labels are computed using Amazon's
     Celebrity Recognition API provided under the
-    <a target="_blank" href="https://aws.amazon.com/rekognition/">AWS Rekognition</a>
-    service. AWS has provided this service free of charge for our purposes.
-    The labels from AWS are noisy; individuals who have similar appearances
+    <a target="_blank" href="https://aws.amazon.com/rekognition/">Amazon Rekognition</a>
+    service. Amazon has provided this service free of charge for our purposes.
+    The labels from Amazon are noisy; individuals who have similar appearances
     will sometimes be confused with each other, leading to false positives,
     and the detector will also sometimes miss instances of an individual.
   </p>
 
-  <h5>Person-tags</h5>
+  <h5>Person Tags</h5>
   <p>
     Metadata person-tags are downloaded from
     <a target="_blank" href="https://wiki.dbpedia.org/">DBpedia</a>, using their
     public SPARQL API. We associate metadata from DBpedia with the names of faces
-    provided by AWS Rekognition. This process is automatic and can have errors;
+    provided by Amazon Rekognition. This process is automatic and can have errors;
     for instance, if multiple individuals share the same name, then the
     tags may correspond to the wrong person. Likewise, for some
     individuals, no entries are available on DBpedia. This process also

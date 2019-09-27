@@ -72,7 +72,8 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
         <input type="number" class="form-control"
                name="{{ parameters.caption_window }}"
                min="0" max="3600" placeholder="{{ default_text_window }}"
-               style="width:70px;"> seconds
+               style="width:70px;">
+        seconds of the word or phrase being said
       </td>
     </tr>
 
