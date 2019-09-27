@@ -114,7 +114,9 @@ function loadVideos(params, serve_from_internet_archive) {
   QUERY_PARAMS = params;
   CURR_PAGE = 0;
   $("#text-info").empty().append(
-    $(`<code style="color:${QUERY_PARAMS.color}"/>`).text(QUERY_PARAMS.query)
+    $(`<code style="color:${QUERY_PARAMS.color}"/>`).text(QUERY_PARAMS.query),
+    $.trim(QUERY_PARAMS.query).endsWith('WHERE') ?
+      $('<code />').css('color', 'gray').text('all the data') : null
   );
   if (QUERY_PARAMS.video_count > 0) {
     $('body').css('min-height', '220px');

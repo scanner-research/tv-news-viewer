@@ -119,8 +119,10 @@ def load_video_data(data_dir: str) -> VideoDataContext:
         except Exception as e:
             print('Unable to load: {} - {}'.format(person_name, e))
 
+    # FIXME: remove AWS options
+    has_aws = any(p.startswith('aws ') for p in all_person_intervals)
+
     with open(path.join(data_dir, 'people.wikidata.json')) as f:
-        # TODO: dont hardcode aws
         raw_person_tags = {}
         for name, tags in json.load(f).items():
             filtered_tags = []
@@ -131,7 +133,12 @@ def load_video_data(data_dir: str) -> VideoDataContext:
                     and len(tag) < MAX_PERSON_ATTRIBUTE_LEN
                 ):
                     filtered_tags.append(tag)
-            name_lower = 'aws ' + name.lower()
+            name_lower = name.lower()
+
+            # FIXME: remove AWS options
+            if has_aws:
+                name_lower = 'aws ' + name_lower
+
             if name_lower in all_person_intervals:
                 raw_person_tags[name_lower] = filtered_tags
         all_person_tags = AllPersonTags(raw_person_tags)

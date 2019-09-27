@@ -312,7 +312,12 @@ class Chart {
           ([color, result]) => {
             tooltip.append(
               $('<span />').append(
-                $(`<code />`).css('color', color).text(result.query)));
+                $(`<code />`).css('color', color).html(
+                  result.query
+                ),
+                $.trim(result.query).endsWith('WHERE') ?
+                  $('<code />').css('color', 'gray').text('all the data') : null
+              ));
             tooltip.append(
               $('<span />').append($('<i />').attr('color', color)));
           })

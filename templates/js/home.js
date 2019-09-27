@@ -91,7 +91,15 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
     </tr>
     <tr>
       <td type="key-col">
-        has gender
+        is any face
+      </td>
+      <td>
+        <input type="checkbox" name="face1:all">
+      </td>
+    </tr>
+    <tr class="toggle-face1">
+      <td type="key-col">
+        is gender
       </td>
       <td type="value-col">
         <select multiple class="chosen-select chosen-single-select"
@@ -102,7 +110,7 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
         </select>
       </td>
     </tr>
-    <tr>
+    <tr class="toggle-face1">
       <td type="key-col">
         is a TV host
       </td>
@@ -115,7 +123,7 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
         </select>
       </td>
     </tr>
-    <tr>
+    <tr class="toggle-face1">
       <td type="key-col">
         is a person
       </td>
@@ -139,17 +147,24 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
         </span>
       </td>
     </tr>
+
     <tr>
-      <td type="key-col">there are</td>
+      <td colspan="2" type="info-header">
+        Some other useful filters.
+      </td>
+    </tr>
+    <tr>
+      <td type="key-col">
+        there are
+      </td>
       <td type="value-col">
         <input type="number" class="form-control no-enter-submit num-faces-input"
                name="{{ parameters.onscreen_numfaces }}"
                min="1" max="25" placeholder="enter a number">
-        faces on-screen or any face
-        <input type="checkbox" name="face1:all">
-        is on-screen
+        faces on-screen
       </td>
     </tr>
+
     <tr disabled="true">
       <td type="key-col">*normalize the query</td>
       <td type="value-col">
@@ -306,6 +321,7 @@ function getQueryBuilder() {
   builder.find('[name="face1:all"]').prop('checked', false);
   builder.find('[name="{{ parameters.onscreen_numfaces }}"]').val('');
   builder.find('[name="normalize"]').prop('checked', false);
+  builder.find('.toggle-face1').show();
   return builder;
 }
 
@@ -343,6 +359,7 @@ function loadQueryBuilder(search_table_row) {
     let face_params = parseFaceFilterString(onscreen_face);
     if (face_params.all) {
       query_builder.find(`input[name="face1:all"]`).prop('checked', true);
+      query_builder.find('.toggle-face1').hide();
     } else {
       if (face_params.gender) {
         query_builder.find(
@@ -405,6 +422,14 @@ function loadQueryBuilder(search_table_row) {
       tag_select.parent().hide();
     }
     updateQueryBox(search_table_row);
+  });
+
+  query_builder.find('[name="face1:all"]').change(function() {
+    if ($(this).is(':checked')) {
+      query_builder.find('.toggle-face1').hide();
+    } else {
+      query_builder.find('.toggle-face1').show();
+    }
   });
 
   // Listen for change events
