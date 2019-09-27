@@ -149,7 +149,8 @@ class Chart {
         if (denom) { // TODO: what if this is NaN
           value /= denom;
         }
-        value_str = value >= exp_threshold ? value.toFixed(5) : value.toExponential(2);
+        value_str = (value >= exp_threshold ?
+          value.toLocaleString(undefined, {maximumFractionDigits: 5}) : value.toExponential(2));
       } else {
         // Unit remains the same
         if (result.subtract) {
@@ -158,7 +159,7 @@ class Chart {
         if (unit == 'minutes') {
           value = secondsToMinutes(value);
         }
-        value_str = `${value.toFixed(raw_precision)} ${unit}`;
+        value_str = `${value.toLocaleString(undefined, {maximumFractionDigits: 2})} ${unit}`;
       }
       return {value: value, text: value_str};
     }
@@ -334,7 +335,7 @@ class Chart {
               ([color, result]) => {
                 let video_data = _.get(result.main, t, []);
                 let x = getPointValue(result, video_data, t);
-                tooltip.find(`i[color="${color}"]`).text(`${x.text} in ${video_data.length} videos`);
+                tooltip.find(`i[color="${color}"]`).text(`${x.text}, ${video_data.length.toLocaleString()} videos`);
               });
             tooltip.css('left', event.x + 10);
             tooltip.css('top', event.y + 10);

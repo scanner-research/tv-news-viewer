@@ -49,7 +49,7 @@ function displayVideos(page_i) {
   } else {
     next_button.prop('disabled', true);
   }
-  page_buttons_div.find('button[name="info"]').text(`Page ${page_i + 1} / ${n_pages}. (${QUERY_PARAMS.video_count} videos)`);
+  page_buttons_div.find('button[name="info"]').text(`Page ${(page_i + 1).toLocaleString()} / ${n_pages.toLocaleString()}. (${QUERY_PARAMS.video_count.toLocaleString()} videos)`);
 
   let query = new SearchableQuery(QUERY_PARAMS.query, QUERY_PARAMS.count, false);
   console.log('Executing query:', query);
