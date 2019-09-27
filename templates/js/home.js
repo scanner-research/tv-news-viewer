@@ -616,6 +616,9 @@ function addRow(query) {
     $('<td valign="top"/>').append(
       $('<button type="button" class="btn btn-outline-secondary btn-sm remove-row-btn" onclick="removeRow(this);" />').text('-')
     ),
+    $('<td valign="top"/>').append(
+      $('<button type="button" class="btn btn-outline-secondary btn-sm toggle-query-builder-btn" onclick="toggleQueryBuilder(this);" />').html('&#x2699;')
+    ),
     $('<td valign="top">').append(
       $('<div class="color-box" onclick="changeRowColor(this);" />').css('background-color', color)
     ),
@@ -630,9 +633,6 @@ function addRow(query) {
           $('<span class="input-group-text query-text" />').text('WHERE')),
         $('<input type="text" class="form-control query-text" name="where" placeholder="enter search here (all the data, if blank)" onchange="onWhereUpdate(this);"/>').val(query_clauses.where)
       )
-    ),
-    $('<td valign="top"/>').append(
-      $('<button type="button" class="btn btn-outline-secondary btn-sm toggle-query-builder-btn" onclick="toggleQueryBuilder(this);" />').html('&#x2699;')
     ),
   );
 
