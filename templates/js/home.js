@@ -704,8 +704,13 @@ function getDownloadUrl(search_results) {
     if (search_result.subtract) {
       Object.keys(search_result.subtract).forEach(x => times.add(x));
     }
+    var query_text = $.trim(search_result.query);
+    if (!search_result.normalize && !search_result.subtract &&
+        query_text.endsWith('WHERE')) {
+      query_text += ' (i.e. all the videos)';
+    }
     return {
-      query: search_result.query,
+      query: query_text,
       unit: search_result.normalize ? 'ratio' : 'seconds',
       data: Array.from(times).map(t => {
         var value = _.get(search_result.main, t, []).reduce((acc, x) => acc + x[1], 0);
