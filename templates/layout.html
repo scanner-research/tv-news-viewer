@@ -36,8 +36,11 @@
           <li class="nav-item {% if self | quoted == 'home.html' %}active{% endif %}">
             <a class="nav-link" href="/">Home</a>
           </li>
-          <li class="nav-item {% if self | quoted == 'instructions.html' %}active{% endif %}">
-            <a class="nav-link" href="/instructions">Getting Started</a>
+          <li class="nav-item {% if self | quoted == 'getting-started.html' %}active{% endif %}">
+            <a class="nav-link" href="/getting-started">Getting Started</a>
+          </li>
+          <li class="nav-item {% if self | quoted == 'detailed.html' %}active{% endif %}">
+            <a class="nav-link" href="/detailed">Detailed Documentation</a>
           </li>
           <li class="nav-item {% if self | quoted == 'methodology.html' %}active{% endif %}">
             <a class="nav-link" href="/methodology">Methodology</a>
@@ -45,7 +48,7 @@
           <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown"
                role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-              Data
+              The Data
             </a>
             <div class="dropdown-menu" aria-labelledby="navbarDropdown">
               <a class="dropdown-item"

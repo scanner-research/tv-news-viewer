@@ -12,33 +12,7 @@
 <script src="{{ url_for('static', filename='js/values.js') }}" /></script>
 <script src="{{ url_for('static', filename='js/query.js') }}" /></script>
 
-<style>
-  .container {
-    padding: 2px;
-    text-align: center;
-  }
-  .container table {
-    margin: auto;
-    width: auto;
-    border-spacing: 0px;
-  }
-  .container th, td {
-    text-align: left;
-    padding-left: 10px;
-    padding-right: 10px;
-  }
-  .query-td {
-    text-align: left;
-  }
-  .color-box {
-    margin: auto;
-    width: 15px;
-    height: 15px;
-  }
-  code {
-    color: black;
-  }
-</style>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/embed.css') }}" />
 {% endblock %}
 
 {% block header %}{% endblock %}
@@ -52,72 +26,5 @@
   <div id="chart"></div>
 </div>
 
-<script>
-  let params = (new URL(document.location)).searchParams;
-  let data = JSON.parse(decodeURIComponent(params.get('data')));
-  let width = params.get('width');
-  let height = params.get('height');
-  let chart_options = data.options;
-
-  function renderText(lines) {
-    // TODO: XSS attack here
-    lines.forEach(line => {
-      $('#search-table tbody').append(
-        $('<tr />').append(
-          $('<td />').append(`<div class="color-box" style="background-color: ${line.color};" />`),
-          $('<td />').append($('<code />').text(line.query.query)))
-      );
-    });
-    $('#options').append(
-      'Showing results from ',
-      $('<b />').text(chart_options.start_date),
-      ' to ',
-      $('<b />').text(chart_options.end_date),
-      ' aggregated by ',
-      $('<b />').text(chart_options.aggregate)
-    );
-  }
-
-  let lines = data.queries.map(raw_query => {
-    var parsed;
-    try {
-      parsed_query = new SearchableQuery(
-        raw_query.text, chart_options.count, false);
-    } catch (e) {
-      alertAndThrow(e.message);
-    }
-    return {color: raw_query.color, query: parsed_query};
-  });
-
-  $('#shade').show();
-  $('#search').prop('disabled', true);
-
-  let search_results = {};
-  function onDone() {
-    new Chart(
-      chart_options, search_results, {width: width, height: height}
-    ).load('#chart', null);
-    renderText(lines);
-  };
-
-  Promise.all(lines.map(line => {
-    console.log('Executing query:', line.query);
-
-    function onError(xhr) {
-      var msg;
-      try {
-        msg = JSON.parse(xhr.responseText).message;
-      } catch {
-        msg = 'Unknown server error';
-      }
-      alert(`[Query failed. The chart may be incomplete.]\n\n${msg}`);
-      console.log('Failed:', line, xhr);
-    }
-
-    return line.query.search(
-      chart_options,
-      result => search_results[line.color] = result,
-      onError);
-  })).then(onDone).catch(onDone);
-</script>
+<script src="{{ url_for('static', filename='js/embed.js') }}" /></script>
 {% endblock %}

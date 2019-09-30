@@ -1,0 +1,25 @@
+.container {
+  padding: 2px;
+  text-align: center;
+}
+.container table {
+  margin: auto;
+  width: auto;
+  border-spacing: 0px;
+}
+.container th, td {
+  text-align: left;
+  padding-left: 10px;
+  padding-right: 10px;
+}
+.query-td {
+  text-align: left;
+}
+.color-box {
+  margin: auto;
+  width: 15px;
+  height: 15px;
+}
+code {
+  color: black;
+}

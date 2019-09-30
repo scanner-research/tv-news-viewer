@@ -504,10 +504,18 @@ def build_app(
             'person-tags.html',
             person_tags=video_data_context.all_person_tags.tag_dict)
 
-    @app.route('/instructions')
-    def get_instructions() -> Response:
+    @app.route('/getting-started')
+    def get_getting_started() -> Response:
         return render_template(
-            'instructions.html', host=request.host,
+            'getting-started.html', host=request.host,
+            countables=Countable, parameters=SearchParameter,
+            default_text_window=default_text_window,
+            default_is_commercial=default_is_commercial.name)
+
+    @app.route('/detailed')
+    def get_detailed() -> Response:
+        return render_template(
+            'detailed.html', host=request.host,
             countables=Countable, parameters=SearchParameter,
             default_text_window=default_text_window,
             default_is_commercial=default_is_commercial.name)

@@ -1,0 +1,189 @@
+{% extends "layout.html" %}
+
+{% block head %}
+  {{ super() }}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/instructions.css') }}" />
+{% endblock %}
+
+
+{% block content %}
+<div class="container">
+  <h1>Getting Started</h1>
+  <p>
+    This page is intended as a getting started guide to using this tool to
+    explore the cable TV news dataset.
+  </p>
+  <hr>
+</div>
+
+<div class="container">
+  <h3>Background</h3>
+  <p>
+    24/7 news coverage is a staple of cable TV programming in the United States.
+    Coverage consists of a broad range of topics, ranging from political
+    coverage of the latest election cycle, emerging scandals involving
+    high-profile individuals, social unrest and calls for reform to events
+    unfolding across the globe, the latest victors in sports, and new trends in
+    health and fashion. These programs can influence public opinions and
+    perceptions of events in the world or reflect pervasive social biases.
+  </p>
+
+  <p>
+    In an age of big data analytics, <i>how do we ask questions about the
+    content in the news media? How do we ask questions about topics being
+    discuss or the people discussing them when media is measured in days, weeks
+    or months --- more than is feasible for any individual to rewatch?</i> For
+    instance, <i>what is the ratio of men to women show on screen when the topic
+    is harassment, economics, or terrorism?</i>
+  </p>
+
+  <p>
+    Advances in AI provide a new lens for annotating and analyzing large video
+    datasets such as nearly a decade of cable TV news. We use these new
+    models and techniques to automatically annotate the video data set with
+    information such as the location of faces in the frame, the gender of each
+    face, and the associated identity if the person is a "celebrity" or
+    public figure. See the <a href="/methodology">methodology</a> page for
+    a technical explanation of our methods and their limitations.
+    This purpose of this tool is to enable interactive queries on the data set,
+    with AI annotations, to answer high-level questions about the news.
+  </p>
+
+  <h3>How do I use the tool?</h3>
+  <p>
+    This application allows you to count the screen time of various filters on
+    a decade of American cable TV news (CNN, FOX, and MSNBC). On the homepage,
+    at the top, you should see the query controls.
+
+    <a href="/" target="_blank">
+      <img src="{{ url_for('static', filename='img/ui.png') }}" style="width: 100%;">
+    </a>
+  </p>
+
+  <p>
+    Each query begins with "<code>COUNT screen time WHERE</code>",
+    followed by a set of search filters. If no filters are given, then all of the
+    video is counted. The search box can be edited directly or using the
+    advanced editor (click the &#x1F4DD; button).
+    Press the "Search the news!" button to the screen time over time.
+  </p>
+
+  <p>
+    For example, if you press search with no query added, a chart similar to
+    the following should appear, showing the total amount of video in the data set
+    across from 2010 onwards, aggregated by month. Notice that while the amount of
+    data is mostly constant across time, there are periods of time with less data
+    available.
+  </p>
+  <iframe width="100%" height="370" src="//{{ host }}/embed?width=600&height=270&data=%7B%22options%22%3A%7B%22start_date%22%3A%222010-01-01%22%2C%22end_date%22%3A%222018-04-01%22%2C%22count%22%3A%22screen%20time%22%2C%22aggregate%22%3A%22month%22%7D%2C%22queries%22%3A%5B%7B%22color%22%3A%22%234E79A7%22%2C%22text%22%3A%22COUNT%20%5C%22screen%20time%5C%22%20WHERE%20%22%7D%5D%7D"></iframe>
+
+  <p>
+    The previous chart includes data from all three channels (CNN, FOX and MSNBC)
+    in a single line. We can perform a comparison of the number of hours of
+    video by charting each channel separately. To do this, use the + button to
+    add two more rows and <code>channel=CNN</code>, <code>channel=FOX</code>,
+    and <code>channel=MSNBC</code> into the search boxes, one per row.
+    Your controls should read like the following:
+
+    <a target="_blank"
+       href="//{{ host }}/?data=%7B%22options%22%3A%7B%22start_date%22%3A%222010-01-01%22%2C%22end_date%22%3A%222018-04-01%22%2C%22count%22%3A%22screen%20time%22%2C%22aggregate%22%3A%22month%22%7D%2C%22queries%22%3A%5B%7B%22color%22%3A%22%234E79A7%22%2C%22text%22%3A%22COUNT%20%5C%22screen%20time%5C%22%20WHERE%20channel%3DCNN%22%7D%2C%7B%22color%22%3A%22%23F28E2B%22%2C%22text%22%3A%22COUNT%20%5C%22screen%20time%5C%22%20WHERE%20channel%3DFOX%22%7D%2C%7B%22color%22%3A%22%23E15759%22%2C%22text%22%3A%22COUNT%20%5C%22screen%20time%5C%22%20WHERE%20channel%3DMSNBC%22%7D%5D%7D">
+      <img src="{{ url_for('static', filename='img/channels.png') }}" style="width: 100%;">
+    </a>
+  </p>
+  <p>
+    Hitting the search button will now generate a chart that looks similar to this.
+  </p>
+  <iframe width="100%" height="400" src="//{{ host }}/embed?width=600&height=270&data=%7B%22options%22%3A%7B%22start_date%22%3A%222010-01-01%22%2C%22end_date%22%3A%222018-04-01%22%2C%22count%22%3A%22screen%20time%22%2C%22aggregate%22%3A%22month%22%7D%2C%22queries%22%3A%5B%7B%22color%22%3A%22%234E79A7%22%2C%22text%22%3A%22COUNT%20%5C%22screen%20time%5C%22%20WHERE%20channel%3DCNN%22%7D%2C%7B%22color%22%3A%22%23F28E2B%22%2C%22text%22%3A%22COUNT%20%5C%22screen%20time%5C%22%20WHERE%20channel%3DFOX%22%7D%2C%7B%22color%22%3A%22%23E15759%22%2C%22text%22%3A%22COUNT%20%5C%22screen%20time%5C%22%20WHERE%20channel%3DMSNBC%22%7D%5D%7D"></iframe>
+
+  <p>
+    See the <a href="/detailed" target="_blank">detailed documentation</a> page for the
+    full list of search options.
+  </p>
+
+  <h3>How do I make queries about people?</h3>
+  <p>
+    This tool supports queries about onscreen faces, their genders and
+    identities (for a subset of faces that have been identified). For example,
+    we can compute the total screen time of men and women in the data set.
+
+    <a target="_blank"
+       href="//{{ host }}/?data=%7B%22options%22%3A%7B%22start_date%22%3A%222010-01-01%22%2C%22end_date%22%3A%222018-04-01%22%2C%22count%22%3A%22screen%20time%22%2C%22aggregate%22%3A%22month%22%7D%2C%22queries%22%3A%5B%7B%22color%22%3A%22%234E79A7%22%2C%22text%22%3A%22COUNT%20%5C%22screen%20time%5C%22%20WHERE%20onscreen.face1%3D%5C%22gender%3A%20male%5C%22%22%7D%2C%7B%22color%22%3A%22%23F28E2B%22%2C%22text%22%3A%22COUNT%20%5C%22screen%20time%5C%22%20WHERE%20onscreen.face1%3D%5C%22gender%3A%20female%5C%22%22%7D%5D%7D">
+      <img src="{{ url_for('static', filename='img/gender.png') }}" style="width: 100%;">
+    </a>
+  </p>
+
+  <p>
+    This charts the following chart. Notice that the screen time of both male
+    and female faces is trending upwards, but also that male screen time is
+    roughly double that of female screen time.
+  </p>
+  <iframe width="100%" height="370" src="//{{ host }}/embed?width=600&height=270&data=%7B%22options%22%3A%7B%22start_date%22%3A%222010-01-01%22%2C%22end_date%22%3A%222018-04-01%22%2C%22count%22%3A%22screen%20time%22%2C%22aggregate%22%3A%22month%22%7D%2C%22queries%22%3A%5B%7B%22color%22%3A%22%234E79A7%22%2C%22text%22%3A%22COUNT%20%5C%22screen%20time%5C%22%20WHERE%20onscreen.face1%3D%5C%22gender%3A%20male%5C%22%22%7D%2C%7B%22color%22%3A%22%23F28E2B%22%2C%22text%22%3A%22COUNT%20%5C%22screen%20time%5C%22%20WHERE%20onscreen.face1%3D%5C%22gender%3A%20female%5C%22%22%7D%5D%7D"></iframe>
+
+  <p>
+    We can also make queries about people who have been identified in the videos.
+    For example, if we were to compare the screen time of Donald Trump with
+    that of Hillary Clinton.
+
+    <a target="_blank"
+       href="//{{ host }}/?data=%7B%22options%22%3A%7B%22start_date%22%3A%222010-01-01%22%2C%22end_date%22%3A%222018-04-01%22%2C%22count%22%3A%22screen%20time%22%2C%22aggregate%22%3A%22month%22%7D%2C%22queries%22%3A%5B%7B%22color%22%3A%22%234E79A7%22%2C%22text%22%3A%22COUNT%20%5C%22screen%20time%5C%22%20WHERE%20onscreen.face1%3D%5C%22person%3A%20hillary%20clinton%5C%22%22%7D%2C%7B%22color%22%3A%22%23F28E2B%22%2C%22text%22%3A%22COUNT%20%5C%22screen%20time%5C%22%20WHERE%20onscreen.face1%3D%5C%22person%3A%20donald%20trump%5C%22%22%7D%5D%7D">
+      <img src="{{ url_for('static', filename='img/trump-clinton.png') }}" style="width: 100%;">
+    </a>
+  </p>
+
+  <iframe width="100%" height="370" src="//{{ host }}/embed?width=600&height=270&data=%7B%22options%22%3A%7B%22start_date%22%3A%222010-01-01%22%2C%22end_date%22%3A%222018-04-01%22%2C%22count%22%3A%22screen%20time%22%2C%22aggregate%22%3A%22month%22%7D%2C%22queries%22%3A%5B%7B%22color%22%3A%22%234E79A7%22%2C%22text%22%3A%22COUNT%20%5C%22screen%20time%5C%22%20WHERE%20onscreen.face1%3D%5C%22person%3A%20hillary%20clinton%5C%22%22%7D%2C%7B%22color%22%3A%22%23F28E2B%22%2C%22text%22%3A%22COUNT%20%5C%22screen%20time%5C%22%20WHERE%20onscreen.face1%3D%5C%22person%3A%20donald%20trump%5C%22%22%7D%5D%7D"></iframe>
+
+  <p>
+    To see the list of people who are searchable, click
+    <a href="/people" target="_blank">here</a>
+    or use the advanced editor.
+  </p>
+
+  <h3>How do I use the transcripts?</h3>
+  <p>
+    We can also search the transcripts for the intervals where words are being
+    said. For instance, the following finds all times when the phrase
+    <code>"UNITED NATIONS"</code> appears in the transcripts.
+
+    <a target="_blank"
+       href="//{{ host }}/?data=%7B%22options%22%3A%7B%22start_date%22%3A%222010-01-01%22%2C%22end_date%22%3A%222018-04-01%22%2C%22count%22%3A%22screen%20time%22%2C%22aggregate%22%3A%22month%22%7D%2C%22queries%22%3A%5B%7B%22color%22%3A%22%234E79A7%22%2C%22text%22%3A%22COUNT%20%5C%22screen%20time%5C%22%20WHERE%20transcript.text%3D%5C%22UNITED%20NATIONS%5C%22%22%7D%5D%7D">
+      <img src="{{ url_for('static', filename='img/text.png') }}" style="width: 100%;">
+    </a>
+  </p>
+
+  <iframe width="100%" height="370" src="//{{ host }}/embed?width=600&height=270&data=%7B%22options%22%3A%7B%22start_date%22%3A%222010-01-01%22%2C%22end_date%22%3A%222018-04-01%22%2C%22count%22%3A%22screen%20time%22%2C%22aggregate%22%3A%22month%22%7D%2C%22queries%22%3A%5B%7B%22color%22%3A%22%234E79A7%22%2C%22text%22%3A%22COUNT%20%5C%22screen%20time%5C%22%20WHERE%20transcript.text%3D%5C%22UNITED%20NATIONS%5C%22%22%7D%5D%7D"></iframe>
+
+  <p>
+    Notice that this finds only the exact moments when words are said. If for
+    instance, we are interested in a window of 30 seconds around all times when
+    the <code>"UNITED NATIONS"</code> appears, then we need the following.
+
+    <a target="_blank"
+       href="//{{ host }}/?data=%7B%22options%22%3A%7B%22start_date%22%3A%222010-01-01%22%2C%22end_date%22%3A%222018-04-01%22%2C%22count%22%3A%22screen%20time%22%2C%22aggregate%22%3A%22month%22%7D%2C%22queries%22%3A%5B%7B%22color%22%3A%22%234E79A7%22%2C%22text%22%3A%22COUNT%20%5C%22screen%20time%5C%22%20WHERE%20transcript.text%3D%5C%22UNITED%20NATIONS%5C%22%20AND%20transcript.window%3D30%22%7D%5D%7D">
+      <img src="{{ url_for('static', filename='img/text-window.png') }}" style="width: 100%;">
+    </a>
+  </p>
+
+  <h3>How do I compose new queries?</h3>
+  <p>
+    Using the advanced query editor or the query language, more complex queries
+    can be expressed with a combination of filters. For example, to find the screen
+    time of Donald Trump when the word <code>"WALL"</code> appears in the transcript, we can
+    write the following query.
+
+    <span class="centered">
+      <code>COUNT screen time WHERE onscreen.face1="person: donald trump" AND transcript.text="WALL"</code>
+    </span>
+
+    Likewise, the tool can compute screen time where both Donald Trump and
+    Hillary Clinton are on screen.
+
+    <span class="centered">
+      <code>COUNT screen time WHERE onscreen.face1="person: donald trump" AND onscreen.face2="person: hillary clinton"</code>
+    </span>
+
+    Please read the <a href="/detailed" target="_blank">detailed documentation</a> page
+    to understand the query syntax, the available query options, and advanced features such
+    as normalization.
+  </p>
+</div>
+{% endblock %}
