@@ -29,7 +29,6 @@ app = build_app(
     config['data_dir'], config['index_dir'],
     config.get('video_endpoint'), config.get('frameserver_endpoint'),
     config.get('archive_video_endpoint'),
-    config.get('cache_seconds', 30 * 24 * 3600),
     auth_users,
     min_date=datetime(*options.get('min_date', [2010, 1, 1])),
     max_date=datetime(*options.get('max_date', [2018, 4, 1])),

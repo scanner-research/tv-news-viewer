@@ -292,6 +292,12 @@ class SearchResult {
 
 }
 
+function getSortedQueryString(obj) {
+  return Object.keys(obj).sort().map(
+    k => `${encodeURIComponent(k)}=${encodeURIComponent(obj[k])}`
+  ).join('&');
+}
+
 class SearchableQuery {
   constructor(s, default_count_var, no_err) {
 
@@ -360,7 +366,7 @@ class SearchableQuery {
       obj.{{ parameters.start_date }} = chart_options.start_date;
       obj.{{ parameters.end_date }} = chart_options.end_date;
       obj.{{ parameters.aggregate }} = chart_options.aggregate;
-      return obj;
+      return getSortedQueryString(obj);
     }
 
     let result = {};
@@ -402,9 +408,7 @@ class SearchableQuery {
       {{ parameters.video_ids }}: JSON.stringify(video_ids)
     }, this.main_args);
     return $.ajax({
-      url: '/search-videos',
-      type: 'get',
-      data: args
+      url: '/search-videos', type: 'get', data: getSortedQueryString(args)
     }).then(onSuccess).catch(onError);
   }
 

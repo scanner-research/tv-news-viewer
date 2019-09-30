@@ -3,5 +3,5 @@
   "index_dir": "index",
   "video_endpoint": null,
   "frameserver_endpoint": null,
-  "cache_seconds": 2592000
+  "archive_video_endpoint": "https://ia801301.us.archive.org/0/items"
 }

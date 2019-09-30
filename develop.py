@@ -39,7 +39,7 @@ def main(
     """Run a debugging server"""
     app = build_app(
         data_dir, index_dir, video_endpoint, frameserver_endpoint,
-        ARCHIVE_VIDEO_ENDPOINT, 0,
+        ARCHIVE_VIDEO_ENDPOINT,
         [LoginCredentials('admin', sha256('password'))],
         min_date=datetime(2010, 1, 1),
         max_date=datetime(2018, 4, 1),

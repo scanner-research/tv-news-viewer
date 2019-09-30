@@ -379,7 +379,7 @@ def has_onscreen_face(
 def build_app(
     data_dir: str, index_dir: str, video_endpoint: str,
     frameserver_endpoint: Optional[str], archive_video_endpoint: Optional[str],
-    cache_seconds: int, authorized_users: Optional[List[LoginCredentials]],
+    authorized_users: Optional[List[LoginCredentials]],
     min_date: datetime, max_date: datetime,
     min_person_screen_time: int,
     default_aggregate_by: str,
@@ -546,7 +546,6 @@ def build_app(
             'js/values.js', shows=all_shows, people=[x.name for x in people],
             person_tags=video_data_context.all_person_tags.tags))
         resp.headers['Content-type'] = 'text/javascript'
-        resp.cache_control.max_age = cache_seconds
         return resp
 
     @app.route('/static/js/query.js')
@@ -555,7 +554,6 @@ def build_app(
             'js/query.js', parameters=SearchParameter, countables=Countable
         ))
         resp.headers['Content-type'] = 'text/javascript'
-        resp.cache_control.max_age = cache_seconds
         return resp
 
     @app.route('/static/js/chart.js')
@@ -564,7 +562,6 @@ def build_app(
             'js/chart.js', countables=Countable,
             video_endpoint=video_endpoint))
         resp.headers['Content-type'] = 'text/javascript'
-        resp.cache_control.max_age = cache_seconds
         return resp
 
     @app.route('/static/js/home.js')
@@ -581,7 +578,6 @@ def build_app(
             default_text_window=default_text_window
         ))
         resp.headers['Content-type'] = 'text/javascript'
-        resp.cache_control.max_age = cache_seconds
         return resp
 
     @app.route('/static/js/videos.js')
@@ -828,7 +824,6 @@ def build_app(
             raise NotImplementedError('unreachable code')
 
         resp = jsonify(accumulator.get())
-        resp.cache_control.max_age = cache_seconds
         return resp
 
     def _video_name_or_id(v: str) -> str:
@@ -1040,7 +1035,6 @@ def build_app(
             raise NotImplementedError('unreachable code')
 
         resp = jsonify(results)
-        resp.cache_control.max_age = cache_seconds
         return resp
 
     def _get_captions(document: Documents.Document) -> List[Caption]:
@@ -1065,7 +1059,6 @@ def build_app(
         if not document:
             raise NotFound('captions for video id: {}'.format(i))
         resp = jsonify(_get_captions(document))
-        resp.cache_control.max_age = cache_seconds * 1000
         return resp
 
     return app
