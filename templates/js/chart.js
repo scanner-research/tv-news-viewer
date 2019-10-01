@@ -304,6 +304,11 @@ class Chart {
         });
       });
       video_div_selector.show();
+
+      // For small screens, scroll the page
+      $([document.documentElement, document.body]).animate({
+        scrollTop: video_div_selector.offset().top
+      }, 1000);
     }
 
     vegaEmbed(div_id, vega_spec, {actions: false}).then(

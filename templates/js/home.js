@@ -29,7 +29,8 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
     <tr>
       <td type="key-col">the hour of day is between</td>
       <td type="value-col"><input type="text" class="form-control no-enter-submit"
-          name="{{ parameters.hour }}" value="" placeholder="0-23"></td>
+          name="{{ parameters.hour }}" value="" placeholder="0-23"> (in Eastern Time)
+      </td>
     </tr>
     <tr>
       <td type="key-col">the day of week is</td>

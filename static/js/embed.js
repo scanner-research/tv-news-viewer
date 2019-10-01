@@ -1,4 +1,5 @@
 let params = (new URL(document.location)).searchParams;
+let hideLegend = params.get('hideLegend') == 1;
 let data = JSON.parse(decodeURIComponent(params.get('data')));
 let width = params.get('width');
 let height = params.get('height');
@@ -19,9 +20,9 @@ function renderText(lines) {
   });
   $('#options').append(
     'Showing results from ',
-    $('<b />').text(chart_options.start_date),
+    $('<b />').text(new Date(chart_options.start_date).toLocaleDateString(undefined, {timeZone: 'UTC'})),
     ' to ',
-    $('<b />').text(chart_options.end_date),
+    $('<b />').text(new Date(chart_options.end_date).toLocaleDateString(undefined, {timeZone: 'UTC'})),
     ' aggregated by ',
     $('<b />').text(chart_options.aggregate)
   );
@@ -46,7 +47,9 @@ function onDone() {
   new Chart(
     chart_options, search_results, {width: width, height: height}
   ).load('#chart', null);
-  renderText(lines);
+  if (!hideLegend) {
+    renderText(lines);
+  }
 };
 
 Promise.all(lines.map(line => {

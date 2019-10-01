@@ -75,7 +75,7 @@
     data is mostly constant across time, there are periods of time with less data
     available.
   </p>
-  <iframe width="100%" height="370" src="//{{ host }}/embed?width=600&height=270&data=%7B%22options%22%3A%7B%22start_date%22%3A%222010-01-01%22%2C%22end_date%22%3A%222018-04-01%22%2C%22count%22%3A%22screen%20time%22%2C%22aggregate%22%3A%22month%22%7D%2C%22queries%22%3A%5B%7B%22color%22%3A%22%234E79A7%22%2C%22text%22%3A%22COUNT%20%5C%22screen%20time%5C%22%20WHERE%20%22%7D%5D%7D"></iframe>
+  <iframe width="100%" height="300" src="//{{ host }}/embed?hideLegend=1&width=600&height=270&data=%7B%22options%22%3A%7B%22start_date%22%3A%222010-01-01%22%2C%22end_date%22%3A%222018-04-01%22%2C%22count%22%3A%22screen%20time%22%2C%22aggregate%22%3A%22month%22%7D%2C%22queries%22%3A%5B%7B%22color%22%3A%22%234E79A7%22%2C%22text%22%3A%22COUNT%20%5C%22screen%20time%5C%22%20WHERE%20%22%7D%5D%7D"></iframe>
 
   <p>
     The previous chart includes data from all three channels (CNN, FOX and MSNBC)
@@ -93,7 +93,7 @@
   <p>
     Hitting the search button will now generate a chart that looks similar to this.
   </p>
-  <iframe width="100%" height="400" src="//{{ host }}/embed?width=600&height=270&data=%7B%22options%22%3A%7B%22start_date%22%3A%222010-01-01%22%2C%22end_date%22%3A%222018-04-01%22%2C%22count%22%3A%22screen%20time%22%2C%22aggregate%22%3A%22month%22%7D%2C%22queries%22%3A%5B%7B%22color%22%3A%22%234E79A7%22%2C%22text%22%3A%22COUNT%20%5C%22screen%20time%5C%22%20WHERE%20channel%3DCNN%22%7D%2C%7B%22color%22%3A%22%23F28E2B%22%2C%22text%22%3A%22COUNT%20%5C%22screen%20time%5C%22%20WHERE%20channel%3DFOX%22%7D%2C%7B%22color%22%3A%22%23E15759%22%2C%22text%22%3A%22COUNT%20%5C%22screen%20time%5C%22%20WHERE%20channel%3DMSNBC%22%7D%5D%7D"></iframe>
+  <iframe width="100%" height="300" src="//{{ host }}/embed?hideLegend=1&width=600&height=270&data=%7B%22options%22%3A%7B%22start_date%22%3A%222010-01-01%22%2C%22end_date%22%3A%222018-04-01%22%2C%22count%22%3A%22screen%20time%22%2C%22aggregate%22%3A%22month%22%7D%2C%22queries%22%3A%5B%7B%22color%22%3A%22%234E79A7%22%2C%22text%22%3A%22COUNT%20%5C%22screen%20time%5C%22%20WHERE%20channel%3DCNN%22%7D%2C%7B%22color%22%3A%22%23F28E2B%22%2C%22text%22%3A%22COUNT%20%5C%22screen%20time%5C%22%20WHERE%20channel%3DFOX%22%7D%2C%7B%22color%22%3A%22%23E15759%22%2C%22text%22%3A%22COUNT%20%5C%22screen%20time%5C%22%20WHERE%20channel%3DMSNBC%22%7D%5D%7D"></iframe>
 
   <p>
     See the <a href="/detailed" target="_blank">detailed documentation</a> page for the
@@ -113,11 +113,11 @@
   </p>
 
   <p>
-    This charts the following chart. Notice that the screen time of both male
+    This plots the following chart. Notice that the screen time of both male
     and female faces is trending upwards, but also that male screen time is
     roughly double that of female screen time.
   </p>
-  <iframe width="100%" height="370" src="//{{ host }}/embed?width=600&height=270&data=%7B%22options%22%3A%7B%22start_date%22%3A%222010-01-01%22%2C%22end_date%22%3A%222018-04-01%22%2C%22count%22%3A%22screen%20time%22%2C%22aggregate%22%3A%22month%22%7D%2C%22queries%22%3A%5B%7B%22color%22%3A%22%234E79A7%22%2C%22text%22%3A%22COUNT%20%5C%22screen%20time%5C%22%20WHERE%20onscreen.face1%3D%5C%22gender%3A%20male%5C%22%22%7D%2C%7B%22color%22%3A%22%23F28E2B%22%2C%22text%22%3A%22COUNT%20%5C%22screen%20time%5C%22%20WHERE%20onscreen.face1%3D%5C%22gender%3A%20female%5C%22%22%7D%5D%7D"></iframe>
+  <iframe width="100%" height="300" src="//{{ host }}/embed?hideLegend=1&width=600&height=270&data=%7B%22options%22%3A%7B%22start_date%22%3A%222010-01-01%22%2C%22end_date%22%3A%222018-04-01%22%2C%22count%22%3A%22screen%20time%22%2C%22aggregate%22%3A%22month%22%7D%2C%22queries%22%3A%5B%7B%22color%22%3A%22%234E79A7%22%2C%22text%22%3A%22COUNT%20%5C%22screen%20time%5C%22%20WHERE%20onscreen.face1%3D%5C%22gender%3A%20male%5C%22%22%7D%2C%7B%22color%22%3A%22%23F28E2B%22%2C%22text%22%3A%22COUNT%20%5C%22screen%20time%5C%22%20WHERE%20onscreen.face1%3D%5C%22gender%3A%20female%5C%22%22%7D%5D%7D"></iframe>
 
   <p>
     We can also make queries about people who have been identified in the videos.
@@ -129,8 +129,7 @@
       <img src="{{ url_for('static', filename='img/trump-clinton.png') }}" style="width: 100%;">
     </a>
   </p>
-
-  <iframe width="100%" height="370" src="//{{ host }}/embed?width=600&height=270&data=%7B%22options%22%3A%7B%22start_date%22%3A%222010-01-01%22%2C%22end_date%22%3A%222018-04-01%22%2C%22count%22%3A%22screen%20time%22%2C%22aggregate%22%3A%22month%22%7D%2C%22queries%22%3A%5B%7B%22color%22%3A%22%234E79A7%22%2C%22text%22%3A%22COUNT%20%5C%22screen%20time%5C%22%20WHERE%20onscreen.face1%3D%5C%22person%3A%20hillary%20clinton%5C%22%22%7D%2C%7B%22color%22%3A%22%23F28E2B%22%2C%22text%22%3A%22COUNT%20%5C%22screen%20time%5C%22%20WHERE%20onscreen.face1%3D%5C%22person%3A%20donald%20trump%5C%22%22%7D%5D%7D"></iframe>
+  <iframe width="100%" height="300" src="//{{ host }}/embed?hideLegend=1&width=600&height=270&data=%7B%22options%22%3A%7B%22start_date%22%3A%222010-01-01%22%2C%22end_date%22%3A%222018-04-01%22%2C%22count%22%3A%22screen%20time%22%2C%22aggregate%22%3A%22month%22%7D%2C%22queries%22%3A%5B%7B%22color%22%3A%22%234E79A7%22%2C%22text%22%3A%22COUNT%20%5C%22screen%20time%5C%22%20WHERE%20onscreen.face1%3D%5C%22person%3A%20hillary%20clinton%5C%22%22%7D%2C%7B%22color%22%3A%22%23F28E2B%22%2C%22text%22%3A%22COUNT%20%5C%22screen%20time%5C%22%20WHERE%20onscreen.face1%3D%5C%22person%3A%20donald%20trump%5C%22%22%7D%5D%7D"></iframe>
 
   <p>
     To see the list of people who are searchable, click
@@ -149,8 +148,7 @@
       <img src="{{ url_for('static', filename='img/text.png') }}" style="width: 100%;">
     </a>
   </p>
-
-  <iframe width="100%" height="370" src="//{{ host }}/embed?width=600&height=270&data=%7B%22options%22%3A%7B%22start_date%22%3A%222010-01-01%22%2C%22end_date%22%3A%222018-04-01%22%2C%22count%22%3A%22screen%20time%22%2C%22aggregate%22%3A%22month%22%7D%2C%22queries%22%3A%5B%7B%22color%22%3A%22%234E79A7%22%2C%22text%22%3A%22COUNT%20%5C%22screen%20time%5C%22%20WHERE%20transcript.text%3D%5C%22UNITED%20NATIONS%5C%22%22%7D%5D%7D"></iframe>
+  <iframe width="100%" height="300" src="//{{ host }}/embed?hideLegend=1&width=600&height=270&data=%7B%22options%22%3A%7B%22start_date%22%3A%222010-01-01%22%2C%22end_date%22%3A%222018-04-01%22%2C%22count%22%3A%22screen%20time%22%2C%22aggregate%22%3A%22month%22%7D%2C%22queries%22%3A%5B%7B%22color%22%3A%22%234E79A7%22%2C%22text%22%3A%22COUNT%20%5C%22screen%20time%5C%22%20WHERE%20transcript.text%3D%5C%22UNITED%20NATIONS%5C%22%22%7D%5D%7D"></iframe>
 
   <p>
     Notice that this finds only the exact moments when words are said. If for
@@ -171,14 +169,14 @@
     write the following query.
 
     <span class="centered">
-      <code>COUNT screen time WHERE onscreen.face1="person: donald trump" AND transcript.text="WALL"</code>
+      <code><b>COUNT</b> screen time <b>WHERE</b> onscreen.face1="person: donald trump" <b>AND</b> transcript.text="WALL"</code>
     </span>
 
     Likewise, the tool can compute screen time where both Donald Trump and
     Hillary Clinton are on screen.
 
     <span class="centered">
-      <code>COUNT screen time WHERE onscreen.face1="person: donald trump" AND onscreen.face2="person: hillary clinton"</code>
+      <code><b>COUNT</b> screen time <b>WHERE</b> onscreen.face1="person: donald trump" <b>AND</b> onscreen.face2="person: hillary clinton"</code>
     </span>
 
     Please read the <a href="/detailed" target="_blank">detailed documentation</a> page
