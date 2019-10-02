@@ -90,7 +90,7 @@
       alert('Unsupported browser. This page only supports Chrome for video playback.');
     }
     let is_mac = navigator.platform.indexOf('Mac') > -1;
-    $('#ctrl-key').text(is_mac ? 'Cmd-&#8984;' : 'Ctrl');
+    $('#ctrl-key').html(is_mac ? 'Cmd-&#8984;' : 'Ctrl');
   </script>
 </body>
 {% endblock %}

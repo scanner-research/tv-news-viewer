@@ -18,9 +18,12 @@ code {
   position: fixed;
   left: 0;
   bottom: 0;
-  width: 100%;
+  width: auto;
   padding-left: 10px;
   padding-bottom: 5px;
+  padding-top: 5px;
+  padding-right: 5px;
+  background-color: white;
 }
 .chart-tooltip {
   display: none;

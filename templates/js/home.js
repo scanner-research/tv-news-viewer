@@ -7,53 +7,8 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
         <i style="color: gray;">Warning! Your current query will be overwritten on changes.</i>
       </td>
     </tr>
-    <tr>
-      <td type="key-col">the channel is</td>
-      <td type="value-col">
-        <select class="chosen-select chosen-basic-select" name="{{ parameters.channel }}" data-width="fit">
-          <option value="" selected="selected">All - CNN, FOX, or MSNBC</option>
-          <option value="CNN">CNN</option>
-          <option value="FOX">FOX</option>
-          <option value="MSNBC">MSNBC</option>
-        </select>
-      </td>
-    </tr>
-    <tr>
-      <td type="key-col">the show is</td>
-      <td type="value-col">
-        <select class="chosen-select chosen-basic-select" name="{{ parameters.show }}" data-width="fit">
-          <option value="" selected="selected">All shows</option>
-        </select>
-      </td>
-    </tr>
-    <tr>
-      <td type="key-col">the hour of day is between</td>
-      <td type="value-col"><input type="text" class="form-control no-enter-submit"
-          name="{{ parameters.hour }}" value="" placeholder="0-23"> (in Eastern Time)
-      </td>
-    </tr>
-    <tr>
-      <td type="key-col">the day of week is</td>
-      <td type="value-col"><input type="text" class="form-control no-enter-submit"
-          name="{{ parameters.day_of_week }}" value="" placeholder="mon-sun"></td>
-    </tr>
-    <tr disabled="true">
-      <td type="key-col">is in commercial</td>
-      <td type="value-col">
-        <select class="chosen-select" name="{{ parameters.is_commercial }}"
-                data-width="fit">
-          <option value="false" selected="selected">false</option>
-          <option value="true">true</option>
-          <option value="both">both</option>
-        </select>
-      </td>
-    </tr>
 
-    <tr>
-      <td colspan="2" type="info-header">
-        Use the following filters to perform <b>text search of the transcripts</b>.
-      </td>
-    </tr>
+    <tr><td colspan="2"><hr></td></tr>
     <tr>
       <td type="key-col">
         the transcript contains
@@ -67,29 +22,25 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
     </tr>
     <tr>
       <td type="key-col">
-        within
       </td>
       <td type="value-col">
-        <input type="number" class="form-control"
-               name="{{ parameters.caption_window }}"
-               min="0" max="3600" placeholder="{{ default_text_window }}"
-               style="width:70px;">
-        seconds of the word or phrase being said
+        (with a window of
+          <input type="number" class="form-control"
+                 name="{{ parameters.caption_window }}"
+                 min="0" max="3600" placeholder="{{ default_text_window }}"
+                 style="width:70px;">
+          seconds around each mention)
       </td>
     </tr>
+    <tr><td colspan="2"><hr></td></tr>
 
-    <tr>
-      <td colspan="2" type="info-header">
-        Use the following filters to find <b>on-screen faces</b>. <br>
-        Note: this will update <code>onscreen.face1="..."</code>.
-        To filter on multiple faces, edit the search box manually.
-      </td>
-    </tr>
     <tr>
       <td type="key-col">
         the screen has a face that:
       </td>
-      <td type="value-col"></td>
+      <td type="value-col">
+        <span title='A face is on screen if it is visible anywhere in the frame. This definition includes faces in the foreground or background; live or still; and big or small. Note: this will update onscreen.face1="...". To filter on multiple faces, edit the search box manually.'>&#9432;</span>
+      </td>
     </tr>
     <tr>
       <td type="key-col">
@@ -149,10 +100,52 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
         </span>
       </td>
     </tr>
+    <tr><td colspan="2"><hr></td></tr>
 
     <tr>
       <td colspan="2" type="info-header">
         Some other useful filters.
+      </td>
+    </tr>
+    <tr>
+      <td type="key-col">the channel is</td>
+      <td type="value-col">
+        <select class="chosen-select chosen-basic-select" name="{{ parameters.channel }}" data-width="fit">
+          <option value="" selected="selected">All - CNN, FOX, or MSNBC</option>
+          <option value="CNN">CNN</option>
+          <option value="FOX">FOX</option>
+          <option value="MSNBC">MSNBC</option>
+        </select>
+      </td>
+    </tr>
+    <tr>
+      <td type="key-col">the show is</td>
+      <td type="value-col">
+        <select class="chosen-select chosen-basic-select" name="{{ parameters.show }}" data-width="fit">
+          <option value="" selected="selected">All shows</option>
+        </select>
+      </td>
+    </tr>
+    <tr>
+      <td type="key-col">the hour of day is between</td>
+      <td type="value-col"><input type="text" class="form-control no-enter-submit"
+          name="{{ parameters.hour }}" value="" placeholder="0-23"> (in Eastern Time)
+      </td>
+    </tr>
+    <tr>
+      <td type="key-col">the day of week is</td>
+      <td type="value-col"><input type="text" class="form-control no-enter-submit"
+          name="{{ parameters.day_of_week }}" value="" placeholder="mon-sun"></td>
+    </tr>
+    <tr disabled="true">
+      <td type="key-col">is in commercial</td>
+      <td type="value-col">
+        <select class="chosen-select" name="{{ parameters.is_commercial }}"
+                data-width="fit">
+          <option value="false" selected="selected">false</option>
+          <option value="true">true</option>
+          <option value="both">both</option>
+        </select>
       </td>
     </tr>
     <tr>
@@ -628,13 +621,13 @@ function addRow(query) {
 
   let new_row = $('<tr name="query">').attr('data-color', color).append(
     $('<td valign="top"/>').append(
-      $('<button type="button" class="btn btn-outline-secondary btn-sm remove-row-btn" onclick="removeRow(this);" />').text('-')
+      $('<button type="button" class="btn btn-outline-secondary btn-sm remove-row-btn" onclick="removeRow(this);" title="Remove this row."/>').text('-')
     ),
     $('<td valign="top"/>').append(
-      $('<button type="button" class="btn btn-outline-secondary btn-sm toggle-query-builder-btn" onclick="toggleQueryBuilder(this);" />').html('&#x1F4DD;')
+      $('<button type="button" class="btn btn-outline-secondary btn-sm toggle-query-builder-btn" onclick="toggleQueryBuilder(this);" title="Toggle the dropdown search editor."/>').html('&#x1F50D;')
     ),
     $('<td valign="top">').append(
-      $('<div class="color-box" onclick="changeRowColor(this);" />').css('background-color', color)
+      $('<div class="color-box" onclick="changeRowColor(this);" title="Click to change the color." />').css('background-color', color)
     ),
     $('<td class="query-td" />').append(
       $('<div class="input-group" />').append(
@@ -859,4 +852,24 @@ $('#resetButton').click(function() {
     window.history.pushState({}, document.title, '/');
     clearChart();
   }
+});
+
+const UI_SHADOW = '0 8px 20px 0 rgba(0, 0, 0, 0.8)';
+$('#plus-minus-hover').mouseenter(function() {
+  $('.remove-row-btn, .add-row-btn').css('box-shadow', UI_SHADOW);
+});
+$('#plus-minus-hover').mouseleave(function() {
+  $('.remove-row-btn, .add-row-btn').css('box-shadow', '');
+});
+$('#dropdown-editor-hover').mouseenter(function() {
+  $('.toggle-query-builder-btn').css('box-shadow', UI_SHADOW);
+});
+$('#dropdown-editor-hover').mouseleave(function() {
+  $('.toggle-query-builder-btn').css('box-shadow', '');
+});
+$('#chart-area-hover').mouseenter(function() {
+  $('#chart').css('box-shadow', UI_SHADOW);
+});
+$('#chart-area-hover').mouseleave(function() {
+  $('#chart').css('box-shadow', '');
 });
