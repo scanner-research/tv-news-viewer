@@ -678,11 +678,6 @@ function getChartPath(data) {
   return `/?data=${data}`;
 }
 
-function alertAndThrow(msg) {
-  alert(msg);
-  throw Error(msg);
-}
-
 function getDownloadUrl(search_results) {
   let json_obj = Object.values(search_results).map(search_result => {
     let times = new Set(Object.keys(search_result.main));
@@ -724,7 +719,7 @@ var setCopyUrl, setEmbedUrl;
 function displaySearchResults(chart_options, lines, search_results) {
   new Chart(chart_options, search_results, {
     width: $("#chart-area").width(), height: EMBED_DIMS.height
-  }).load('#chart', '#vgrid-area');
+  }).load('#chart', {video_div: '#vgrid-area'});
 
   if (Object.keys(search_results).length == lines.length) {
     // Allow embedding if all queries are ok

@@ -1,9 +1,10 @@
 let params = (new URL(document.location)).searchParams;
-let hideLegend = params.get('hideLegend') == 1;
-let data = JSON.parse(decodeURIComponent(params.get('data')));
+let hide_legend = params.get('hideLegend') == 1;
+let data_str = params.get('data');
+let data = JSON.parse(data_str);
+console.log(data);
 let width = params.get('width');
 let height = params.get('height');
-let chart_options = data.options;
 
 function renderText(lines) {
   // TODO: XSS attack here
@@ -20,11 +21,13 @@ function renderText(lines) {
   });
   $('#options').append(
     'Showing results from ',
-    $('<b />').text(new Date(chart_options.start_date).toLocaleDateString(undefined, {timeZone: 'UTC'})),
+    $('<b />').text(
+      new Date(data.options.start_date).toLocaleDateString(undefined, {timeZone: 'UTC'})),
     ' to ',
-    $('<b />').text(new Date(chart_options.end_date).toLocaleDateString(undefined, {timeZone: 'UTC'})),
+    $('<b />').text(
+      new Date(data.options.end_date).toLocaleDateString(undefined, {timeZone: 'UTC'})),
     ' aggregated by ',
-    $('<b />').text(chart_options.aggregate)
+    $('<b />').text(data.options.aggregate)
   );
 }
 
@@ -32,7 +35,7 @@ let lines = data.queries.map(raw_query => {
   var parsed;
   try {
     parsed_query = new SearchableQuery(
-      raw_query.text, chart_options.count, false);
+      raw_query.text, data.options.count, false);
   } catch (e) {
     alertAndThrow(e.message);
   }
@@ -45,9 +48,9 @@ $('#search').prop('disabled', true);
 let search_results = {};
 function onDone() {
   new Chart(
-    chart_options, search_results, {width: width, height: height}
-  ).load('#chart', null);
-  if (!hideLegend) {
+    data.options, search_results, {width: width, height: height}
+  ).load('#chart', {href: '//{{ host }}/?data=' + encodeURIComponent(data_str)});
+  if (!hide_legend) {
     renderText(lines);
   }
 };
@@ -67,7 +70,7 @@ Promise.all(lines.map(line => {
   }
 
   return line.query.search(
-    chart_options,
+    data.options,
     result => search_results[line.color] = result,
     onError);
 })).then(onDone).catch(onDone);

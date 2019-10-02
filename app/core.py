@@ -596,6 +596,10 @@ def build_app(
             frameserver_endpoint=frameserver_endpoint,
             archive_video_endpoint=archive_video_endpoint)
 
+    @app.route('/static/js/embed.js')
+    def get_embed_js() -> Response:
+        return render_template('js/embed.js', host=request.host)
+
     def _get_document_token_count(
         video: Video, document: Documents.Document, is_commercial: Ternary
     ) -> int:

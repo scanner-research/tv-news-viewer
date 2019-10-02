@@ -129,7 +129,7 @@ class Chart {
     this.search_results = search_results;
   }
 
-  load(div_id, video_div_id) {
+  load(div_id, options) {
     let year_span = (
       new Date(this.options.end_date).getUTCFullYear() -
       new Date(this.options.start_date).getUTCFullYear()
@@ -274,8 +274,8 @@ class Chart {
 
     let moment_date_format = getMomentDateFormat(this.options.aggregate);
     let this_chart = this;
-    function showVideos(t) {
-      let video_div_selector = $(video_div_id).empty();
+    function showVideos(t, video_div) {
+      let video_div_selector = $(video_div).empty();
       let date_str = moment(t).format(moment_date_format);
       let content_str = SERVE_FROM_INTERNET_ARCHIVE ? 'clips (up to 3 minutes)' : 'videos';
       video_div_selector.append(
@@ -293,15 +293,18 @@ class Chart {
         let video_ids = shuffled_results.map(x => x[0]);
         let params = {
           color: color, count: count, query: result.query,
-          video_ids: video_div_id ? video_ids : video_ids.slice(0, MAX_NEW_WINDOW_VIDEOS),
-          video_count: video_ids.length
+          video_ids: video_ids, video_count: video_ids.length
         };
 
-        video_div_selector.append('<hr>', $(`<iframe class="vgrid-iframe" color="${color}" src="/video-embed" width="100%" frameBorder="0">`));
-        $(`${video_div_id} iframe[color="${color}"]`).on('load', function() {
-          let iframe = $(this)[0];
-          iframe.contentWindow.loadVideos(params, SERVE_FROM_INTERNET_ARCHIVE);
-        });
+        video_div_selector.append(
+          '<hr>',
+          $('<iframe class="vgrid-iframe" src="/video-embed" width="100%" frameBorder="0">').attr(
+            'color', color
+          ).on('load', function() {
+            let iframe = $(this)[0];
+            iframe.contentWindow.loadVideos(params, SERVE_FROM_INTERNET_ARCHIVE);
+          })
+        );
       });
       video_div_selector.show();
 
@@ -350,11 +353,18 @@ class Chart {
           }
         });
 
-        if (video_div_id) {
-          view.addEventListener('click', function(event, item) {
-            let t = new Date(item.datum.datum.time).toISOString().split('T')[0];
-            showVideos(t);
-          });
+        if (options) {
+          if (options.video_div) {
+            let video_div = options.video_div;
+            view.addEventListener('click', function(event, item) {
+              let t = new Date(item.datum.datum.time).toISOString().split('T')[0];
+              showVideos(t, video_div);
+            });
+          } else if (options.href) {
+            view.addEventListener('click', function(event, item) {
+              window.open(options.href, '_blank');
+            });
+          }
         }
       }
     );
