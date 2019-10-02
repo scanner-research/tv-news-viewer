@@ -58,6 +58,7 @@ code {
   white-space: nowrap;
 }
 .btn:focus, .btn:active, .form-control:focus, .form-control:active {
+  border-color: #ced4da;
   outline: none !important;
-  box-shadow: none !important;
+  box-shadow: none;
 }
