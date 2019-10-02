@@ -481,29 +481,6 @@ def build_app(
     def show_videos() -> Response:
         return render_template('video-embed.html')
 
-    # List of people to expose
-    Person = namedtuple('person', ['name', 'screen_time', 'tags'])
-    people = list(filter(
-        lambda x: x.screen_time * 60 > min_person_screen_time, [
-            Person(
-                name, round(intervals.isetmap.sum() / 60000, 2),
-                video_data_context.all_person_tags.name_to_tags(name)
-            )
-            for name, intervals in
-            video_data_context.all_person_intervals.items()
-        ]))
-    people.sort(key=lambda x: x.name)
-
-    @app.route('/people')
-    def get_people() -> Response:
-        return render_template('people.html', people=people)
-
-    @app.route('/person-tags')
-    def get_person_tags() -> Response:
-        return render_template(
-            'person-tags.html',
-            person_tags=video_data_context.all_person_tags.tag_dict)
-
     @app.route('/getting-started')
     def get_getting_started() -> Response:
         return render_template(
@@ -528,8 +505,46 @@ def build_app(
     def get_about_us() -> Response:
         return render_template('about-us.html')
 
-    @app.route('/shows')
+    # List of people to expose
+    Person = namedtuple('person', ['name', 'screen_time', 'tags'])
+    people = list(filter(
+        lambda x: x.screen_time * 60 > min_person_screen_time, [
+            Person(
+                name, round(intervals.isetmap.sum() / 60000, 2),
+                video_data_context.all_person_tags.name_to_tags(name)
+            )
+            for name, intervals in
+            video_data_context.all_person_intervals.items()
+        ]))
+    people.sort(key=lambda x: x.name)
+
+    @app.route('/data/people')
+    def get_people() -> Response:
+        return render_template('data/people.html')
+
+    @app.route('/data/people.json')
+    def get_people_json() -> Response:
+        return jsonify({'data': [
+            (p.name, p.screen_time, ', '.join(p.tags)) for p in people
+        ]})
+
+    @app.route('/data/person-tags')
+    def get_person_tags() -> Response:
+        return render_template('data/person-tags.html')
+
+    @app.route('/data/person-tags.json')
+    def get_person_tags_json() -> Response:
+        return jsonify({'data': [
+            (t, len(p), ', '.join(p))
+            for t, p in video_data_context.all_person_tags.tag_dict.items()
+        ]})
+
+    @app.route('/data/shows')
     def get_shows() -> Response:
+        return render_template('data/shows.html')
+
+    @app.route('/data/shows.json')
+    def get_shows_json() -> Response:
         tmp = defaultdict(float)
         for v in video_data_context.video_dict.values():
             tmp[(v.channel, v.show)] += v.num_frames / v.fps
@@ -537,16 +552,18 @@ def build_app(
             (channel, show, round(seconds / 3600))
             for (channel, show), seconds in tmp.items()]
         channel_and_show.sort()
-        return render_template('shows.html', shows=channel_and_show)
+        return jsonify({'data': channel_and_show})
 
-    @app.route('/videos')
+    @app.route('/data/videos')
     def get_videos() -> Response:
-        n_samples = 1000
-        return render_template(
-            'videos.html', n='{:,}'.format(n_samples),
-            video_count='{:,}'.format(len(video_data_context.video_dict)),
-            videos=random.sample(list(
-                video_data_context.video_dict.values()), n_samples))
+        return render_template('data/videos.html')
+
+    @app.route('/data/videos.json')
+    def get_videos_json() -> Response:
+        return jsonify({'data': [
+            (v.name, round(v.num_frames / v.fps / 60, 1))
+            for v in video_data_context.video_dict.values()
+        ]})
 
     @app.route('/static/js/values.js')
     def get_values_js() -> Response:

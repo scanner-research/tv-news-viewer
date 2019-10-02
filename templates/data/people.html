@@ -10,38 +10,45 @@
 {% block content %}
 <div class="container">
   <h1>
-    List of shows
+    List of people, identified by face
   </h1>
 
   <p>
-    This page contains a list of shows that are present in the data set,
-    as recorded by the Internet Archive.
-    Shows in this list can be used to filter for screen time using
-    the <code>show="..."</code> predicate.
+    This page contains a list of people who have been identified by the
+    Amazon Rekognition Celebrity detection API and our own identity models.
+    It is important to recognize that the accuracy of these detections is the
+    result of computer vision models and is subject to noise and potential
+    bias in the model and in the videos.
+  </p>
+
+  <p>
+    Names in this list can be used to filter for screen time when faces are
+    on screen using the <code>onscreen.face1="person: ..."</code> predicate.
+  </p>
+
+  <p>
+    This list of names is by no means complete, and accounts for only
+    approximately 44% of the faces in the dataset.
   </p>
 
   <table class="table table-hover table-striped table-bordered table-sm">
     <thead>
       <tr>
-        <th>Channel</th>
-        <th>Show</th>
-        <th>Total screen time (in hours)</th>
+        <th>Name</th>
+        <th>Total screen time (in minutes)</th>
+        <th>Person-tags</th>
       </tr>
     </thead>
-    <tbody>
-      {% for show in shows %}
-      <tr>
-        <td>{{ show.0 }}</td>
-        <td>{{ show.1 }}</td>
-        <td>{{ show.2 }}</td>
-      </tr>
-      {% endfor %}
-    </tbody>
   </table>
 
   <script>
     $(document).ready(function() {
-      $('.table').DataTable({pageLength: 25});
+      $('.table').DataTable({
+        pageLength: 25, columns: [
+          {width: '20%'}, {width: '15%'}, null
+        ],
+        ajax: '/data/people.json'
+      });
     });
   </script>
 </div>
