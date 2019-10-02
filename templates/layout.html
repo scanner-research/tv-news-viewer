@@ -79,7 +79,7 @@
     <div class="bottom-footer">
       Last server update: {{ uptime }}. If something breaks, please
       refresh the page with the browser cache disabled
-      (<kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>R</kbd> on PC; <kbd>Cmd-&#8984;</kbd> + <kbd>Shift</kbd> + <kbd>R</kbd> on Mac).
+      (<kbd id="ctrl-key"></kbd> + <kbd>Shift</kbd> + <kbd>R</kbd>).
     </div>
   </footer>
   {% endif %}
@@ -89,6 +89,8 @@
     if (!is_chrome) {
       alert('Unsupported browser. This page only supports Chrome for video playback.');
     }
+    let is_mac = navigator.platform.indexOf('Mac') > -1;
+    $('#ctrl-key').text(is_mac ? 'Cmd-&#8984;' : 'Ctrl');
   </script>
 </body>
 {% endblock %}
