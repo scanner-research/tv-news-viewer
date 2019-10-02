@@ -21,7 +21,7 @@
 {% block content %}
 <div class="container">
   <form action="javascript:void(0);">
-    <table id="search-table">
+    <table id="searchTable">
       <thead>
         <tr name="controls" class="chart-options">
           <td colspan="4" class="option-td">
@@ -40,13 +40,16 @@
 
               <ul>
                 <li>
-                  <span id="plus-minus-hover">Click the +/- buttons to add or remove search rows below.</span>
+                  <span id="plusMinusHover">Click the +/- buttons to add or remove search rows below.</span>
                 </li>
                 <li>
-                  <span id="dropdown-editor-hover">To toggle the dropdown search editor for a row, click the &#x1F50D; button in each row.</span>
+                  <span id="dropdownEditorHover">To toggle the dropdown search editor for a row, click the &#x1F50D; button in each row.</span>
                 </li>
                 <li>
-                  <span id="chart-area-hover">To show example videos for a data point, click the chart area.</span>
+                  <span id="searchButtonHover">Hit the "Search the news!" button to generate or refresh the chart.</span>
+                </li>
+                <li>
+                  <span id="chartAreaHover">To show example videos for a data point, click the chart area.</span>
                 </li>
               </ul>
 
@@ -86,16 +89,16 @@
   </form>
 </div>
 
-<div class="container" id="chart-area">
+<div class="container" id="chartArea">
   <div id="chart"></div>
 </div>
 
-<div class="container" id="embed-area">
+<div class="container" id="embedArea">
   <p name="text"></p>
   <textarea readonly rows="3" name="embed"></textarea>
 </div>
 
-<div class="container" id="vgrid-area"></div>
+<div class="container" id="vgridArea"></div>
 
 <div id="shade">
   <div class="dark"></div>

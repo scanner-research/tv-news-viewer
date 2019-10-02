@@ -1,83 +1,83 @@
-#search-table {
+#searchTable {
   width: 100%;
   border-collapse: separate;
   border-spacing: 0px 4px;
 }
-#search-table th {
+#searchTable th {
   text-align: center;
 }
-#search-table input[name=where] {
+#searchTable input[name=where] {
   text-align: left;
   font-size: 12px;
 }
-#search-table input[name=countable] {
+#searchTable input[name=countable] {
   text-align: center;
   font-size: 12px;
   border-radius: 0;
 }
-#search-table .input-group, .input-group-prepend, .input-group-text, .form-control {
+#searchTable .input-group, .input-group-prepend, .input-group-text, .form-control {
   height: 30px;
   padding-top: 0px;
   padding-bottom: 0px;
   font-size: 12px;
 }
-#search-table .query-td {
+#searchTable .query-td {
   width: 100%;
 }
-#search-table .option-td {
+#searchTable .option-td {
   padding-left: 10px;
 }
-#search-table .hint-span {
+#searchTable .hint-span {
   font-size: 16px;
 }
-#search-table .hint-span ul {
+#searchTable .hint-span ul {
   margin: 0;
 }
-#search-table .count-span {
+#searchTable .count-span {
   display: none;
 }
-#search-table .color-box {
+#searchTable .color-box {
   margin: auto;
   width: 40px;
   min-height: 30px;
   cursor: pointer;
 }
-#search-table .remove-row-btn {
+#searchTable .remove-row-btn {
   width: 35px;
   height: 30px;
   text-align: center;
   vertical-align: middle;
   font-size: 12px;
 }
-#search-table .toggle-query-builder-btn {
+#searchTable .toggle-query-builder-btn {
   width: 35px;
   height: 30px;
   text-align: center;
   vertical-align: middle;
   font-size: 12px;
 }
-#search-table .query-text {
+#searchTable .query-text {
   font-family: monospace;
 }
-#search-table .add-row-btn {
+#searchTable .add-row-btn {
   width: 35px;
   height: 30px;
   text-align: center;
   font-size: 14px;
 }
-#search-table .chart-options {
+#searchTable .chart-options {
   text-align: left;
   font-size: 14px;
 }
-#search-table .chart-options input, select, .filter-option {
+#searchTable .chart-options input, select, .filter-option {
   text-align: center;
   font-size: 14px;
 }
-#search-table .chart-options hr {
+#searchTable .chart-options hr {
   margin-top: 0.25rem;
   margin-bottom: 0.25rem;
 }
-#search-table .chart-options .datepicker {
+#searchTable .chart-options .datepicker {
   width: 100px;
 }
 
@@ -85,14 +85,14 @@
   font-size: 12px;
 }
 
-#embed-area textarea {
+#embedArea textarea {
   width: 100%;
   margin: auto;
   display: none;
   word-break: break-all;
 }
 
-#vgrid-area {
+#vgridArea {
   text-align: center;
   border-style: solid;
   border-width: medium;
@@ -100,7 +100,7 @@
   margin-bottom: 20px;
   display: none;
 }
-#vgrid-area hr {
+#vgridArea hr {
   margin-top: 0.25rem;
   margin-bottom: 0.25rem;
 }

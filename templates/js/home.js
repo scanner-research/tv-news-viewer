@@ -236,14 +236,14 @@ function setQueryBoxForMode() {
     prefix_str = '{{ countables.videotime.value }} WHERE';
     has_countable = false;
   }
-  $('#search-table .countable-only').each(function() {
+  $('#searchTable .countable-only').each(function() {
     if (has_countable) {
       $(this).show();
     } else {
       $(this).hide();
     }
   });
-  $('#search-table span[name="count-type-prefix"]').text(`COUNT ${prefix_str}`);
+  $('#searchTable span[name="count-type-prefix"]').text(`COUNT ${prefix_str}`);
 }
 
 const EMBED_DIMS = {width: 1000, height: 400};
@@ -258,7 +258,7 @@ function getColor(start_idx) {
   }
   for (var i = 0; i < DEFAULT_COLORS.length; i++) {
     let color_idx = (i + start_idx) %  DEFAULT_COLORS.length;
-    if ($(`#search-table tr[data-color='${DEFAULT_COLORS[color_idx]}']`).length == 0) {
+    if ($(`#searchTable tr[data-color='${DEFAULT_COLORS[color_idx]}']`).length == 0) {
       return DEFAULT_COLORS[color_idx];
     }
   }
@@ -266,8 +266,8 @@ function getColor(start_idx) {
 }
 
 function setRemoveButtonsState() {
-  let state = $('#search-table > tbody > tr').length < 2;
-  $('#search-table td').find('button.remove-row-btn').each(function() {
+  let state = $('#searchTable > tbody > tr').length < 2;
+  $('#searchTable td').find('button.remove-row-btn').each(function() {
     this.disabled = state;
   });
 }
@@ -276,7 +276,7 @@ function removeRow(element) {
   let search_table_row = $(element).closest('tr');
   closeQueryBuilder(search_table_row);
   search_table_row.remove();
-  $('#search-table .add-row-btn').prop('disabled', false);
+  $('#searchTable .add-row-btn').prop('disabled', false);
   setRemoveButtonsState();
 }
 
@@ -471,10 +471,10 @@ function clearChart() {
     closeQueryBuilder($(this).closest('tr'));
   });
   $('#chart').empty();
-  let vgrid_selector = $('#vgrid-area');
+  let vgrid_selector = $('#vgridArea');
   vgrid_selector.empty();
   vgrid_selector.hide()
-  $('#embed-area').hide();
+  $('#embedArea').hide();
 }
 
 function updateQueryBox(search_table_row) {
@@ -566,8 +566,8 @@ function updateQueryBox(search_table_row) {
 }
 
 function getDefaultQuery() {
-  if ($('#search-table tr[name="query"]').length > 0) {
-    return 'WHERE ' + $('#search-table input[type="text"][name="where"]:last').val();
+  if ($('#searchTable tr[name="query"]').length > 0) {
+    return 'WHERE ' + $('#searchTable input[type="text"][name="where"]:last').val();
   } else {
     return 'WHERE';
   }
@@ -643,18 +643,18 @@ function addRow(query) {
     ),
   );
 
-  let tbody = $('#search-table > tbody');
+  let tbody = $('#searchTable > tbody');
   tbody.append(new_row);
   setQueryBoxForMode();
 
   if (tbody.find('tr').length >= DEFAULT_COLORS.length) {
-    $('#search-table .add-row-btn').prop('disabled', true);
+    $('#searchTable .add-row-btn').prop('disabled', true);
   }
   setRemoveButtonsState();
 
   onWhereUpdate(new_row.find('input[name="where"]'));
 }
-$('#search-table .add-row-btn').click(() => {addRow();});
+$('#searchTable .add-row-btn').click(() => {addRow();});
 
 function getDataString(chart_options, lines) {
   return encodeURIComponent(JSON.stringify({
@@ -711,8 +711,8 @@ var setCopyUrl, setEmbedUrl;
 
 function displaySearchResults(chart_options, lines, search_results) {
   new Chart(chart_options, search_results, {
-    width: $("#chart-area").width(), height: EMBED_DIMS.height
-  }).load('#chart', {video_div: '#vgrid-area'});
+    width: $("#chartArea").width(), height: EMBED_DIMS.height
+  }).load('#chart', {video_div: '#vgridArea'});
 
   if (Object.keys(search_results).length == lines.length) {
     // Allow embedding if all queries are ok
@@ -731,12 +731,12 @@ function displaySearchResults(chart_options, lines, search_results) {
     };
 
     setEmbedUrl = () => {
-      let x = $('#embed-area textarea[name="embed"]');
+      let x = $('#embedArea textarea[name="embed"]');
       x.val(`<iframe src="${embed_url}"></iframe>`);
       x.toggle();
     };
 
-    $('#embed-area p[name="text"]').html(
+    $('#embedArea p[name="text"]').html(
       `<a href="#" onclick="setCopyUrl(); return false;">Copy</a> url,
        <a href="#" onclick="setEmbedUrl(); return false;">embed</a> chart, or
        <a href="${getDownloadUrl(search_results)}" download="data.json" type="text/json">download</a> the data.`
@@ -744,15 +744,15 @@ function displaySearchResults(chart_options, lines, search_results) {
     window.history.pushState(null, '', chart_path);
   } else {
     // Allow embedding if all queries are ok
-    $('#embed-area p[name="text"]').empty();
+    $('#embedArea p[name="text"]').empty();
     window.history.pushState(null, '', '')
   }
-  $('#embed-area').show();
+  $('#embedArea').show();
 }
 
 function getRawQueries(count_var) {
   let queries = [];
-  $('#search-table > tbody > tr').each(function() {
+  $('#searchTable > tbody > tr').each(function() {
     if ($(this).attr('name')) {
       let where_str = $.trim($(this).find('input[name="where"]').val());
       var text;
@@ -855,21 +855,27 @@ $('#resetButton').click(function() {
 });
 
 const UI_SHADOW = '0 8px 20px 0 rgba(0, 0, 0, 0.8)';
-$('#plus-minus-hover').mouseenter(function() {
+$('#plusMinusHover').mouseenter(function() {
   $('.remove-row-btn, .add-row-btn').css('box-shadow', UI_SHADOW);
 });
-$('#plus-minus-hover').mouseleave(function() {
+$('#plusMinusHover').mouseleave(function() {
   $('.remove-row-btn, .add-row-btn').css('box-shadow', '');
 });
-$('#dropdown-editor-hover').mouseenter(function() {
+$('#dropdownEditorHover').mouseenter(function() {
   $('.toggle-query-builder-btn').css('box-shadow', UI_SHADOW);
 });
-$('#dropdown-editor-hover').mouseleave(function() {
+$('#dropdownEditorHover').mouseleave(function() {
   $('.toggle-query-builder-btn').css('box-shadow', '');
 });
-$('#chart-area-hover').mouseenter(function() {
+$('#chartAreaHover').mouseenter(function() {
   $('#chart').css('box-shadow', UI_SHADOW);
 });
-$('#chart-area-hover').mouseleave(function() {
+$('#chartAreaHover').mouseleave(function() {
   $('#chart').css('box-shadow', '');
+});
+$('#searchButtonHover').mouseenter(function() {
+  $('#searchButton').css('box-shadow', UI_SHADOW);
+});
+$('#searchButtonHover').mouseleave(function() {
+  $('#searchButton').css('box-shadow', '');
 });
