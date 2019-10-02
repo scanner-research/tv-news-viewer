@@ -11,7 +11,7 @@
   <h1>Getting Started</h1>
   <p>
     This page is intended as a getting started guide to using this tool to
-    explore the cable TV news dataset.
+    explore the cable TV news data set.
   </p>
   <hr>
 </div>
@@ -39,7 +39,7 @@
 
   <p>
     Advances in AI provide a new lens for annotating and analyzing large video
-    datasets such as nearly a decade of cable TV news. We use these new
+    data sets such as nearly a decade of cable TV news. We use these new
     models and techniques to automatically annotate the video data set with
     information such as the location of faces in the frame, the gender of each
     face, and the associated identity if the person is a "celebrity" or
@@ -49,11 +49,12 @@
     with AI annotations, to answer high-level questions about the news.
   </p>
 
-  <h3>How do I use the tool?</h3>
+  <h3>Basics: Searching with this tool</h3>
   <p>
-    This application allows you to count the screen time of various filters on
-    a decade of American cable TV news (CNN, FOX, and MSNBC). On the homepage,
-    at the top, you should see the query controls.
+    This application allows you to count the screen time of nearly
+    a decade of American cable TV news (CNN, FOX, and MSNBC) with various
+    metadata filters. On the homepage, at the top, you should see a search
+    row and controls.
 
     <a href="/" target="_blank">
       <img src="{{ url_for('static', filename='img/ui.png') }}" style="width: 100%;">
@@ -61,27 +62,29 @@
   </p>
 
   <p>
-    Each query begins with "<code>COUNT screen time WHERE</code>",
+    Each search query begins with "<code>COUNT screen time WHERE</code>",
     followed by a set of search filters. If no filters are given, then all of the
     video is counted. The search box can be edited directly or using the
     advanced editor (click the &#x1F4DD; button).
-    Press the "Search the news!" button to the screen time over time.
+    Press the "Search the news!" button to show the amount of screen time
+    over time.
   </p>
 
   <p>
-    For example, if you press search with no query added, a chart similar to
-    the following should appear, showing the total amount of video in the data set
-    across from 2010 onwards, aggregated by month. Notice that while the amount of
-    data is mostly constant across time, there are periods of time with less data
-    available.
+    For example, if you press search with no query added (the default),
+    a chart similar to the following should appear; this shows the total amount
+    of video in the data set from 2010 onwards, aggregated by month.
+    While the amount of data is mostly constant across time,
+    there are periods of time with more or less data available.
   </p>
   <iframe width="100%" height="300" src="//{{ host }}/embed?hideLegend=1&width=600&height=270&data=%7B%22options%22%3A%7B%22start_date%22%3A%222010-01-01%22%2C%22end_date%22%3A%222018-04-01%22%2C%22count%22%3A%22screen%20time%22%2C%22aggregate%22%3A%22month%22%7D%2C%22queries%22%3A%5B%7B%22color%22%3A%22%234E79A7%22%2C%22text%22%3A%22COUNT%20%5C%22screen%20time%5C%22%20WHERE%20%22%7D%5D%7D"></iframe>
 
   <p>
-    The previous chart includes data from all three channels (CNN, FOX and MSNBC)
-    in a single line. We can perform a comparison of the number of hours of
-    video by charting each channel separately. To do this, use the + button to
-    add two more rows and <code>channel=CNN</code>, <code>channel=FOX</code>,
+    The previous chart includes all of the data from all three channels
+    (CNN, FOX and MSNBC) in a single line. We can perform a comparison of
+    the number of hours of video by charting each channel separately.
+    To do this, use the + button to add two more rows and to write
+    <code>channel=CNN</code>, <code>channel=FOX</code>,
     and <code>channel=MSNBC</code> into the search boxes, one per row.
     Your controls should read like the following:
 
@@ -91,20 +94,36 @@
     </a>
   </p>
   <p>
-    Hitting the search button will now generate a chart that looks similar to this.
+    Hitting the search button will now generate a chart that looks similar to
+    this.
   </p>
   <iframe width="100%" height="300" src="//{{ host }}/embed?hideLegend=1&width=600&height=270&data=%7B%22options%22%3A%7B%22start_date%22%3A%222010-01-01%22%2C%22end_date%22%3A%222018-04-01%22%2C%22count%22%3A%22screen%20time%22%2C%22aggregate%22%3A%22month%22%7D%2C%22queries%22%3A%5B%7B%22color%22%3A%22%234E79A7%22%2C%22text%22%3A%22COUNT%20%5C%22screen%20time%5C%22%20WHERE%20channel%3DCNN%22%7D%2C%7B%22color%22%3A%22%23F28E2B%22%2C%22text%22%3A%22COUNT%20%5C%22screen%20time%5C%22%20WHERE%20channel%3DFOX%22%7D%2C%7B%22color%22%3A%22%23E15759%22%2C%22text%22%3A%22COUNT%20%5C%22screen%20time%5C%22%20WHERE%20channel%3DMSNBC%22%7D%5D%7D"></iframe>
 
   <p>
-    See the <a href="/detailed" target="_blank">detailed documentation</a> page for the
-    full list of search options.
+    Filtering on other basic metadata such as the show follows a similar
+    pattern. For a full list of options, read the
+    <a href="/detailed" target="_blank">detailed documentation</a> page.
   </p>
 
-  <h3>How do I make queries about people?</h3>
+  <h3>People in the news: Who is on screen?</h3>
   <p>
-    This tool supports queries about onscreen faces, their genders and
-    identities (for a subset of faces that have been identified). For example,
-    we can compute the total screen time of men and women in the data set.
+    People find themselves in the news for a variety of reasons. Anchors
+    and journalists present the news; commentators may be invited on to
+    espouse their opinions; or the person may be at the center of a story
+    unfolding. Just as varied as the people and reasons for appearing
+    are possible questions one might ask about these people.
+
+    <i>For instance, what is the gender balance of the people in the news?
+    Do these patterns hold when different topics are discussed,
+    on different shows, or at different times in the day?</i>
+  </p>
+
+  <p>
+    To answer these sorts of questions, this tool supports queries about
+    on screen faces, their genders and their identities, for a subset of faces
+    that have been identified.
+    For example, we can compute the total screen time of men and women in the
+    data set.
 
     <a target="_blank"
        href="//{{ host }}/?data=%7B%22options%22%3A%7B%22start_date%22%3A%222010-01-01%22%2C%22end_date%22%3A%222018-04-01%22%2C%22count%22%3A%22screen%20time%22%2C%22aggregate%22%3A%22month%22%7D%2C%22queries%22%3A%5B%7B%22color%22%3A%22%234E79A7%22%2C%22text%22%3A%22COUNT%20%5C%22screen%20time%5C%22%20WHERE%20onscreen.face1%3D%5C%22gender%3A%20male%5C%22%22%7D%2C%7B%22color%22%3A%22%23F28E2B%22%2C%22text%22%3A%22COUNT%20%5C%22screen%20time%5C%22%20WHERE%20onscreen.face1%3D%5C%22gender%3A%20female%5C%22%22%7D%5D%7D">
@@ -137,11 +156,24 @@
     or use the advanced editor.
   </p>
 
-  <h3>How do I use the transcripts?</h3>
   <p>
-    We can also search the transcripts for the intervals where words are being
-    said. For instance, the following finds all times when the phrase
-    <code>"UNITED NATIONS"</code> appears in the transcripts.
+    It is important to note that the results include instances where
+    a face is visible on screen for any reason. We currently do not
+    differentiate whether the face is the subject or background, or whether
+    the face is a live appearance, a video, or still image.
+  </p>
+
+  <h3>Searching for topics: Using the transcripts</h3>
+  <p>
+    Words and phrases in the transcripts can be indicative of the topic being
+    discussed. Likewise, careful choice of words and phrases can also reflect
+    biases in presentation and content.
+  </p>
+
+  <p>
+    This tool can search the transcripts for the intervals where
+    words are being said. For instance, the following finds all times when
+    the phrase <code>"UNITED NATIONS"</code> appears in the transcripts.
 
     <a target="_blank"
        href="//{{ host }}/?data=%7B%22options%22%3A%7B%22start_date%22%3A%222010-01-01%22%2C%22end_date%22%3A%222018-04-01%22%2C%22count%22%3A%22screen%20time%22%2C%22aggregate%22%3A%22month%22%7D%2C%22queries%22%3A%5B%7B%22color%22%3A%22%234E79A7%22%2C%22text%22%3A%22COUNT%20%5C%22screen%20time%5C%22%20WHERE%20transcript.text%3D%5C%22UNITED%20NATIONS%5C%22%22%7D%5D%7D">
@@ -151,9 +183,10 @@
   <iframe width="100%" height="300" src="//{{ host }}/embed?hideLegend=1&width=600&height=270&data=%7B%22options%22%3A%7B%22start_date%22%3A%222010-01-01%22%2C%22end_date%22%3A%222018-04-01%22%2C%22count%22%3A%22screen%20time%22%2C%22aggregate%22%3A%22month%22%7D%2C%22queries%22%3A%5B%7B%22color%22%3A%22%234E79A7%22%2C%22text%22%3A%22COUNT%20%5C%22screen%20time%5C%22%20WHERE%20transcript.text%3D%5C%22UNITED%20NATIONS%5C%22%22%7D%5D%7D"></iframe>
 
   <p>
-    Notice that this finds only the exact moments when words are said. If for
-    instance, we are interested in a window of 30 seconds around all times when
-    the <code>"UNITED NATIONS"</code> appears, then we need the following.
+    Notice that, by default, the tool finds only the exact moments when words
+    are said. If for instance, we are interested in a window of 30 seconds
+    around all times when the <code>"UNITED NATIONS"</code> appears, then
+    we need the following.
 
     <a target="_blank"
        href="//{{ host }}/?data=%7B%22options%22%3A%7B%22start_date%22%3A%222010-01-01%22%2C%22end_date%22%3A%222018-04-01%22%2C%22count%22%3A%22screen%20time%22%2C%22aggregate%22%3A%22month%22%7D%2C%22queries%22%3A%5B%7B%22color%22%3A%22%234E79A7%22%2C%22text%22%3A%22COUNT%20%5C%22screen%20time%5C%22%20WHERE%20transcript.text%3D%5C%22UNITED%20NATIONS%5C%22%20AND%20transcript.window%3D30%22%7D%5D%7D">
@@ -161,25 +194,42 @@
     </a>
   </p>
 
-  <h3>How do I compose new queries?</h3>
+  <h3>Putting it all together</h3>
   <p>
-    Using the advanced query editor or the query language, more complex queries
-    can be expressed with a combination of filters. For example, to find the screen
-    time of Donald Trump when the word <code>"WALL"</code> appears in the transcript, we can
+    So far, we have seen a number of simple queries. However, more complex
+    queries can be expressed with a combination of filters. A query that counts
+    the screen time of men, can be extended to count the screen time of
+    men on a single channel:
+
+    <span class="centered">
+      <code><b>COUNT</b> screen time <b>OF</b> onscreen.face1="gender: male" <b>AND</b> channel=CNN</code>
+    </span>
+
+    Likewise, we can combine a query on identities with text. For example,
+    to find the screen time of Donald Trump when the phrase
+    <code>"BORDER WALL"</code> appears in the transcript, we can
     write the following query.
 
     <span class="centered">
-      <code><b>COUNT</b> screen time <b>WHERE</b> onscreen.face1="person: donald trump" <b>AND</b> transcript.text="WALL"</code>
+      <code><b>COUNT</b> screen time <b>WHERE</b> onscreen.face1="person: donald trump" <b>AND</b> transcript.text="BORDER WALL"</code>
     </span>
 
-    Likewise, the tool can compute screen time where both Donald Trump and
-    Hillary Clinton are on screen.
+    Another refinement of the query is to find when Donald Trump is on screen
+    within 30 seconds of <code>"BORDER WALL"</code> being said.
+
+    <span class="centered">
+      <code><b>COUNT</b> screen time <b>WHERE</b> onscreen.face1="person: donald trump" <b>AND</b> transcript.text="BORDER WALL" <b>AND</b> transcript.window=30</code>
+    </span>
+
+    Similarly, the tool can compute screen time where two people (e.g., Donald Trump and
+    Hillary Clinton) are shown on screen together.
 
     <span class="centered">
       <code><b>COUNT</b> screen time <b>WHERE</b> onscreen.face1="person: donald trump" <b>AND</b> onscreen.face2="person: hillary clinton"</code>
     </span>
 
-    Please read the <a href="/detailed" target="_blank">detailed documentation</a> page
+    Many of these queries can also be constructed using the advanced query
+    editor. Please read the <a href="/detailed" target="_blank">detailed documentation</a> page
     to understand the query syntax, the available query options, and advanced features such
     as normalization.
   </p>
