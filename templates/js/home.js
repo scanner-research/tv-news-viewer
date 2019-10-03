@@ -1,3 +1,4 @@
+const DATA_VERSION_ID = {% if data_version is not none %}"{{ data_version }}"{% else %}null{% endif %};
 
 const QUERY_BUILDER_HTML = `<div class="query-builder">
   <table>
@@ -701,11 +702,19 @@ function getDataString(chart_options, lines) {
 }
 
 function getEmbedUrl(data) {
-  return `https://{{ host }}/embed?width=${EMBED_DIMS.width}&height=${EMBED_DIMS.height}&data=${data}`;
+  var prefix = 'https://{{ host }}/embed?';
+  if (DATA_VERSION_ID) {
+    prefix += 'dataVersion=' + encodeURIComponent(DATA_VERSION_ID) + '&';
+  }
+  return prefix + `width=${EMBED_DIMS.width}&height=${EMBED_DIMS.height}&data=${data}`;
 }
 
 function getChartPath(data) {
-  return `/?data=${data}`;
+  var prefix = '/?';
+  if (DATA_VERSION_ID) {
+    prefix += 'dataVersion=' + encodeURIComponent(DATA_VERSION_ID) + '&';
+  }
+  return prefix + 'data=' + data;
 }
 
 function getDownloadUrl(search_results) {
@@ -850,23 +859,34 @@ function search() {
   })).then(onDone).catch(onDone);
 }
 
-/* Load initial plot */
-let params = (new URL(document.location)).searchParams;
-if (params.get('data')) {
-  let data = JSON.parse(decodeURIComponent(params.get('data')));
-  try {
-    initChartOptions(data.options);
-    data.queries.forEach(query => addRow(query));
-    search();
-  } catch (e) {
-    alert('Invalid data in url. Unable to load.');
-    console.log('Unable to load:', e);
+function initialize() {
+  let params = (new URL(document.location)).searchParams;
+
+  if (params.get('dataVersion')) {
+    let version_id = decodeURIComponent(params.get('dataVersion'));
+    if (DATA_VERSION_ID != version_id) {
+      console.log(`data version mismatch ${DATA_VERSION_ID} != ${version_id}`);
+      alert(`Warning: the data version has changed from ${version_id} to ${DATA_VERSION_ID}. Remove "dataVersion=${encodeURIComponent(version_id)}" from the shared link/URL to disable this warning.`);
+    }
   }
-} else {
-  initChartOptions();
-  addRow();
-  search();
+
+  if (params.get('data')) {
+    let data = JSON.parse(decodeURIComponent(params.get('data')));
+    try {
+      initChartOptions(data.options);
+      data.queries.forEach(query => addRow(query));
+      search();
+    } catch (e) {
+      alert('Invalid data in url. Unable to load.');
+      console.log('Unable to load:', e);
+    }
+  } else {
+    initChartOptions();
+    addRow();
+    search();
+  }
 }
+
 $(".chosen-select").chosen({width: 'auto'});
 $('#countVar').change(setQueryBoxForMode);
 $('#searchButton').click(search);
@@ -916,3 +936,6 @@ $('#searchButtonHover').mouseenter(function() {
 $('#searchButtonHover').mouseleave(function() {
   $('#searchButton').css('box-shadow', '');
 });
+
+/* Load initial plot */
+initialize();

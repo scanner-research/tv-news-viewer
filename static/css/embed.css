@@ -23,3 +23,7 @@
 code {
   color: black;
 }
+#warning {
+  color: red;
+  display: none;
+}

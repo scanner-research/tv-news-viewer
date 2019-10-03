@@ -35,6 +35,7 @@ app = build_app(
     min_person_screen_time=options.get('min_person_screen_time', 600),
     default_aggregate_by=options.get('default_aggregate_by', 'month'),
     default_text_window=options.get('default_text_window', 0),
-    default_is_commercial=options.get('default_is_commercial', Ternary.false))
+    default_is_commercial=options.get('default_is_commercial', Ternary.false),
+    data_version=config.get('data_version'))
 del config
 del options

@@ -413,7 +413,8 @@ def build_app(
     min_person_screen_time: int,
     default_aggregate_by: str,
     default_text_window: int,
-    default_is_commercial: Ternary
+    default_is_commercial: Ternary,
+    data_version: Optional[str]
 ) -> Flask:
     server_start_time = time.time()
 
@@ -626,7 +627,8 @@ def build_app(
             v.date for v in video_data_context.video_dict.values()), max_date)
         resp = make_response(render_template(
             'js/home.js', parameters=SearchParameter, countables=Countable,
-            host=request.host, start_date=format_date(start_date),
+            host=request.host, data_version=data_version,
+            start_date=format_date(start_date),
             end_date=format_date(end_date),
             default_agg_by=default_aggregate_by,
             default_text_window=default_text_window
@@ -644,7 +646,8 @@ def build_app(
 
     @app.route('/static/js/embed.js')
     def get_embed_js() -> Response:
-        return render_template('js/embed.js', host=request.host)
+        return render_template('js/embed.js', host=request.host,
+                               data_version=data_version)
 
     def _get_document_token_count(
         video: Video, document: Documents.Document, is_commercial: Ternary

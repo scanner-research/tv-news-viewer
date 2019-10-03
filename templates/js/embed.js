@@ -1,3 +1,5 @@
+const DATA_VERSION_ID = {% if data_version is not none %}"{{ data_version }}"{% else %}null{% endif %};
+
 let params = (new URL(document.location)).searchParams;
 let hide_legend = params.get('hideLegend') == 1;
 let data_str = params.get('data');
@@ -7,6 +9,26 @@ let width = params.get('width');
 let height = params.get('height');
 
 function renderText(lines) {
+  if (params.get('dataVersion')) {
+    let version_id = decodeURIComponent(params.get('dataVersion'));
+    if (DATA_VERSION_ID != version_id) {
+      $('#warning').append(
+        $('<span />').html(`<b>Warning:</b> the requested data version has changed from <b>${version_id}</b> to <b>${DATA_VERSION_ID}</b>. The following chart may have changed.`)
+      ).show();
+    }
+  }
+
+  $('#options').append(
+    'Showing results from ',
+    $('<b />').text(
+      new Date(data.options.start_date).toLocaleDateString(undefined, {timeZone: 'UTC'})),
+    ' to ',
+    $('<b />').text(
+      new Date(data.options.end_date).toLocaleDateString(undefined, {timeZone: 'UTC'})),
+    ' aggregated by ',
+    $('<b />').text(data.options.aggregate)
+  );
+
   // TODO: XSS attack here
   lines.forEach(line => {
     $('#searchTable tbody').append(
@@ -22,16 +44,6 @@ function renderText(lines) {
         )
       ));
   });
-  $('#options').append(
-    'Showing results from ',
-    $('<b />').text(
-      new Date(data.options.start_date).toLocaleDateString(undefined, {timeZone: 'UTC'})),
-    ' to ',
-    $('<b />').text(
-      new Date(data.options.end_date).toLocaleDateString(undefined, {timeZone: 'UTC'})),
-    ' aggregated by ',
-    $('<b />').text(data.options.aggregate)
-  );
 }
 
 let lines = data.queries.map(raw_query => {

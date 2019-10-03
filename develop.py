@@ -46,7 +46,8 @@ def main(
         min_person_screen_time=600,
         default_aggregate_by='month',
         default_text_window=0,
-        default_is_commercial=Ternary.false)
+        default_is_commercial=Ternary.false,
+        data_version='dev')
     app.run(port=port, debug=True)
 
 
