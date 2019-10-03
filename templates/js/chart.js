@@ -1,6 +1,11 @@
 /* Embed a chart using vega-embed */
 
-const VGRID_INSTRUCTIONS = 'Click to expand videos and press <kbd>Space</kbd> to play/pause. <font color="#db5784">Red</font> bars indicate matched intervals (commercials are excluded by default).';
+const VGRID_INSTRUCTIONS = $('<ul />').append(
+  $('<li>').html('Click on the thumbnails to expand videos and press <kbd>Space</kbd> to play/pause.'),
+  $('<li>').html('<span style="color: grey; font-weight: bold;">Gray</span> bars indicate matched intervals (commercials are excluded by default).'),
+  $('<li>').html('The <span style="color: green; font-weight: bold;">green</span> bar is the playback position.')
+);
+
 var SERVE_FROM_INTERNET_ARCHIVE = true;
 
 {% if video_endpoint is not none %}

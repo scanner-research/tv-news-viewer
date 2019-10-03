@@ -57,7 +57,8 @@
     row and controls.
 
     <a href="/" target="_blank">
-      <img src="{{ url_for('static', filename='img/ui.png') }}" style="width: 100%;" title="Click to pop out an editor.">
+      <img src="{{ url_for('static', filename='img/ui.png') }}" style="width: 100%;"
+           title="This is a screenshot. Click to pop out an editor.">
     </a>
   </p>
 
@@ -68,6 +69,10 @@
     dropdown search editor (click the &#x1F50D; button).
     Press the "Search the news!" button to show the amount of screen time
     over time.
+  </p>
+
+  <p>
+    <button type="button" class="btn btn-primary try-it-btn" title="Opens a new page">Try it yourself!</button>
   </p>
 
   <p>
@@ -95,14 +100,16 @@
         <b>COUNT</b> screen time <b>WHERE</b> channel=MSNBC
       </code>
     </span>
-    <!-- Your controls should read like the following:
+  </p>
 
-    <a target="_blank"
-       href="//{{ host }}/?data=%7B%22options%22%3A%7B%22start_date%22%3A%222010-01-01%22%2C%22end_date%22%3A%222018-04-01%22%2C%22count%22%3A%22screen%20time%22%2C%22aggregate%22%3A%22month%22%7D%2C%22queries%22%3A%5B%7B%22color%22%3A%22%234E79A7%22%2C%22text%22%3A%22COUNT%20%5C%22screen%20time%5C%22%20WHERE%20channel%3DCNN%22%7D%2C%7B%22color%22%3A%22%23F28E2B%22%2C%22text%22%3A%22COUNT%20%5C%22screen%20time%5C%22%20WHERE%20channel%3DFOX%22%7D%2C%7B%22color%22%3A%22%23E15759%22%2C%22text%22%3A%22COUNT%20%5C%22screen%20time%5C%22%20WHERE%20channel%3DMSNBC%22%7D%5D%7D">
-      <img src="{{ url_for('static', filename='img/channels.png') }}" style="width: 100%;">
-    </a> -->
-    Hitting the search button will now generate a chart that looks similar to
-    this:
+  <p>
+    <button type="button" class="btn btn-primary try-it-btn" title="Opens a new page">Try it yourself!</button>
+  </p>
+
+  <p>
+    If you set the queries up correctly, hitting the search button will
+    now generate a chart that looks similar to this (hover over it for
+    a legend and tooltip):
   </p>
   <iframe width="100%" height="300" src="//{{ host }}/embed?hideLegend=1&width=600&height=270&data=%7B%22options%22%3A%7B%22start_date%22%3A%222010-01-01%22%2C%22end_date%22%3A%222018-04-01%22%2C%22count%22%3A%22screen%20time%22%2C%22aggregate%22%3A%22month%22%7D%2C%22queries%22%3A%5B%7B%22color%22%3A%22%234E79A7%22%2C%22text%22%3A%22COUNT%20%5C%22screen%20time%5C%22%20WHERE%20channel%3DCNN%22%7D%2C%7B%22color%22%3A%22%23F28E2B%22%2C%22text%22%3A%22COUNT%20%5C%22screen%20time%5C%22%20WHERE%20channel%3DFOX%22%7D%2C%7B%22color%22%3A%22%23E15759%22%2C%22text%22%3A%22COUNT%20%5C%22screen%20time%5C%22%20WHERE%20channel%3DMSNBC%22%7D%5D%7D"></iframe>
 
@@ -138,12 +145,15 @@
         <b>COUNT</b> screen time <b>WHERE</b> onscreen.face1="gender: female"
       </code>
     </span>
-    <!-- <a target="_blank"
-       href="//{{ host }}/?data=%7B%22options%22%3A%7B%22start_date%22%3A%222010-01-01%22%2C%22end_date%22%3A%222018-04-01%22%2C%22count%22%3A%22screen%20time%22%2C%22aggregate%22%3A%22month%22%7D%2C%22queries%22%3A%5B%7B%22color%22%3A%22%234E79A7%22%2C%22text%22%3A%22COUNT%20%5C%22screen%20time%5C%22%20WHERE%20onscreen.face1%3D%5C%22gender%3A%20male%5C%22%22%7D%2C%7B%22color%22%3A%22%23F28E2B%22%2C%22text%22%3A%22COUNT%20%5C%22screen%20time%5C%22%20WHERE%20onscreen.face1%3D%5C%22gender%3A%20female%5C%22%22%7D%5D%7D">
-      <img src="{{ url_for('static', filename='img/gender.png') }}" style="width: 100%;">
-    </a> -->
+  </p>
 
-    This plots the following chart. Notice that the screen time of both male
+  <p>
+    <button type="button" class="btn btn-primary try-it-btn" title="Opens a new page">Try it yourself!</button>
+  </p>
+
+  <p>
+    If you entered the queries above, you should see a chart similar to the
+    one below. Notice that the screen time of both male
     and female faces is trending upwards, but also that male screen time is
     roughly double that of female screen time.
   </p>
@@ -160,11 +170,17 @@
         <b>COUNT</b> screen time <b>WHERE</b> onscreen.face1="gender: donald trump"
       </code>
     </span>
+  </p>
 
-    <!-- <a target="_blank"
-       href="//{{ host }}/?data=%7B%22options%22%3A%7B%22start_date%22%3A%222010-01-01%22%2C%22end_date%22%3A%222018-04-01%22%2C%22count%22%3A%22screen%20time%22%2C%22aggregate%22%3A%22month%22%7D%2C%22queries%22%3A%5B%7B%22color%22%3A%22%234E79A7%22%2C%22text%22%3A%22COUNT%20%5C%22screen%20time%5C%22%20WHERE%20onscreen.face1%3D%5C%22person%3A%20hillary%20clinton%5C%22%22%7D%2C%7B%22color%22%3A%22%23F28E2B%22%2C%22text%22%3A%22COUNT%20%5C%22screen%20time%5C%22%20WHERE%20onscreen.face1%3D%5C%22person%3A%20donald%20trump%5C%22%22%7D%5D%7D">
-      <img src="{{ url_for('static', filename='img/trump-clinton.png') }}" style="width: 100%;">
-    </a> -->
+  <p>
+    <button type="button" class="btn btn-primary try-it-btn" title="Opens a new page">Try it yourself!</button>
+  </p>
+
+  <p>
+    If you entered the queries above, you should see a chart similar to the
+    one below. Notice that the screen time of both male
+    and female faces is trending upwards, but also that male screen time is
+    roughly double that of female screen time.
   </p>
   <iframe width="100%" height="300" src="//{{ host }}/embed?hideLegend=1&width=600&height=270&data=%7B%22options%22%3A%7B%22start_date%22%3A%222010-01-01%22%2C%22end_date%22%3A%222018-04-01%22%2C%22count%22%3A%22screen%20time%22%2C%22aggregate%22%3A%22month%22%7D%2C%22queries%22%3A%5B%7B%22color%22%3A%22%234E79A7%22%2C%22text%22%3A%22COUNT%20%5C%22screen%20time%5C%22%20WHERE%20onscreen.face1%3D%5C%22person%3A%20hillary%20clinton%5C%22%22%7D%2C%7B%22color%22%3A%22%23F28E2B%22%2C%22text%22%3A%22COUNT%20%5C%22screen%20time%5C%22%20WHERE%20onscreen.face1%3D%5C%22person%3A%20donald%20trump%5C%22%22%7D%5D%7D"></iframe>
 
@@ -198,12 +214,17 @@
         <b>COUNT</b> screen time <b>WHERE</b> transcript.text="UNITED NATIONS"
       </code>
     </span>
-
-    <!-- <a target="_blank"
-       href="//{{ host }}/?data=%7B%22options%22%3A%7B%22start_date%22%3A%222010-01-01%22%2C%22end_date%22%3A%222018-04-01%22%2C%22count%22%3A%22screen%20time%22%2C%22aggregate%22%3A%22month%22%7D%2C%22queries%22%3A%5B%7B%22color%22%3A%22%234E79A7%22%2C%22text%22%3A%22COUNT%20%5C%22screen%20time%5C%22%20WHERE%20transcript.text%3D%5C%22UNITED%20NATIONS%5C%22%22%7D%5D%7D">
-      <img src="{{ url_for('static', filename='img/text.png') }}" style="width: 100%;">
-    </a> -->
   </p>
+
+  <p>
+    <button type="button" class="btn btn-primary try-it-btn" title="Opens a new page">Try it yourself!</button>
+  </p>
+
+  <p>
+    If you entered the query above, you should see a chart similar to the
+    following:
+  </p>
+
   <iframe width="100%" height="300" src="//{{ host }}/embed?hideLegend=1&width=600&height=270&data=%7B%22options%22%3A%7B%22start_date%22%3A%222010-01-01%22%2C%22end_date%22%3A%222018-04-01%22%2C%22count%22%3A%22screen%20time%22%2C%22aggregate%22%3A%22month%22%7D%2C%22queries%22%3A%5B%7B%22color%22%3A%22%234E79A7%22%2C%22text%22%3A%22COUNT%20%5C%22screen%20time%5C%22%20WHERE%20transcript.text%3D%5C%22UNITED%20NATIONS%5C%22%22%7D%5D%7D"></iframe>
 
   <p>
@@ -217,11 +238,6 @@
         <b>COUNT</b> screen time <b>WHERE</b> transcript.text="UNITED NATIONS" <b>AND</b> transcript.window=30
       </code>
     </span>
-
-    <!-- <a target="_blank"
-       href="//{{ host }}/?data=%7B%22options%22%3A%7B%22start_date%22%3A%222010-01-01%22%2C%22end_date%22%3A%222018-04-01%22%2C%22count%22%3A%22screen%20time%22%2C%22aggregate%22%3A%22month%22%7D%2C%22queries%22%3A%5B%7B%22color%22%3A%22%234E79A7%22%2C%22text%22%3A%22COUNT%20%5C%22screen%20time%5C%22%20WHERE%20transcript.text%3D%5C%22UNITED%20NATIONS%5C%22%20AND%20transcript.window%3D30%22%7D%5D%7D">
-      <img src="{{ url_for('static', filename='img/text-window.png') }}" style="width: 100%;">
-    </a> -->
   </p>
 
   <h3>Putting it all together</h3>
@@ -264,4 +280,10 @@
     editor. Click <a href='/'>here</a> to return to the homepage.
   </p>
 </div>
+
+<script>
+  $('.try-it-btn').click(function() {
+    window.open('/?blank=1', '_blank');
+  });
+</script>
 {% endblock %}

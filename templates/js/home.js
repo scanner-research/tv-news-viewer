@@ -883,7 +883,9 @@ function initialize() {
   } else {
     initChartOptions();
     addRow();
-    search();
+    if (params.get('blank') != 1) {
+      search();
+    }
   }
 }
 

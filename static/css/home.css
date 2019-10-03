@@ -93,12 +93,14 @@
 }
 
 #vgridArea {
-  text-align: center;
   border-style: solid;
   border-width: medium;
   padding: 10px;
   margin-bottom: 20px;
   display: none;
+}
+#vgridArea h5 {
+  text-align: center;
 }
 #vgridArea hr {
   margin-top: 0.25rem;
