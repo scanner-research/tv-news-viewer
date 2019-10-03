@@ -120,10 +120,10 @@ def get_countable() -> Countable:
 
 
 def person_tags_to_ilistmaps(
-    video_data_context: VideoDataContext, person_tags: List[str]
+    video_data_context: VideoDataContext, person_tags: PersonTags
 ) -> List[MmapIntervalListMapping]:
     selected_names = None
-    for person_tag in person_tags:
+    for person_tag in person_tags.tags:
         people_with_tag = \
             video_data_context.all_person_tags.tag_to_names(person_tag)
         if not people_with_tag:
@@ -132,8 +132,10 @@ def person_tags_to_ilistmaps(
 
         if selected_names is None:
             selected_names = set(people_with_tag)
-        else:
+        elif person_tags.join_op == 'and':
             selected_names = selected_names.intersection(people_with_tag)
+        elif person_tags.join_op == 'or':
+            selected_names = selected_names.union(people_with_tag)
 
     ilistmaps = []
     for person_name in selected_names:

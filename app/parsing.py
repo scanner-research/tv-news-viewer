@@ -1,6 +1,6 @@
 import json
 from datetime import datetime
-from typing import Optional, Set, Tuple
+from typing import Optional, Set, Tuple, NamedTuple, List
 
 from .types import *
 from .error import InvalidUsage
@@ -69,8 +69,13 @@ def parse_day_of_week_set(s: Optional[str]) -> Optional[Set[int]]:
     return result if result else None
 
 
+class PersonTags(NamedTuple):
+    tags: List[str]
+    join_op: str
+
+
 def parse_face_filter_str(s: str) -> Tuple[Optional[str], Optional[str],
-                                           Optional[str], Optional[str]]:
+                                           Optional[str], Optional[PersonTags]]:
     gender = None
     role = None
     person = None
@@ -91,7 +96,15 @@ def parse_face_filter_str(s: str) -> Tuple[Optional[str], Optional[str],
                 elif k == 'person':
                     person = [x.strip() for x in v.split('|')]
                 elif k == 'tag':
-                    tag = [x.strip() for x in v.split('&')]
+                    contains_and = '&' in v
+                    contains_or = '|' in v
+                    if contains_and and contains_or:
+                        raise InvalidUsage('Mixing & and | in list of tags is not supported')
+                    elif contains_and:
+                        tag = PersonTags([x.strip() for x in v.split('&')], 'and')
+                    else:
+                        tag = PersonTags([x.strip() for x in v.split('|')], 'or')
+                    print(tag)
                 else:
                     raise InvalidUsage('Invalid face filter: {}'.format(k))
             except:

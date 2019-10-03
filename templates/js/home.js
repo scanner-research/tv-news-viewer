@@ -91,12 +91,19 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
                   data-placeholder="no names selected"
                   name="face1:person" data-width="fit">
           </select>
+          (combined by "or")
         </span>
         <span style="display: none;">
           <select multiple class="chosen-select chosen-basic-select"
                   data-placeholder="no tags selected"
                   name="face1:tag" data-width="fit">
           </select>
+          (combined by
+            <select class="chosen-select chosen-single-select"
+                    name="face1:tag-join-op">
+              <option selected value="&">and</option>
+              <option value="|">or</option>
+            </select>)
         </span>
       </td>
     </tr>
@@ -315,6 +322,7 @@ function getQueryBuilder() {
   builder.find('[name="face1:person-or-tag"]').val('person');
   builder.find('[name="face1:person"]').val(null).parent().show();
   builder.find('[name="face1:tag"]').val(null).parent().hide();
+  builder.find('[name="face1:tag-join-op"]').val('&');
   builder.find('[name="face1:all"]').prop('checked', false);
   builder.find('[name="{{ parameters.onscreen_numfaces }}"]').val('');
   builder.find('[name="normalize"]').prop('checked', false);
@@ -372,13 +380,15 @@ function loadQueryBuilder(search_table_row) {
         `select[name="face1:person-or-tag"]`
       );
       if (face_params.tag) {
-        tag_select.val(face_params.tag.split('&').map(x => $.trim(x)));
+        let join_op = face_params.tag.indexOf('&') >= 0 ? '&' : '|';
+        tag_select.val(face_params.tag.split(join_op).map(x => $.trim(x)));
         tag_select.parent().show();
         person_select.parent().hide();
         person_or_tag_select.val('tag');
+        query_builder.find(`select[name="face1:tag-join-op"]`).val(join_op);
       } else {
         if (face_params.person) {
-          person_select.val(face_params.person.split(' | ').map(x => $.trim(x)));
+          person_select.val(face_params.person.split('|').map(x => $.trim(x)));
         }
         person_select.parent().show();
         tag_select.parent().hide();
@@ -527,8 +537,9 @@ function updateQueryBox(search_table_row) {
       }
     } else if (face_person_or_tag == 'tag') {
       let face_tag = builder.find('select[name="face1:tag"]').val();
+      let face_tag_join_op = builder.find('select[name="face1:tag-join-op"]').val();
       if (face_tag && face_tag.length > 0) {
-        face_params.push('tag: ' + face_tag.join(' & '));
+        face_params.push('tag: ' + face_tag.join(` ${face_tag_join_op} `));
       }
     }
 
