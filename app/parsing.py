@@ -1,5 +1,6 @@
 import json
-from typing import Optional
+from datetime import datetime
+from typing import Optional, Set, Tuple
 
 from .types import *
 from .error import InvalidUsage
@@ -88,7 +89,7 @@ def parse_face_filter_str(s: str) -> Tuple[Optional[str], Optional[str],
                 elif k == 'role':
                     role = v
                 elif k == 'person':
-                    person = v
+                    person = [x.strip() for x in v.split('|')]
                 elif k == 'tag':
                     tag = [x.strip() for x in v.split('&')]
                 else:

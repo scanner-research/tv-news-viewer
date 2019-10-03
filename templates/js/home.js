@@ -87,7 +87,7 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
           <option value="tag">with tag</option>
         </select>
         <span>
-          <select multiple class="chosen-select chosen-single-select"
+          <select multiple class="chosen-select chosen-basic-select"
                   data-placeholder="no names selected"
                   name="face1:person" data-width="fit">
           </select>
@@ -378,7 +378,7 @@ function loadQueryBuilder(search_table_row) {
         person_or_tag_select.val('tag');
       } else {
         if (face_params.person) {
-          person_select.val(face_params.person);
+          person_select.val(face_params.person.split(' | ').map(x => $.trim(x)));
         }
         person_select.parent().show();
         tag_select.parent().hide();
@@ -523,7 +523,7 @@ function updateQueryBox(search_table_row) {
     if (face_person_or_tag == 'person') {
       let face_person = builder.find('select[name="face1:person"]').val();
       if (face_person && face_person.length > 0) {
-        face_params.push('person: ' + face_person[0]);
+        face_params.push('person: ' + face_person.join(' | '));
       }
     } else if (face_person_or_tag == 'tag') {
       let face_tag = builder.find('select[name="face1:tag"]').val();

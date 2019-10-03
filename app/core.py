@@ -149,24 +149,51 @@ def person_tags_to_ilistmaps(
     return ilistmaps
 
 
+def people_to_ilistmaps(
+    video_data_context: VideoDataContext, people: List[str]
+) -> List[MmapIntervalListMapping]:
+    ilistmaps = []
+    for person in people:
+        person_intervals = video_data_context.all_person_intervals.get(person, None)
+        if person_intervals is None:
+            raise InvalidUsage('{} is not a valid person'.format(person))
+        ilistmaps.append(person_intervals.ilistmap)
+    return ilistmaps
+
+
+def person_to_isetmap(
+    video_data_context: VideoDataContext, person: str,
+    gender: Optional[str], role: Optional[str]
+) -> MmapIntervalSetMapping:
+    person_intervals = video_data_context.all_person_intervals.get(person, None)
+    if person_intervals is None:
+        raise InvalidUsage('{} is not a valid person'.format(person))
+    if gender is None and role is None:
+        isetmap = person_intervals.isetmap
+    else:
+        payload_mask, payload_value = get_face_time_filter_mask(
+            gender, role)
+        isetmap = MmapIListToISetMapping(
+            person_intervals.ilistmap, payload_mask, payload_value,
+            3000, 100)
+    return isetmap
+
+
 def get_onscreen_face_isetmap(
     video_data_context: VideoDataContext, key: str
 ) -> Optional[MmapIntervalSetMapping]:
-    gender, role, person, person_tags = parse_face_filter_str(key)
-    if person is not None:
+    gender, role, people, person_tags = parse_face_filter_str(key)
+    if people is not None:
         if person_tags:
             raise InvalidUsage('Cannot use "tag:" with "person:"')
-        person_intervals = video_data_context.all_person_intervals.get(person, None)
-        if person_intervals is None:
-            raise InvalidUsage('{} is not a valid person'.format(key))
-        if gender is None and role is None:
-            isetmap = person_intervals.isetmap
+        if len(people) == 1:
+            isetmap = person_to_isetmap(video_data_context, people[0], gender, role)
         else:
+            ilistmaps = people_to_ilistmaps(video_data_context, people)
             payload_mask, payload_value = get_face_time_filter_mask(
                 gender, role)
-            isetmap = MmapIListToISetMapping(
-                person_intervals.ilistmap, payload_mask, payload_value,
-                3000, 100)
+            isetmap = MmapUnionIlistsToISetMapping(
+                ilistmaps, payload_mask, payload_value, 3000, 100)
     elif person_tags is not None:
         ilistmaps = person_tags_to_ilistmaps(video_data_context, person_tags)
         payload_mask, payload_value = get_face_time_filter_mask(gender, role)
