@@ -2,8 +2,9 @@
 
 const VGRID_INSTRUCTIONS = $('<ul />').append(
   $('<li>').html('Click on the thumbnails to expand videos and press <kbd>Space</kbd> to play/pause.'),
-  $('<li>').html('<span style="color: grey; font-weight: bold;">Gray</span> bars indicate matched intervals (commercials are excluded by default).'),
-  $('<li>').html('The <span style="color: green; font-weight: bold;">green</span> bar is the playback position.')
+  $('<li>').html('The playback position is indicated by the <mark style="background-color: #84db57;">green</mark> bar.'),
+  $('<li>').html('<mark style="background-color: grey">Gray</mark> bars indicate matched intervals (note that commercials are excluded by default).'),
+  $('<li>').html('Relavant words in the transcripts are highlighted in <mark style="background-color: yellow;">yellow</mark>.')
 );
 
 var SERVE_FROM_INTERNET_ARCHIVE = true;
