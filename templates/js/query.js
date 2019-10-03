@@ -216,33 +216,36 @@ function findShow(v) {
   return show;
 }
 
-function translateFilterDict(filters, no_err) {
-  let result = {};
-  Object.keys(filters).forEach(k => {
-    let v = filters[k];
+function translateArgumentDict(raw_filters, no_err) {
+  let filters = {};
+  var alias;
+  Object.keys(raw_filters).forEach(k => {
+    let v = $.trim(raw_filters[k]);
     let v_up = v.toUpperCase();
-    if (k == '{{ parameters.caption_text }}') {
-      result[k] = v;
+    if (k == '{{ parameters.alias }}') {
+      alias = v;
+    } else if (k == '{{ parameters.caption_text }}') {
+      filters[k] = v;
     } else if (
         k == '{{ parameters.face }}'
         || k.match(/^{{ parameters.onscreen_face }}\d+/)) {
-      result[k] = v;
+      filters[k] = v;
     } else if (k == '{{ parameters.onscreen_numfaces }}') {
-      result[k] = parseInt(v);
+      filters[k] = parseInt(v);
     } else if (k == '{{ parameters.caption_window }}') {
       let i = parseInt(v);
       if (Number.isNaN(i)) {
         if (!no_err) throw Error(`Invalid window value: ${i}`);
       } else {
-        result[k] = i;
+        filters[k] = i;
       }
     } else if (k == '{{ parameters.channel }}') {
       if (v_up == 'ALL') {
         // pass
       } else if (v_up == 'FOX') {
-        result[k] = 'FOXNEWS';
+        filters[k] = 'FOXNEWS';
       } else if (v_up == 'CNN' || v_up == 'MSNBC' ||  v_up == 'FOXNEWS') {
-        result[k] = v_up;
+        filters[k] = v_up;
       } else {
         if (!no_err) throw Error(`Unknown channel: ${v}`);
       }
@@ -252,17 +255,17 @@ function translateFilterDict(filters, no_err) {
       } else {
         var show = findShow(v);
         if (show) {
-          result[k] = show;
+          filters[k] = show;
         } else {
           if (!no_err) throw Error(`Unknown show: ${v}`);
         }
       }
     } else if (k == '{{ parameters.day_of_week }}'
                || k == '{{ parameters.hour }}') {
-      result[k] = v;
+      filters[k] = v;
     } else if (k == '{{ parameters.is_commercial }}') {
       try {
-        result[k] = parseTernary(v);
+        filters[k] = parseTernary(v);
       } catch (e) {
         if (!no_err) throw e;
       }
@@ -270,13 +273,14 @@ function translateFilterDict(filters, no_err) {
       if (!no_err) throw Error(`Unknown filter: ${k}`);
     }
   });
-  return result;
+  return {filters: filters, alias: alias};
 }
 
 class SearchResult {
 
-  constructor(query, results) {
+  constructor(query, alias, results) {
     this.query = query;
+    this.alias = alias;
     this.main = results.main;
     this.normalize = _.get(results, 'normalize', null);
     this.subtract = _.get(results, 'subtract', null);
@@ -303,7 +307,8 @@ class SearchableQuery {
 
     function getArgs(obj) {
       let count_var = obj.count_var ? obj.count_var : default_count_var;
-      var args = translateFilterDict(obj.where ? obj.where : {}, no_err);
+      let result = translateArgumentDict(obj.where ? obj.where : {}, no_err);
+      let args = result.filters;
       if (obj.count && obj.count.length > 0) {
         if (count_var == '{{ countables.mentions.value }}') {
           if (obj.count != QUERY_KEYWORDS.all) {
@@ -324,13 +329,14 @@ class SearchableQuery {
         }
       }
       args.count = count_var;
-      return args;
+      return {args: args, alias: result.alias};
     }
 
     this.default_count_var = default_count_var;
     this.query = s;
     this.normalize_args = null;
     this.subtract_args = null;
+    this.alias = null;
 
     var p;
     if (no_err) {
@@ -344,12 +350,24 @@ class SearchableQuery {
       p = QUERY_PARSER.parse(s);
     }
     if (p.normalize) {
-      this.normalize_args = getArgs(p.normalize);
+      let tmp = getArgs(p.normalize);
+      this.normalize_args = tmp.args;
+      this.alias = tmp.alias;
     }
     if (p.subtract) {
-      this.subtract_args = getArgs(p.subtract);
+      let tmp = getArgs(p.subtract);
+      this.subtract_args = tmp.args;
+      this.alias = tmp.alias;
     }
-    this.main_args = getArgs(p.main);
+
+    let tmp = getArgs(p.main);
+    this.main_args = tmp.args;
+    if (tmp.alias) {
+      if (this.alias) {
+        throw Error('Alias can only be specified once');
+      }
+      this.alias = tmp.alias;
+    }
   }
 
   clauses() {
@@ -397,8 +415,9 @@ class SearchableQuery {
     }
 
     let query_str = this.query;
+    let query_alias = this.alias;
     return Promise.all(promises).then(
-      () => onSuccess(new SearchResult(query_str, result))
+      () => onSuccess(new SearchResult(query_str, query_alias, result))
     ).catch(onError);
   }
 

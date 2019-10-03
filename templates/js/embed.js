@@ -9,13 +9,16 @@ let height = params.get('height');
 function renderText(lines) {
   // TODO: XSS attack here
   lines.forEach(line => {
-    $('#search-table tbody').append(
+    $('#searchTable tbody').append(
       $('<tr />').append(
-        $('<td />').append(`<div class="color-box" style="background-color: ${line.color};" />`),
+        $('<td />').append('<div class="color-box" />').css('background-color', line.color),
         $('<td />').append(
-          $('<code />').text(line.query.query),
-          $.trim(line.query.query).endsWith('WHERE') ?
-            $('<code />').css('color', 'gray').text('all the data') : null
+          line.query.alias ?
+            [$('<code />').text(line.query.alias), '&nbsp;',
+              $('<span />').html('&#9432;').attr('title', line.query.query)]
+            : [$('<code />').text(line.query.query),
+                $.trim(line.query.query).endsWith('WHERE') ?
+                  $('<code />').css('color', 'gray').text('all the data') : null]
         )
       ));
   });

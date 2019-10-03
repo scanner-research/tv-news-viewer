@@ -39,7 +39,9 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
         the screen has a face that:
       </td>
       <td type="value-col">
-        <span title='A face is on screen if it is visible anywhere in the frame. This definition includes faces in the foreground or background; live or still; and big or small. Note: this will update onscreen.face1="...". To filter on multiple faces, edit the search box manually.'>&#9432;</span>
+        <span title='A face is on screen if it is visible anywhere in the frame. This definition includes faces in the foreground or background; live or still; and big or small. Note: this will update onscreen.face1="...". To filter on multiple faces, edit the search box manually.'>
+          &#9432;
+        </span>
       </td>
     </tr>
     <tr>
@@ -144,15 +146,18 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
       <td type="value-col"><input type="text" class="form-control no-enter-submit"
           name="{{ parameters.day_of_week }}" value="" placeholder="mon-sun"></td>
     </tr>
-    <tr disabled="true">
-      <td type="key-col">is in commercial</td>
+    <tr>
+      <td type="key-col">is a commercial</td>
       <td type="value-col">
-        <select class="chosen-select" name="{{ parameters.is_commercial }}"
+        <select class="chosen-select chosen-single-select" name="{{ parameters.is_commercial }}"
                 data-width="fit">
           <option value="false" selected="selected">false</option>
-          <option value="true">true</option>
           <option value="both">both</option>
+          <option value="true">true</option>
         </select>
+        <span title='Commcerials are excluded by default ("false"). Use "both" to include commercials and "true" for only commercials.'>
+          &#9432;
+        </span>
       </td>
     </tr>
     <tr>
@@ -174,6 +179,19 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
           <option value="false" selected="selected">no</option>
           <option value="true">yes</option>
         </select>
+      </td>
+    </tr>
+    <tr><td colspan="2"><hr></td></tr>
+    <tr>
+      <td type="key-col">
+        Optionally, give this line a name
+        <span title="This name will be used in the tooltip and any embedded chart legends.">
+          &#9432;
+        </span>
+      </td>
+      <td type="value-col">
+        <input type="text" class="form-control no-enter-submit" style="width: 100%;"
+               name="{{ parameters.alias }}" value="">
       </td>
     </tr>
   </table>
@@ -326,6 +344,7 @@ function getQueryBuilder() {
   builder.find('[name="face1:all"]').prop('checked', false);
   builder.find('[name="{{ parameters.onscreen_numfaces }}"]').val('');
   builder.find('[name="normalize"]').prop('checked', false);
+  builder.find('[name="{{ parameters.alias }}"]').val('');
   builder.find('.toggle-face1').show();
   return builder;
 }
@@ -358,6 +377,7 @@ function loadQueryBuilder(search_table_row) {
   setIfDefined('{{ parameters.caption_text }}');
   setIfDefined('{{ parameters.caption_window }}');
   setIfDefined('{{ parameters.is_commercial }}');
+  setIfDefined('{{ parameters.alias }}');
 
   let onscreen_face = current_query.main_args['{{ parameters.onscreen_face }}1'];
   if (onscreen_face) {
@@ -491,6 +511,11 @@ function updateQueryBox(search_table_row) {
   let builder = search_table_row.find('.query-builder');
   let filters = [];
 
+  let alias = builder.find('[name="{{ parameters.alias }}"]').val();
+  if (alias) {
+    filters.push(`{{ parameters.alias }}=${alias}`);
+  }
+
   let channel = builder.find('select[name="{{ parameters.channel }}"]').val();
   if (channel) {
     filters.push(`{{ parameters.channel }}=${channel}`);
@@ -571,6 +596,7 @@ function updateQueryBox(search_table_row) {
   if (normalize) {
     new_where += ` ${QUERY_KEYWORDS.normalize}`;
   }
+
   let where_input = search_table_row.find('input[name="where"]');
   where_input.val(new_where);
   onWhereUpdate(where_input);

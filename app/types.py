@@ -49,6 +49,8 @@ class SearchParameter:
 
     video_ids = 'ids'
 
+    alias = 'seriesname'
+
 
 class Video(NamedTuple):
     id: int

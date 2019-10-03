@@ -1,6 +1,6 @@
 /* Embed a chart using vega-embed */
 
-const VGRID_INSTRUCTIONS = 'Click to expand videos and press <kbd>Space</kbd> to play/pause. <font color="#db5784">Red</font> bars indicate matched intervals (commercials are excluded).';
+const VGRID_INSTRUCTIONS = 'Click to expand videos and press <kbd>Space</kbd> to play/pause. <font color="#db5784">Red</font> bars indicate matched intervals (commercials are excluded by default).';
 var SERVE_FROM_INTERNET_ARCHIVE = true;
 
 {% if video_endpoint is not none %}
@@ -322,13 +322,13 @@ class Chart {
         Object.entries(this_chart.search_results).forEach(
           ([color, result]) => {
             tooltip.append(
-              $('<span />').append(
-                $(`<code />`).css('color', color).html(
-                  result.query
-                ),
-                $.trim(result.query).endsWith('WHERE') ?
-                  $('<code />').css('color', 'gray').text('all the data') : null
-              ));
+              result.alias ?
+                $('<span />').append(
+                  $(`<span />`).css('color', color).text(result.alias)) :
+                $('<span />').append(
+                  $(`<code />`).css('color', color).text(result.query),
+                  $.trim(result.query).endsWith('WHERE') ?
+                    $('<code />').css('color', 'gray').text('all the data') : null));
             tooltip.append(
               $('<span />').append($('<i />').attr('color', color)));
           })

@@ -1,7 +1,8 @@
 const PAGINATE = true;
 const VIDEOS_PER_PAGE = 5;
 var USE_ARCHIVE = true;
-var QUERY_PARAMS = null;
+var PARAMS = null;
+var QUERY = null;
 var CURR_PAGE = null;
 
 function queryKeywords(query) {
@@ -25,15 +26,17 @@ function queryKeywords(query) {
 }
 
 function displayVideos(page_i) {
-  let count_var = QUERY_PARAMS.count;
+  let params = PARAMS;
+  let query = QUERY;
+  let count_var = params.count;
 
-  var video_ids = QUERY_PARAMS.video_ids;
+  var video_ids = params.video_ids;
   if (video_ids.length >= VIDEOS_PER_PAGE) {
     let base_idx = page_i * VIDEOS_PER_PAGE;
     video_ids = video_ids.slice(base_idx, base_idx + VIDEOS_PER_PAGE);
   }
 
-  let n_pages = Math.ceil(QUERY_PARAMS.video_ids.length / VIDEOS_PER_PAGE);
+  let n_pages = Math.ceil(params.video_ids.length / VIDEOS_PER_PAGE);
 
   let page_buttons_div = $("#page-buttons");
   page_buttons_div.show();
@@ -49,9 +52,9 @@ function displayVideos(page_i) {
   } else {
     next_button.prop('disabled', true);
   }
-  page_buttons_div.find('button[name="info"]').text(`Page ${(page_i + 1).toLocaleString()} / ${n_pages.toLocaleString()}. (${QUERY_PARAMS.video_count.toLocaleString()} videos)`);
-
-  let query = new SearchableQuery(QUERY_PARAMS.query, QUERY_PARAMS.count, false);
+  page_buttons_div.find('button[name="info"]').text(
+    `Page ${(page_i + 1).toLocaleString()} / ${n_pages.toLocaleString()}. (${params.video_count.toLocaleString()} videos)`
+  );
   console.log('Executing query:', query);
 
   let caption_data = {};
@@ -111,14 +114,26 @@ function displayVideos(page_i) {
 
 function loadVideos(params, serve_from_internet_archive) {
   USE_ARCHIVE = serve_from_internet_archive;
-  QUERY_PARAMS = params;
+  PARAMS = params;
+  QUERY = new SearchableQuery(PARAMS.query, PARAMS.count, false);
   CURR_PAGE = 0;
-  $("#text-info").empty().append(
-    $(`<code style="color:${QUERY_PARAMS.color}"/>`).text(QUERY_PARAMS.query),
-    $.trim(QUERY_PARAMS.query).endsWith('WHERE') ?
-      $('<code />').css('color', 'gray').text('all the data') : null
-  );
-  if (QUERY_PARAMS.video_count > 0) {
+
+  if (QUERY.alias) {
+    $('#text-info').empty().append(
+      $('<span />').css(
+        'color', PARAMS.color
+      ).text(QUERY.alias),
+      '&nbsp;',
+      $('<span />').html('&#9432;').attr('title', QUERY.query)
+    );
+  } else {
+    $('#text-info').empty().append(
+      $('<code />').css('color', PARAMS.color).text(QUERY.query),
+      $.trim(QUERY.query).endsWith('WHERE') ?
+        $('<code />').css('color', 'gray').text('all the data') : null
+    );
+  }
+  if (PARAMS.video_count > 0) {
     $('body').css('min-height', '220px');
     displayVideos(CURR_PAGE);
   } else {
