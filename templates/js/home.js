@@ -147,7 +147,7 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
       <td type="value-col"><input type="text" class="form-control no-enter-submit"
           name="{{ parameters.day_of_week }}" value="" placeholder="mon-sun"></td>
     </tr>
-    <tr>
+    <tr disabled="true">
       <td type="key-col">is a commercial</td>
       <td type="value-col">
         <select class="chosen-select chosen-single-select" name="{{ parameters.is_commercial }}"
@@ -378,7 +378,6 @@ function loadQueryBuilder(search_table_row) {
   setIfDefined('{{ parameters.caption_text }}');
   setIfDefined('{{ parameters.caption_window }}');
   setIfDefined('{{ parameters.is_commercial }}');
-  setIfDefined('{{ parameters.alias }}');
 
   let onscreen_face = current_query.main_args['{{ parameters.onscreen_face }}1'];
   if (onscreen_face) {
@@ -423,6 +422,12 @@ function loadQueryBuilder(search_table_row) {
     query_builder.find(
       `[name="{{ parameters.onscreen_numfaces }}"]`
     ).val(onscreen_numfaces);
+  }
+
+  if (current_query.alias) {
+    query_builder.find(
+      '[name="{{ parameters.alias }}"]'
+    ).val(current_query.alias);
   }
 
   if (current_query.normalize_args) {
