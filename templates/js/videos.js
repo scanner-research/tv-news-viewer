@@ -5,24 +5,23 @@ var PARAMS = null;
 var QUERY = null;
 var CURR_PAGE = null;
 
-function queryKeywords(query) {
-  function word_filter(w) {
-    w = $.trim(w);
-    return w.match(/^[0-9a-z]+$/i);
+function getPhrasesToHighlight(query) {
+  function token_filter(w) {
+    return w.match(/^[0-9a-z\s]+$/i);
   }
-  let words = new Set();
+  let phrases = new Set();
   Object.entries(query.main_args).forEach(([k, v]) => {
     if (k == '{{ parameters.caption_text }}') {
-      v.split(/[\s&|\^]+/).filter(word_filter).forEach(w => { words.add(w.toLowerCase()); });
+      v.split(/[&|\^]+/).map($.trim).filter(token_filter).forEach(w => { phrases.add(w.toLowerCase()); });
     } else if (k != '{{ parameters.onscreen_numfaces }}' &&
                k.startsWith('{{ parameters.onscreen_face }}')) {
       let f = parseFaceFilterString(v.toLowerCase());
       if (f.person) {
-        f.person.split(' ').filter(word_filter).forEach(w => { words.add(w.toLowerCase()); });
+        f.person.split(' ').map($.trim).filter(token_filter).forEach(w => { phrases.add(w.toLowerCase()); });
       }
     }
   });
-  return words;
+  return phrases;
 }
 
 function displayVideos(page_i) {
@@ -97,9 +96,9 @@ function displayVideos(page_i) {
             vgrid_settings.use_frameserver = true;
             {% endif %}
           }
-          highlight_words = queryKeywords(query);
+          highlight_phrases = getPhrasesToHighlight(query);
           renderVGrid(json_data, caption_data, vgrid_settings,
-                      highlight_words, USE_ARCHIVE, `videos-${page_i}`);
+                      highlight_phrases, USE_ARCHIVE, `videos-${page_i}`);
         } catch (e) {
           alert('Failed to load videos.');
           throw e;

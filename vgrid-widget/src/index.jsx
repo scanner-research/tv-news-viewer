@@ -9,13 +9,45 @@ import '@wcrichto/vgrid/dist/vgrid.css';
 
 const HIGHLIGHT_STYLE = {backgroundColor: 'yellow'};
 
-function loadJsonData(json_data, caption_data, highlight_words) {
+
+function getHighlightIndexes(captions, highlight_phrases) {
+  let max_highlight_len = 1 + Math.max(
+    Array.from(highlight_phrases).map(p => p.split(' ').length)
+  );
+
+  let highlight_idxs = new Set();
+  for (var i = 0; i < captions.length; i++) {
+    var prefix = '';
+    for (var j = i; j < Math.min(captions.length, i + max_highlight_len); j++) {
+      prefix += $.trim(captions[j][2].toLowerCase());
+      if (highlight_phrases.has(prefix)) {
+        for (var k = i; k <= j; k++) {
+          highlight_idxs.add(k);
+        }
+      }
+      prefix += ' ';
+
+      // early termination
+      var matches_prefix = false;
+      highlight_phrases.forEach(p => {
+        matches_prefix |= p.startsWith(prefix);
+      });
+      if (!matches_prefix) break;
+    }
+  }
+  return highlight_idxs;
+}
+
+function flattenCaption(caption) {
+  let [start, end, text] = caption;
+  let bounds = new Bounds(start, end);
+  return text.split(' ').map(token => [start, end, token]);
+}
+
+
+function loadJsonData(json_data, caption_data, highlight_phrases) {
   let videos = [];
   let interval_blocks = [];
-
-  function shouldHighlight(text) {
-    return text.split(' ').some(t => highlight_words.has($.trim(t).toLowerCase()));
-  }
 
   json_data.forEach(video_json => {
     let video_id = video_json.metadata.id;
@@ -38,17 +70,18 @@ function loadJsonData(json_data, caption_data, highlight_words) {
       }
     );
 
-    let caption_intervals = _.get(caption_data, video_id, []).flatMap(
-      caption => {
+    let captions = _.get(caption_data, video_id, []).flatMap(flattenCaption);
+    let highlight_idxs = getHighlightIndexes(captions, highlight_phrases);
+    let caption_intervals = captions.map(
+      (caption, i) => {
         let [start, end, text] = caption;
         let bounds = new Bounds(start, end);
-        return text.split(' ').map(token =>
-          new Interval(
-            bounds, {
-              spatial_type: new SpatialType_Caption(token, shouldHighlight(token) ? HIGHLIGHT_STYLE : null),
-              metadata: {}
-            }
-          )
+        return new Interval(
+          bounds, {
+            spatial_type: new SpatialType_Caption(
+              text, highlight_idxs.has(i) ? HIGHLIGHT_STYLE : null),
+            metadata: {}
+          }
         );
       }
     );
@@ -68,7 +101,8 @@ function loadJsonData(json_data, caption_data, highlight_words) {
           }))
       }, {
         name: '_captions',
-        interval_set: new IntervalSet(caption_intervals.length > 0 ? caption_intervals : [empty_interval])
+        interval_set: new IntervalSet(
+          caption_intervals.length > 0 ? caption_intervals : [empty_interval])
       }]
     });
   });
@@ -101,13 +135,9 @@ const INTERNET_ARCHIVE_MAX_CLIP_LEN = 180;
 const INTERNET_ARCHIVE_PAD_START = 30;
 
 
-function loadJsonDataForInternetArchive(json_data, caption_data, highlight_words) {
+function loadJsonDataForInternetArchive(json_data, caption_data, highlight_phrases) {
   let videos = [];
   let interval_blocks = [];
-
-  function shouldHighlight(text) {
-    return text.split(' ').some(t => highlight_words.has($.trim(t).toLowerCase()));
-  }
 
   json_data.forEach(video_json => {
     let video_id = video_json.metadata.id;
@@ -149,19 +179,20 @@ function loadJsonDataForInternetArchive(json_data, caption_data, highlight_words
       }
     );
 
-    let caption_intervals = _.get(caption_data, video_id, []).filter(
+    let captions = _.get(caption_data, video_id, []).filter(
       filterIntervals
-    ).flatMap(
-      caption => {
+    ).flatMap(flattenCaption);
+    let highlight_idxs = getHighlightIndexes(captions, highlight_phrases);
+    let caption_intervals = captions.map(
+      (caption, i) => {
         let [start, end, text] = caption;
         let bounds = makeBounds(start, end);
-        return text.split(' ').map(token =>
-          new Interval(
-            bounds, {
-              spatial_type: new SpatialType_Caption(token, shouldHighlight(token) ? HIGHLIGHT_STYLE : null),
-              metadata: {}
-            }
-          )
+        return new Interval(
+          bounds, {
+            spatial_type: new SpatialType_Caption(
+              text, highlight_idxs.has(i) ? HIGHLIGHT_STYLE : null),
+            metadata: {}
+          }
         );
       }
     );
@@ -183,7 +214,8 @@ function loadJsonDataForInternetArchive(json_data, caption_data, highlight_words
           }))
       }, {
         name: '_captions',
-        interval_set: new IntervalSet(caption_intervals.length > 0 ? caption_intervals : [empty_interval])
+        interval_set: new IntervalSet(
+          caption_intervals.length > 0 ? caption_intervals : [empty_interval])
       }]
     });
   });
