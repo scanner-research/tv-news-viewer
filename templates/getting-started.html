@@ -137,7 +137,12 @@
     on screen faces, their genders and their identities, for a subset of faces
     that have been identified.
     For example, we can compute the total screen time of men and women in the
-    data set.
+    data set. This can be done using the <code>onscreen.face1</code>
+    filter predicate. In this case, we want to filter on gender, so the filters
+    will be <code>onscreen.face1="gender: male"</code> and
+    <code>onscreen.face1="gender: female"</code> for frames that contain a face
+    with a man and woman, respectively. Both of these queries can also be me
+    made by selecting the gender option in the dropdown search editor.
 
     <span class="centered">
       <code>
@@ -162,7 +167,11 @@
   <p>
     We can also make queries about people who have been identified in the videos.
     For example, if we were to compare the screen time of Donald Trump with
-    that of Hillary Clinton.
+    that of Hillary Clinton. This will also require use of the
+    <code>onscreen.face1</code> filter. However, since we are now interested
+    in frames that contain a person, we use
+    <code>onscreen.face1="person: Donald Trump"</code>
+    and <code>onscreen.face1="person: Hillary Clinton"</code>, respectively.
 
     <span class="centered">
       <code>
@@ -206,7 +215,8 @@
 
   <p>
     This tool can search the transcripts for the intervals where
-    words are being said. For instance, the following finds all times when
+    words are being said. For instance,
+    <code>transcript.text="UNITED NATIONS"</code> finds all times when
     the phrase <code>"UNITED NATIONS"</code> appears in the transcripts.
 
     <span class="centered">
@@ -240,6 +250,12 @@
     </span>
   </p>
 
+  <p>
+    Multiple phrases can be specifed using "|" as a separator. For
+    example, <code>transcript.text="UNITED NATIONS | UN | U.N."</code>.
+    This can be useful for defining a topic query.
+  </p>
+
   <h3>Putting it all together</h3>
   <p>
     So far, we have seen a number of simple queries. However, more complex
@@ -257,21 +273,24 @@
     write the following query.
 
     <span class="centered">
-      <code><b>COUNT</b> screen time <b>WHERE</b> onscreen.face1="person: donald trump" <b>AND</b> transcript.text="BORDER WALL"</code>
+      <code><b>COUNT</b> screen time <b>WHERE</b> onscreen.face1="person: donald trump"
+            <b>AND</b> transcript.text="BORDER WALL"</code>
     </span>
 
     A further refinement of the query is to find when Donald Trump is on screen
     within 30 seconds of <code>"BORDER WALL"</code> being said.
 
     <span class="centered">
-      <code><b>COUNT</b> screen time <b>WHERE</b> onscreen.face1="person: donald trump" <b>AND</b> transcript.text="BORDER WALL" <b>AND</b> transcript.window=30</code>
+      <code><b>COUNT</b> screen time <b>WHERE</b> onscreen.face1="person: donald trump"
+            <b>AND</b> transcript.text="BORDER WALL" <b>AND</b> transcript.window=30</code>
     </span>
 
     Similarly, the tool can compute screen time where two people (e.g., Donald Trump and
     Hillary Clinton) are shown on screen together.
 
     <span class="centered">
-      <code><b>COUNT</b> screen time <b>WHERE</b> onscreen.face1="person: donald trump" <b>AND</b> onscreen.face2="person: hillary clinton"</code>
+      <code><b>COUNT</b> screen time <b>WHERE</b> onscreen.face1="person: donald trump"
+            <b>AND</b> onscreen.face2="person: hillary clinton"</code>
     </span>
 
     Please read the <a href="/detailed" target="_blank">detailed documentation</a> page
