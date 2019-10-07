@@ -7,13 +7,9 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.10.19/js/dataTables.bootstrap4.min.js" integrity="sha256-hJ44ymhBmRPJKIaKRf3DSX5uiFEZ9xB/qx8cNbJvIMU=" crossorigin="anonymous"></script>
 
 <style>
-.person-list {
+.longDataValue {
   display: none;
-}
-.person-entry {
-  float: left;
   padding-left: 10px;
-  padding-right: 10px;
 }
 </style>
 {% endblock %}
@@ -50,9 +46,25 @@
   </table>
 
   <script>
+    function toggleDataVis(e) {
+      $(e).parent().find('.longDataValue').toggle();
+    }
+
     $(document).ready(function() {
       $('.table').DataTable({
-        pageLength: 25, columns: [{width: '20%'}, {width: '10%'}, null],
+        pageLength: 25, columns: [
+          {width: '20%'}, {width: '10%'}, {
+            render: function(x) {
+              if (x.length > 250) {
+                var html = $('<a href="javascript:void(0);" onclick="toggleDataVis(this);"/>').text('show/hide').prop('outerHTML');
+                html += $('<span class="longDataValue" />').text(x).prop('outerHTML');
+                return html;
+              } else {
+                return x;
+              }
+            }
+          }
+        ],
         ajax: '/data/person-tags.json'
       });
     });
