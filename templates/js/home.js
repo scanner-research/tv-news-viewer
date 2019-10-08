@@ -892,31 +892,30 @@ function initialize() {
       search();
     }
   }
+
+  $(".chosen-select").chosen({width: 'auto'});
+  $('#countVar').change(setQueryBoxForMode);
+  $('#searchButton').click(search);
+  $('#resetButton').click(function() {
+    if (window.confirm('Warning! This will clear all of your current queries.')) {
+      $('tr[name="query"]').each(function() {
+        if ($(this).index() > 0) {
+          removeRow($(this));
+        } else {
+          $(this).find('input[name="countable"]').val('');
+          $(this).find('input[name="where"]').val('');
+        }
+      });
+
+      // Reset to defaults
+      $('#aggregateBy').val('{{ default_agg_by }}').trigger("chosen:updated");
+      $('#startDate').val(toDatepickerStr('{{ start_date }}'));
+      $('#endDate').val(toDatepickerStr('{{ end_date }}'));
+      window.history.pushState({}, document.title, '/');
+      clearChart();
+    }
+  });
 }
-
-$(".chosen-select").chosen({width: 'auto'});
-$('#countVar').change(setQueryBoxForMode);
-$('#searchButton').click(search);
-
-$('#resetButton').click(function() {
-  if (window.confirm('Warning! This will clear all of your current queries.')) {
-    $('tr[name="query"]').each(function() {
-      if ($(this).index() > 0) {
-        removeRow($(this));
-      } else {
-        $(this).find('input[name="countable"]').val('');
-        $(this).find('input[name="where"]').val('');
-      }
-    });
-
-    // Reset to defaults
-    $('#aggregateBy').val('{{ default_agg_by }}').trigger("chosen:updated");
-    $('#startDate').val(toDatepickerStr('{{ start_date }}'));
-    $('#endDate').val(toDatepickerStr('{{ end_date }}'));
-    window.history.pushState({}, document.title, '/');
-    clearChart();
-  }
-});
 
 const UI_SHADOW = '0 8px 20px 0 rgba(0, 0, 0, 0.8)';
 $('#plusMinusHover').mouseenter(function() {
