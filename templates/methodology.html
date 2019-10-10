@@ -39,10 +39,17 @@
   <p>
     To detect faces in the video, we use the
     <a target="_blank" href="https://github.com/davidsandberg/facenet">FaceNet</a>
-    face detector on one frame for every 3 seconds of video.
-    We also compute FaceNet embedding vectors, and we use these to train a
-    k-Nearest Neighbors classifier for gender, which achieves 97% accuracy on
-    independently sampled hold-out data.
+    face detector on one frame for every 3 seconds of video. Note that the
+    model is a face detector and not a general person detector.
+    For example, the model will may fail to detect faces that are turned
+    away from the camera, out of focus, or extremely small in the frame.
+  </p>
+
+  <p>
+    With the faces that are detected, compute FaceNet embedding vectors.
+    These embeddings are used as features to train a k-Nearest Neighbors
+    classifier for gender, which achieves 97% accuracy on independently
+    sampled hold-out data.
   </p>
 
   <!-- <p>

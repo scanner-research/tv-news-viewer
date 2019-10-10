@@ -57,13 +57,16 @@ function displayVideos(page_i) {
   console.log('Executing query:', query);
 
   let caption_data = {};
+  let face_data = {}
   Promise.all(
     video_ids.map(i =>
       $.get(`/captions/${i}`).then(
         resp => caption_data[i] = resp
-      ).catch(
-        e => `Failed to get captions: ${i}`
-      ))
+      ).catch(e => `Failed to get captions: ${i}`)),
+    video_ids.map(i =>
+      $.get(`/static/faces/${i}.json`).then(
+        resp => face_data[i] = resp
+      ).catch(e => `Failed to get faces: ${i}`))
   ).then(() => {
     query.searchInVideos(
       video_ids,
@@ -76,7 +79,7 @@ function displayVideos(page_i) {
             show_captions: false,
             show_metadata: false,
             paginate: false,
-            colors: ['gray', 'purple'],
+            colors: ['gray', '#AED6F1', '#F5B7B1'],
             // FIXME: vgrid not using these constants properly
             vblock_constants: {
               timeline_height: 50,
@@ -97,7 +100,7 @@ function displayVideos(page_i) {
             {% endif %}
           }
           highlight_phrases = getPhrasesToHighlight(query);
-          renderVGrid(json_data, caption_data, vgrid_settings,
+          renderVGrid(json_data, caption_data, face_data, vgrid_settings,
                       highlight_phrases, USE_ARCHIVE, `videos-${page_i}`);
         } catch (e) {
           alert('Failed to load videos.');

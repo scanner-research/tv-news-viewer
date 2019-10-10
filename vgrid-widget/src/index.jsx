@@ -1,14 +1,13 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {
-  VGrid, Database, Table, Bounds, Interval, IntervalSet,
-  SpatialType_Temporal, SpatialType_Caption, Metadata_Generic
+  VGrid, Database, Table, Bounds, BoundingBox, Interval, IntervalSet,
+  SpatialType_Temporal, SpatialType_Caption, SpatialType_Bbox, Metadata_Bbox
 } from '@wcrichto/vgrid';
 
 import '@wcrichto/vgrid/dist/vgrid.css';
 
 const HIGHLIGHT_STYLE = {backgroundColor: 'yellow'};
-
 
 function getHighlightIndexes(captions, highlight_phrases) {
   let max_highlight_len = 1 + Math.max(
@@ -44,8 +43,7 @@ function flattenCaption(caption) {
   return text.split(' ').map(token => [start, end, token]);
 }
 
-
-function loadJsonData(json_data, caption_data, highlight_phrases) {
+function loadJsonData(json_data, caption_data, face_data, highlight_phrases) {
   let videos = [];
   let interval_blocks = [];
 
@@ -86,6 +84,23 @@ function loadJsonData(json_data, caption_data, highlight_phrases) {
       }
     );
 
+    let video_face_data = _.get(face_data, video_id, {ids: [], faces: []});
+    let faces = video_face_data.faces;
+    let face_id_to_name = video_face_data.ids.reduce((acc, x) => {
+      acc[x[1]] = x[0];
+      return acc;
+    }, {});
+    let makeFaceInterval = function(face) {
+      let [x1, y1, x2, y2] = face.b;
+      return new Interval(
+        new Bounds(face.t0, face.t1, new BoundingBox(x1, x2, y1, y2)),
+        {
+          spatial_type: new SpatialType_Bbox(),
+          metadata: face.i ? {name: new Metadata_Bbox(face_id_to_name[face.i])}: {}
+        }
+      );
+    };
+
     interval_blocks.push({
       video_id: video_id,
       title: video_name,
@@ -100,6 +115,14 @@ function loadJsonData(json_data, caption_data, highlight_phrases) {
             );
           }))
       }, {
+        name: '_male_faces',
+        interval_set: new IntervalSet(
+          faces.filter(f => f.g == 'm').map(makeFaceInterval))
+      }, {
+        name: '_female_faces',
+        interval_set: new IntervalSet(
+          faces.filter(f => f.g == 'f').map(makeFaceInterval))
+      }, {
         name: '_captions',
         interval_set: new IntervalSet(
           caption_intervals.length > 0 ? caption_intervals : [empty_interval])
@@ -111,11 +134,9 @@ function loadJsonData(json_data, caption_data, highlight_phrases) {
   return [database, interval_blocks];
 }
 
-
 function randomChoice(arr) {
   return arr[Math.floor(Math.random() * arr.length)];
 }
-
 
 function format_time(s) {
   let h = Math.floor(s / 3600);
@@ -130,12 +151,11 @@ function format_time(s) {
   return ret;
 }
 
-
 const INTERNET_ARCHIVE_MAX_CLIP_LEN = 180;
 const INTERNET_ARCHIVE_PAD_START = 30;
 
-
-function loadJsonDataForInternetArchive(json_data, caption_data, highlight_phrases) {
+function loadJsonDataForInternetArchive(json_data, caption_data, face_data,
+                                        highlight_phrases) {
   let videos = [];
   let interval_blocks = [];
 
@@ -166,10 +186,11 @@ function loadJsonDataForInternetArchive(json_data, caption_data, highlight_phras
       return Math.min(block_end, end) - Math.max(block_start, start) >= 0;
     };
 
-    let makeBounds = function(start, end) {
+    let makeBounds = function(start, end, bbox) {
       return new Bounds(
         Math.min(Math.max(start - block_start, 0), block_length),
-        Math.min(Math.max(end - block_start, 0), block_length));
+        Math.min(Math.max(end - block_start, 0), block_length),
+        bbox);
     };
 
     let empty_interval = new Interval(
@@ -197,6 +218,28 @@ function loadJsonDataForInternetArchive(json_data, caption_data, highlight_phras
       }
     );
 
+    let video_face_data = _.get(face_data, video_id, {ids: [], faces: []});
+    let faces = video_face_data.faces.filter(face => {
+      let start = face.t0;
+      let end = face.t1;
+      return Math.min(block_end, end) - Math.max(block_start, start) >= 0;
+    });
+    let face_id_to_name = video_face_data.ids.reduce((acc, x) => {
+      acc[x[1]] = x[0];
+      return acc;
+    }, {});
+
+    let makeFaceInterval = function(face) {
+      let [x1, y1, x2, y2] = face.b;
+      return new Interval(
+        makeBounds(face.t0, face.t1, new BoundingBox(x1, x2, y1, y2)),
+        {
+          spatial_type: new SpatialType_Bbox(),
+          metadata: face.i ? {name: new Metadata_Bbox(face_id_to_name[face.i])}: {}
+        }
+      );
+    };
+
     interval_blocks.push({
       video_id: video_id,
       title: `${video_name} (from ${format_time(block_start)} to ${format_time(block_end)})`,
@@ -213,6 +256,14 @@ function loadJsonDataForInternetArchive(json_data, caption_data, highlight_phras
             );
           }))
       }, {
+        name: '_male_faces',
+        interval_set: new IntervalSet(
+          faces.filter(f => f.g == 'm').map(makeFaceInterval))
+      }, {
+        name: '_female_faces',
+        interval_set: new IntervalSet(
+          faces.filter(f => f.g == 'f').map(makeFaceInterval))
+      }, {
         name: '_captions',
         interval_set: new IntervalSet(
           caption_intervals.length > 0 ? caption_intervals : [empty_interval])
@@ -224,12 +275,11 @@ function loadJsonDataForInternetArchive(json_data, caption_data, highlight_phras
   return [database, interval_blocks];
 }
 
-
-function renderVGrid(json_data, caption_data, settings, highlight_words,
+function renderVGrid(json_data, caption_data, face_data, settings, highlight_words,
                      serve_from_internet_archive, container) {
   let [database, interval_blocks] = serve_from_internet_archive ?
-    loadJsonDataForInternetArchive(json_data, caption_data, highlight_words) :
-    loadJsonData(json_data, caption_data, highlight_words);
+    loadJsonDataForInternetArchive(json_data, caption_data, face_data, highlight_words) :
+    loadJsonData(json_data, caption_data, face_data, highlight_words);
   ReactDOM.render(
     <VGrid interval_blocks={interval_blocks} database={database}
            settings={settings} />,

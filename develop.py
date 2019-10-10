@@ -42,7 +42,7 @@ def main(
         ARCHIVE_VIDEO_ENDPOINT,
         [LoginCredentials('admin', sha256('password'))],
         min_date=datetime(2010, 1, 1),
-        max_date=datetime(2018, 4, 1),
+        max_date=datetime(2019, 8, 1),
         min_person_screen_time=600,
         default_aggregate_by='month',
         default_text_window=0,
