@@ -79,7 +79,7 @@ function displayVideos(page_i) {
             show_captions: false,
             show_metadata: false,
             paginate: false,
-            colors: ['gray', '#AED6F1', '#F5B7B1'],
+            colors: ['gray', DEFAULT_MALE_COLOR, DEFAULT_FEMALE_COLOR],
             // FIXME: vgrid not using these constants properly
             vblock_constants: {
               timeline_height: 50,

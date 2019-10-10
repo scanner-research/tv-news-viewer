@@ -4,7 +4,14 @@ const VGRID_INSTRUCTIONS = $('<ul />').append(
   $('<li>').html('Click on the thumbnails to expand videos and press <kbd>Space</kbd> to play/pause.'),
   $('<li>').html('The playback position is indicated by the <mark style="background-color: #84db57;">green</mark> bar.'),
   $('<li>').html('<mark style="background-color: grey">Gray</mark> bars indicate matched intervals (note that commercials are excluded by default).'),
-  $('<li>').html('Relavant words in the transcripts are highlighted in <mark style="background-color: yellow;">yellow</mark>.')
+  $('<li>').html('Relavant words in the transcripts are highlighted in <mark style="background-color: yellow;">yellow</mark>.'),
+  $('<li>').html(
+    `Detected faces are shown for
+    <mark style="background-color: ${DEFAULT_MALE_COLOR};">men</mark> and
+    <mark style="background-color: ${DEFAULT_FEMALE_COLOR};">women</mark>.
+    Expand the video thumbnail to show labeled identities. <br>
+    Note: the frames were sampled every 3 seconds so the results may not be
+    accurate on all frames.`)
 );
 
 var SERVE_FROM_INTERNET_ARCHIVE = true;
