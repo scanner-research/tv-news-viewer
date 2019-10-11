@@ -19,7 +19,11 @@ MIN_PERSON_ATTRIBUTE_LEN = 3
 
 
 def get_video_name(s: str) -> str:
-    return os.path.splitext(Path(s).name)[0]
+    s = Path(s).name
+    if s.endswith('.word.srt'):
+        return s[:-len('.word.srt')]
+    else:
+        return os.path.splitext(s)[0]
 
 
 class VideoDataContext(NamedTuple):
