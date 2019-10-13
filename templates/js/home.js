@@ -1,5 +1,9 @@
 const DATA_VERSION_ID = {% if data_version is not none %}"{{ data_version }}"{% else %}null{% endif %};
 
+const DEFAULT_START_DATE = '{{ start_date }}';
+const DEFAULT_END_DATE = '{{ end_date }}';
+const DEFAULT_AGGREGATE_BY = '{{ default_agg_by }}';
+
 const QUERY_BUILDER_HTML = `<div class="query-builder">
   <table>
     <tr>
@@ -199,8 +203,14 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
 </div>`;
 
 function fromDatepickerStr(s) {
-  let tokens = s.split('/');
-  return `${tokens[2].padStart(2, '0')}-${tokens[0].padStart(2, '0')}-${tokens[1].padStart(2, '0')}`;
+  let d = new Date(Date.parse(s)).toISOString().substring(0, 10);
+  if (d > DEFAULT_END_DATE) {
+    throw Error(`Date is out of range: ${d} > ${DEFAULT_END_DATE}`);
+  }
+  if (d < DEFAULT_START_DATE) {
+    throw Error(`Date is out of range: ${d} > ${DEFAULT_START_DATE}`);
+  }
+  return d;
 }
 
 function toDatepickerStr(s) {
@@ -223,9 +233,9 @@ function getChartOptions() {
 }
 
 function initChartOptions(chart_options) {
-  var start_date = '{{ start_date }}';
-  var end_date = '{{ end_date }}';
-  var aggregate_by = '{{ default_agg_by }}';
+  var start_date = DEFAULT_START_DATE;
+  var end_date = DEFAULT_END_DATE;
+  var aggregate_by = DEFAULT_AGGREGATE_BY;
   if (chart_options) {
     start_date = chart_options.start_date;
     end_date = chart_options.end_date;
@@ -236,15 +246,15 @@ function initChartOptions(chart_options) {
   $('#startDate').datepicker({
     format: 'mm/dd/yyyy',
     forceParse: false,
-    startDate: toDatepickerStr(start_date),
-    endDate: toDatepickerStr(end_date)
+    startDate: toDatepickerStr(DEFAULT_START_DATE),
+    endDate: toDatepickerStr(DEFAULT_END_DATE)
   });
   $('#startDate').val(toDatepickerStr(start_date));
   $('#endDate').datepicker({
     format: 'mm/dd/yyyy',
     forceParse: false,
-    startDate: toDatepickerStr(start_date),
-    endDate: toDatepickerStr(end_date)
+    startDate: toDatepickerStr(DEFAULT_START_DATE),
+    endDate: toDatepickerStr(DEFAULT_END_DATE)
   });
   $('#endDate').val(toDatepickerStr(end_date));
 }
@@ -723,7 +733,7 @@ function getChartPath(data) {
 }
 
 function getDownloadUrl(search_results) {
-  let json_obj = Object.values(search_results).map(search_result => {
+  let json_data = Object.values(search_results).flatMap(search_result => {
     let times = new Set(Object.keys(search_result.main));
     if (search_result.normalize) {
       Object.keys(search_result.normalize).forEach(x => times.add(x));
@@ -736,24 +746,22 @@ function getDownloadUrl(search_results) {
         query_text.endsWith('WHERE')) {
       query_text += ' (i.e. all the videos)';
     }
-    return {
-      query: query_text,
-      unit: search_result.normalize ? 'ratio' : 'seconds',
-      data: Array.from(times).map(t => {
-        var value = _.get(search_result.main, t, []).reduce((acc, x) => acc + x[1], 0);
-        if (search_result.normalize) {
-          value /=  _.get(search_result.normalize, t, 0);
-        }
-        if (search_result.subtract) {
-          value /=  _.get(search_result.subtract, t, 0);
-        }
-        return [t, value];
-      })
-    };
+    let unit = search_result.normalize ? 'ratio' : 'minutes';
+    return Array.from(times).map(t => {
+      var value = _.get(search_result.main, t, []).reduce((acc, x) => acc + x[1], 0);
+      if (search_result.normalize) {
+        value /=  _.get(search_result.normalize, t, 0);
+      } else if (search_result.subtract) {
+        value /=  _.get(search_result.subtract, t, 0);
+      } else {
+        value /= 60; // convert to minutes
+      }
+      return [query_text, t, Math.round(value, 4), unit];
+    });
   });
+  let schema = ['Query', 'Time', 'Value', 'Unit'];
   let data_blob = new Blob(
-    [JSON.stringify(json_obj)],
-    {type: "text/json"}
+    [Papa.unparse([schema].concat(json_data))], {type: "text/csv"}
   );
   return URL.createObjectURL(data_blob);
 }
@@ -790,7 +798,7 @@ function displaySearchResults(chart_options, lines, search_results) {
     $('#embedArea p[name="text"]').html(
       `<a href="#" onclick="setCopyUrl(); return false;">Copy</a> url,
        <a href="#" onclick="setEmbedUrl(); return false;">embed</a> chart, or
-       <a href="${getDownloadUrl(search_results)}" download="data.json" type="text/json">download</a> the data.`
+       <a href="${getDownloadUrl(search_results)}" download="data.csv" type="text/json">download</a> the data.`
     );
     window.history.pushState(null, '', chart_path);
   } else {
@@ -908,11 +916,29 @@ function initialize() {
       });
 
       // Reset to defaults
-      $('#aggregateBy').val('{{ default_agg_by }}').trigger("chosen:updated");
-      $('#startDate').val(toDatepickerStr('{{ start_date }}'));
-      $('#endDate').val(toDatepickerStr('{{ end_date }}'));
+      $('#aggregateBy').val(DEFAULT_AGGREGATE_BY).trigger("chosen:updated");
+      $('#startDate').val(toDatepickerStr(DEFAULT_START_DATE));
+      $('#endDate').val(toDatepickerStr(DEFAULT_END_DATE));
       window.history.pushState({}, document.title, '/');
       clearChart();
+    }
+  });
+
+  // Disallow invalid dates
+  var last_start_date = DEFAULT_START_DATE;
+  $('#startDate').change(function() {
+    try {
+      last_start_date = fromDatepickerStr($(this).val());
+    } catch {
+      $(this).val(toDatepickerStr(last_start_date));
+    }
+  });
+  var last_end_date = DEFAULT_END_DATE;
+  $('#endDate').change(function() {
+    try {
+      last_end_date = fromDatepickerStr($(this).val());
+    } catch {
+      $(this).val(toDatepickerStr(last_end_date));
     }
   });
 }

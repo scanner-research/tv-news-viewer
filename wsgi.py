@@ -31,7 +31,7 @@ app = build_app(
     config.get('archive_video_endpoint'),
     auth_users,
     min_date=datetime(*options.get('min_date', [2010, 1, 1])),
-    max_date=datetime(*options.get('max_date', [2019, 7, 1])),
+    max_date=datetime(*options.get('max_date', [2019, 7, 31])),
     min_person_screen_time=options.get('min_person_screen_time', 600),
     default_aggregate_by=options.get('default_aggregate_by', 'month'),
     default_text_window=options.get('default_text_window', 0),
