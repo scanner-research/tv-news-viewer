@@ -746,17 +746,15 @@ function getDownloadUrl(search_results) {
         query_text.endsWith('WHERE')) {
       query_text += ' (i.e. all the videos)';
     }
-    let unit = search_result.normalize ? 'ratio' : 'minutes';
+    let unit = search_result.normalize ? 'ratio' : 'seconds';
     return Array.from(times).map(t => {
       var value = _.get(search_result.main, t, []).reduce((acc, x) => acc + x[1], 0);
       if (search_result.normalize) {
         value /=  _.get(search_result.normalize, t, 0);
       } else if (search_result.subtract) {
         value /=  _.get(search_result.subtract, t, 0);
-      } else {
-        value /= 60; // convert to minutes
       }
-      return [query_text, t, Math.round(value, 4), unit];
+      return [query_text, t, value.toFixed(3).replace(/\.0+$/, ''), unit];
     });
   });
   let schema = ['Query', 'Time', 'Value', 'Unit'];
