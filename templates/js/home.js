@@ -4,6 +4,8 @@ const DEFAULT_START_DATE = '{{ start_date }}';
 const DEFAULT_END_DATE = '{{ end_date }}';
 const DEFAULT_AGGREGATE_BY = '{{ default_agg_by }}';
 
+const UI_SHADOW = '0 8px 20px 0 rgba(0, 0, 0, 0.8)';
+
 const QUERY_BUILDER_HTML = `<div class="query-builder">
   <table>
     <tr>
@@ -245,14 +247,16 @@ function initChartOptions(chart_options) {
   $('#aggregateBy').val(aggregate_by);
   $('#startDate').datepicker({
     format: 'mm/dd/yyyy',
-    forceParse: false,
+    changeYear: true,
+    changeMonth: true,
     startDate: toDatepickerStr(DEFAULT_START_DATE),
     endDate: toDatepickerStr(DEFAULT_END_DATE)
   });
   $('#startDate').val(toDatepickerStr(start_date));
   $('#endDate').datepicker({
     format: 'mm/dd/yyyy',
-    forceParse: false,
+    changeYear: true,
+    changeMonth: true,
     startDate: toDatepickerStr(DEFAULT_START_DATE),
     endDate: toDatepickerStr(DEFAULT_END_DATE)
   });
@@ -939,33 +943,33 @@ function initialize() {
       $(this).val(toDatepickerStr(last_end_date));
     }
   });
+
+  // UI highlights
+  $('#plusMinusHover').mouseenter(function() {
+    $('.remove-row-btn, .add-row-btn').css('box-shadow', UI_SHADOW);
+  });
+  $('#plusMinusHover').mouseleave(function() {
+    $('.remove-row-btn, .add-row-btn').css('box-shadow', '');
+  });
+  $('#dropdownEditorHover').mouseenter(function() {
+    $('.toggle-query-builder-btn').css('box-shadow', UI_SHADOW);
+  });
+  $('#dropdownEditorHover').mouseleave(function() {
+    $('.toggle-query-builder-btn').css('box-shadow', '');
+  });
+  $('#chartAreaHover').mouseenter(function() {
+    $('#chart').css('box-shadow', UI_SHADOW);
+  });
+  $('#chartAreaHover').mouseleave(function() {
+    $('#chart').css('box-shadow', '');
+  });
+  $('#searchButtonHover').mouseenter(function() {
+    $('#searchButton').css('box-shadow', UI_SHADOW);
+  });
+  $('#searchButtonHover').mouseleave(function() {
+    $('#searchButton').css('box-shadow', '');
+  });
 }
 
-const UI_SHADOW = '0 8px 20px 0 rgba(0, 0, 0, 0.8)';
-$('#plusMinusHover').mouseenter(function() {
-  $('.remove-row-btn, .add-row-btn').css('box-shadow', UI_SHADOW);
-});
-$('#plusMinusHover').mouseleave(function() {
-  $('.remove-row-btn, .add-row-btn').css('box-shadow', '');
-});
-$('#dropdownEditorHover').mouseenter(function() {
-  $('.toggle-query-builder-btn').css('box-shadow', UI_SHADOW);
-});
-$('#dropdownEditorHover').mouseleave(function() {
-  $('.toggle-query-builder-btn').css('box-shadow', '');
-});
-$('#chartAreaHover').mouseenter(function() {
-  $('#chart').css('box-shadow', UI_SHADOW);
-});
-$('#chartAreaHover').mouseleave(function() {
-  $('#chart').css('box-shadow', '');
-});
-$('#searchButtonHover').mouseenter(function() {
-  $('#searchButton').css('box-shadow', UI_SHADOW);
-});
-$('#searchButtonHover').mouseleave(function() {
-  $('#searchButton').css('box-shadow', '');
-});
-
-/* Load initial plot */
+/* Load widget */
 initialize();
