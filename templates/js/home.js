@@ -251,16 +251,14 @@ function initChartOptions(chart_options) {
     changeMonth: true,
     startDate: toDatepickerStr(DEFAULT_START_DATE),
     endDate: toDatepickerStr(DEFAULT_END_DATE)
-  });
-  $('#startDate').val(toDatepickerStr(start_date));
+  }).datepicker('setDate', toDatepickerStr(start_date));
   $('#endDate').datepicker({
     format: 'mm/dd/yyyy',
     changeYear: true,
     changeMonth: true,
     startDate: toDatepickerStr(DEFAULT_START_DATE),
     endDate: toDatepickerStr(DEFAULT_END_DATE)
-  });
-  $('#endDate').val(toDatepickerStr(end_date));
+  }).datepicker('setDate', toDatepickerStr(end_date));
 }
 
 function setQueryBoxForMode() {
@@ -932,15 +930,16 @@ function initialize() {
     try {
       last_start_date = fromDatepickerStr($(this).val());
     } catch {
-      $(this).val(toDatepickerStr(last_start_date));
+      $(this).datepicker('setDate', toDatepickerStr(last_start_date));
     }
   });
   var last_end_date = DEFAULT_END_DATE;
   $('#endDate').change(function() {
+    console.log($(this).val());
     try {
       last_end_date = fromDatepickerStr($(this).val());
     } catch {
-      $(this).val(toDatepickerStr(last_end_date));
+      $(this).datepicker('setDate', toDatepickerStr(last_end_date));
     }
   });
 
