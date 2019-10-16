@@ -801,25 +801,6 @@ function initialize() {
     }
   });
 
-  // Disallow invalid dates
-  var last_start_date = DEFAULT_START_DATE;
-  $('#startDate').change(function() {
-    try {
-      last_start_date = fromDatepickerStr($(this).val());
-    } catch {
-      $(this).datepicker('setDate', toDatepickerStr(last_start_date));
-    }
-  });
-  var last_end_date = DEFAULT_END_DATE;
-  $('#endDate').change(function() {
-    console.log($(this).val());
-    try {
-      last_end_date = fromDatepickerStr($(this).val());
-    } catch {
-      $(this).datepicker('setDate', toDatepickerStr(last_end_date));
-    }
-  });
-
   // UI highlights
   $('#plusMinusHover').mouseenter(function() {
     $('.remove-row-btn, .add-row-btn').css('box-shadow', UI_SHADOW);
