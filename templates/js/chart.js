@@ -330,42 +330,44 @@ class Chart {
 
     vegaEmbed(div_id, vega_spec, {actions: false}).then(
       ({spec, view}) => {
-        let tooltip = $('<div class="chart-tooltip" />').append(
-          $('<span />').append($('<h6 name="time" />')
-        ));
-        Object.entries(this_chart.search_results).forEach(
-          ([color, result]) => {
-            tooltip.append(
-              result.alias ?
-                $('<span />').append(
-                  $(`<span />`).css('color', color).text(result.alias)) :
-                $('<span />').append(
-                  $(`<code />`).css('color', color).text(result.query),
-                  $.trim(result.query).endsWith('WHERE') ?
-                    $('<code />').css('color', 'gray').text('all the data') : null));
-            tooltip.append(
-              $('<span />').append($('<i />').attr('color', color)));
-          })
-        $(div_id).append(tooltip);
+        if (options.show_tooltip) {
+          let tooltip = $('<div class="chart-tooltip" />').append(
+            $('<span />').append($('<h6 name="time" />')
+          ));
+          Object.entries(this_chart.search_results).forEach(
+            ([color, result]) => {
+              tooltip.append(
+                result.alias ?
+                  $('<span />').append(
+                    $(`<span />`).css('color', color).text(result.alias)) :
+                  $('<span />').append(
+                    $(`<code />`).css('color', color).text(result.query),
+                    $.trim(result.query).endsWith('WHERE') ?
+                      $('<code />').css('color', 'gray').text('all the data') : null));
+              tooltip.append(
+                $('<span />').append($('<i />').attr('color', color)));
+            })
+          $(div_id).append(tooltip);
 
-        view.addEventListener('mouseover', function(event, item) {
-          if (item && item.datum) {
-            let t = new Date(item.datum.datum.time).toISOString().split('T')[0];
-            let t_str = moment(t).format(moment_date_format);
-            tooltip.find('h6[name="time"]').text(t_str);
-            Object.entries(this_chart.search_results).forEach(
-              ([color, result]) => {
-                let video_data = _.get(result.main, t, []);
-                let x = getPointValue(result, video_data, t);
-                tooltip.find(`i[color="${color}"]`).text(`${x.text}, ${video_data.length.toLocaleString()} videos`);
-              });
-            tooltip.css('left', event.x + 10);
-            tooltip.css('top', event.y + 10);
-            tooltip.show();
-          } else {
-            tooltip.hide();
-          }
-        });
+          view.addEventListener('mouseover', function(event, item) {
+            if (item && item.datum) {
+              let t = new Date(item.datum.datum.time).toISOString().split('T')[0];
+              let t_str = moment(t).format(moment_date_format);
+              tooltip.find('h6[name="time"]').text(t_str);
+              Object.entries(this_chart.search_results).forEach(
+                ([color, result]) => {
+                  let video_data = _.get(result.main, t, []);
+                  let x = getPointValue(result, video_data, t);
+                  tooltip.find(`i[color="${color}"]`).text(`${x.text}, ${video_data.length.toLocaleString()} videos`);
+                });
+              tooltip.css('left', event.x + 10);
+              tooltip.css('top', event.y + 10);
+              tooltip.show();
+            } else {
+              tooltip.hide();
+            }
+          });
+        }
 
         if (options) {
           if (options.video_div) {

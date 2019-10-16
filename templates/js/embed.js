@@ -64,7 +64,10 @@ let search_results = {};
 function onDone() {
   new Chart(
     data.options, search_results, {width: width, height: height}
-  ).load('#chart', {href: '//{{ host }}/?data=' + encodeURIComponent(data_str)});
+  ).load('#chart', {
+    show_tooltip: true,
+    href: '//{{ host }}/?data=' + encodeURIComponent(data_str)
+  });
   if (!hide_legend) {
     renderText(lines);
   }

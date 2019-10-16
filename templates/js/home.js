@@ -650,12 +650,13 @@ function getDownloadUrl(search_results) {
   return URL.createObjectURL(data_blob);
 }
 
+var showTooltip;
 var setCopyUrl, setEmbedUrl;
 
 function displaySearchResults(chart_options, lines, search_results) {
   new Chart(chart_options, search_results, {
     width: $("#chartArea").width(), height: EMBED_DIMS.height
-  }).load('#chart', {video_div: '#vgridArea'});
+  }).load('#chart', {show_tooltip: showTooltip, video_div: '#vgridArea'});
 
   if (Object.keys(search_results).length == lines.length) {
     // Allow embedding if all queries are ok
@@ -753,6 +754,7 @@ function search() {
 
 function initialize() {
   let params = (new URL(document.location)).searchParams;
+  showTooltip = params.get('tooltip') != 0;
 
   if (params.get('dataVersion')) {
     let version_id = decodeURIComponent(params.get('dataVersion'));
