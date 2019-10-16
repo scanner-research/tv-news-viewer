@@ -13,8 +13,6 @@ class Aggregate(Enum):
 
 
 class Countable(Enum):
-    mentions = 'transcript mentions'
-    facetime = 'face time'
     videotime = 'screen time'
 
 
@@ -30,9 +28,6 @@ class SearchParameter:
     start_date = 'start_date'
     end_date = 'end_date'
     detailed = 'detailed'
-
-    mention_text = 'text'
-    face = 'face'
 
     channel = 'channel'
     show = 'show'
@@ -129,5 +124,3 @@ JsonObject = Dict[str, object]
 
 VideoFilterFn = Callable[[Video], bool]
 AggregateFn = Callable[[datetime], datetime]
-FaceTimeAggregateFn = Callable[[Video, List[Interval]], float]
-FaceTimeIntersectFn = Callable[[Video, List[Interval]], List[Interval]]

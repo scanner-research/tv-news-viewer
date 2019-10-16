@@ -148,10 +148,11 @@ class Chart {
       new Date(this.options.start_date).getUTCFullYear()
     );
 
-    let unit = this.options.count == '{{ countables.mentions.value }}' ? 'mentions' : 'minutes';
+    // Counting unit
+    let unit = 'minutes';
 
     // Helper to compute values
-    let raw_precision = this.options.count == '{{ countables.mentions.value }}' ? 0 : 2;
+    let raw_precision = 2;
     let exp_threshold = 0.001;
     function getPointValue(result, video_data, t) {
       var value = video_data.reduce((acc, x) => acc + x[1], 0);

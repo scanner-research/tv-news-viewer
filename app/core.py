@@ -24,7 +24,7 @@ from rs_intervalset.wrapper import (                    # type: ignore
     MmapIListToISetMapping, MmapUnionIlistsToISetMapping)
 
 from .types import *
-from .error import InvalidUsage, NotFound
+from .error import InvalidUsage, NotFound, UnreachableCode
 from .parsing import *
 from .sum import *
 from .load import (
@@ -119,44 +119,58 @@ def get_countable() -> Countable:
     return Countable(value)
 
 
-def person_tags_to_ilistmaps(
-    video_data_context: VideoDataContext, person_tags: PersonTags
+GLOBAL_TAGS = {'male', 'female', 'host', 'nonhost'}
+
+
+def get_global_tags(face_filter: FaceFilter) -> Set[str]:
+    return {t for t in face_filter.tags if t in GLOBAL_TAGS}
+
+
+def either_tag_or_none(a: str, b: str, s: set) -> Optional[str]:
+    has_a = a in s
+    has_b = b in s
+    if has_a and has_b:
+        raise InvalidUsage('Cannot use {} and {} tags simultaneously'.format(a, b))
+    elif has_a:
+        return a
+    elif has_b:
+        return b
+    return None
+
+
+def interpret_global_tags(
+    global_tags: Iterable[str]
+) -> Tuple[Optional[str], Optional[str]]:
+    gender_tag = either_tag_or_none('male', 'female', global_tags)
+    host_tag = either_tag_or_none('host', 'nonhost', global_tags)
+    return gender_tag, host_tag
+
+
+def person_tags_to_people(
+    video_data_context: VideoDataContext, face_filter: FaceFilter
 ) -> List[MmapIntervalListMapping]:
     selected_names = None
-    for person_tag in person_tags.tags:
-        people_with_tag = \
-            video_data_context.all_person_tags.tag_to_names(person_tag)
-        if not people_with_tag:
-            raise InvalidUsage(
-                'tag: "{}" has no people associated with it'.format(person_tag))
+    for tag in face_filter.tags:
+        if tag not in GLOBAL_TAGS:
+            people_with_tag = \
+                video_data_context.all_person_tags.tag_to_names(tag)
+            if not people_with_tag:
+                raise InvalidUsage(
+                    'tag: "{}" has no people associated with it'.format(tag))
 
-        if selected_names is None:
-            selected_names = set(people_with_tag)
-        elif person_tags.join_op == 'and':
+            if selected_names is None:
+                selected_names = set(people_with_tag)
             selected_names = selected_names.intersection(people_with_tag)
-        elif person_tags.join_op == 'or':
-            selected_names = selected_names.union(people_with_tag)
-
-    ilistmaps = []
-    for person_name in selected_names:
-        person_intervals = \
-            video_data_context.all_person_intervals.get(person_name, None)
-        if person_intervals is not None:
-            ilistmaps.append(person_intervals.ilistmap)
-        else:
-            print('tag: missing person {}'.format(person_name))
-
-    if len(ilistmaps) > MAX_PERSON_ATTRIBUTE_QUERY:
-        raise InvalidUsage('tag: query disallowed: too many people matched')
-    return ilistmaps
+    return selected_names
 
 
 def people_to_ilistmaps(
-    video_data_context: VideoDataContext, people: List[str]
+    video_data_context: VideoDataContext, people: Iterable[str]
 ) -> List[MmapIntervalListMapping]:
     ilistmaps = []
     for person in people:
-        person_intervals = video_data_context.all_person_intervals.get(person, None)
+        person_intervals = video_data_context.all_person_intervals.get(
+            person, None)
         if person_intervals is None:
             raise InvalidUsage('{} is not a valid person'.format(person))
         ilistmaps.append(person_intervals.ilistmap)
@@ -167,7 +181,8 @@ def person_to_isetmap(
     video_data_context: VideoDataContext, person: str,
     gender: Optional[str], role: Optional[str]
 ) -> MmapIntervalSetMapping:
-    person_intervals = video_data_context.all_person_intervals.get(person, None)
+    person_intervals = video_data_context.all_person_intervals.get(
+        person, None)
     if person_intervals is None:
         raise InvalidUsage('{} is not a valid person'.format(person))
     if gender is None and role is None:
@@ -184,53 +199,76 @@ def person_to_isetmap(
 def get_onscreen_face_isetmap(
     video_data_context: VideoDataContext, key: str
 ) -> Optional[MmapIntervalSetMapping]:
-    gender, role, people, person_tags = parse_face_filter_str(key)
-    if people is not None:
-        if person_tags:
-            raise InvalidUsage('Cannot use "tag:" with "person:"')
-        if len(people) == 1:
-            isetmap = person_to_isetmap(video_data_context, people[0], gender, role)
+    face_filter = parse_face_filter_str(key)
+    if face_filter.all:
+        isetmap = video_data_context.face_intervals.all_isetmap
+
+    elif face_filter.people is not None:
+        people = list(face_filter.people)
+        if face_filter.tags:
+            global_tags = get_global_tags(face_filter)
+            if len(global_tags) != len(face_filter.tags):
+                people_with_tags = person_tags_to_people(
+                    video_data_context, face_filter)
+                people = [p for p in people if p in people_with_tags]
+                if len(people) == 0:
+                    raise InvalidUsage('None of the specified people match the tags')
+            gender_tag, host_tag = interpret_global_tags(global_tags)
         else:
-            ilistmaps = people_to_ilistmaps(video_data_context, people)
+            gender_tag, host_tag = None, None
+
+        if len(people) == 1:
+            isetmap = person_to_isetmap(
+                video_data_context, people[0], gender_tag, host_tag)
+        else:
+            ilistmaps = people_to_ilistmaps(
+                video_data_context, people)
             payload_mask, payload_value = get_face_time_filter_mask(
-                gender, role)
+                gender_tag, host_tag)
             isetmap = MmapUnionIlistsToISetMapping(
                 ilistmaps, payload_mask, payload_value, 3000, 100)
-    elif person_tags is not None:
-        ilistmaps = person_tags_to_ilistmaps(video_data_context, person_tags)
-        payload_mask, payload_value = get_face_time_filter_mask(gender, role)
-        isetmap = MmapUnionIlistsToISetMapping(
-            ilistmaps, payload_mask, payload_value, 3000, 100)
-    else:
-        if gender is None:
-            if role is None:
-                isetmap = video_data_context.face_intervals.all_isetmap
-            elif role == 'host':
-                isetmap = video_data_context.face_intervals.host_isetmap
-            elif role == 'nonhost':
-                isetmap = video_data_context.face_intervals.nonhost_isetmap
-            else:
-                raise InvalidUsage('Unknown role: {}'.format(role))
-        elif gender == 'male':
-            if role is None:
-                isetmap = video_data_context.face_intervals.male_isetmap
-            elif role == 'host':
-                isetmap = video_data_context.face_intervals.male_host_isetmap
-            elif role == 'nonhost':
-                isetmap = video_data_context.face_intervals.male_nonhost_isetmap
-            else:
-                raise InvalidUsage('Unknown role: {}'.format(role))
-        elif gender == 'female':
-            if role is None:
-                isetmap = video_data_context.face_intervals.female_isetmap
-            elif role == 'host':
-                isetmap = video_data_context.face_intervals.female_host_isetmap
-            elif role == 'nonhost':
-                isetmap = video_data_context.face_intervals.female_nonhost_isetmap
-            else:
-                raise InvalidUsage('Unknown role: {}'.format(role))
+
+    elif face_filter.tags is not None:
+        global_tags = get_global_tags(face_filter)
+        if len(global_tags) == len(face_filter.tags):
+            gender_tag, host_tag = interpret_global_tags(global_tags)
+            if gender_tag is None:
+                if host_tag == 'host':
+                    isetmap = video_data_context.face_intervals.host_isetmap
+                elif host_tag == 'nonhost':
+                    isetmap = video_data_context.face_intervals.nonhost_isetmap
+                else:
+                    raise UnreachableCode()
+            elif gender_tag == 'male':
+                if host_tag is None:
+                    isetmap = video_data_context.face_intervals.male_isetmap
+                elif host_tag == 'host':
+                    isetmap = video_data_context.face_intervals.male_host_isetmap
+                elif host_tag == 'nonhost':
+                    isetmap = video_data_context.face_intervals.male_nonhost_isetmap
+                else:
+                    raise UnreachableCode()
+            elif gender_tag == 'female':
+                if host_tag is None:
+                    isetmap = video_data_context.face_intervals.female_isetmap
+                elif host_tag == 'host':
+                    isetmap = video_data_context.face_intervals.female_host_isetmap
+                elif host_tag == 'nonhost':
+                    isetmap = video_data_context.face_intervals.female_nonhost_isetmap
+                else:
+                    raise UnreachableCode()
         else:
-            raise InvalidUsage('Unknown gender: {}'.format(gender))
+            people = person_tags_to_people(video_data_context, face_filter)
+            assert people is not None
+            ilistmaps = people_to_ilistmaps(video_data_context, people)
+            gender_tag, host_tag = interpret_global_tags(global_tags)
+            payload_mask, payload_value = get_face_time_filter_mask(
+                gender_tag, host_tag)
+            isetmap = MmapUnionIlistsToISetMapping(
+                ilistmaps, payload_mask, payload_value, 3000, 100)
+
+    else:
+        raise UnreachableCode()
     return isetmap
 
 
@@ -265,104 +303,32 @@ def get_onscreen_face_isetmaps(
 
 
 def get_face_time_filter_mask(
-    gender: Optional[str], role: Optional[str]
+    gender_tag: Optional[str], host_tag: Optional[str]
 ) -> Tuple[int, int]:
     payload_mask = 0
     payload_value = 0
 
-    if gender:
-        gender = gender.strip().lower()
-        if gender and gender != 'all':
+    if gender_tag:
+        gender_tag = gender_tag.strip().lower()
+        if gender_tag:
             payload_mask |= 1
-            if gender == 'male':
+            if gender_tag == 'male':
                 payload_value |= 1
-            elif gender == 'female':
+            elif gender_tag == 'female':
                 pass
             else:
-                raise InvalidUsage('Unknown gender: {}'.format(gender))
-    if role:
-        role = role.strip().lower()
-        if role and role != 'all':
+                raise UnreachableCode()
+    if host_tag:
+        host_tag = host_tag.strip().lower()
+        if host_tag:
             payload_mask |= 1 << 1
-            if role == 'host':
+            if host_tag == 'host':
                 payload_value |= 1 << 1
-            elif role == 'nonhost':
+            elif host_tag == 'nonhost':
                 pass
             else:
-                raise InvalidUsage('Unknown role: {}'.format(role))
+                raise UnreachableCode()
     return payload_mask, payload_value
-
-
-def get_face_time_agg_fn(
-    video_data_context: VideoDataContext
-) -> FaceTimeAggregateFn:
-    face_str = request.args.get(SearchParameter.face, '', type=str)
-    gender, role, person, person_tags = parse_face_filter_str(face_str)
-    payload_mask, payload_value = get_face_time_filter_mask(gender, role)
-
-    if person_tags:
-        if person is not None:
-            raise InvalidUsage('Cannot use "tag:" with "person:"')
-
-        ilistmaps = person_tags_to_ilistmaps(video_data_context, person_tags)
-
-        def f(video: Video, intervals: List[Interval]) -> List[Interval]:
-            result = 0
-            # FIXME: this double counts
-            for ilistmap in ilistmaps:
-                result += ilistmap.intersect_sum(
-                    video.id, intervals, payload_mask, payload_value, True)
-            return result
-    else:
-        if person is not None:
-            person_intervals = \
-                video_data_context.all_person_intervals.get(person, None)
-            if person_intervals is None:
-                raise InvalidUsage('{} is not a valid person'.format(person))
-            ilistmap = person_intervals.ilistmap
-        else:
-            ilistmap = video_data_context.face_intervals.all_ilistmap
-
-        def f(video: Video, intervals: List[Interval]) -> float:
-            return ilistmap.intersect_sum(
-                video.id, intervals, payload_mask, payload_value, True
-            ) / 1000
-    return f
-
-
-def get_face_time_intersect_fn(
-    video_data_context: VideoDataContext
-) -> FaceTimeIntersectFn:
-    face_str = request.args.get(SearchParameter.face, '', type=str)
-    gender, role, person, person_tags = parse_face_filter_str(face_str)
-    payload_mask, payload_value = get_face_time_filter_mask(gender, role)
-
-    if person_tags:
-        if person is not None:
-            raise InvalidUsage('Cannot use "tag:" with "person:"')
-
-        ilistmaps = person_tags_to_ilistmaps(video_data_context, person_tags)
-
-        def f(video: Video, intervals: List[Interval]) -> List[Interval]:
-            intervals = []
-            for ilistmap in ilistmaps:
-                intervals.extend(ilistmap.intersect(
-                    video.id, intervals, payload_mask, payload_value, True))
-            intervals.sort()
-            return intervals
-    else:
-        if person:
-            person_isetmap = video_data_context.all_person_intervals.get(person, None)
-            if person_isetmap is None:
-                raise InvalidUsage('{} is not a valid person'.format(person))
-            ilistmap = person_isetmap.ilistmap
-        else:
-            ilistmap = video_data_context.face_intervals.all_ilistmap
-
-        def f(video: Video, intervals: List[Interval]) -> List[Interval]:
-            return ilistmap.intersect(
-                video.id, intervals, payload_mask, payload_value, True)
-    return f
 
 
 def intersect_isetmap(
@@ -558,11 +524,11 @@ def build_app(
             (p.name, p.screen_time, ', '.join(p.tags)) for p in people
         ]})
 
-    @app.route('/data/person-tags')
+    @app.route('/data/tags')
     def get_person_tags() -> Response:
-        return render_template('data/person-tags.html')
+        return render_template('data/tags.html')
 
-    @app.route('/data/person-tags.json')
+    @app.route('/data/tags.json')
     def get_person_tags_json() -> Response:
         return jsonify({'data': [
             (t, len(p), ', '.join(p))
@@ -631,7 +597,8 @@ def build_app(
             start_date=format_date(start_date),
             end_date=format_date(end_date),
             default_agg_by=default_aggregate_by,
-            default_text_window=default_text_window
+            default_text_window=default_text_window,
+            global_face_tags=list(sorted(GLOBAL_TAGS))
         ))
         resp.headers['Content-type'] = 'text/javascript'
         return resp
@@ -674,82 +641,11 @@ def build_app(
         return video_data_context.commercial_isetmap.is_contained(
             v.id, int((p.start + p.end) / 2 * 1000), True)
 
-    def _count_mentions(
-        accumulator: DateAccumulator,
-        text_query_str: str, is_commercial: Ternary,
-        video_filter: Optional[VideoFilterFn],
-        onscreen_face_isetmaps: Optional[List[MmapIntervalSetMapping]]
-    ) -> None:
-        missing_videos = 0
-        matched_videos = 0
-        filtered_videos = 0
-
-        if text_query_str:
-            text_query = Query(text_query_str.upper())
-            for result in text_query.execute(
-                caption_data_context.lexicon,
-                caption_data_context.index,
-                ignore_word_not_found=True
-            ):
-                document = caption_data_context.documents[result.id]
-                video = video_data_context.video_dict.get(document.name)
-                if video is None:
-                    missing_videos += 1
-                    continue
-                else:
-                    matched_videos += 1
-                if video_filter is not None and not video_filter(video):
-                    filtered_videos += 1
-                    continue
-
-                postings = result.postings
-                if onscreen_face_isetmaps:
-                    postings = [
-                        p for p in postings if has_onscreen_face(
-                            video, milliseconds((p.start + p.end) / 2),
-                            onscreen_face_isetmaps
-                        )]
-
-                if is_commercial != Ternary.both:
-                    if is_commercial == Ternary.true:
-                        total = sum(int(_in_commercial(video, p))
-                                    for p in postings)
-                    else:
-                        total = sum(1 - int(_in_commercial(video, p))
-                                    for p in postings)
-                else:
-                    total = len(postings)
-                accumulator.add(video.date, video.id, total)
-        else:
-            if onscreen_face_isetmaps:
-                raise InvalidUsage(
-                    'Not implemented: all text and face filter. '
-                    'Please remove onscreen.face to proceed.')
-
-            for document in caption_data_context.documents:
-                video = video_data_context.video_dict.get(document.name)
-                if video is None:
-                    missing_videos += 1
-                    continue
-                else:
-                    matched_videos += 1
-                if video_filter is not None and not video_filter(video):
-                    filtered_videos += 1
-                    continue
-
-                accumulator.add(
-                    video.date, video.id, _get_document_token_count(
-                        video, document, is_commercial))
-
-        print('Matched {} videos, {} filtered, {} missing'.format(
-              matched_videos, filtered_videos, missing_videos))
-
     def _count_time(
         accumulator: DateAccumulator,
         caption_query_str: str, caption_window: int,
         is_commercial: Ternary,
         video_filter: Optional[VideoFilterFn],
-        face_time_agg_fn: Optional[FaceTimeAggregateFn],
         onscreen_face_isetmaps: Optional[List[MmapIntervalSetMapping]]
     ) -> None:
         missing_videos = 0
@@ -777,19 +673,13 @@ def build_app(
                     if not intervals:
                         return
 
-            if face_time_agg_fn:
+            if intervals is not None:
                 accumulator.add(
                     video.date, video.id,
-                    face_time_agg_fn(video, intervals if intervals else
-                                     get_entire_video_ms_interval(video)))
+                    sum(i[1] - i[0] for i in intervals) / 1000)
             else:
-                if intervals is not None:
-                    accumulator.add(
-                        video.date, video.id,
-                        sum(i[1] - i[0] for i in intervals) / 1000)
-                else:
-                    accumulator.add(video.date, video.id,
-                                    video.num_frames / video.fps)
+                accumulator.add(video.date, video.id,
+                                video.num_frames / video.fps)
 
         if caption_query_str:
             for result in Query(
@@ -840,34 +730,7 @@ def build_app(
             if request.args.get(
                 SearchParameter.detailed, 'true', type=str
             ) == 'true' else SimpleDateAcumulator(aggregate_fn))
-        if countable == Countable.mentions:
-            assert_param_not_set(
-                SearchParameter.caption_text, countable.value,
-                Countable.facetime.value + ' or ' + Countable.videotime.value)
-            assert_param_not_set(
-                SearchParameter.caption_window, countable.value,
-                Countable.facetime.value + ' or ' + Countable.videotime.value)
-            assert_param_not_set(
-                SearchParameter.face, countable.value,
-                Countable.facetime.value)
-
-            text_query = request.args.get(
-                SearchParameter.mention_text, '', type=str).strip()
-            _count_mentions(
-                accumulator,
-                text_query, is_commercial, video_filter,
-                get_onscreen_face_isetmaps(video_data_context))
-
-        elif (countable == Countable.videotime
-              or countable == Countable.facetime):
-            assert_param_not_set(
-                SearchParameter.mention_text, countable.value,
-                Countable.mentions.value)
-            if countable == Countable.videotime:
-                assert_param_not_set(
-                    SearchParameter.face, countable.value,
-                    Countable.facetime.value)
-
+        if countable == Countable.videotime:
             caption_query = request.args.get(
                 SearchParameter.caption_text, '', type=str).strip()
             caption_window = request.args.get(
@@ -877,15 +740,11 @@ def build_app(
                 accumulator,
                 caption_query, caption_window,
                 is_commercial, video_filter,
-                None if countable == Countable.videotime else
-                get_face_time_agg_fn(video_data_context),
                 get_onscreen_face_isetmaps(video_data_context))
-
         else:
             raise NotImplementedError('unreachable code')
 
-        resp = jsonify(accumulator.get())
-        return resp
+        return jsonify(accumulator.get())
 
     def _video_name_or_id(v: str) -> str:
         try:
@@ -912,71 +771,10 @@ def build_app(
             'captions': _get_captions(document) if document else []
         }
 
-    def _count_mentions_in_videos(
-        videos: List[Video],
-        text_query_str: str, is_commercial: Ternary,
-        onscreen_face_isetmaps: Optional[List[MmapIntervalSetMapping]]
-    ) -> List[JsonObject]:
-        results = []
-
-        def helper(
-            video: Video, postings: List['CaptionIndex.Posting']
-        ) -> None:
-            postings = PostingUtil.deoverlap(postings)
-
-            if onscreen_face_isetmaps:
-                postings = [
-                    p for p in postings if has_onscreen_face(
-                        video, milliseconds((p.start + p.end) / 2),
-                        onscreen_face_isetmaps
-                    )]
-
-            if is_commercial != Ternary.both:
-                is_commercial_bool = is_commercial == Ternary.true
-                postings = [
-                    p for p in postings
-                    if is_commercial_bool == _in_commercial(video, p)]
-
-            if len(postings) > 0:
-                results.append({
-                    'metadata': _video_to_dict(video),
-                    'intervals': [
-                        (p.start, p.end) for p in postings
-                    ],
-                    'captions': _get_captions(document)
-                })
-
-        if text_query_str:
-            # Run the query on the selected videos
-            for result in Query(text_query_str.upper()).execute(
-                caption_data_context.lexicon,
-                caption_data_context.index,
-                [caption_data_context.documents[v.name] for v in videos
-                 if v.name in caption_data_context.documents]
-            ):
-                document = caption_data_context.documents[result.id]
-                video = video_data_context.video_dict[document.name]
-                postings = result.postings
-                helper(video, postings)
-        else:
-            # Empty query
-            for video in videos:
-                document = document_by_name.get(video.name)
-                intervals = (
-                    caption_data_context.index.intervals(document)
-                    if document else [])
-
-                if onscreen_face_isetmaps or is_commercial != Ternary.both:
-                    helper(video, intervals)
-                else:
-                    results.append(_get_entire_video(video))
-        return results
-
     def _count_time_in_videos(
         videos: List[Video],
         caption_query_str: str, caption_window: int,
         is_commercial: Ternary,
-        face_time_isect_fn: Optional[FaceTimeIntersectFn],
         onscreen_face_isetmaps: Optional[List[MmapIntervalSetMapping]]
     ) -> List[JsonObject]:
         results = []
@@ -1002,14 +800,6 @@ def build_app(
                     intervals = intersect_isetmap(video, isetmap, intervals)
                     if not intervals:
                         return
-
-            if face_time_isect_fn:
-                intervals = face_time_isect_fn(
-                    video,
-                    intervals if intervals else
-                    get_entire_video_ms_interval(video))
-                if not intervals:
-                    return
 
             if intervals is not None:
                 assert len(intervals) > 0
@@ -1054,33 +844,7 @@ def build_app(
         countable = get_countable()
         is_commercial = _get_is_commercial()
 
-        if countable == Countable.mentions:
-            text_query = request.args.get(
-                SearchParameter.mention_text, '', type=str).strip()
-            assert_param_not_set(
-                SearchParameter.caption_text, countable.value,
-                Countable.facetime.value + ' or ' + Countable.videotime.value)
-            assert_param_not_set(
-                SearchParameter.caption_window, countable.value,
-                Countable.facetime.value + ' or ' + Countable.videotime.value)
-            assert_param_not_set(
-                SearchParameter.face,
-                countable.value, Countable.facetime.value)
-
-            results = _count_mentions_in_videos(
-                videos, text_query, is_commercial,
-                get_onscreen_face_isetmaps(video_data_context))
-
-        elif (countable == Countable.videotime
-              or countable == Countable.facetime):
-            assert_param_not_set(
-                SearchParameter.mention_text, countable.value,
-                Countable.mentions.value)
-            if countable == Countable.videotime:
-                assert_param_not_set(
-                    SearchParameter.face,
-                    countable.value, Countable.facetime.value)
-
+        if countable == Countable.videotime:
             caption_query = request.args.get(
                 SearchParameter.caption_text, '', type=str).strip()
             caption_window = request.args.get(
@@ -1088,15 +852,12 @@ def build_app(
                 type=int)
             results = _count_time_in_videos(
                 videos, caption_query, caption_window, is_commercial,
-                None if countable == Countable.videotime
-                else get_face_time_intersect_fn(video_data_context),
                 get_onscreen_face_isetmaps(video_data_context))
 
         else:
             raise NotImplementedError('unreachable code')
 
-        resp = jsonify(results)
-        return resp
+        return jsonify(results)
 
     def _get_captions(document: Documents.Document) -> List[Caption]:
         lines = []

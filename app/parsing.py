@@ -74,39 +74,41 @@ class PersonTags(NamedTuple):
     join_op: str
 
 
-def parse_face_filter_str(s: str) -> Tuple[Optional[str], Optional[str],
-                                           Optional[str], Optional[PersonTags]]:
-    gender = None
-    role = None
-    person = None
-    tag = None
+class FaceFilter(NamedTuple):
+    all: bool
+    people: Optional[Set[str]] = None
+    tags: Optional[Set[str]] = None
+    tags_join_op: Optional[str] = None
+
+
+def parse_face_filter_str(s: str) -> FaceFilter:
+    if s == '':
+        raise InvalidUsage('Face filter cannot be blank')
     if s.lower() != 'all':
+        people = None
+        tags = None
         for kv in s.split(','):
             kv = kv.strip()
-            if kv == '':
-                continue
             try:
                 k, v = kv.split(':', 1)
                 k = k.strip()
                 v = v.strip()
-                if k == 'gender':
-                    gender = v
-                elif k == 'role':
-                    role = v
-                elif k == 'person':
-                    person = [x.strip() for x in v.split('|')]
-                elif k == 'tag':
-                    contains_and = '&' in v
-                    contains_or = '|' in v
-                    if contains_and and contains_or:
-                        raise InvalidUsage('Mixing & and | in list of tags is not supported')
-                    elif contains_and:
-                        tag = PersonTags([x.strip() for x in v.split('&')], 'and')
+                if k == 'person':
+                    tmp = {x.strip() for x in v.split('&')}
+                    if people:
+                        people |= tmp
                     else:
-                        tag = PersonTags([x.strip() for x in v.split('|')], 'or')
-                    print(tag)
+                        people = tmp
+                elif k == 'tag':
+                    tmp = {x.strip() for x in v.split('&')}
+                    if tags:
+                        tags |= tmp
+                    else:
+                        tags = tmp
                 else:
                     raise InvalidUsage('Invalid face filter: {}'.format(k))
             except:
                 raise InvalidUsage('Failed to parse face filter: {}'.format(kv))
-    return gender, role, person, tag
+        return FaceFilter(False, people, tags)
+    else:
+        return FaceFilter(True)

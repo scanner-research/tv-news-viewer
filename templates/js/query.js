@@ -24,10 +24,7 @@ Start
   / Blank a:Query Blank { return {main: a}; }
 
 Query
-  = "COUNT"i Blank a:CountVarName Blank "OF"i Blank b:CountClause Blank c:WhereClause ? {
-    return {count_var: a, count: b, where: c ? c : {}};
-  }
-  / "COUNT"i Blank a:CountVarName Blank b:WhereClause ? {
+  = "COUNT"i Blank a:CountVarName Blank b:WhereClause ? {
     return {count_var: a, count: null, where: b ? b : {}};
   }
   / a:WhereClause { return {count_var: null, count: null, where: a}; }
@@ -111,10 +108,7 @@ Start
   = Blank q:Query Blank { return q; }
 
 Query
-  = "COUNT"i Blank a:CountVarName Blank "OF"i Blank b:Printable Blank c:WhereClause {
-  	return {count_var: a, count: b, where: c};
-  }
-  / "COUNT"i Blank a:CountVarName Blank b:WhereClause {
+  = "COUNT"i Blank a:CountVarName Blank b:WhereClause {
   	return {count_var: a, count: '', where: b};
   }
   / b:WhereClause {
@@ -303,36 +297,15 @@ function getSortedQueryString(obj) {
 }
 
 class SearchableQuery {
-  constructor(s, default_count_var, no_err) {
+  constructor(s, no_err) {
 
     function getArgs(obj) {
-      let count_var = obj.count_var ? obj.count_var : default_count_var;
       let result = translateArgumentDict(obj.where ? obj.where : {}, no_err);
       let args = result.filters;
-      if (obj.count && obj.count.length > 0) {
-        if (count_var == '{{ countables.mentions.value }}') {
-          if (obj.count != QUERY_KEYWORDS.all) {
-            args.text = obj.count;
-          }
-        } else if (count_var == '{{ countables.facetime.value }}') {
-          if (obj.count != QUERY_KEYWORDS.all) {
-            args.face = obj.count;
-          }
-        } else if (count_var == '{{ countables.videotime.value }}') {
-          if (obj.count != QUERY_KEYWORDS.all) {
-            if (obj.count.length > 0) {
-              if (!no_err) throw Error(`Count {{ countables.videotime.value }} only supports WHERE filters. Try removing "${obj.count}"`);
-            }
-          }
-        } else {
-          throw Error(`Invalid count mode: ${count_var}`);
-        }
-      }
-      args.count = count_var;
+      args.count = '{{ countables.videotime.value }}';
       return {args: args, alias: result.alias};
     }
 
-    this.default_count_var = default_count_var;
     this.query = s;
     this.normalize_args = null;
     this.subtract_args = null;
@@ -375,10 +348,6 @@ class SearchableQuery {
   }
 
   search(chart_options, onSuccess, onError) {
-    if (this.default_count_var != chart_options.{{ parameters.count }}) {
-      throw Error('Count variable changed');
-    }
-
     function getParams(args, detailed) {
       let obj = Object.assign({detailed: detailed}, args);
       obj.{{ parameters.start_date }} = chart_options.start_date;
@@ -423,7 +392,7 @@ class SearchableQuery {
 
   searchInVideos(video_ids, onSuccess, onError) {
     let args = Object.assign({
-      {{ parameters.count }}: this.count,
+      {{ parameters.count }}: '{{ countables.videotime.value }}',
       {{ parameters.video_ids }}: JSON.stringify(video_ids)
     }, this.main_args);
     return $.ajax({

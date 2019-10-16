@@ -10,11 +10,6 @@
   text-align: left;
   font-size: 12px;
 }
-#searchTable input[name=countable] {
-  text-align: center;
-  font-size: 12px;
-  border-radius: 0;
-}
 #searchTable .input-group, .input-group-prepend, .input-group-text, .form-control {
   height: 30px;
   padding-top: 0px;
@@ -32,9 +27,6 @@
 }
 #searchTable .hint-span ul {
   margin: 0;
-}
-#searchTable .count-span {
-  display: none;
 }
 #searchTable .color-box {
   margin: auto;

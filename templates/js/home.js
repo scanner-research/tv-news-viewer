@@ -1,5 +1,7 @@
 const DATA_VERSION_ID = {% if data_version is not none %}"{{ data_version }}"{% else %}null{% endif %};
 
+const VIDEO_TIME = '{{ countables.videotime.value }}';
+
 const DEFAULT_START_DATE = '{{ start_date }}';
 const DEFAULT_END_DATE = '{{ end_date }}';
 const DEFAULT_AGGREGATE_BY = '{{ default_agg_by }}';
@@ -12,6 +14,59 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
       <th style="text-align: right;">Find video segments where:</th>
       <td>
         <i style="color: gray;">Warning! Your current query will be overwritten on changes.</i>
+      </td>
+    </tr>
+
+    <tr><td colspan="2"><hr></td></tr>
+    <tr>
+      <td type="key-col">
+        the screen has a face that:
+      </td>
+      <td type="value-col">
+        <span title='A face is on screen if it is visible anywhere in the frame. This definition includes faces in the foreground or background; live or still; and big or small. Note: this will update onscreen.face1="...". To filter on multiple faces, edit the search box manually.'>
+          &#9432;
+        </span>
+      </td>
+    </tr>
+    <tr>
+      <td type="key-col">
+        is any face
+      </td>
+      <td>
+        <input type="checkbox" name="face1:all">
+      </td>
+    </tr>
+    <tr class="toggle-face1">
+      <td type="key-col">
+        is a person
+      </td>
+      <td>
+        <span>
+          <select multiple class="chosen-select chosen-basic-select"
+                  data-placeholder="no names selected"
+                  name="face1:person" data-width="fit">
+          </select>
+        </span>
+      </td>
+    </tr>
+    <tr class="toggle-face1">
+      <td type="key-col">
+        has tag
+      </td>
+      <td>
+        <span>
+          <select multiple class="chosen-select chosen-basic-select"
+                  data-placeholder="no tags selected"
+                  name="face1:tag" data-width="fit">
+            {% for tag in global_face_tags %}
+            <option value="{{ tag }}">{{ tag }}*</option>
+            {% endfor %}
+          </select>
+          (combined by "and")
+          <span title='Tags marked with an * are computed on all faces; otherwise, tags are applied to faces with identities.'>
+            &#9432;
+          </span>
+        </span>
       </td>
     </tr>
 
@@ -39,90 +94,8 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
           seconds around each mention)
       </td>
     </tr>
-    <tr><td colspan="2"><hr></td></tr>
 
-    <tr>
-      <td type="key-col">
-        the screen has a face that:
-      </td>
-      <td type="value-col">
-        <span title='A face is on screen if it is visible anywhere in the frame. This definition includes faces in the foreground or background; live or still; and big or small. Note: this will update onscreen.face1="...". To filter on multiple faces, edit the search box manually.'>
-          &#9432;
-        </span>
-      </td>
-    </tr>
-    <tr>
-      <td type="key-col">
-        is any face
-      </td>
-      <td>
-        <input type="checkbox" name="face1:all">
-      </td>
-    </tr>
-    <tr class="toggle-face1">
-      <td type="key-col">
-        is gender
-      </td>
-      <td type="value-col">
-        <select multiple class="chosen-select chosen-single-select"
-                data-placeholder="no gender selected"
-                name="face1:gender" data-width="fit">
-          <option value="male">male</option>
-          <option value="female">female</option>
-        </select>
-      </td>
-    </tr>
-    <tr class="toggle-face1">
-      <td type="key-col">
-        is a TV host
-      </td>
-      <td type="value-col">
-        <select multiple class="chosen-select chosen-single-select"
-                data-placeholder="no role selected"
-                name="face1:role" data-width="fit">
-          <option value="host">host</option>
-          <option value="nonhost">nonhost</option>
-        </select>
-      </td>
-    </tr>
-    <tr class="toggle-face1">
-      <td type="key-col">
-        is a person
-      </td>
-      <td>
-        <select class="chosen-select chosen-single-select"
-                name="face1:person-or-tag">
-          <option selected value="person">with name</option>
-          <option value="tag">with tag</option>
-        </select>
-        <span>
-          <select multiple class="chosen-select chosen-basic-select"
-                  data-placeholder="no names selected"
-                  name="face1:person" data-width="fit">
-          </select>
-          (combined by "or")
-        </span>
-        <span style="display: none;">
-          <select multiple class="chosen-select chosen-basic-select"
-                  data-placeholder="no tags selected"
-                  name="face1:tag" data-width="fit">
-          </select>
-          (combined by
-            <select class="chosen-select chosen-single-select"
-                    name="face1:tag-join-op">
-              <option selected value="&">and</option>
-              <option value="|">or</option>
-            </select>)
-        </span>
-      </td>
-    </tr>
     <tr><td colspan="2"><hr></td></tr>
-
-    <tr>
-      <td colspan="2" type="info-header">
-        Some other useful filters.
-      </td>
-    </tr>
     <tr>
       <td type="key-col">the channel is</td>
       <td type="value-col">
@@ -229,7 +202,6 @@ function getChartOptions() {
   return {
     start_date: start_date,
     end_date: end_date,
-    count: $('#countVar').val(),
     aggregate: $('#aggregateBy').val()
   }
 }
@@ -242,7 +214,6 @@ function initChartOptions(chart_options) {
     start_date = chart_options.start_date;
     end_date = chart_options.end_date;
     aggregate_by = chart_options.aggregate;
-    $('#countVar').val(chart_options.count);
   }
   $('#aggregateBy').val(aggregate_by);
   $('#startDate').datepicker({
@@ -259,29 +230,6 @@ function initChartOptions(chart_options) {
     startDate: toDatepickerStr(DEFAULT_START_DATE),
     endDate: toDatepickerStr(DEFAULT_END_DATE)
   }).datepicker('setDate', toDatepickerStr(end_date));
-}
-
-function setQueryBoxForMode() {
-  let count_var = $('#countVar').val();
-  var prefix_str, has_countable;
-  if (count_var == '{{ countables.mentions.value }}') {
-    prefix_str = '{{ countables.mentions.value }} OF';
-    has_countable = true;
-  } else if (count_var == '{{ countables.facetime.value }}') {
-    prefix_str = '{{ countables.facetime.value }} OF';
-    has_countable = true;
-  } else if (count_var == '{{ countables.videotime.value }}') {
-    prefix_str = '{{ countables.videotime.value }} WHERE';
-    has_countable = false;
-  }
-  $('#searchTable .countable-only').each(function() {
-    if (has_countable) {
-      $(this).show();
-    } else {
-      $(this).hide();
-    }
-  });
-  $('#searchTable span[name="count-type-prefix"]').text(`COUNT ${prefix_str}`);
 }
 
 const EMBED_DIMS = {width: 1000, height: 400};
@@ -348,12 +296,8 @@ function getQueryBuilder() {
   builder.find('[name="{{ parameters.is_commercial }}"]').val('false');
   builder.find('[name="{{ parameters.caption_text }}"]').val('');
   builder.find('[name="{{ parameters.caption_window }}"]').val('{{ default_text_window }}');
-  builder.find('[name="face1:gender"]').val(null);
-  builder.find('[name="face1:role"]').val(null);
-  builder.find('[name="face1:person-or-tag"]').val('person');
-  builder.find('[name="face1:person"]').val(null).parent().show();
-  builder.find('[name="face1:tag"]').val(null).parent().hide();
-  builder.find('[name="face1:tag-join-op"]').val('&');
+  builder.find('[name="face1:person"]').val(null).parent();
+  builder.find('[name="face1:tag"]').val(null).parent();
   builder.find('[name="face1:all"]').prop('checked', false);
   builder.find('[name="{{ parameters.onscreen_numfaces }}"]').val('');
   builder.find('[name="normalize"]').prop('checked', false);
@@ -367,8 +311,7 @@ function loadQueryBuilder(search_table_row) {
 
   search_table_row.find('.query-td').append(getQueryBuilder());
   var current_query = new SearchableQuery(
-    `${QUERY_KEYWORDS.where} ${where_box.val()}`,
-    $('#countVar').val(), true);
+    `${QUERY_KEYWORDS.where} ${where_box.val()}`, true);
 
   let query_builder = search_table_row.find('.query-builder');
   let setIfDefined = k => {
@@ -398,33 +341,13 @@ function loadQueryBuilder(search_table_row) {
       query_builder.find(`input[name="face1:all"]`).prop('checked', true);
       query_builder.find('.toggle-face1').hide();
     } else {
-      if (face_params.gender) {
-        query_builder.find(
-          `select[name="face1:gender"]`).val(face_params.gender);
-      }
-      if (face_params.role) {
-        query_builder.find(`select[name="face1:role"]`).val(face_params.role);
-      }
-
       let tag_select = query_builder.find(`select[name="face1:tag"]`);
-      let person_select = query_builder.find(`select[name="face1:person"]`);
-      let person_or_tag_select = query_builder.find(
-        `select[name="face1:person-or-tag"]`
-      );
       if (face_params.tag) {
-        let join_op = face_params.tag.indexOf('&') >= 0 ? '&' : '|';
-        tag_select.val(face_params.tag.split(join_op).map(x => $.trim(x)));
-        tag_select.parent().show();
-        person_select.parent().hide();
-        person_or_tag_select.val('tag');
-        query_builder.find(`select[name="face1:tag-join-op"]`).val(join_op);
-      } else {
-        if (face_params.person) {
-          person_select.val(face_params.person.split('|').map(x => $.trim(x)));
-        }
-        person_select.parent().show();
-        tag_select.parent().hide();
-        person_or_tag_select.val('person');
+        tag_select.val(face_params.tag.split('&').map(x => $.trim(x)));
+      }
+      let person_select = query_builder.find(`select[name="face1:person"]`);
+      if (face_params.person) {
+        person_select.val(face_params.person.split('&').map(x => $.trim(x)));
       }
     }
   }
@@ -453,21 +376,6 @@ function loadQueryBuilder(search_table_row) {
     width: 'auto', max_selected_options: 1
   });
   query_builder.find('.chosen-basic-select').chosen({width: 'auto'});
-
-  query_builder.find('[name="face1:person-or-tag"]').change(function() {
-    let tag_select = $('select[name="face1:tag"]');
-    let person_select = $('select[name="face1:person"]');
-    if ($(this).val() == 'tag') {
-      tag_select.parent().show();
-      person_select.val(null).trigger("chosen:updated");
-      person_select.parent().hide();
-    } else {
-      person_select.parent().show();
-      tag_select.val(null).trigger("chosen:updated");
-      tag_select.parent().hide();
-    }
-    updateQueryBox(search_table_row);
-  });
 
   query_builder.find('[name="face1:all"]').change(function() {
     if ($(this).is(':checked')) {
@@ -562,28 +470,14 @@ function updateQueryBox(search_table_row) {
   } else {
     let face_params = [];
 
-    let face_gender = builder.find('select[name="face1:gender"]').val();
-    if (face_gender && face_gender.length > 0) {
-      face_params.push('gender: ' + face_gender[0]);
+    let face_person = builder.find('select[name="face1:person"]').val();
+    if (face_person && face_person.length > 0) {
+      face_params.push('person: ' + face_person.join(' & '));
     }
 
-    let face_role = builder.find('select[name="face1:role"]').val();
-    if (face_role && face_role.length > 0) {
-      face_params.push('role: ' + face_role[0]);
-    }
-
-    let face_person_or_tag = builder.find('select[name="face1:person-or-tag"]').val();
-    if (face_person_or_tag == 'person') {
-      let face_person = builder.find('select[name="face1:person"]').val();
-      if (face_person && face_person.length > 0) {
-        face_params.push('person: ' + face_person.join(' | '));
-      }
-    } else if (face_person_or_tag == 'tag') {
-      let face_tag = builder.find('select[name="face1:tag"]').val();
-      let face_tag_join_op = builder.find('select[name="face1:tag-join-op"]').val();
-      if (face_tag && face_tag.length > 0) {
-        face_params.push('tag: ' + face_tag.join(` ${face_tag_join_op} `));
-      }
+    let face_tag = builder.find('select[name="face1:tag"]').val();
+    if (face_tag && face_tag.length > 0) {
+      face_params.push('tag: ' + face_tag.join(` & `));
     }
 
     if (face_params.length > 0) {
@@ -596,15 +490,13 @@ function updateQueryBox(search_table_row) {
     filters.push(`{{ parameters.onscreen_numfaces }}=${num_faces}`);
   }
 
-  if ($('#countVar').val() != '{{ countables.mentions.value }}') {
-    let caption_text = builder.find('textarea[name="{{ parameters.caption_text }}"]').val();
-    if (caption_text) {
-      filters.push(`{{ parameters.caption_text }}="${caption_text}"`);
-    }
-    let caption_window = builder.find('input[name="{{ parameters.caption_window }}"]').val();
-    if (caption_window && caption_window != 0) {
-      filters.push(`{{ parameters.caption_window }}=${caption_window}`);
-    }
+  let caption_text = builder.find('textarea[name="{{ parameters.caption_text }}"]').val();
+  if (caption_text) {
+    filters.push(`{{ parameters.caption_text }}="${caption_text}"`);
+  }
+  let caption_window = builder.find('input[name="{{ parameters.caption_window }}"]').val();
+  if (caption_window && caption_window != 0) {
+    filters.push(`{{ parameters.caption_window }}=${caption_window}`);
   }
 
   let normalize = builder.find('[name="normalize"]').val() == 'true';
@@ -630,8 +522,6 @@ function getDefaultQuery() {
 
 function onWhereUpdate(element) {
   // Rewrite query with default normalization if necessary
-  let count_var = $('#countVar').val();
-
   function checkFaceFilters(filters) {
     Object.keys(filters).forEach(k => {
       if (k.match(/^{{ parameters.onscreen_face }}\d+/)) {
@@ -641,10 +531,10 @@ function onWhereUpdate(element) {
   }
 
   // Check the query
-  let query = `COUNT "${count_var}" WHERE ${$(element).val()}`;
+  let query = `COUNT "${VIDEO_TIME}" WHERE ${$(element).val()}`;
   var err = false;
   try {
-    let parsed_query = new SearchableQuery(query, count_var, false);
+    let parsed_query = new SearchableQuery(query, false);
     checkFaceFilters(parsed_query.main_args);
     if (parsed_query.normalize_args) {
       checkFaceFilters(parsed_query.normalize_args);
@@ -671,8 +561,7 @@ function changeRowColor(element) {
 function addRow(query) {
   let color = _.get(query, 'color', getColor());
   let text = _.get(query, 'text', getDefaultQuery());
-  let count_var = $('#countVar').val();
-  let query_clauses = new SearchableQuery(text, count_var).clauses();
+  let query_clauses = new SearchableQuery(text).clauses();
 
   let new_row = $('<tr name="query">').attr('data-color', color).append(
     $('<td valign="top"/>').append(
@@ -687,12 +576,8 @@ function addRow(query) {
     $('<td class="query-td" />').append(
       $('<div class="input-group" />').append(
         $('<div class="input-group-prepend noselect" />').append(
-          $('<span class="input-group-text query-text" name="count-type-prefix" />')),
-        $('<div class="countable-only" />').append(
-            `<input type="text" class="form-control query-text" name="countable" placeholder="${QUERY_KEYWORDS.all}" />`
-          ).val(query_clauses.count),
-        $('<div class="input-group-prepend countable-only noselect" />').append(
-          $('<span class="input-group-text query-text" />').text('WHERE')),
+          $('<span class="input-group-text query-text" name="count-type-prefix" />').text(`COUNT ${VIDEO_TIME} WHERE`)
+        ),
         $('<input type="text" class="form-control query-text" name="where" placeholder="enter search here (all the data, if blank)" onchange="onWhereUpdate(this);"/>').val(query_clauses.where)
       )
     ),
@@ -700,7 +585,6 @@ function addRow(query) {
 
   let tbody = $('#searchTable > tbody');
   tbody.append(new_row);
-  setQueryBoxForMode();
 
   if (tbody.find('tr').length >= DEFAULT_COLORS.length) {
     $('#searchTable .add-row-btn').prop('disabled', true);
@@ -809,19 +693,15 @@ function displaySearchResults(chart_options, lines, search_results) {
   $('#embedArea').show();
 }
 
-function getRawQueries(count_var) {
+function getRawQueries() {
   let queries = [];
   $('#searchTable > tbody > tr').each(function() {
     if ($(this).attr('name')) {
       let where_str = $.trim($(this).find('input[name="where"]').val());
-      var text;
-      if (count_var != '{{ countables.videotime.value }}') {
-        let count_str = $.trim($(this).find('input[name="countable"]').val());
-        text = `COUNT "${count_var}" OF "${count_str ? count_str : QUERY_KEYWORDS.all}" WHERE ${where_str}`;
-      } else {
-        text = `COUNT "${count_var}" WHERE ${where_str}`;
-      }
-      queries.push({color: $(this).attr('data-color'), text: text});
+      queries.push({
+        color: $(this).attr('data-color'),
+        text: `COUNT "${VIDEO_TIME}" WHERE ${where_str}`
+      });
     }
   });
   return queries;
@@ -831,12 +711,11 @@ function search() {
   clearChart();
 
   let chart_options = getChartOptions();
-  let lines = getRawQueries(chart_options.count).map(
+  let lines = getRawQueries().map(
     raw_query => {
       var parsed_query;
       try {
-        parsed_query = new SearchableQuery(
-          raw_query.text, chart_options.count, false);
+        parsed_query = new SearchableQuery(raw_query.text, false);
       } catch (e) {
         alertAndThrow(e.message);
       }
@@ -902,7 +781,6 @@ function initialize() {
   }
 
   $(".chosen-select").chosen({width: 'auto'});
-  $('#countVar').change(setQueryBoxForMode);
   $('#searchButton').click(search);
   $('#resetButton').click(function() {
     if (window.confirm('Warning! This will clear all of your current queries.')) {
@@ -910,7 +788,6 @@ function initialize() {
         if ($(this).index() > 0) {
           removeRow($(this));
         } else {
-          $(this).find('input[name="countable"]').val('');
           $(this).find('input[name="where"]').val('');
         }
       });

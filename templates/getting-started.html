@@ -139,15 +139,15 @@
     For example, we can compute the total screen time of men and women in the
     data set. This can be done using the <code>onscreen.face1</code>
     filter predicate. In this case, we want to filter on gender, so the filters
-    will be <code>onscreen.face1="gender: male"</code> and
-    <code>onscreen.face1="gender: female"</code> for frames that contain a face
-    with a man and woman, respectively. Both of these queries can also be me
-    made by selecting the gender option in the dropdown search editor.
+    will be <code>onscreen.face1="tag: male"</code> and
+    <code>onscreen.face1="tag: female"</code> for frames that contain a face
+    with a man and woman, respectively. Both of these queries can also be
+    made by selecting the gender tag in the dropdown search editor.
 
     <span class="centered">
       <code>
-        <b>COUNT</b> screen time <b>WHERE</b> onscreen.face1="gender: male"<br>
-        <b>COUNT</b> screen time <b>WHERE</b> onscreen.face1="gender: female"
+        <b>COUNT</b> screen time <b>WHERE</b> onscreen.face1="tag: male"<br>
+        <b>COUNT</b> screen time <b>WHERE</b> onscreen.face1="tag: female"
       </code>
     </span>
   </p>
@@ -162,7 +162,7 @@
     and female faces is trending upwards, but also that male screen time is
     roughly double that of female screen time.
   </p>
-  <iframe width="100%" height="300" src="//{{ host }}/embed?hideLegend=1&width=600&height=270&data=%7B%22options%22%3A%7B%22start_date%22%3A%222010-01-01%22%2C%22end_date%22%3A%222018-04-01%22%2C%22count%22%3A%22screen%20time%22%2C%22aggregate%22%3A%22month%22%7D%2C%22queries%22%3A%5B%7B%22color%22%3A%22%234E79A7%22%2C%22text%22%3A%22COUNT%20%5C%22screen%20time%5C%22%20WHERE%20onscreen.face1%3D%5C%22gender%3A%20male%5C%22%22%7D%2C%7B%22color%22%3A%22%23F28E2B%22%2C%22text%22%3A%22COUNT%20%5C%22screen%20time%5C%22%20WHERE%20onscreen.face1%3D%5C%22gender%3A%20female%5C%22%22%7D%5D%7D"></iframe>
+  <iframe width="100%" height="300" src="//{{ host }}/embed?hideLegend=1&width=600&height=270&data=%7B%22options%22%3A%7B%22start_date%22%3A%222010-01-01%22%2C%22end_date%22%3A%222018-04-01%22%2C%22count%22%3A%22screen%20time%22%2C%22aggregate%22%3A%22month%22%7D%2C%22queries%22%3A%5B%7B%22color%22%3A%22%234E79A7%22%2C%22text%22%3A%22COUNT%20%5C%22screen%20time%5C%22%20WHERE%20onscreen.face1%3D%5C%22tag%3A%20male%5C%22%22%7D%2C%7B%22color%22%3A%22%23F28E2B%22%2C%22text%22%3A%22COUNT%20%5C%22screen%20time%5C%22%20WHERE%20onscreen.face1%3D%5C%22tag%3A%20female%5C%22%22%7D%5D%7D"></iframe>
 
   <p>
     We can also make queries about people who have been identified in the videos.
@@ -175,8 +175,8 @@
 
     <span class="centered">
       <code>
-        <b>COUNT</b> screen time <b>WHERE</b> onscreen.face1="gender: hillary clinton"<br>
-        <b>COUNT</b> screen time <b>WHERE</b> onscreen.face1="gender: donald trump"
+        <b>COUNT</b> screen time <b>WHERE</b> onscreen.face1="person: hillary clinton"<br>
+        <b>COUNT</b> screen time <b>WHERE</b> onscreen.face1="person: donald trump"
       </code>
     </span>
   </p>
@@ -264,7 +264,7 @@
     men on a single channel:
 
     <span class="centered">
-      <code><b>COUNT</b> screen time <b>WHERE</b> onscreen.face1="gender: male" <b>AND</b> channel=CNN</code>
+      <code><b>COUNT</b> screen time <b>WHERE</b> onscreen.face1="tag: male" <b>AND</b> channel=CNN</code>
     </span>
 
     Likewise, we can combine a query on identities with text. For example,

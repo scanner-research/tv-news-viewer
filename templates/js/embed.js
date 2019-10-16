@@ -50,7 +50,7 @@ let lines = data.queries.map(raw_query => {
   var parsed;
   try {
     parsed_query = new SearchableQuery(
-      raw_query.text, data.options.count, false);
+      raw_query.text, false);
   } catch (e) {
     alertAndThrow(e.message);
   }

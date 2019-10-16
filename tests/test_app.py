@@ -31,14 +31,14 @@ def client():
         config.get('video_endpoint'),
         config.get('frameserver_endpoint'),
         config.get('archive_video_endpoint'),
-        config.get('cache_seconds', 30 * 24 * 3600),
         authorized_users=None,
         min_date=datetime(2010, 1, 1),
         max_date=datetime(2018, 4, 1),
         min_person_screen_time=600,
         default_aggregate_by='month',
         default_text_window=0,
-        default_is_commercial=Ternary.false)
+        default_is_commercial=Ternary.false,
+        data_version='test')
 
     with flask_app.test_client() as test_client:
         yield test_client
@@ -59,7 +59,11 @@ def test_get_pages(client: FlaskClient) -> None:
     """Make sure the page templates can be rendered"""
     _is_ok(client.get('/'))
     _is_ok(client.get('/embed'))
-    _is_ok(client.get('/videos'))
+    _is_ok(client.get('/video-embed'))
+    _is_ok(client.get('/getting-started'))
+    _is_ok(client.get('/detailed'))
+    _is_ok(client.get('/methodology'))
+    _is_ok(client.get('/about-us'))
 
     # test non-existent path
     _is_bad(client.get('/badpage'))
@@ -67,8 +71,10 @@ def test_get_pages(client: FlaskClient) -> None:
 
 def test_get_data(client: FlaskClient) -> None:
     """Make sure the we can retreive basic data"""
-    _is_ok(client.get('/shows'))
-    _is_ok(client.get('/people'))
+    _is_ok(client.get('/data/shows'))
+    _is_ok(client.get('/data/people'))
+    _is_ok(client.get('/data/videos'))
+    _is_ok(client.get('/data/person-tags'))
 
 
 def test_get_captions(client: FlaskClient) -> None:
@@ -133,9 +139,9 @@ TEST_HOUR_OPTIONS = [None, '9-5', '5', '5,6', '5-6,7']
 TEST_DAYOFWEEK_OPTIONS = [None, 'mon-wed,thu,fri', 'sat', 'sat-sun', 'sat,sun']
 TEST_IS_COMMERCIAL_OPTIONS = [None, 'false', 'true', 'both']
 TEST_FACE_OPTIONS = [
-    None, '', 'gender:female', 'role:host', 'person:wolf blitzer',
-    'gender:female,role:host', 'role:host,person:wolf blitzer',
-    'gender:male,role:host,person:wolf blitzer', 'tag:journalist'
+    None, 'tag:female', 'tag:host', 'person:wolf blitzer',
+    'tag:female & host', 'tag: host, person:wolf blitzer',
+    'tag:male & host,person:wolf blitzer', 'tag:journalist'
 ]
 TEST_TEXT_WINDOW_OPTIONS = [None, '0', '15', '120']
 
@@ -145,60 +151,6 @@ def _check_count_result(
 ) -> None:
     assert response.status_code == 200, 'Query failed: {}'.format(repr(params))
     assert response.is_json, str(response.data)
-
-
-def test_count_mentions(client: FlaskClient) -> None:
-    _combination_test_get(
-        client, '/search', {
-            'count': ['transcript mentions'],
-            'text': ['united states of america'],
-            # General options
-            'detailed': TEST_DETAILED_OPTIONS,
-            'start_date': [None, '2017-01-01'],
-            'end_date': [None, '2018-01-01'],
-            'aggregate': TEST_AGGREGATE_OPTIONS,
-            'channel': TEST_CHANNEL_OPTIONS,
-            'show': TEST_SHOW_OPTIONS,
-            'hour': TEST_HOUR_OPTIONS,
-            'dayofweek': TEST_DAYOFWEEK_OPTIONS,
-            'iscommercial': TEST_IS_COMMERCIAL_OPTIONS,
-            'onscreen.face1': TEST_FACE_OPTIONS
-        }, _check_count_result, n=100)
-    _combination_test_get(
-        client, '/search', {
-            'count': ['transcript mentions'],
-            'normalize': ['true'],
-            'aggregate': TEST_AGGREGATE_OPTIONS,
-        }, _check_count_result)
-
-
-def test_count_face_time(client: FlaskClient) -> None:
-    # Non-person facetime
-    _combination_test_get(
-        client, '/search', {
-            'count': ['face time'],
-            'face': TEST_FACE_OPTIONS,
-            # General options
-            'start_date': [None, '2017-01-01'],
-            'end_date': [None, '2018-01-01'],
-            'detailed': TEST_DETAILED_OPTIONS,
-            'aggregate': TEST_AGGREGATE_OPTIONS,
-            'channel': TEST_CHANNEL_OPTIONS,
-            'show': TEST_SHOW_OPTIONS,
-            'hour': TEST_HOUR_OPTIONS,
-            'dayofweek': TEST_DAYOFWEEK_OPTIONS,
-            'iscommercial': TEST_IS_COMMERCIAL_OPTIONS,
-            'onscreen.face1': TEST_FACE_OPTIONS,
-            'caption.window': TEST_TEXT_WINDOW_OPTIONS,
-            'caption.window': [None, 'united states of america'],
-        }, _check_count_result, n=100)
-
-    _combination_test_get(
-        client, '/search', {
-            'count': ['face time'],
-            'normalize': ['true'],
-            'aggregate': TEST_AGGREGATE_OPTIONS,
-        }, _check_count_result)
 
 
 def test_count_video_time(client: FlaskClient) -> None:
@@ -246,34 +198,6 @@ def _check_search_in_video_result(
     for v in json_body:
         assert 'metadata' in v
         assert 'intervals' in v
-
-
-def test_search_mentions_in_videos(client: FlaskClient) -> None:
-    _combination_test_get(
-        client, '/search-videos', {
-            'ids': TEST_VIDEO_IDS,
-            # Count options
-            'count': ['transcript mentions'],
-            # General options
-            'text': TEST_COMMON_TEXT_OPTIONS,
-            'iscommercial': TEST_IS_COMMERCIAL_OPTIONS,
-            'onscreen.face1': TEST_FACE_OPTIONS
-        }, _check_search_in_video_result)
-
-
-def test_search_face_time_in_videos(client: FlaskClient) -> None:
-    _combination_test_get(
-        client, '/search-videos', {
-            'ids': TEST_VIDEO_IDS,
-            # Count options
-            'count': ['face time'],
-            'face': TEST_FACE_OPTIONS,
-            # General options
-            'iscommercial': TEST_IS_COMMERCIAL_OPTIONS,
-            'onscreen.face1': TEST_FACE_OPTIONS,
-            'caption.window': TEST_TEXT_WINDOW_OPTIONS,
-            'caption.text': [None] + TEST_COMMON_TEXT_OPTIONS
-        }, _check_search_in_video_result, n=100)
 
 
 def test_search_time_in_videos(client: FlaskClient) -> None:

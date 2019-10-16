@@ -212,10 +212,8 @@
         <td>values</td>
         <td>
           all,<br>
-          gender: (fe)male,<br>
-          role: (non)host,<br>
           person: <i>name</i> <a href="/data/people" target="_blank">(list of people)</a>,<br>
-          tag: <i>tag of person</i> <a href="/data/person-tags" target="_blank">(list of tags)</a>
+          tag: (fe)male, (non)host, <i>tag of person</i> <a href="/data/tags" target="_blank">(list of tags)</a>
         </td>
       </tr>
       <tr>
@@ -227,9 +225,9 @@
         <td>
           <code>
             {{ parameters.onscreen_face }}1="all" <br>
-            {{ parameters.onscreen_face }}2="gender:male" <br>
-            {{ parameters.onscreen_face }}3="gender:male,role:host" <br>
-            {{ parameters.onscreen_face }}4="person:Barack Obama" <br>
+            {{ parameters.onscreen_face }}2="person:Barack Obama" <br>
+            {{ parameters.onscreen_face }}3="tag:male" <br>
+            {{ parameters.onscreen_face }}4="tag:male & host" <br>
             {{ parameters.onscreen_face }}5="tag:journalist"
           </code>
         </td>
@@ -289,7 +287,7 @@
     Likewise, to express the proportion of time when a man is on screen on CNN,
     we can write:
 
-    <iframe width="100%" height="370" src="//{{ host }}/embed?width=600&height=270&data=%7B%22options%22%3A%7B%22start_date%22%3A%222010-01-01%22%2C%22end_date%22%3A%222018-04-01%22%2C%22count%22%3A%22screen%20time%22%2C%22aggregate%22%3A%22month%22%7D%2C%22queries%22%3A%5B%7B%22color%22%3A%22%234E79A7%22%2C%22text%22%3A%22COUNT%20%5C%22screen%20time%5C%22%20WHERE%20onscreen.face1%3D%5C%22gender%3A%20male%5C%22%20AND%20channel%3D%5C%22CNN%5C%22%20NORMALIZE%20channel%3D%5C%22CNN%5C%22%22%7D%5D%7D"></iframe>
+    <iframe width="100%" height="370" src="//{{ host }}/embed?width=600&height=270&data=%7B%22options%22%3A%7B%22start_date%22%3A%222010-01-01%22%2C%22end_date%22%3A%222018-04-01%22%2C%22count%22%3A%22screen%20time%22%2C%22aggregate%22%3A%22month%22%7D%2C%22queries%22%3A%5B%7B%22color%22%3A%22%234E79A7%22%2C%22text%22%3A%22COUNT%20%5C%22screen%20time%5C%22%20WHERE%20onscreen.face1%3D%5C%22tag%3A%20male%5C%22%20AND%20channel%3D%5C%22CNN%5C%22%20NORMALIZE%20channel%3D%5C%22CNN%5C%22%22%7D%5D%7D"></iframe>
 
   </p>
 
@@ -305,136 +303,5 @@
     For example, the net screen time of two individuals can be computed as follows:
     <iframe width="100%" height="370" src="//{{ host }}/embed?width=600&height=270&data=%7B%22options%22%3A%7B%22start_date%22%3A%222010-01-01%22%2C%22end_date%22%3A%222018-04-01%22%2C%22count%22%3A%22screen%20time%22%2C%22aggregate%22%3A%22month%22%7D%2C%22queries%22%3A%5B%7B%22color%22%3A%22%234E79A7%22%2C%22text%22%3A%22COUNT%20%5C%22screen%20time%5C%22%20WHERE%20onscreen.face1%3D%5C%22person%3A%20donald%20trump%5C%22%20SUBTRACT%20onscreen.face1%3D%5C%22person%3A%20hillary%20clinton%5C%22%22%7D%5D%7D"></iframe>
   </p>
-</div>
-
-<div class="container" style="display: none;">
-  <hr>
-
-  <h3>Advanced usage: other counting modes</h3>
-
-  <p>
-    You can also count "{{ countables.facetime.value }}" and "{{ countables.mentions.value }}". For instance,
-
-    <span class="centered">
-      <code>
-      <b>COUNT</b> "{{ countables.facetime.value }}" <b>OF</b> faces being counted <b>WHERE</b> filters on screen time
-      <br>
-      <b>COUNT</b> "{{ countables.mentions.value }}" <b>OF</b> text being counted <b>WHERE</b> filters on screen time
-      </code>
-    </span>
-  </p>
-
-  <h6>Supported counting options</h6>
-  <table class="table table-striped table-bordered table-sm">
-    <tbody>
-      <tr>
-        <th>Count</th>
-        <th>Description</th>
-        <th>Values</th>
-        <th>Default</th>
-        <th>Example</th>
-      </tr>
-    </tbody>
-
-    <tbody>
-      <tr>
-        <td>{{ countables.facetime.value }}</td>
-        <td>
-          screen time for faces<br>
-          Options separated by commas.
-        </td>
-        <td>
-          all,<br>
-          gender: (fe)male,<br>
-          role: (non)host,<br>
-          person: <i>name</i> <a href="/data/people" target="_blank">(list of people)</a>
-        </td>
-        <td>all</td>
-        <td>
-          <code>
-            "all"<br>
-            "gender:male" <br>
-            "gender:male,role:host" <br>
-            "person:Barack Obama"
-          </code>
-        </td>
-      </tr>
-    </tbody>
-
-    <tbody>
-      <tr>
-        <td>{{ countables.mentions.value }}</td>
-        <td>phrase mentions in the captions</td>
-        <td>
-          Use | for OR and & for AND.
-          <a href="github.com/scanner-research/caption-index/blob/master/captions/query.py" target="_blank">Full grammar.</a>
-        </td>
-        <td>n/a</td>
-        <td><code>"affordable care act"</code></td>
-      </tr>
-    </tbody>
-  </table>
-
-  <br>
-
-  <h6>Example queries</h6>
-  <table class="table table-striped table-bordered table-sm">
-    <tbody>
-      <tr>
-        <th>Count</th>
-        <th>Example</th>
-      </tr>
-    </tbody>
-
-    <tbody>
-      <tr>
-        <td rowspan="3">{{ countables.facetime.value }}</td>
-        <td>
-          <code><b>COUNT</b> "{{ countables.facetime.value }}" <b>OF</b> all</code>
-          <br>
-          <i>total face time</i>
-        </td>
-      </tr>
-      <tr>
-        <td>
-          <code><b>COUNT</b> "{{ countables.facetime.value }}" <b>OF</b> gender:female,role:host <b>WHERE</b> {{ parameters.channel }}="FOX"</code>
-          <br>
-          <i>face time of female hosts on FOX News</i>
-        </td>
-      </tr>
-      <tr>
-        <td>
-          <code><b>COUNT</b> "{{ countables.facetime.value }}" <b>OF</b> person:Barack Obama <b>WHERE</b> {{ parameters.channel }}="FOX"</code>
-          <br>
-          <i>face time of Barack Obama on FOX News</i>
-        </td>
-      </tr>
-    </tbody>
-
-    <tbody>
-      <tr>
-        <td rowspan="3">{{ countables.mentions.value }}</td>
-        <td>
-          <code><b>COUNT</b> "{{ countables.mentions.value }}" <b>OF</b> all</code>
-          <br>
-          <i>total number of words</i>
-        </td>
-      </tr>
-      <tr>
-        <td>
-          <code><b>COUNT</b> "{{ countables.mentions.value }}" <b>OF</b> obamacare <b>WHERE</b> {{ parameters.channel }}=CNN</code>
-          <br>
-          <i>mentions of "obamacare" on CNN</i>
-        </td>
-      </tr>
-      <tr>
-        <td>
-          <code><b>COUNT</b> "{{ countables.mentions.value }}" <b>OF</b> obamacare <b>WHERE</b> {{ parameters.onscreen_face }}1="person:Barack Obama"</code>
-          <br>
-          <i>mentions of "obamacare" when Barack Obama's face is on screen</i>
-        </td>
-      </tr>
-    <tbody>
-  </table>
 </div>
 {% endblock %}

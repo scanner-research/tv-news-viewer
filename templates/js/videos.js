@@ -27,7 +27,6 @@ function getPhrasesToHighlight(query) {
 function displayVideos(page_i) {
   let params = PARAMS;
   let query = QUERY;
-  let count_var = params.count;
 
   var video_ids = params.video_ids;
   if (video_ids.length >= VIDEOS_PER_PAGE) {
@@ -118,7 +117,7 @@ function displayVideos(page_i) {
 function loadVideos(params, serve_from_internet_archive) {
   USE_ARCHIVE = serve_from_internet_archive;
   PARAMS = params;
-  QUERY = new SearchableQuery(PARAMS.query, PARAMS.count, false);
+  QUERY = new SearchableQuery(PARAMS.query, false);
   CURR_PAGE = 0;
 
   if (QUERY.alias) {
