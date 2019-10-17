@@ -516,7 +516,7 @@ def build_app(
 
     @app.route('/data/people')
     def get_people() -> Response:
-        return render_template('data/people.html')
+        return render_template('data/people.html', parameters=SearchParameter)
 
     @app.route('/data/people.json')
     def get_people_json() -> Response:
@@ -526,7 +526,7 @@ def build_app(
 
     @app.route('/data/tags')
     def get_person_tags() -> Response:
-        return render_template('data/tags.html')
+        return render_template('data/tags.html', parameters=SearchParameter)
 
     @app.route('/data/tags.json')
     def get_person_tags_json() -> Response:
@@ -537,7 +537,7 @@ def build_app(
 
     @app.route('/data/shows')
     def get_shows() -> Response:
-        return render_template('data/shows.html')
+        return render_template('data/shows.html', parameters=SearchParameter)
 
     @app.route('/data/shows.json')
     def get_shows_json() -> Response:

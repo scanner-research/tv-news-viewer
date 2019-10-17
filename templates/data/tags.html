@@ -21,7 +21,8 @@
   </h1>
   <p>
     Tags in this list can be used to filter for screen time of the associated
-    face identities using the <code>onscreen.face1="tag: ..."</code> predicate.
+    face identities using the
+    <code>{{ parameters.onscreen_face }}1="tag: ..."</code> predicate.
   </p>
 
   <h3>
@@ -67,8 +68,9 @@
     we identified using Amazon Rekognition's celebrity detection API.
     Filters on tags from this list will only apply to faces for which we have
     an associated identity (44% of the faces). For example, the filter
-    <code>onscreen.face1="tag: journalist"</code> incudes the screen time of
-    all faces whose identiies have the journalist tag.
+    <code>{{ parameters.onscreen_face }}1="tag: journalist"</code>
+    incudes the screen time of all faces whose identiies have the journalist
+    tag.
   </p>
 
   <table class="table table-hover table-striped table-bordered table-sm data-table">

@@ -6,7 +6,6 @@ const QUERY_KEYWORDS = {
   all: 'all'
 }
 
-/* FIXME: this grammar is weird due to disabled counting modes */
 const QUERY_GRAMMAR = `
 Start
   = Blank a:Query Blank "NORMALIZE"i Blank b:Query2 Blank {
@@ -185,15 +184,16 @@ function parseFaceFilterString(s) {
   } else {
     s.split(',').forEach(kv => {
       let [k, v] = $.trim(kv).split(':').map(s => $.trim(s));
-      if (k == 'gender' || k == 'role' || k == 'person' || k == 'tag') {
-        result[k] = v;
+      if (k == 'person' || k == 'tag') {
+        if (result.hasOwnProperty(k)) {
+          result[k] = result[k] + ' & ' + v;
+        } else {
+          result[k] = v;
+        }
       } else {
         throw Error(`${k} is not a valid filter`);
       }
     });
-    if (_.has(result, 'person') && _.has(result, 'tag')) {
-      throw Error('Cannot use both "person" and "tag" together');
-    }
   }
   return result;
 }
