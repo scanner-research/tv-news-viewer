@@ -263,6 +263,8 @@ function translateArgumentDict(raw_filters, no_err) {
       } catch (e) {
         if (!no_err) throw e;
       }
+    } else if (k == '{{ parameters.video }}') {
+      filters[k] = v;
     } else {
       if (!no_err) throw Error(`Unknown filter: ${k}`);
     }

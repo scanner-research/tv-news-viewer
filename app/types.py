@@ -29,6 +29,7 @@ class SearchParameter:
     end_date = 'end_date'
     detailed = 'detailed'
 
+    video = 'video'
     channel = 'channel'
     show = 'show'
     hour = 'hour'

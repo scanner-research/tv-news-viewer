@@ -66,13 +66,19 @@ def get_video_filter() -> Optional[VideoFilterFn]:
         request.args.get(SearchParameter.end_date, None, type=str))
     channel = request.args.get(SearchParameter.channel, None, type=str)
     show = request.args.get(SearchParameter.show, None, type=str)
+    video_name = request.args.get(SearchParameter.video, None, type=str)
     hours = parse_hour_set(
         request.args.get(SearchParameter.hour, None, type=str))
     daysofweek = parse_day_of_week_set(
         request.args.get(SearchParameter.day_of_week, None, type=str))
 
-    if start_date or end_date or channel or show or hours or daysofweek:
+    if (
+        start_date or end_date or channel
+        or show or hours or daysofweek or video_name
+    ):
         def video_filter(video: Video) -> bool:
+            if video_name and video.name != video_name:
+                return False
             if start_date and video.date < start_date:
                 return False
             if end_date and video.date > end_date:
@@ -83,8 +89,8 @@ def get_video_filter() -> Optional[VideoFilterFn]:
                 return False
             if hours:
                 video_start = video.hour
-                video_end = video.hour + round(video.num_frames / video.fps
-                                               / 3600)
+                video_end = (
+                    video.hour + round(video.num_frames / video.fps / 3600))
                 for h in range(video_start, video_end + 1):
                     if h in hours:
                         break
