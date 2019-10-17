@@ -28,7 +28,7 @@
       </code>
     </span>
     consisting of the data being counted ("screen time") and filters, separated
-    by "AND". In the earlier example, we saw two filters "onscreen.face1" and
+    by "AND". In the earlier example, we saw two filters "{{ parameters.onscreen_face }}1" and
     "channel", and their respective values "person: hillary clinton" and "CNN".
     The table below shows the filter options that the application currently supports.
   </p>
@@ -287,7 +287,7 @@
     Likewise, to express the proportion of time when a man is on screen on CNN,
     we can write:
 
-    <iframe width="100%" height="370" src="//{{ host }}/embed?width=600&height=270&data=%7B%22options%22%3A%7B%22start_date%22%3A%222010-01-01%22%2C%22end_date%22%3A%222018-04-01%22%2C%22count%22%3A%22screen%20time%22%2C%22aggregate%22%3A%22month%22%7D%2C%22queries%22%3A%5B%7B%22color%22%3A%22%234E79A7%22%2C%22text%22%3A%22COUNT%20%5C%22screen%20time%5C%22%20WHERE%20onscreen.face1%3D%5C%22tag%3A%20male%5C%22%20AND%20channel%3D%5C%22CNN%5C%22%20NORMALIZE%20channel%3D%5C%22CNN%5C%22%22%7D%5D%7D"></iframe>
+    <iframe width="100%" height="370" src="//{{ host }}/embed?width=600&height=270&data=%7B%22options%22%3A%7B%22start_date%22%3A%222010-01-01%22%2C%22end_date%22%3A%222018-04-01%22%2C%22count%22%3A%22screen%20time%22%2C%22aggregate%22%3A%22month%22%7D%2C%22queries%22%3A%5B%7B%22color%22%3A%22%234E79A7%22%2C%22text%22%3A%22COUNT%20%5C%22screen%20time%5C%22%20WHERE%20{{ parameters.onscreen_face }}1%3D%5C%22tag%3A%20male%5C%22%20AND%20channel%3D%5C%22CNN%5C%22%20NORMALIZE%20channel%3D%5C%22CNN%5C%22%22%7D%5D%7D"></iframe>
 
   </p>
 
@@ -301,7 +301,7 @@
     </span>
 
     For example, the net screen time of two individuals can be computed as follows:
-    <iframe width="100%" height="370" src="//{{ host }}/embed?width=600&height=270&data=%7B%22options%22%3A%7B%22start_date%22%3A%222010-01-01%22%2C%22end_date%22%3A%222018-04-01%22%2C%22count%22%3A%22screen%20time%22%2C%22aggregate%22%3A%22month%22%7D%2C%22queries%22%3A%5B%7B%22color%22%3A%22%234E79A7%22%2C%22text%22%3A%22COUNT%20%5C%22screen%20time%5C%22%20WHERE%20onscreen.face1%3D%5C%22person%3A%20donald%20trump%5C%22%20SUBTRACT%20onscreen.face1%3D%5C%22person%3A%20hillary%20clinton%5C%22%22%7D%5D%7D"></iframe>
+    <iframe width="100%" height="370" src="//{{ host }}/embed?width=600&height=270&data=%7B%22options%22%3A%7B%22start_date%22%3A%222010-01-01%22%2C%22end_date%22%3A%222018-04-01%22%2C%22count%22%3A%22screen%20time%22%2C%22aggregate%22%3A%22month%22%7D%2C%22queries%22%3A%5B%7B%22color%22%3A%22%234E79A7%22%2C%22text%22%3A%22COUNT%20%5C%22screen%20time%5C%22%20WHERE%20{{ parameters.onscreen_face }}1%3D%5C%22person%3A%20donald%20trump%5C%22%20SUBTRACT%20{{ parameters.onscreen_face }}1%3D%5C%22person%3A%20hillary%20clinton%5C%22%22%7D%5D%7D"></iframe>
   </p>
 </div>
 {% endblock %}

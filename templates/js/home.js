@@ -336,19 +336,23 @@ function loadQueryBuilder(search_table_row) {
 
   let onscreen_face = current_query.main_args['{{ parameters.onscreen_face }}1'];
   if (onscreen_face) {
-    let face_params = parseFaceFilterString(onscreen_face);
-    if (face_params.all) {
-      query_builder.find(`input[name="face1:all"]`).prop('checked', true);
-      query_builder.find('.toggle-face1').hide();
-    } else {
-      let tag_select = query_builder.find(`select[name="face1:tag"]`);
-      if (face_params.tag) {
-        tag_select.val(face_params.tag.split('&').map(x => $.trim(x)));
+    try {
+      let face_params = parseFaceFilterString(onscreen_face);
+      if (face_params.all) {
+        query_builder.find(`input[name="face1:all"]`).prop('checked', true);
+        query_builder.find('.toggle-face1').hide();
+      } else {
+        let tag_select = query_builder.find(`select[name="face1:tag"]`);
+        if (face_params.tag) {
+          tag_select.val(face_params.tag.split('&').map(x => $.trim(x)));
+        }
+        let person_select = query_builder.find(`select[name="face1:person"]`);
+        if (face_params.person) {
+          person_select.val(face_params.person.split('&').map(x => $.trim(x)));
+        }
       }
-      let person_select = query_builder.find(`select[name="face1:person"]`);
-      if (face_params.person) {
-        person_select.val(face_params.person.split('&').map(x => $.trim(x)));
-      }
+    } catch (e) {
+      console.log(e);
     }
   }
 

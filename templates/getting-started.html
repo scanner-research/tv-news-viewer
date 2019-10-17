@@ -89,15 +89,15 @@
     (CNN, FOX and MSNBC) in a single line. We can perform a comparison of
     the number of hours of video by charting each channel separately.
     To do this, use the + button to add two more rows and to write
-    <code>channel=CNN</code>, <code>channel=FOX</code>,
-    and <code>channel=MSNBC</code> into the search boxes, one per row so that
+    <code>{{ parameters.channel }}=CNN</code>, <code>{{ parameters.channel }}=FOX</code>,
+    and <code>{{ parameters.channel }}=MSNBC</code> into the search boxes, one per row so that
     the queries read:
 
     <span class="centered">
       <code>
-        <b>COUNT</b> screen time <b>WHERE</b> channel=CNN<br>
-        <b>COUNT</b> screen time <b>WHERE</b> channel=FOX<br>
-        <b>COUNT</b> screen time <b>WHERE</b> channel=MSNBC
+        <b>COUNT</b> screen time <b>WHERE</b> {{ parameters.channel }}=CNN<br>
+        <b>COUNT</b> screen time <b>WHERE</b> {{ parameters.channel }}=FOX<br>
+        <b>COUNT</b> screen time <b>WHERE</b> {{ parameters.channel }}=MSNBC
       </code>
     </span>
   </p>
@@ -137,17 +137,17 @@
     on screen faces, their genders and their identities, for a subset of faces
     that have been identified.
     For example, we can compute the total screen time of men and women in the
-    data set. This can be done using the <code>onscreen.face1</code>
+    data set. This can be done using the <code>{{ parameters.onscreen_face }}1</code>
     filter predicate. In this case, we want to filter on gender, so the filters
-    will be <code>onscreen.face1="tag: male"</code> and
-    <code>onscreen.face1="tag: female"</code> for frames that contain a face
+    will be <code>{{ parameters.onscreen_face }}1="tag: male"</code> and
+    <code>{{ parameters.onscreen_face }}1="tag: female"</code> for frames that contain a face
     with a man and woman, respectively. Both of these queries can also be
     made by selecting the gender tag in the dropdown search editor.
 
     <span class="centered">
       <code>
-        <b>COUNT</b> screen time <b>WHERE</b> onscreen.face1="tag: male"<br>
-        <b>COUNT</b> screen time <b>WHERE</b> onscreen.face1="tag: female"
+        <b>COUNT</b> screen time <b>WHERE</b> {{ parameters.onscreen_face }}1="tag: male"<br>
+        <b>COUNT</b> screen time <b>WHERE</b> {{ parameters.onscreen_face }}1="tag: female"
       </code>
     </span>
   </p>
@@ -162,21 +162,21 @@
     and female faces is trending upwards, but also that male screen time is
     roughly double that of female screen time.
   </p>
-  <iframe width="100%" height="300" src="//{{ host }}/embed?hideLegend=1&width=600&height=270&data=%7B%22options%22%3A%7B%22start_date%22%3A%222010-01-01%22%2C%22end_date%22%3A%222018-04-01%22%2C%22count%22%3A%22screen%20time%22%2C%22aggregate%22%3A%22month%22%7D%2C%22queries%22%3A%5B%7B%22color%22%3A%22%234E79A7%22%2C%22text%22%3A%22COUNT%20%5C%22screen%20time%5C%22%20WHERE%20onscreen.face1%3D%5C%22tag%3A%20male%5C%22%22%7D%2C%7B%22color%22%3A%22%23F28E2B%22%2C%22text%22%3A%22COUNT%20%5C%22screen%20time%5C%22%20WHERE%20onscreen.face1%3D%5C%22tag%3A%20female%5C%22%22%7D%5D%7D"></iframe>
+  <iframe width="100%" height="300" src="//{{ host }}/embed?hideLegend=1&width=600&height=270&data=%7B%22options%22%3A%7B%22start_date%22%3A%222010-01-01%22%2C%22end_date%22%3A%222018-04-01%22%2C%22count%22%3A%22screen%20time%22%2C%22aggregate%22%3A%22month%22%7D%2C%22queries%22%3A%5B%7B%22color%22%3A%22%234E79A7%22%2C%22text%22%3A%22COUNT%20%5C%22screen%20time%5C%22%20WHERE%20{{ parameters.onscreen_face }}1%3D%5C%22tag%3A%20male%5C%22%22%7D%2C%7B%22color%22%3A%22%23F28E2B%22%2C%22text%22%3A%22COUNT%20%5C%22screen%20time%5C%22%20WHERE%20{{ parameters.onscreen_face }}1%3D%5C%22tag%3A%20female%5C%22%22%7D%5D%7D"></iframe>
 
   <p>
     We can also make queries about people who have been identified in the videos.
     For example, if we were to compare the screen time of Donald Trump with
     that of Hillary Clinton. This will also require use of the
-    <code>onscreen.face1</code> filter. However, since we are now interested
+    <code>{{ parameters.onscreen_face }}1</code> filter. However, since we are now interested
     in frames that contain a person, we use
-    <code>onscreen.face1="person: Donald Trump"</code>
-    and <code>onscreen.face1="person: Hillary Clinton"</code>, respectively.
+    <code>{{ parameters.onscreen_face }}1="person: Donald Trump"</code>
+    and <code>{{ parameters.onscreen_face }}1="person: Hillary Clinton"</code>, respectively.
 
     <span class="centered">
       <code>
-        <b>COUNT</b> screen time <b>WHERE</b> onscreen.face1="person: hillary clinton"<br>
-        <b>COUNT</b> screen time <b>WHERE</b> onscreen.face1="person: donald trump"
+        <b>COUNT</b> screen time <b>WHERE</b> {{ parameters.onscreen_face }}1="person: hillary clinton"<br>
+        <b>COUNT</b> screen time <b>WHERE</b> {{ parameters.onscreen_face }}1="person: donald trump"
       </code>
     </span>
   </p>
@@ -191,7 +191,7 @@
     and female faces is trending upwards, but also that male screen time is
     roughly double that of female screen time.
   </p>
-  <iframe width="100%" height="300" src="//{{ host }}/embed?hideLegend=1&width=600&height=270&data=%7B%22options%22%3A%7B%22start_date%22%3A%222010-01-01%22%2C%22end_date%22%3A%222018-04-01%22%2C%22count%22%3A%22screen%20time%22%2C%22aggregate%22%3A%22month%22%7D%2C%22queries%22%3A%5B%7B%22color%22%3A%22%234E79A7%22%2C%22text%22%3A%22COUNT%20%5C%22screen%20time%5C%22%20WHERE%20onscreen.face1%3D%5C%22person%3A%20hillary%20clinton%5C%22%22%7D%2C%7B%22color%22%3A%22%23F28E2B%22%2C%22text%22%3A%22COUNT%20%5C%22screen%20time%5C%22%20WHERE%20onscreen.face1%3D%5C%22person%3A%20donald%20trump%5C%22%22%7D%5D%7D"></iframe>
+  <iframe width="100%" height="300" src="//{{ host }}/embed?hideLegend=1&width=600&height=270&data=%7B%22options%22%3A%7B%22start_date%22%3A%222010-01-01%22%2C%22end_date%22%3A%222018-04-01%22%2C%22count%22%3A%22screen%20time%22%2C%22aggregate%22%3A%22month%22%7D%2C%22queries%22%3A%5B%7B%22color%22%3A%22%234E79A7%22%2C%22text%22%3A%22COUNT%20%5C%22screen%20time%5C%22%20WHERE%20{{ parameters.onscreen_face }}1%3D%5C%22person%3A%20hillary%20clinton%5C%22%22%7D%2C%7B%22color%22%3A%22%23F28E2B%22%2C%22text%22%3A%22COUNT%20%5C%22screen%20time%5C%22%20WHERE%20{{ parameters.onscreen_face }}1%3D%5C%22person%3A%20donald%20trump%5C%22%22%7D%5D%7D"></iframe>
 
   <p>
     To see the list of people who are searchable, click
@@ -216,12 +216,12 @@
   <p>
     This tool can search the transcripts for the intervals where
     words are being said. For instance,
-    <code>transcript.text="UNITED NATIONS"</code> finds all times when
+    <code>{{ parameters.caption_text }}="UNITED NATIONS"</code> finds all times when
     the phrase <code>"UNITED NATIONS"</code> appears in the transcripts.
 
     <span class="centered">
       <code>
-        <b>COUNT</b> screen time <b>WHERE</b> transcript.text="UNITED NATIONS"
+        <b>COUNT</b> screen time <b>WHERE</b> {{ parameters.caption_text }}="UNITED NATIONS"
       </code>
     </span>
   </p>
@@ -235,7 +235,7 @@
     following:
   </p>
 
-  <iframe width="100%" height="300" src="//{{ host }}/embed?hideLegend=1&width=600&height=270&data=%7B%22options%22%3A%7B%22start_date%22%3A%222010-01-01%22%2C%22end_date%22%3A%222018-04-01%22%2C%22count%22%3A%22screen%20time%22%2C%22aggregate%22%3A%22month%22%7D%2C%22queries%22%3A%5B%7B%22color%22%3A%22%234E79A7%22%2C%22text%22%3A%22COUNT%20%5C%22screen%20time%5C%22%20WHERE%20transcript.text%3D%5C%22UNITED%20NATIONS%5C%22%22%7D%5D%7D"></iframe>
+  <iframe width="100%" height="300" src="//{{ host }}/embed?hideLegend=1&width=600&height=270&data=%7B%22options%22%3A%7B%22start_date%22%3A%222010-01-01%22%2C%22end_date%22%3A%222018-04-01%22%2C%22count%22%3A%22screen%20time%22%2C%22aggregate%22%3A%22month%22%7D%2C%22queries%22%3A%5B%7B%22color%22%3A%22%234E79A7%22%2C%22text%22%3A%22COUNT%20%5C%22screen%20time%5C%22%20WHERE%20{{ parameters.caption_text }}%3D%5C%22UNITED%20NATIONS%5C%22%22%7D%5D%7D"></iframe>
 
   <p>
     Notice that, by default, the tool finds only the exact moments when words
@@ -245,14 +245,14 @@
 
     <span class="centered">
       <code>
-        <b>COUNT</b> screen time <b>WHERE</b> transcript.text="UNITED NATIONS" <b>AND</b> transcript.window=30
+        <b>COUNT</b> screen time <b>WHERE</b> {{ parameters.caption_text }}="UNITED NATIONS" <b>AND</b> transcript.window=30
       </code>
     </span>
   </p>
 
   <p>
     Multiple phrases can be specifed using "|" as a separator. For
-    example, <code>transcript.text="UNITED NATIONS | UN | U.N."</code>.
+    example, <code>{{ parameters.caption_text }}="UNITED NATIONS | UN | U.N."</code>.
     This can be useful for defining a topic query.
   </p>
 
@@ -264,7 +264,7 @@
     men on a single channel:
 
     <span class="centered">
-      <code><b>COUNT</b> screen time <b>WHERE</b> onscreen.face1="tag: male" <b>AND</b> channel=CNN</code>
+      <code><b>COUNT</b> screen time <b>WHERE</b> {{ parameters.onscreen_face }}1="tag: male" <b>AND</b> {{ parameters.channel }}=CNN</code>
     </span>
 
     Likewise, we can combine a query on identities with text. For example,
@@ -273,24 +273,24 @@
     write the following query.
 
     <span class="centered">
-      <code><b>COUNT</b> screen time <b>WHERE</b> onscreen.face1="person: donald trump"
-            <b>AND</b> transcript.text="BORDER WALL"</code>
+      <code><b>COUNT</b> screen time <b>WHERE</b> {{ parameters.onscreen_face }}1="person: donald trump"
+            <b>AND</b> {{ parameters.caption_text }}="BORDER WALL"</code>
     </span>
 
     A further refinement of the query is to find when Donald Trump is on screen
     within 30 seconds of <code>"BORDER WALL"</code> being said.
 
     <span class="centered">
-      <code><b>COUNT</b> screen time <b>WHERE</b> onscreen.face1="person: donald trump"
-            <b>AND</b> transcript.text="BORDER WALL" <b>AND</b> transcript.window=30</code>
+      <code><b>COUNT</b> screen time <b>WHERE</b> {{ parameters.onscreen_face }}1="person: donald trump"
+            <b>AND</b> {{ parameters.caption_text }}="BORDER WALL" <b>AND</b> {{ parameters.caption_window }}=30</code>
     </span>
 
     Similarly, the tool can compute screen time where two people (e.g., Donald Trump and
     Hillary Clinton) are shown on screen together.
 
     <span class="centered">
-      <code><b>COUNT</b> screen time <b>WHERE</b> onscreen.face1="person: donald trump"
-            <b>AND</b> onscreen.face2="person: hillary clinton"</code>
+      <code><b>COUNT</b> screen time <b>WHERE</b> {{ parameters.onscreen_face }}1="person: donald trump"
+            <b>AND</b> {{ parameters.onscreen_face }}2="person: hillary clinton"</code>
     </span>
 
     Please read the <a href="/detailed" target="_blank">detailed documentation</a> page

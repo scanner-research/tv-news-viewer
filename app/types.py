@@ -35,10 +35,10 @@ class SearchParameter:
     hour = 'hour'
     day_of_week = 'dayofweek'
 
-    onscreen_face = 'onscreen.face'
-    onscreen_numfaces = 'onscreen.facecount'
+    onscreen_face = 'face'
+    onscreen_numfaces = 'face.count'
 
-    caption_text = 'transcript.text'
+    caption_text = 'transcript'
     caption_window = 'transcript.window'
 
     is_commercial = 'iscommercial'
