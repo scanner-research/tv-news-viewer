@@ -88,13 +88,13 @@ def derive_face_isets(
 
     helper(0, 0, 'all.iset.bin')
     helper(0b1, 0b1, 'male.iset.bin')
-    helper(0b1, 0, 'female.iset.bin')
+    helper(0b1, 0b0, 'female.iset.bin')
     helper(0b10, 0b10, 'host.iset.bin')
-    helper(0b10, 0, 'nonhost.iset.bin')
+    helper(0b10, 0b00, 'nonhost.iset.bin')
     helper(0b11, 0b11, 'male_host.iset.bin')
-    helper(0b11, 0b10, 'male_nonhost.iset.bin')
+    helper(0b11, 0b01, 'male_nonhost.iset.bin')
     helper(0b11, 0b10, 'female_host.iset.bin')
-    helper(0b11, 0, 'female_nonhost.iset.bin')
+    helper(0b11, 0b00, 'female_nonhost.iset.bin')
 
 
 IntervalAndPayload = Tuple[int, int, int]
