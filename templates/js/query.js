@@ -59,22 +59,23 @@ WhereClause
 
 AndList
   = a:KeyValue Blank "AND"i Blank b:AndList {
-      Object.keys(a).forEach(k => {
-      if (b.hasOwnProperty(k)) {
-        throw Error('Duplicate key in where-clause: ' + k);
-      }
-      b[k] = a[k];
-    });
+    let [k, v] = a;
+    if (b.hasOwnProperty(k)) {
+      b[k].push(v);
+    } else {
+      b[k] = [v];
+    }
     return b;
   }
-  / a:KeyValue { return a; }
+  / a:KeyValue {
+    let [k, v] = a;
+    let ret = {};
+    ret[k] = [v];
+    return ret;
+  }
 
 KeyValue
-  = k:TokenNoSpace Blank "=" Blank v:Printable {
-  	let ret = {};
-    ret[k] = v;
-  	return ret;
-  }
+  = k:TokenNoSpace Blank "=" Blank v:Printable { return [k, v]; }
 
 TokenNoSpace
   = s:[a-zA-Z0-9.]+ { return s.join(''); }
@@ -164,6 +165,8 @@ Blank
 const QUERY_PARSER = PEG.buildParser(QUERY_GRAMMAR);
 const QUERY_CLAUSE_PARSER = PEG.buildParser(QUERY_CLAUSE_GRAMMAR);
 
+class QueryParseError extends Error {}
+
 function parseTernary(s) {
   if (s.match(/^true$/i)) {
     return 'true';
@@ -172,7 +175,7 @@ function parseTernary(s) {
   } else if (s.match(/^both$/i)) {
     return 'both';
   } else {
-    throw Error(`${s} is neither true, false, nor both`);
+    throw new QueryParseError(`${s} is neither true, false, nor both`);
   }
 }
 
@@ -191,7 +194,7 @@ function parseFaceFilterString(s) {
           result[k] = v;
         }
       } else {
-        throw Error(`${k} is not a valid filter`);
+        throw new QueryParseError(`${k} is not a valid filter`);
       }
     });
   }
@@ -210,63 +213,75 @@ function findShow(v) {
   return show;
 }
 
+function getSingleValue(key, arr) {
+  if (arr.length > 1) {
+    throw new QueryParseError(`${key} is specified multiple times`);
+  }
+  return $.trim(arr[0]);
+}
+
 function translateArgumentDict(raw_filters, no_err) {
   let filters = {};
   var alias;
-  Object.keys(raw_filters).forEach(k => {
-    let v = $.trim(raw_filters[k]);
-    let v_up = v.toUpperCase();
-    if (k == '{{ parameters.alias }}') {
-      alias = v;
-    } else if (k == '{{ parameters.caption_text }}') {
-      filters[k] = v;
-    } else if (
-        k == '{{ parameters.face }}'
-        || k.match(/^{{ parameters.onscreen_face }}\d*/)) {
-      filters[k] = v;
-    } else if (k == '{{ parameters.onscreen_numfaces }}') {
-      filters[k] = parseInt(v);
-    } else if (k == '{{ parameters.caption_window }}') {
-      let i = parseInt(v);
-      if (Number.isNaN(i)) {
-        if (!no_err) throw Error(`Invalid window value: ${i}`);
-      } else {
-        filters[k] = i;
-      }
-    } else if (k == '{{ parameters.channel }}') {
-      if (v_up == 'ALL') {
-        // pass
-      } else if (v_up == 'FOX') {
-        filters[k] = 'FOXNEWS';
-      } else if (v_up == 'CNN' || v_up == 'MSNBC' ||  v_up == 'FOXNEWS') {
-        filters[k] = v_up;
-      } else {
-        if (!no_err) throw Error(`Unknown channel: ${v}`);
-      }
-    } else if (k == '{{ parameters.show }}') {
-      if (v_up == 'ALL') {
-        // pass
-      } else {
-        var show = findShow(v);
+  Object.entries(raw_filters).forEach(([k, v_arr]) => {
+    try {
+      if (k == '{{ parameters.alias }}') {
+        alias = getSingleValue(k, v_arr);
+      } else if (k == '{{ parameters.caption_text }}') {
+        filters[k] = getSingleValue(k, v_arr);
+      } else if (k == '{{ parameters.face }}'
+                 || k == '{{ parameters.onscreen_face }}') {
+        v_arr.forEach((v, i) => {
+          if (i == 0) {
+            filters[k] = v;
+          } else {
+            filters[`${k}${i + 1}`] = v;
+          }
+        });
+      } else if (k == '{{ parameters.onscreen_numfaces }}') {
+        filters[k] = parseInt(getSingleValue(k, v_arr));
+      } else if (k == '{{ parameters.caption_window }}') {
+        let i = parseInt(getSingleValue(k, v_arr));
+        if (Number.isNaN(i)) {
+          throw new QueryParseError(`Invalid window value: ${i}`);
+        } else {
+          filters[k] = i;
+        }
+      } else if (k == '{{ parameters.channel }}') {
+        let v = getSingleValue(k, v_arr);
+        let v_up = v.toUpperCase();
+        if (v_up == 'FOX') {
+          filters[k] = 'FOXNEWS';
+        } else if (v_up == 'CNN' || v_up == 'MSNBC' ||  v_up == 'FOXNEWS') {
+          filters[k] = v_up;
+        } else {
+          throw new QueryParseError(`Unknown channel: ${v}`);
+        }
+      } else if (k == '{{ parameters.show }}') {
+        let v = getSingleValue(k, v_arr);
+        let show = findShow(v);
         if (show) {
           filters[k] = show;
         } else {
-          if (!no_err) throw Error(`Unknown show: ${v}`);
+          throw new QueryParseError(`Unknown show: ${show}`);
         }
+      } else if (k == '{{ parameters.day_of_week }}'
+                 || k == '{{ parameters.hour }}') {
+        filters[k] = getSingleValue(k, v_arr);
+      } else if (k == '{{ parameters.is_commercial }}') {
+        try {
+          let v = getSingleValue(k, v_arr);
+          filters[k] = parseTernary(v);
+        } catch (e) {
+          if (!no_err) throw e;
+        }
+      } else if (k == '{{ parameters.video }}') {
+        filters[k] = getSingleValue(k, v_arr);
+      } else {
+        throw new QueryParseError(`Unknown filter: ${k}`);
       }
-    } else if (k == '{{ parameters.day_of_week }}'
-               || k == '{{ parameters.hour }}') {
-      filters[k] = v;
-    } else if (k == '{{ parameters.is_commercial }}') {
-      try {
-        filters[k] = parseTernary(v);
-      } catch (e) {
-        if (!no_err) throw e;
-      }
-    } else if (k == '{{ parameters.video }}') {
-      filters[k] = v;
-    } else {
-      if (!no_err) throw Error(`Unknown filter: ${k}`);
+    } catch (e) {
+      if (!no_err) throw e;
     }
   });
   return {filters: filters, alias: alias};
@@ -339,7 +354,7 @@ class SearchableQuery {
     this.main_args = tmp.args;
     if (tmp.alias) {
       if (this.alias) {
-        throw Error('Alias can only be specified once');
+        throw new QueryParseError('Alias can only be specified once');
       }
       this.alias = tmp.alias;
     }

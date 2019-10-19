@@ -198,14 +198,12 @@
     <tbody>
       <tr>
         <td rowspan="4">
-          {{ parameters.onscreen_face }} <br>
-          {{ parameters.onscreen_face }}1 <br>
-          {{ parameters.onscreen_face }}2 <br>
-          {{ parameters.onscreen_face }}<b>n</b>
+          {{ parameters.onscreen_face }}<br>
         </td>
         <td>description</td>
         <td>
-          at least one matching face on screen.
+          constrain results to at least one matching face on screen.
+          Can be specified multiple times for different contraints.
           Options separated by commas.
         </td>
       </tr>
@@ -227,9 +225,9 @@
           <code>
             {{ parameters.onscreen_face }}="all" <br>
             {{ parameters.onscreen_face }}="person:Barack Obama" <br>
-            {{ parameters.onscreen_face }}1="tag:male" <br>
-            {{ parameters.onscreen_face }}2="tag:male & host" <br>
-            {{ parameters.onscreen_face }}3="tag:journalist"
+            {{ parameters.onscreen_face }}="tag:male" <br>
+            {{ parameters.onscreen_face }}="tag:male & host" <br>
+            {{ parameters.onscreen_face }}="tag:journalist"
           </code>
         </td>
       </tr>

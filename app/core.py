@@ -24,7 +24,7 @@ from rs_intervalset.wrapper import (                    # type: ignore
     MmapIListToISetMapping, MmapUnionIlistsToISetMapping)
 
 from .types import *
-from .error import InvalidUsage, NotFound, UnreachableCode
+from .error import *
 from .parsing import *
 from .sum import *
 from .load import (
@@ -161,8 +161,7 @@ def person_tags_to_people(
             people_with_tag = \
                 video_data_context.all_person_tags.tag_to_names(tag)
             if not people_with_tag:
-                raise InvalidUsage(
-                    'tag: "{}" has no people associated with it'.format(tag))
+                raise TagNotInDatabase(tag)
 
             if selected_names is None:
                 selected_names = set(people_with_tag)
@@ -178,7 +177,7 @@ def people_to_ilistmaps(
         person_intervals = video_data_context.all_person_intervals.get(
             person, None)
         if person_intervals is None:
-            raise InvalidUsage('{} is not a valid person'.format(person))
+            raise PersonNotInDatabase(person)
         ilistmaps.append(person_intervals.ilistmap)
     return ilistmaps
 
@@ -190,7 +189,7 @@ def person_to_isetmap(
     person_intervals = video_data_context.all_person_intervals.get(
         person, None)
     if person_intervals is None:
-        raise InvalidUsage('{} is not a valid person'.format(person))
+        raise PersonNotInDatabase(person)
     if gender is None and role is None:
         isetmap = person_intervals.isetmap
     else:
@@ -300,8 +299,10 @@ def get_onscreen_face_isetmaps(
                     3000, 0))
 
         elif k.startswith(SearchParameter.onscreen_face):
-            filter_str = request.args.get(k, '', type=str).strip().lower()
-            isetmap = get_onscreen_face_isetmap(video_data_context, filter_str)
+            filter_str = request.args.get(k, type=str)
+            assert filter_str is not None
+            isetmap = get_onscreen_face_isetmap(
+                video_data_context, filter_str.strip().lower())
             if isetmap:
                 result.append(isetmap)
 

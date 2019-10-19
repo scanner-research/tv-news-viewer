@@ -19,6 +19,20 @@ class InvalidUsage(Exception):
         return rv
 
 
+class PersonNotInDatabase(InvalidUsage):
+
+    def __init__(self, person: str):
+        InvalidUsage.__init__(
+            self, 'Person "{}" is not in our database'.format(person))
+
+
+class TagNotInDatabase(InvalidUsage):
+
+    def __init__(self, tag: str):
+        InvalidUsage.__init__(
+            self, 'Tag "{}" is not in our database'.format(tag))
+
+
 class NotFound(Exception):
 
     def __init__(self, message: str):
