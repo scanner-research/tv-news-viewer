@@ -23,7 +23,7 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
         the screen has a face that:
       </td>
       <td type="value-col">
-        <span title='A face is on screen if it is visible anywhere in the frame. This definition includes faces in the foreground or background; live or still; and big or small. Note: this will update onscreen.face1="...". To filter on multiple faces, edit the search box manually.'>
+        <span title='A face is on screen if it is visible anywhere in the frame. This definition includes faces in the foreground or background; live or still; and big or small. Note: this will update onscreen.face="...". To filter on multiple faces, edit the search box manually.'>
           &#9432;
         </span>
       </td>
@@ -33,10 +33,10 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
         is any face
       </td>
       <td>
-        <input type="checkbox" name="face1:all">
+        <input type="checkbox" name="face:all">
       </td>
     </tr>
-    <tr class="toggle-face1">
+    <tr class="toggle-face">
       <td type="key-col">
         is a person
       </td>
@@ -44,12 +44,12 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
         <span>
           <select multiple class="chosen-select chosen-basic-select"
                   data-placeholder="no names selected"
-                  name="face1:person" data-width="fit">
+                  name="face:person" data-width="fit">
           </select>
         </span>
       </td>
     </tr>
-    <tr class="toggle-face1">
+    <tr class="toggle-face">
       <td type="key-col">
         has tag
       </td>
@@ -57,7 +57,7 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
         <span>
           <select multiple class="chosen-select chosen-basic-select"
                   data-placeholder="no tags selected"
-                  name="face1:tag" data-width="fit">
+                  name="face:tag" data-width="fit">
             {% for tag in global_face_tags %}
             <option value="{{ tag }}">{{ tag }}*</option>
             {% endfor %}
@@ -276,11 +276,11 @@ function getQueryBuilder() {
     let show_select = builder.find('select[name="{{ parameters.show }}"]');
     ALL_SHOWS.forEach(x => show_select.append($('<option>').val(x).text(x)));
     let person_select = builder.find(
-      'select[name="face1:person"]'
+      'select[name="face:person"]'
     );
     ALL_PEOPLE.forEach(x => person_select.append($('<option>').val(x).text(x)));
     let person_tag_select = builder.find(
-      'select[name="face1:tag"]'
+      'select[name="face:tag"]'
     );
     ALL_PERSON_TAGS.forEach(
       x => person_tag_select.append($('<option>').val(x).text(x))
@@ -296,13 +296,13 @@ function getQueryBuilder() {
   builder.find('[name="{{ parameters.is_commercial }}"]').val('false');
   builder.find('[name="{{ parameters.caption_text }}"]').val('');
   builder.find('[name="{{ parameters.caption_window }}"]').val('{{ default_text_window }}');
-  builder.find('[name="face1:person"]').val(null).parent();
-  builder.find('[name="face1:tag"]').val(null).parent();
-  builder.find('[name="face1:all"]').prop('checked', false);
+  builder.find('[name="face:person"]').val(null).parent();
+  builder.find('[name="face:tag"]').val(null).parent();
+  builder.find('[name="face:all"]').prop('checked', false);
   builder.find('[name="{{ parameters.onscreen_numfaces }}"]').val('');
   builder.find('[name="normalize"]').prop('checked', false);
   builder.find('[name="{{ parameters.alias }}"]').val('');
-  builder.find('.toggle-face1').show();
+  builder.find('.toggle-face').show();
   return builder;
 }
 
@@ -334,19 +334,19 @@ function loadQueryBuilder(search_table_row) {
   setIfDefined('{{ parameters.caption_window }}');
   setIfDefined('{{ parameters.is_commercial }}');
 
-  let onscreen_face = current_query.main_args['{{ parameters.onscreen_face }}1'];
+  let onscreen_face = current_query.main_args['{{ parameters.onscreen_face }}'];
   if (onscreen_face) {
     try {
       let face_params = parseFaceFilterString(onscreen_face);
       if (face_params.all) {
-        query_builder.find(`input[name="face1:all"]`).prop('checked', true);
-        query_builder.find('.toggle-face1').hide();
+        query_builder.find(`input[name="face:all"]`).prop('checked', true);
+        query_builder.find('.toggle-face').hide();
       } else {
-        let tag_select = query_builder.find(`select[name="face1:tag"]`);
+        let tag_select = query_builder.find(`select[name="face:tag"]`);
         if (face_params.tag) {
           tag_select.val(face_params.tag.split('&').map(x => $.trim(x)));
         }
-        let person_select = query_builder.find(`select[name="face1:person"]`);
+        let person_select = query_builder.find(`select[name="face:person"]`);
         if (face_params.person) {
           person_select.val(face_params.person.split('&').map(x => $.trim(x)));
         }
@@ -381,11 +381,11 @@ function loadQueryBuilder(search_table_row) {
   });
   query_builder.find('.chosen-basic-select').chosen({width: 'auto'});
 
-  query_builder.find('[name="face1:all"]').change(function() {
+  query_builder.find('[name="face:all"]').change(function() {
     if ($(this).is(':checked')) {
-      query_builder.find('.toggle-face1').hide();
+      query_builder.find('.toggle-face').hide();
     } else {
-      query_builder.find('.toggle-face1').show();
+      query_builder.find('.toggle-face').show();
     }
   });
 
@@ -468,24 +468,24 @@ function updateQueryBox(search_table_row) {
     filters.push(`{{ parameters.is_commercial }}=${is_commercial}`);
   }
 
-  let face_all = builder.find('input[name="face1:all"]').is(':checked');
+  let face_all = builder.find('input[name="face:all"]').is(':checked');
   if (face_all) {
-    filters.push(`{{ parameters.onscreen_face }}1="all"`);
+    filters.push(`{{ parameters.onscreen_face }}="all"`);
   } else {
     let face_params = [];
 
-    let face_person = builder.find('select[name="face1:person"]').val();
+    let face_person = builder.find('select[name="face:person"]').val();
     if (face_person && face_person.length > 0) {
       face_params.push('person: ' + face_person.join(' & '));
     }
 
-    let face_tag = builder.find('select[name="face1:tag"]').val();
+    let face_tag = builder.find('select[name="face:tag"]').val();
     if (face_tag && face_tag.length > 0) {
       face_params.push('tag: ' + face_tag.join(` & `));
     }
 
     if (face_params.length > 0) {
-      filters.push(`{{ parameters.onscreen_face }}1="${face_params.join(', ')}"`);
+      filters.push(`{{ parameters.onscreen_face }}="${face_params.join(', ')}"`);
     }
   }
 

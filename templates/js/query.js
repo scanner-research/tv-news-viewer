@@ -222,7 +222,7 @@ function translateArgumentDict(raw_filters, no_err) {
       filters[k] = v;
     } else if (
         k == '{{ parameters.face }}'
-        || k.match(/^{{ parameters.onscreen_face }}\d+/)) {
+        || k.match(/^{{ parameters.onscreen_face }}\d*/)) {
       filters[k] = v;
     } else if (k == '{{ parameters.onscreen_numfaces }}') {
       filters[k] = parseInt(v);

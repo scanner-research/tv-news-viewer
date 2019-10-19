@@ -137,17 +137,17 @@
     on screen faces, their genders and their identities, for a subset of faces
     that have been identified.
     For example, we can compute the total screen time of men and women in the
-    data set. This can be done using the <code>{{ parameters.onscreen_face }}1</code>
+    data set. This can be done using the <code>{{ parameters.onscreen_face }}</code>
     filter predicate. In this case, we want to filter on gender, so the filters
-    will be <code>{{ parameters.onscreen_face }}1="tag: male"</code> and
-    <code>{{ parameters.onscreen_face }}1="tag: female"</code> for frames that contain a face
+    will be <code>{{ parameters.onscreen_face }}="tag: male"</code> and
+    <code>{{ parameters.onscreen_face }}="tag: female"</code> for frames that contain a face
     with a man and woman, respectively. Both of these queries can also be
     made by selecting the gender tag in the dropdown search editor.
 
     <span class="centered">
       <code>
-        <b>COUNT</b> screen time <b>WHERE</b> {{ parameters.onscreen_face }}1="tag: male"<br>
-        <b>COUNT</b> screen time <b>WHERE</b> {{ parameters.onscreen_face }}1="tag: female"
+        <b>COUNT</b> screen time <b>WHERE</b> {{ parameters.onscreen_face }}="tag: male"<br>
+        <b>COUNT</b> screen time <b>WHERE</b> {{ parameters.onscreen_face }}="tag: female"
       </code>
     </span>
   </p>
@@ -162,21 +162,21 @@
     and female faces is trending upwards, but also that male screen time is
     roughly double that of female screen time.
   </p>
-  <iframe width="100%" height="300" src="//{{ host }}/embed?hideLegend=1&width=600&height=270&data=%7B%22options%22%3A%7B%22start_date%22%3A%222010-01-01%22%2C%22end_date%22%3A%222018-04-01%22%2C%22count%22%3A%22screen%20time%22%2C%22aggregate%22%3A%22month%22%7D%2C%22queries%22%3A%5B%7B%22color%22%3A%22%234E79A7%22%2C%22text%22%3A%22COUNT%20%5C%22screen%20time%5C%22%20WHERE%20{{ parameters.onscreen_face }}1%3D%5C%22tag%3A%20male%5C%22%22%7D%2C%7B%22color%22%3A%22%23F28E2B%22%2C%22text%22%3A%22COUNT%20%5C%22screen%20time%5C%22%20WHERE%20{{ parameters.onscreen_face }}1%3D%5C%22tag%3A%20female%5C%22%22%7D%5D%7D"></iframe>
+  <iframe width="100%" height="300" src="//{{ host }}/embed?hideLegend=1&width=600&height=270&data=%7B%22options%22%3A%7B%22start_date%22%3A%222010-01-01%22%2C%22end_date%22%3A%222018-04-01%22%2C%22count%22%3A%22screen%20time%22%2C%22aggregate%22%3A%22month%22%7D%2C%22queries%22%3A%5B%7B%22color%22%3A%22%234E79A7%22%2C%22text%22%3A%22COUNT%20%5C%22screen%20time%5C%22%20WHERE%20{{ parameters.onscreen_face }}%3D%5C%22tag%3A%20male%5C%22%22%7D%2C%7B%22color%22%3A%22%23F28E2B%22%2C%22text%22%3A%22COUNT%20%5C%22screen%20time%5C%22%20WHERE%20{{ parameters.onscreen_face }}%3D%5C%22tag%3A%20female%5C%22%22%7D%5D%7D"></iframe>
 
   <p>
     We can also make queries about people who have been identified in the videos.
     For example, if we were to compare the screen time of Donald Trump with
     that of Hillary Clinton. This will also require use of the
-    <code>{{ parameters.onscreen_face }}1</code> filter. However, since we are now interested
+    <code>{{ parameters.onscreen_face }}</code> filter. However, since we are now interested
     in frames that contain a person, we use
-    <code>{{ parameters.onscreen_face }}1="person: Donald Trump"</code>
-    and <code>{{ parameters.onscreen_face }}1="person: Hillary Clinton"</code>, respectively.
+    <code>{{ parameters.onscreen_face }}="person: Donald Trump"</code>
+    and <code>{{ parameters.onscreen_face }}="person: Hillary Clinton"</code>, respectively.
 
     <span class="centered">
       <code>
-        <b>COUNT</b> screen time <b>WHERE</b> {{ parameters.onscreen_face }}1="person: hillary clinton"<br>
-        <b>COUNT</b> screen time <b>WHERE</b> {{ parameters.onscreen_face }}1="person: donald trump"
+        <b>COUNT</b> screen time <b>WHERE</b> {{ parameters.onscreen_face }}="person: hillary clinton"<br>
+        <b>COUNT</b> screen time <b>WHERE</b> {{ parameters.onscreen_face }}="person: donald trump"
       </code>
     </span>
   </p>
@@ -191,7 +191,7 @@
     and female faces is trending upwards, but also that male screen time is
     roughly double that of female screen time.
   </p>
-  <iframe width="100%" height="300" src="//{{ host }}/embed?hideLegend=1&width=600&height=270&data=%7B%22options%22%3A%7B%22start_date%22%3A%222010-01-01%22%2C%22end_date%22%3A%222018-04-01%22%2C%22count%22%3A%22screen%20time%22%2C%22aggregate%22%3A%22month%22%7D%2C%22queries%22%3A%5B%7B%22color%22%3A%22%234E79A7%22%2C%22text%22%3A%22COUNT%20%5C%22screen%20time%5C%22%20WHERE%20{{ parameters.onscreen_face }}1%3D%5C%22person%3A%20hillary%20clinton%5C%22%22%7D%2C%7B%22color%22%3A%22%23F28E2B%22%2C%22text%22%3A%22COUNT%20%5C%22screen%20time%5C%22%20WHERE%20{{ parameters.onscreen_face }}1%3D%5C%22person%3A%20donald%20trump%5C%22%22%7D%5D%7D"></iframe>
+  <iframe width="100%" height="300" src="//{{ host }}/embed?hideLegend=1&width=600&height=270&data=%7B%22options%22%3A%7B%22start_date%22%3A%222010-01-01%22%2C%22end_date%22%3A%222018-04-01%22%2C%22count%22%3A%22screen%20time%22%2C%22aggregate%22%3A%22month%22%7D%2C%22queries%22%3A%5B%7B%22color%22%3A%22%234E79A7%22%2C%22text%22%3A%22COUNT%20%5C%22screen%20time%5C%22%20WHERE%20{{ parameters.onscreen_face }}%3D%5C%22person%3A%20hillary%20clinton%5C%22%22%7D%2C%7B%22color%22%3A%22%23F28E2B%22%2C%22text%22%3A%22COUNT%20%5C%22screen%20time%5C%22%20WHERE%20{{ parameters.onscreen_face }}%3D%5C%22person%3A%20donald%20trump%5C%22%22%7D%5D%7D"></iframe>
 
   <p>
     To see the list of people who are searchable, click
@@ -264,7 +264,7 @@
     men on a single channel:
 
     <span class="centered">
-      <code><b>COUNT</b> screen time <b>WHERE</b> {{ parameters.onscreen_face }}1="tag: male" <b>AND</b> {{ parameters.channel }}=CNN</code>
+      <code><b>COUNT</b> screen time <b>WHERE</b> {{ parameters.onscreen_face }}="tag: male" <b>AND</b> {{ parameters.channel }}=CNN</code>
     </span>
 
     Likewise, we can combine a query on identities with text. For example,
@@ -273,7 +273,7 @@
     write the following query.
 
     <span class="centered">
-      <code><b>COUNT</b> screen time <b>WHERE</b> {{ parameters.onscreen_face }}1="person: donald trump"
+      <code><b>COUNT</b> screen time <b>WHERE</b> {{ parameters.onscreen_face }}="person: donald trump"
             <b>AND</b> {{ parameters.caption_text }}="BORDER WALL"</code>
     </span>
 
@@ -281,7 +281,7 @@
     within 30 seconds of <code>"BORDER WALL"</code> being said.
 
     <span class="centered">
-      <code><b>COUNT</b> screen time <b>WHERE</b> {{ parameters.onscreen_face }}1="person: donald trump"
+      <code><b>COUNT</b> screen time <b>WHERE</b> {{ parameters.onscreen_face }}="person: donald trump"
             <b>AND</b> {{ parameters.caption_text }}="BORDER WALL" <b>AND</b> {{ parameters.caption_window }}=30</code>
     </span>
 
@@ -289,7 +289,7 @@
     Hillary Clinton) are shown on screen together.
 
     <span class="centered">
-      <code><b>COUNT</b> screen time <b>WHERE</b> {{ parameters.onscreen_face }}1="person: donald trump"
+      <code><b>COUNT</b> screen time <b>WHERE</b> {{ parameters.onscreen_face }}="person: donald trump"
             <b>AND</b> {{ parameters.onscreen_face }}2="person: hillary clinton"</code>
     </span>
 
