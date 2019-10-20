@@ -25,7 +25,6 @@ function getPhrasesToHighlight(query) {
       }
     }
   });
-  console.log(phrases);
   return phrases;
 }
 
