@@ -92,8 +92,9 @@ function loadJsonData(json_data, caption_data, face_data, highlight_phrases) {
     }, {});
     let makeFaceInterval = function(face) {
       let [x1, y1, x2, y2] = face.b;
+      let [t0, t1] = face.t;
       return new Interval(
-        new Bounds(face.t0, face.t1, new BoundingBox(x1, x2, y1, y2)),
+        new Bounds(t0, t1, new BoundingBox(x1, x2, y1, y2)),
         {
           spatial_type: new SpatialType_Bbox(),
           metadata: face.i ? {name: new Metadata_Bbox(face_id_to_name[face.i])}: {}
@@ -220,8 +221,7 @@ function loadJsonDataForInternetArchive(json_data, caption_data, face_data,
 
     let video_face_data = _.get(face_data, video_id, {ids: [], faces: []});
     let faces = video_face_data.faces.filter(face => {
-      let start = face.t0;
-      let end = face.t1;
+      let [start, end] = face.t;
       return Math.min(block_end, end) - Math.max(block_start, start) >= 0;
     });
     let face_id_to_name = video_face_data.ids.reduce((acc, x) => {
@@ -231,8 +231,9 @@ function loadJsonDataForInternetArchive(json_data, caption_data, face_data,
 
     let makeFaceInterval = function(face) {
       let [x1, y1, x2, y2] = face.b;
+      let [t0, t1] = face.t;
       return new Interval(
-        makeBounds(face.t0, face.t1, new BoundingBox(x1, x2, y1, y2)),
+        makeBounds(t0, t1, new BoundingBox(x1, x2, y1, y2)),
         {
           spatial_type: new SpatialType_Bbox(),
           metadata: face.i ? {name: new Metadata_Bbox(face_id_to_name[face.i])}: {}
