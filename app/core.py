@@ -372,10 +372,18 @@ def merge_close_intervals(
         yield curr_i
 
 
-def has_onscreen_face(
-    v: Video, t: int, isetmaps: List[MmapIntervalSetMapping]
-) -> bool:
-    return all(isetmap.is_contained(v.id, t, True) for isetmap in isetmaps)
+def untokenize(words: Iterable[str]) -> str:
+    text = ' '.join(words)
+    step1 = text.replace("`` ", '"').replace(" ''", '"').replace('. . .',  '...')
+    step2 = step1.replace(" ( ", " (").replace(" ) ", ") ")
+    step3 = re.sub(r' ([.,:;?!%>]+)([ \'"`])', r"\1\2", step2)
+    step4 = re.sub(r' ([.,:;?!%>]+)$', r"\1", step3)
+    step5 = step4.replace(" '", "'").replace(" n't", "n't")\
+        .replace(" N'T", "N'T").replace("' t", "'t").replace("' T", "'T")\
+        .replace("can not", "cannot").replace("CAN NOT", "CANNOT")\
+        .replace("' s", "'s").replace("' S", "'S")
+    step6 = step5.replace(" ` ", " '")
+    return step6.strip()
 
 
 def build_app(
@@ -889,7 +897,7 @@ def build_app(
                         document, p.idx, p.len)]
                 start: float = round(p.start, 2)
                 end: float = round(p.end, 2)
-                lines.append((start, end, ' '.join(tokens)))
+                lines.append((start, end, untokenize(tokens)))
         return lines
 
     @app.route('/captions/<int:i>')

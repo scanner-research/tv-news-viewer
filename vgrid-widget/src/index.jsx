@@ -19,7 +19,7 @@ function getHighlightIndexes(captions, highlight_phrases) {
   for (var i = 0; i < captions.length; i++) {
     var prefix = '';
     for (var j = i; j < Math.min(captions.length, i + max_highlight_len); j++) {
-      prefix += $.trim(captions[j][2].toLowerCase());
+      prefix += $.trim(captions[j][2]).replace(/[!\.\?;:(),]/i, '').toLowerCase();
       if (highlight_phrases.has(prefix)) {
         for (var k = i; k <= j; k++) {
           highlight_idxs.add(k);

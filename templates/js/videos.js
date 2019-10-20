@@ -7,7 +7,7 @@ var CURR_PAGE = null;
 
 function getPhrasesToHighlight(query) {
   function token_filter(w) {
-    return w.match(/^[0-9a-z\s]+$/i);
+    return w.match(/^[0-9a-z\s']+$/i);
   }
   let phrases = new Set();
   Object.entries(query.main_args).forEach(([k, v]) => {
