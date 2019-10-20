@@ -10,8 +10,9 @@ import '@wcrichto/vgrid/dist/vgrid.css';
 const HIGHLIGHT_STYLE = {backgroundColor: 'yellow'};
 
 function getHighlightIndexes(captions, highlight_phrases) {
+  let highlight_phrase_arr = Array.from(highlight_phrases);
   let max_highlight_len = 1 + Math.max(
-    Array.from(highlight_phrases).map(p => p.split(' ').length)
+    ...(highlight_phrase_arr.map(p => p.split(' ').length))
   );
 
   let highlight_idxs = new Set();
@@ -28,7 +29,7 @@ function getHighlightIndexes(captions, highlight_phrases) {
 
       // early termination
       var matches_prefix = false;
-      highlight_phrases.forEach(p => {
+      highlight_phrase_arr.forEach(p => {
         matches_prefix |= p.startsWith(prefix);
       });
       if (!matches_prefix) break;

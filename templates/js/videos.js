@@ -12,15 +12,20 @@ function getPhrasesToHighlight(query) {
   let phrases = new Set();
   Object.entries(query.main_args).forEach(([k, v]) => {
     if (k == '{{ parameters.caption_text }}') {
-      v.split(/[&|\^]+/).map($.trim).filter(token_filter).forEach(w => { phrases.add(w.toLowerCase()); });
+      v.split(/[&|\^]+/).map($.trim).filter(token_filter).forEach(
+        w => { phrases.add(w.toLowerCase()); }
+      );
     } else if (k != '{{ parameters.onscreen_numfaces }}' &&
                k.startsWith('{{ parameters.onscreen_face }}')) {
       let f = parseFaceFilterString(v.toLowerCase());
       if (f.person) {
-        f.person.split(' ').map($.trim).filter(token_filter).forEach(w => { phrases.add(w.toLowerCase()); });
+        f.person.split(' ').map($.trim).filter(token_filter).forEach(
+          w => { phrases.add(w.toLowerCase()); }
+        );
       }
     }
   });
+  console.log(phrases);
   return phrases;
 }
 
