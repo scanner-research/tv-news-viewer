@@ -568,6 +568,11 @@ def build_app(
             for v in video_data_context.video_dict.values()
         ]})
 
+    @app.route('/data/transcripts')
+    def get_transcripts() -> Response:
+        return render_template(
+            'data/transcripts.html', parameters=SearchParameter)
+
     @app.route('/static/js/values.js')
     def get_values_js() -> Response:
         resp = make_response(render_template(
@@ -689,9 +694,12 @@ def build_app(
                                 video.num_frames / video.fps)
 
         if caption_query_str:
-            for result in Query(
-                caption_query_str.upper()
-            ).execute(
+            query = None
+            try:
+                query = Query(caption_query_str.upper())
+            except Exception as e:
+                raise InvalidTranscriptSearch(caption_query_str)
+            for result in query.execute(
                 caption_data_context.lexicon,
                 caption_data_context.index,
                 ignore_word_not_found=True
@@ -822,7 +830,12 @@ def build_app(
 
         if caption_query_str:
             # Run the query on the selected videos
-            for result in Query(caption_query_str.upper()).execute(
+            query = None
+            try:
+                query = Query(caption_query_str.upper())
+            except Exception as e:
+                raise InvalidTranscriptSearch(caption_query_str)
+            for result in query.execute(
                 caption_data_context.lexicon,
                 caption_data_context.index,
                 [caption_data_context.documents[v.name] for v in videos

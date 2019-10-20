@@ -33,6 +33,13 @@ class TagNotInDatabase(InvalidUsage):
             self, 'Tag "{}" is not in our database'.format(tag))
 
 
+class InvalidTranscriptSearch(InvalidUsage):
+
+    def __init__(self, s: str):
+        InvalidUsage.__init__(
+            self, '"{}" is not a valid transcript search'.format(s))
+
+
 class NotFound(Exception):
 
     def __init__(self, message: str):
