@@ -359,9 +359,18 @@ class Chart {
                   let video_data = _.get(result.main, t, []);
                   let x = getPointValue(result, video_data, t);
                   tooltip.find(`i[color="${color}"]`).text(`${x.text}, ${video_data.length.toLocaleString()} videos`);
-                });
-              tooltip.css('left', event.x + 10);
-              tooltip.css('top', event.y + 10);
+                }
+              );
+
+              let chart_div = $(div_id);
+              let tooltip_x = (
+                event.x >= window.innerWidth / 2 ?
+                event.x - tooltip.width() - 25 : event.x + 10);
+              let tooltip_y = (
+                event.y >= chart_div.position().top + chart_div.height() / 2 ?
+                event.y - tooltip.height() - 25 : event.y + 10);
+              tooltip.css('left', tooltip_x);
+              tooltip.css('top', tooltip_y);
               tooltip.show();
             } else {
               tooltip.hide();
