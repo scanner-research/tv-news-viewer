@@ -1,21 +1,62 @@
 {% extends "layout.html" %}
 
+{% block head %}
+{{ super() }}
+<style>
+.name {
+  display: block;
+  font-weight: bold;
+}
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="container">
   <h1>About Us</h1>
   <p>
-    This project is the result of collaboration between students and faculty
-    of the Stanford Graphics lab and fellows of the
-    John S. Knight Journalism Fellowship at Stanford University.
-  </p>
-  <p>
-    This project is supported by grants from the
+    This brought to you by students and faculty at the Computer Graphics lab at
+    Stanford University, in collaboration with journalists of the John S. Knight
+    fellowship program. We are supported by grants from the
     <a target="_blank" href="https://brown.columbia.edu/">Brown Institute for Media Innovation</a>,
     <a target="_blank" href="https://www.intel.com/">Intel Corporation</a>,
     <a target="_blank" href="https://cloud.google.com/">Google Cloud</a>, and
     <a target="_blank" href="https://aws.amazon.com/">Amazon Web Services</a>.
     All videos are provided for academic use by the
     <a target="_blank" href="https://archive.org/">Internet Archive</a>.
+  </p>
+
+  <h3>Our team</h3>
+  <p>
+    <ul>
+      <li>
+        <span class="name">James Hong - james.hong at cs.stanford.edu</span>
+        PhD candidate in Computer Science at Stanford University
+      </li>
+      <li>
+        <span class="name">Will Crichton</span>
+        PhD candidate in Computer Science at Stanford University
+      </li>
+      <li>
+        <span class="name">Haotian Zhang</span>
+        PhD candidate in Computer Science at Stanford University
+      </li>
+      <li>
+        <span class="name">Daniel Fu</span>
+        PhD candidate in Computer Science at Stanford University
+      </li>
+      <li>
+        <span class="name">Geraldine Moriba</span>
+        Journalist, documentary filmmaker, broadcast news executive, and former John S. Knight Journalism fellow
+      </li>
+      <li>
+        <span class="name">Maneesh Agrawala</span>
+        Professor of Computer Science and Director of the Brown Institute for Media Innovation at Stanford University
+      </li>
+      <li>
+        <span class="name">Kayvon Fatahalian</span>
+        Professor of Computer Science at Stanford University
+      </li>
+    </ul>
   </p>
 </div>
 {% endblock %}
