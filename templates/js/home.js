@@ -78,7 +78,7 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
       <td type="value-col">
         <textarea type="text" class="form-control no-enter-submit"
                name="{{ parameters.caption_text }}"
-               value="" placeholder="keyword or phrase"
+               value="" placeholder='one or more keywords or phrases, separated by "|"'
                rows="1"></textarea>
       </td>
     </tr>
