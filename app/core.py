@@ -28,8 +28,7 @@ from .error import *
 from .parsing import *
 from .sum import *
 from .load import (
-    get_video_name, load_video_data, load_index,
-    VideoDataContext, CaptionDataContext)
+    get_video_name, load_app_data, VideoDataContext, CaptionDataContext)
 from .hash import sha256
 
 
@@ -427,8 +426,8 @@ def build_app(
     else:
         auth = None
 
-    video_data_context = load_video_data(data_dir)
-    caption_data_context = load_index(index_dir)
+    caption_data_context, video_data_context = \
+        load_app_data(index_dir, data_dir)
 
     app = Flask(__name__, template_folder=TEMPLATE_DIR,
                 static_folder=STATIC_DIR)

@@ -4,9 +4,10 @@ import os
 import json
 from os import path
 from pathlib import Path
-from typing import NamedTuple, Dict
+from typing import NamedTuple, Dict, Set, Tuple
 
 from captions import CaptionIndex, Documents, Lexicon   # type: ignore
+from captions.query import Query                        # type: ignore
 from rs_intervalset import (                            # type: ignore
     MmapIntervalSetMapping, MmapIntervalListMapping)
 
@@ -42,10 +43,10 @@ class CaptionDataContext(NamedTuple):
     lexicon: Lexicon
 
 
-def load_video_data(data_dir: str) -> VideoDataContext:
-    print('Loading video data: please wait...')
+def _load_videos(data_dir: str) -> Dict[str, Video]:
     videos = {}
-    for v in load_json(path.join(data_dir, 'videos.json')):
+    video_path = path.join(data_dir, 'videos.json')
+    for v in load_json(video_path):
         (
             id,
             name,
@@ -67,10 +68,10 @@ def load_video_data(data_dir: str) -> VideoDataContext:
             date=date, dayofweek=dayofweek, hour=math.floor(minute / 60),
             num_frames=num_frames, fps=fps, width=width, height=height
         )
+    return videos
 
-    commercials = MmapIntervalSetMapping(
-        path.join(data_dir, 'commercials.iset.bin'))
 
+def _load_face_intervals(data_dir: str) -> FaceIntervals:
     face_iset_dir = path.join(data_dir, 'derived', 'face')
     face_intervals = FaceIntervals(
         all_ilistmap=MmapIntervalListMapping(
@@ -95,9 +96,30 @@ def load_video_data(data_dir: str) -> VideoDataContext:
             path.join(face_iset_dir, 'male_nonhost.iset.bin')),
         female_nonhost_isetmap=MmapIntervalSetMapping(
             path.join(face_iset_dir, 'female_nonhost.iset.bin')))
+    return face_intervals
+
+
+AWS_NAME_PREFIX = 'aws '
+MIN_NAME_TOKEN_LEN = 3
+
+
+def _load_person_intervals(
+    data_dir: str, caption_data: CaptionDataContext
+) -> Dict[str, PersonIntervals]:
 
     def parse_person_file_prefix(fname: str) -> str:
         return path.splitext(path.splitext(fname)[0])[0]
+
+    def check_person_name_in_lexicon(name: str) -> bool:
+        if name.startswith(AWS_NAME_PREFIX):
+            name = name[len(AWS_NAME_PREFIX):].strip()
+        tokens = [t for t in name.split(' ') if len(t) > MIN_NAME_TOKEN_LEN]
+        if len(tokens) == 0:
+            return False
+        for t in tokens:
+            if t.upper() not in caption_data.lexicon:
+                return False
+        return True
 
     person_ilist_dir = path.join(data_dir, 'people')
     person_iset_dir = path.join(data_dir, 'derived', 'people')
@@ -106,9 +128,14 @@ def load_video_data(data_dir: str) -> VideoDataContext:
         for person_file in os.listdir(person_ilist_dir)
     }
 
+    skipped_count = 0
     all_person_intervals = {}
     for person_file_prefix in person_file_prefixes:
         person_name = re.sub(r'[^\w :]', r'', person_file_prefix.lower())
+
+        if not check_person_name_in_lexicon(person_name):
+            skipped_count += 1
+            continue
         try:
             person_intervals = PersonIntervals(
                 ilistmap=MmapIntervalListMapping(
@@ -122,9 +149,18 @@ def load_video_data(data_dir: str) -> VideoDataContext:
             all_person_intervals[person_name] = person_intervals
         except Exception as e:
             print('Unable to load: {} - {}'.format(person_name, e))
+            skipped_count += 1
 
+    print('Loaded intervals for {} people. Skipped {}.'.format(
+          len(all_person_intervals), skipped_count))
+    return all_person_intervals
+
+
+def _load_person_metadata(
+    data_dir: str, all_people: Set[str]
+) -> AllPersonTags:
     # FIXME: remove AWS options
-    has_aws = any(p.startswith('aws ') for p in all_person_intervals)
+    has_aws = any(p.startswith(AWS_NAME_PREFIX) for p in all_people)
 
     with open(path.join(data_dir, 'people.wikidata.json')) as f:
         raw_person_tags = {}
@@ -141,22 +177,45 @@ def load_video_data(data_dir: str) -> VideoDataContext:
 
             # FIXME: remove AWS options
             if has_aws:
-                name_lower = 'aws ' + name_lower
+                name_lower = AWS_NAME_PREFIX + name_lower
 
-            if name_lower in all_person_intervals:
+            if name_lower in all_people:
                 raw_person_tags[name_lower] = filtered_tags
         all_person_tags = AllPersonTags(raw_person_tags)
-
-    return VideoDataContext(
-        videos, commercials, face_intervals, all_person_intervals,
-        all_person_tags)
+    return all_person_tags
 
 
-def load_index(index_dir: str) -> CaptionDataContext:
-    print('Loading caption index: please wait...')
+def load_caption_data(index_dir: str) -> CaptionDataContext:
     documents = Documents.load(path.join(index_dir, 'docs.list'))
     lexicon = Lexicon.load(path.join(index_dir, 'words.lex'),
                            lazy_lemmas=False)
     index = CaptionIndex(path.join(index_dir, 'index.bin'),
                          lexicon, documents)
     return CaptionDataContext(index, documents, lexicon)
+
+
+def load_app_data(
+    index_dir: str, data_dir: str
+) -> Tuple[CaptionDataContext, VideoDataContext]:
+    print('Loading caption index: please wait...')
+    caption_data = load_caption_data(index_dir)
+
+    print('Loading video data: please wait...')
+    videos = _load_videos(data_dir)
+
+    commercials = MmapIntervalSetMapping(
+        path.join(data_dir, 'commercials.iset.bin'))
+
+    print('Loading face intervals: please wait...')
+    face_intervals = _load_face_intervals(data_dir)
+    all_person_intervals = _load_person_intervals(data_dir, caption_data)
+
+    print('Loading metadata tags: please wait...')
+    all_person_tags = _load_person_metadata(
+        data_dir, set(all_person_intervals.keys()))
+
+    print('Done loading data!')
+    return (caption_data,
+            VideoDataContext(
+                videos, commercials, face_intervals, all_person_intervals,
+                all_person_tags))
