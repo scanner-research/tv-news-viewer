@@ -7,6 +7,7 @@ import {
 
 import '@wcrichto/vgrid/dist/vgrid.css';
 
+const SPATIALTYPE_BBOX_INSTANCE = new SpatialType_Bbox({fade: 0.75});
 const HIGHLIGHT_STYLE = {backgroundColor: 'yellow'};
 
 function getHighlightIndexes(captions, highlight_phrases) {
@@ -97,7 +98,7 @@ function loadJsonData(json_data, caption_data, face_data, highlight_phrases) {
       return new Interval(
         new Bounds(t0, t1, new BoundingBox(x1, x2, y1, y2)),
         {
-          spatial_type: new SpatialType_Bbox(),
+          spatial_type: SPATIALTYPE_BBOX_INSTANCE,
           metadata: face.i ? {name: new Metadata_Bbox(face_id_to_name[face.i])}: {}
         }
       );
@@ -236,7 +237,7 @@ function loadJsonDataForInternetArchive(json_data, caption_data, face_data,
       return new Interval(
         makeBounds(t0, t1, new BoundingBox(x1, x2, y1, y2)),
         {
-          spatial_type: new SpatialType_Bbox(),
+          spatial_type: SPATIALTYPE_BBOX_INSTANCE,
           metadata: face.i ? {name: new Metadata_Bbox(face_id_to_name[face.i])}: {}
         }
       );

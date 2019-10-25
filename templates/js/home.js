@@ -441,9 +441,7 @@ function updateQueryBox(search_table_row) {
   let builder = search_table_row.find('.query-builder');
   let filters = [];
 
-  let getBuilderValue(e) {
-    return builder.find(e).val().replace(/"/gi, '');
-  }
+  let getBuilderValue = e => builder.find(e).val().replace(/"/gi, '');
 
   let alias = builder.find('[name="{{ parameters.alias }}"]').val();
   if (alias) {
