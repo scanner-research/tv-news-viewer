@@ -2,7 +2,9 @@ import math
 import re
 import os
 import json
+import unidecode
 from os import path
+from collections import Counter
 from pathlib import Path
 from typing import NamedTuple, Dict, Set, Tuple
 
@@ -117,7 +119,9 @@ def _load_person_intervals(
         if len(tokens) == 0:
             return False
         for t in tokens:
-            if t.upper() not in caption_data.lexicon:
+            if (t.upper() not in caption_data.lexicon
+                and unidecode.unidecode(t).upper() not in caption_data.lexicon
+            ):
                 return False
         return True
 
@@ -129,30 +133,38 @@ def _load_person_intervals(
     }
 
     skipped_count = 0
+    skipped_time = 0.
+    skipped_counter = Counter()
     all_person_intervals = {}
     for person_file_prefix in person_file_prefixes:
         person_name = re.sub(r'[^\w :]', r'', person_file_prefix.lower())
 
+        person_iset_path = path.join(
+            person_iset_dir, person_file_prefix + '.iset.bin')
+        person_ilist_path = path.join(
+            person_ilist_dir, person_file_prefix + '.ilist.bin')
         if not check_person_name_in_lexicon(person_name):
             skipped_count += 1
+            person_time = (
+                MmapIntervalSetMapping(person_iset_path).sum() / 60000)
+            skipped_time += person_time
+            skipped_counter[person_name] = person_time
             continue
         try:
             person_intervals = PersonIntervals(
-                ilistmap=MmapIntervalListMapping(
-                    path.join(
-                        person_ilist_dir,
-                        person_file_prefix + '.ilist.bin'), 1),
-                isetmap=MmapIntervalSetMapping(
-                    path.join(
-                        person_iset_dir,
-                        person_file_prefix + '.iset.bin')))
+                ilistmap=MmapIntervalListMapping(person_ilist_path, 1),
+                isetmap=MmapIntervalSetMapping(person_iset_path))
             all_person_intervals[person_name] = person_intervals
         except Exception as e:
             print('Unable to load: {} - {}'.format(person_name, e))
             skipped_count += 1
 
-    print('Loaded intervals for {} people. Skipped {}.'.format(
-          len(all_person_intervals), skipped_count))
+    print('  Loaded intervals for {} people. Skipped {}, totaling {}m.'.format(
+          len(all_person_intervals), skipped_count, int(skipped_time)))
+    if len(skipped_counter) > 0:
+        print('  Skipped people with largest time:')
+        for k, v in skipped_counter.most_common(25):
+            print('    {}: {}m'.format(k, int(v)))
     return all_person_intervals
 
 

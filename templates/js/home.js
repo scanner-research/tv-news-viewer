@@ -441,29 +441,33 @@ function updateQueryBox(search_table_row) {
   let builder = search_table_row.find('.query-builder');
   let filters = [];
 
-  let alias = builder.find('[name="{{ parameters.alias }}"]').val();
-  if (alias) {
-    filters.push(`{{ parameters.alias }}=${alias}`);
+  let getBuilderValue(e) {
+    return builder.find(e).val().replace(/"/gi, '');
   }
 
-  let channel = builder.find('select[name="{{ parameters.channel }}"]').val();
-  if (channel) {
-    filters.push(`{{ parameters.channel }}=${channel}`);
+  let alias = builder.find('[name="{{ parameters.alias }}"]').val();
+  if (alias) {
+    filters.push(`{{ parameters.alias }}="${alias}"`);
   }
-  let show = builder.find('select[name="{{ parameters.show }}"]').val();
+
+  let channel = getBuilderStr('select[name="{{ parameters.channel }}"]');
+  if (channel) {
+    filters.push(`{{ parameters.channel }}="${channel}"`);
+  }
+  let show = getBuilderStr('select[name="{{ parameters.show }}"]');
   if (show) {
     filters.push(`{{ parameters.show }}="${show}"`);
   }
-  let hour = builder.find('input[name="{{ parameters.hour }}"]').val();
+  let hour = getBuilderStr('input[name="{{ parameters.hour }}"]');
   if (hour) {
-    filters.push(`{{ parameters.hour }}=${hour}`);
+    filters.push(`{{ parameters.hour }}="${hour}"`);
   }
-  let day_of_week = builder.find('input[name="{{ parameters.day_of_week }}"]').val();
+  let day_of_week = getBuilderStr('input[name="{{ parameters.day_of_week }}"]');
   if (day_of_week) {
     filters.push(`{{ parameters.day_of_week }}="${day_of_week}"`);
   }
 
-  let is_commercial = builder.find('select[name="{{ parameters.is_commercial }}"]').val();
+  let is_commercial = getBuilderStr('select[name="{{ parameters.is_commercial }}"]');
   if (is_commercial != 'false') {
     filters.push(`{{ parameters.is_commercial }}=${is_commercial}`);
   }
@@ -494,7 +498,7 @@ function updateQueryBox(search_table_row) {
     filters.push(`{{ parameters.onscreen_numfaces }}=${num_faces}`);
   }
 
-  let caption_text = builder.find('textarea[name="{{ parameters.caption_text }}"]').val();
+  let caption_text = getBuilderStr('textarea[name="{{ parameters.caption_text }}"]');
   if (caption_text) {
     filters.push(`{{ parameters.caption_text }}="${caption_text}"`);
   }
@@ -503,7 +507,7 @@ function updateQueryBox(search_table_row) {
     filters.push(`{{ parameters.caption_window }}=${caption_window}`);
   }
 
-  let normalize = builder.find('[name="normalize"]').val() == 'true';
+  let normalize = getBuilderStr('[name="normalize"]') == 'true';
 
   // Construct the new query
   var new_where = filters.length > 0 ? filters.join(` ${QUERY_KEYWORDS.and} `) : '';
