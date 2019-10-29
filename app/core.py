@@ -439,13 +439,6 @@ def build_app(
             return l[0]
         return None
 
-    # Make sure document name equals video name
-    caption_data_context = caption_data_context._replace(
-        documents=Documents([
-            d._replace(name=get_video_name(d.name))
-            for d in caption_data_context.documents])
-    )
-
     video_by_id: Dict[int, Video] = {
         v.id: v for v in video_data_context.video_dict.values()
     }

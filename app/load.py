@@ -215,6 +215,17 @@ def load_app_data(
     print('Loading video data: please wait...')
     videos = _load_videos(data_dir)
 
+    caption_data = caption_data._replace(
+        documents=Documents([
+            d._replace(name=get_video_name(d.name))
+            for d in caption_data.documents])
+    )
+    n_videos_with_captions = sum(1 for d in caption_data.documents
+                                 if d.name in videos)
+    print('  {} / {} videos have captions'.format(
+          n_videos_with_captions, len(videos)))
+
+    print('Loading commercial intervals: please wait...')
     commercials = MmapIntervalSetMapping(
         path.join(data_dir, 'commercials.iset.bin'))
 

@@ -448,24 +448,24 @@ function updateQueryBox(search_table_row) {
     filters.push(`{{ parameters.alias }}="${alias}"`);
   }
 
-  let channel = getBuilderStr('select[name="{{ parameters.channel }}"]');
+  let channel = getBuilderValue('select[name="{{ parameters.channel }}"]');
   if (channel) {
     filters.push(`{{ parameters.channel }}="${channel}"`);
   }
-  let show = getBuilderStr('select[name="{{ parameters.show }}"]');
+  let show = getBuilderValue('select[name="{{ parameters.show }}"]');
   if (show) {
     filters.push(`{{ parameters.show }}="${show}"`);
   }
-  let hour = getBuilderStr('input[name="{{ parameters.hour }}"]');
+  let hour = getBuilderValue('input[name="{{ parameters.hour }}"]');
   if (hour) {
     filters.push(`{{ parameters.hour }}="${hour}"`);
   }
-  let day_of_week = getBuilderStr('input[name="{{ parameters.day_of_week }}"]');
+  let day_of_week = getBuilderValue('input[name="{{ parameters.day_of_week }}"]');
   if (day_of_week) {
     filters.push(`{{ parameters.day_of_week }}="${day_of_week}"`);
   }
 
-  let is_commercial = getBuilderStr('select[name="{{ parameters.is_commercial }}"]');
+  let is_commercial = getBuilderValue('select[name="{{ parameters.is_commercial }}"]');
   if (is_commercial != 'false') {
     filters.push(`{{ parameters.is_commercial }}=${is_commercial}`);
   }
@@ -496,7 +496,7 @@ function updateQueryBox(search_table_row) {
     filters.push(`{{ parameters.onscreen_numfaces }}=${num_faces}`);
   }
 
-  let caption_text = getBuilderStr('textarea[name="{{ parameters.caption_text }}"]');
+  let caption_text = getBuilderValue('textarea[name="{{ parameters.caption_text }}"]');
   if (caption_text) {
     filters.push(`{{ parameters.caption_text }}="${caption_text}"`);
   }
@@ -505,7 +505,7 @@ function updateQueryBox(search_table_row) {
     filters.push(`{{ parameters.caption_window }}=${caption_window}`);
   }
 
-  let normalize = getBuilderStr('[name="normalize"]') == 'true';
+  let normalize = getBuilderValue('[name="normalize"]') == 'true';
 
   // Construct the new query
   var new_where = filters.length > 0 ? filters.join(` ${QUERY_KEYWORDS.and} `) : '';
