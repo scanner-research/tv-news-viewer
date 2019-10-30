@@ -158,7 +158,7 @@ def person_tags_to_people(
     for tag in face_filter.tags:
         if tag not in GLOBAL_TAGS:
             people_with_tag = \
-                video_data_context.all_person_tags.tag_to_names(tag)
+                video_data_context.all_person_tags.tag_name_to_names(tag)
             if not people_with_tag:
                 raise TagNotInDatabase(tag)
 
@@ -528,7 +528,9 @@ def build_app(
     @app.route('/data/people.json')
     def get_people_json() -> Response:
         return jsonify({'data': [
-            (p.name, p.screen_time, ', '.join(p.tags)) for p in people
+            (p.name, p.screen_time,
+             ', '.join(sorted({t.name for t in p.tags})))
+            for p in people
         ]})
 
     @app.route('/data/tags')
@@ -538,7 +540,7 @@ def build_app(
     @app.route('/data/tags.json')
     def get_person_tags_json() -> Response:
         return jsonify({'data': [
-            (t, len(p), ', '.join(p))
+            (t.name, t.source, len(p), ', '.join(p))
             for t, p in video_data_context.all_person_tags.tag_dict.items()
         ]})
 

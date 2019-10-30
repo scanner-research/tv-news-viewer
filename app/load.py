@@ -178,13 +178,13 @@ def _load_person_metadata(
         raw_person_tags = {}
         for name, tags in json.load(f).items():
             filtered_tags = []
-            for tag in tags:
+            for tag, tag_source in tags:
                 tag = re.sub(r'\W+', '', tag.lower())
                 if (
                     len(tag) > MIN_PERSON_ATTRIBUTE_LEN
                     and len(tag) < MAX_PERSON_ATTRIBUTE_LEN
                 ):
-                    filtered_tags.append(tag)
+                    filtered_tags.append(Tag(tag, tag_source))
             name_lower = name.lower()
 
             # FIXME: remove AWS options

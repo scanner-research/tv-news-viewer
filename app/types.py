@@ -87,32 +87,42 @@ class LoginCredentials(NamedTuple):
     password_hash: bytes
 
 
+class Tag(NamedTuple):
+    name: str
+    source: str
+
+
 class AllPersonTags(object):
 
-    def __init__(self, name_to_tags: Dict[str, List[str]]):
+    def __init__(self, name_to_tags: Dict[str, List[Tag]]):
         self._name_to_tags = name_to_tags
+        tag_name_to_names = {}
         tag_to_names = {}
         for k, vs in sorted(name_to_tags.items()):
             for v in vs:
+                if v.name not in tag_name_to_names:
+                    tag_name_to_names[v.name] = []
+                tag_name_to_names[v.name].append(k)
                 if v not in tag_to_names:
                     tag_to_names[v] = []
                 tag_to_names[v].append(k)
+        self._tag_name_to_names = tag_name_to_names
         self._tag_to_names = tag_to_names
 
-    def tag_to_names(self, tag: str) -> List[str]:
-        return self._tag_to_names.get(tag)
+    def tag_name_to_names(self, tag: str) -> List[str]:
+        return self._tag_name_to_names.get(tag)
 
-    def name_to_tags(self, name: str) -> List[str]:
+    def name_to_tags(self, name: str) -> List[Tag]:
         return self._name_to_tags.get(name, [])
 
     @property
     def tags(self) -> List[str]:
-        ret = list(self._tag_to_names.keys())
+        ret = list(self._tag_name_to_names.keys())
         ret.sort()
         return ret
 
     @property
-    def tag_dict(self) -> Dict[str, List[str]]:
+    def tag_dict(self) -> Dict[Tag, List[str]]:
         return self._tag_to_names
 
 
