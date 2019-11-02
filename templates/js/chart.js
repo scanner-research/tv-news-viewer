@@ -179,7 +179,7 @@ class Chart {
     }
 
     // Data for lines
-    let line_data = Object.entries(this.search_results).flatMap(
+    let line_data = this.search_results.flatMap(
       ([color, result]) => {
         var values = result.main;
         // Fill in zeros for subtraction
@@ -218,8 +218,8 @@ class Chart {
 
     // Y axis settings
     var y_axis_title;
-    if (Object.values(this.search_results).some(v => v.has_normalization())) {
-      if (Object.values(this.search_results).some(v => !v.has_normalization())) {
+    if (this.search_results.some(kv => kv[1].has_normalization())) {
+      if (this.search_results.some(kv => !kv[1].has_normalization())) {
         y_axis_title = 'Unknown: normalized and raw units';
       } else {
         y_axis_title = `Normalized fraction of ${unit}`;
@@ -298,9 +298,7 @@ class Chart {
       );
 
       let count = this_chart.options.count;
-      Object.entries(this_chart.search_results).sort(
-        (a, b) => a[1].query >= b[1].query
-      ).forEach(([color, result]) => {
+      this_chart.search_results.forEach(([color, result]) => {
         let shuffled_results = weighted_shuffle(
           [..._.get(result.main, t, [])]
         );
@@ -334,7 +332,7 @@ class Chart {
           let tooltip = $('<div class="chart-tooltip" />').append(
             $('<span />').append($('<h6 name="time" />')
           ));
-          Object.entries(this_chart.search_results).forEach(
+          this_chart.search_results.forEach(
             ([color, result]) => {
               tooltip.append(
                 result.alias ?
@@ -358,7 +356,7 @@ class Chart {
               let t = new Date(item.datum.datum.time).toISOString().split('T')[0];
               let t_str = moment(t).format(moment_date_format);
               tooltip.find('h6[name="time"]').text(t_str);
-              Object.entries(this_chart.search_results).forEach(
+              this_chart.search_results.forEach(
                 ([color, result]) => {
                   let video_data = _.get(result.main, t, []);
                   let x = getPointValue(result, video_data, t);

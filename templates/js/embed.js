@@ -60,7 +60,7 @@ let lines = data.queries.map(raw_query => {
 $('#shade').show();
 $('#search').prop('disabled', true);
 
-let search_results = {};
+let search_results = [];
 function onDone() {
   new Chart(
     data.options, search_results, {width: width, height: height}
@@ -89,6 +89,6 @@ Promise.all(lines.map(line => {
 
   return line.query.search(
     data.options,
-    result => search_results[line.color] = result,
+    result => search_results.push([line.color, result]),
     onError);
 })).then(onDone).catch(onDone);

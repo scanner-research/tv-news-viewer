@@ -644,26 +644,26 @@ function getChartPath(data) {
 }
 
 function getDownloadUrl(search_results) {
-  let json_data = Object.values(search_results).flatMap(search_result => {
-    let times = new Set(Object.keys(search_result.main));
-    if (search_result.normalize) {
-      Object.keys(search_result.normalize).forEach(x => times.add(x));
+  let json_data = search_results.flatMap(([color, result]) => {
+    let times = new Set(Object.keys(result.main));
+    if (result.normalize) {
+      Object.keys(result.normalize).forEach(x => times.add(x));
     }
-    if (search_result.subtract) {
-      Object.keys(search_result.subtract).forEach(x => times.add(x));
+    if (result.subtract) {
+      Object.keys(result.subtract).forEach(x => times.add(x));
     }
-    var query_text = $.trim(search_result.query);
-    if (!search_result.normalize && !search_result.subtract &&
+    var query_text = $.trim(result.query);
+    if (!result.normalize && !result.subtract &&
         query_text.endsWith('WHERE')) {
       query_text += ' (i.e. all the videos)';
     }
-    let unit = search_result.normalize ? 'ratio' : 'seconds';
+    let unit = result.normalize ? 'ratio' : 'seconds';
     return Array.from(times).map(t => {
-      var value = _.get(search_result.main, t, []).reduce((acc, x) => acc + x[1], 0);
-      if (search_result.normalize) {
-        value /=  _.get(search_result.normalize, t, 0);
-      } else if (search_result.subtract) {
-        value /=  _.get(search_result.subtract, t, 0);
+      var value = _.get(result.main, t, []).reduce((acc, x) => acc + x[1], 0);
+      if (result.normalize) {
+        value /=  _.get(result.normalize, t, 0);
+      } else if (result.subtract) {
+        value /=  _.get(result.subtract, t, 0);
       }
       return [query_text, t, value.toFixed(3).replace(/\.0+$/, ''), unit];
     });
@@ -683,7 +683,7 @@ function displaySearchResults(chart_options, lines, search_results) {
     width: $("#chartArea").width(), height: EMBED_DIMS.height
   }).load('#chart', {show_tooltip: showTooltip, video_div: '#vgridArea'});
 
-  if (Object.keys(search_results).length == lines.length) {
+  if (search_results.length == lines.length) {
     // Allow embedding if all queries are ok
     let data_str = getDataString(chart_options, lines);
     let chart_path = getChartPath(data_str);
@@ -749,13 +749,16 @@ function search() {
     });
 
   $('#shade').show();
-  let search_results = {};
+  let indexed_search_results = [];
   function onDone() {
     $('#shade').hide();
-    displaySearchResults(chart_options, lines, search_results);
+    indexed_search_results.sort();
+    displaySearchResults(
+      chart_options, lines, indexed_search_results.map(([i, v]) => v)
+    );
   }
 
-  Promise.all(lines.map(line => {
+  Promise.all(lines.map((line, i) => {
     console.log('Executing query:', line.query);
 
     function onError(xhr) {
@@ -772,7 +775,7 @@ function search() {
 
     return line.query.search(
       chart_options,
-      result => search_results[line.color] = result,
+      result => indexed_search_results.push([i, [line.color, result]]),
       onError);
   })).then(onDone).catch(onDone);
 }
