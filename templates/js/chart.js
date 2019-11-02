@@ -349,6 +349,10 @@ class Chart {
             })
           $(div_id).append(tooltip);
 
+          $(div_id).on('mouseleave', function() {
+            tooltip.hide();
+          });
+
           view.addEventListener('mouseover', function(event, item) {
             if (item && item.datum) {
               let t = new Date(item.datum.datum.time).toISOString().split('T')[0];
@@ -416,8 +420,3 @@ function hideTooltips() {
   $('.chart-tooltip').hide();
 }
 $(window).scroll(hideTooltips);
-$(window).mousemove(function(e){
-  if ($(e.target).parent().is('canvas')) {
-    hideTooltips();
-  }
-});

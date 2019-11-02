@@ -69,6 +69,17 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
         </span>
       </td>
     </tr>
+    <tr>
+      <td type="key-col">
+        there are
+      </td>
+      <td type="value-col">
+        <input type="number" class="form-control no-enter-submit num-faces-input"
+               name="{{ parameters.onscreen_numfaces }}"
+               min="1" max="25" placeholder="enter a number">
+        faces on-screen
+      </td>
+    </tr>
 
     <tr><td colspan="2"><hr></td></tr>
     <tr>
@@ -115,6 +126,8 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
         </select>
       </td>
     </tr>
+
+    <tr><td colspan="2"><hr></td></tr>
     <tr>
       <td type="key-col">the hour of day is between</td>
       <td type="value-col"><input type="text" class="form-control no-enter-submit"
@@ -138,17 +151,6 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
         <span title='Commcerials are excluded by default ("false"). Use "both" to include commercials and "true" for only commercials.'>
           &#9432;
         </span>
-      </td>
-    </tr>
-    <tr>
-      <td type="key-col">
-        there are
-      </td>
-      <td type="value-col">
-        <input type="number" class="form-control no-enter-submit num-faces-input"
-               name="{{ parameters.onscreen_numfaces }}"
-               min="1" max="25" placeholder="enter a number">
-        faces on-screen
       </td>
     </tr>
 
@@ -408,10 +410,8 @@ function closeQueryBuilder(search_table_row) {
   }
 }
 
-function toggleQueryBuilder(element) {
-  hideTooltips();
-
-  let search_table_row = $(element).closest('tr');
+function toggleQueryBuilder() {
+  let search_table_row = $(this).closest('tr');
   let where_box = search_table_row.find('input[name="where"]');
   if (search_table_row.find('.query-builder').length > 0) {
     closeQueryBuilder(search_table_row);
@@ -555,8 +555,8 @@ function onWhereUpdate(element) {
   $(element).css('background-color', err ? '#fee7e2' : '');
 }
 
-function changeRowColor(element) {
-  let query_row = $(element).closest('tr[name="query"]');
+function changeRowColor() {
+  let query_row = $(this).closest('tr[name="query"]');
   let old_color = query_row.attr('data-color');
   let old_color_idx = DEFAULT_COLORS.indexOf(old_color);
   let new_color = getColor(old_color_idx + 1);
@@ -569,22 +569,41 @@ function addRow(query) {
   let text = _.get(query, 'text', getDefaultQuery());
   let query_clauses = new SearchableQuery(text).clauses();
 
-  let new_row = $('<tr name="query">').attr('data-color', color).append(
-    $('<td valign="top"/>').append(
-      $('<button type="button" class="btn btn-outline-secondary btn-sm remove-row-btn" onclick="removeRow(this);" title="Remove this row."/>').text('-')
+  let new_row = $('<tr>').attr({name: 'query', 'data-color': color}).append(
+    $('<td>').attr('valign', 'top').append(
+      $('<button onclick="removeRow(this);" >').addClass(
+        'btn btn-outline-secondary btn-sm remove-row-btn'
+      ).attr({
+        type: 'button', title: 'Remove this row.'
+      }).text('-')
     ),
-    $('<td valign="top"/>').append(
-      $('<button type="button" class="btn btn-outline-secondary btn-sm toggle-query-builder-btn" onclick="toggleQueryBuilder(this);" title="Toggle the dropdown search editor."/>').html('&#x1F50D;')
+    $('<td>').attr('valign', 'top').append(
+      $('<button>').addClass(
+        'btn btn-outline-secondary btn-sm toggle-query-builder-btn'
+      ).attr({
+        title: 'Toggle the dropdown search editor.', type: 'button'
+      }).click(
+        toggleQueryBuilder
+      ).html('&#x1F50D;')
     ),
-    $('<td valign="top">').append(
-      $('<div class="color-box" onclick="changeRowColor(this);" title="Click to change the color." />').css('background-color', color)
+    $('<td>').attr('valign', 'top').append(
+      $('<div>').addClass('color-box').click(changeRowColor).attr(
+        'title', 'Click to change the color.'
+      ).css('background-color', color)
     ),
-    $('<td class="query-td" />').append(
-      $('<div class="input-group" />').append(
-        $('<div class="input-group-prepend noselect" />').append(
-          $('<span class="input-group-text query-text" name="count-type-prefix" />').text(`COUNT ${VIDEO_TIME} WHERE`)
+    $('<td>').addClass('query-td').append(
+      $('<div>').addClass('input-group').append(
+        $('<div>').addClass('input-group-prepend noselect').append(
+          $('<span>').addClass('input-group-text query-text').attr({
+            name: 'count-type-prefix'
+          }).text(`COUNT ${VIDEO_TIME} WHERE`)
         ),
-        $('<input type="text" class="form-control query-text" name="where" placeholder="enter search here (all the data, if blank)" onchange="onWhereUpdate(this);"/>').val(query_clauses.where)
+        $('<input>').addClass(
+          'form-control query-text'
+        ).attr({
+          type: 'text', name: 'where',
+          placeholder: 'enter search here (all the data, if blank)'
+        }).change(onWhereUpdate).val(query_clauses.where)
       )
     ),
   );
