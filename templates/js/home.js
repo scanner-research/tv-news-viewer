@@ -801,7 +801,8 @@ function initialize() {
     }
   } else {
     initChartOptions();
-    addRow();
+    addRow({text: 'WHERE face="person: barack obama"'});
+    addRow({text: 'WHERE face="person: donald trump"'});
     if (params.get('blank') != 1) {
       search();
     }
@@ -852,6 +853,12 @@ function initialize() {
   });
   $('#searchButtonHover').mouseleave(function() {
     $('#searchButton').css('box-shadow', '');
+  });
+
+  $('#infoToggle').click(function() {
+    let info_text = $('#infoSpanText');
+    info_text.toggle();
+    $(this).text(info_text.is(':visible') ? 'hide help' : 'show help');
   });
 }
 

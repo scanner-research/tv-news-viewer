@@ -20,37 +20,43 @@
 {% endblock %}
 
 {% block content %}
+
 <div class="container">
+  <span id="infoSpan">
+    Use this tool to count screen time of <b>who</b> and <b>what</b> in the news. (<a href="#" id="infoToggle">show help</a>)<br>
+    <div id="infoSpanText">
+      To begin, read the
+      <a href="/getting-started" target="_blank">getting started</a> guide.
+      <ul>
+        <li>
+          <span id="plusMinusHover">
+            Click the +/- buttons to add or remove search rows below.
+          </span>
+        </li>
+        <li>
+          <span id="dropdownEditorHover">
+            To toggle the dropdown search editor for a row, click the &#x1F50D;
+            button in each row.
+          </span>
+        </li>
+        <li>
+          <span id="searchButtonHover">
+            Hit the "Search the news!" button to generate or refresh the chart.
+          </span>
+        </li>
+        <li>
+          <span id="chartAreaHover">
+            To show example videos for a data point, click the chart area.
+          </span>
+        </li>
+      </ul>
+      Read our <a href="/methodology" target="_blank">methodology</a> page to
+      understand the technologies and limitations of this tool.
+    </div>
+  </span>
+
   <form action="javascript:void(0);">
     <table id="searchTable">
-      <thead>
-        <tr name="controls" class="chart-options">
-          <td colspan="4" class="option-td">
-            <span class="hint-span">
-              <b>Information:</b> Use this tool to search American cable TV news video from 2010 onwards.
-              To begin, read the <a href="/getting-started" target="_blank">getting started</a> guide.
-
-              <ul>
-                <li>
-                  <span id="plusMinusHover">Click the +/- buttons to add or remove search rows below.</span>
-                </li>
-                <li>
-                  <span id="dropdownEditorHover">To toggle the dropdown search editor for a row, click the &#x1F50D; button in each row.</span>
-                </li>
-                <li>
-                  <span id="searchButtonHover">Hit the "Search the news!" button to generate or refresh the chart.</span>
-                </li>
-                <li>
-                  <span id="chartAreaHover">To show example videos for a data point, click the chart area.</span>
-                </li>
-              </ul>
-
-              Read our <a href="/methodology" target="_blank">methodology</a> page to understand the technologies and limitations of this tool.
-            </span>
-            <hr>
-          </td>
-        </tr>
-      </thead>
       <tbody></tbody>
       <tfoot>
         <tr name="controls" class="chart-options">

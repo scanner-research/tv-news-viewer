@@ -1,3 +1,15 @@
+#infoSpan {
+  font-size: 16px;
+}
+#infoSpan ul {
+  margin: 0;
+}
+#infoSpanText {
+  display: none;
+  background-color: #f2f2f2;
+  border-radius: 5px;
+  padding: 10px;
+}
 #searchTable {
   width: 100%;
   border-collapse: separate;
@@ -21,12 +33,6 @@
 }
 #searchTable .option-td {
   padding-left: 10px;
-}
-#searchTable .hint-span {
-  font-size: 16px;
-}
-#searchTable .hint-span ul {
-  margin: 0;
 }
 #searchTable .color-box {
   margin: auto;
