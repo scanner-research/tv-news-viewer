@@ -152,10 +152,10 @@ def interpret_global_tags(
 
 
 def person_tags_to_people(
-    video_data_context: VideoDataContext, face_filter: FaceFilter
+    video_data_context: VideoDataContext, tags: Iterable[str]
 ) -> List[MmapIntervalListMapping]:
     selected_names = None
-    for tag in face_filter.tags:
+    for tag in tags:
         if tag not in GLOBAL_TAGS:
             people_with_tag = \
                 video_data_context.all_person_tags.tag_name_to_names(tag)
@@ -166,6 +166,27 @@ def person_tags_to_people(
                 selected_names = set(people_with_tag)
             selected_names = selected_names.intersection(people_with_tag)
     return selected_names
+
+
+def person_tags_to_ilistmaps(
+    video_data_context: VideoDataContext, tags: Iterable[str]
+):
+    ilistmaps = []
+
+    non_cached_tags = []
+    for tag in tags:
+        if tag not in GLOBAL_TAGS:
+            ilistmap = video_data_context.cached_tag_intervals.get(tag, None)
+            if ilistmap:
+                ilistmaps.append(ilistmap)
+            else:
+                non_cached_tags.append(tag)
+
+    if len(non_cached_tags) > 0:
+        people = person_tags_to_people(video_data_context, non_cached_tags)
+        assert people is not None
+        ilistmaps.extend(people_to_ilistmaps(video_data_context, people))
+    return ilistmaps
 
 
 def people_to_ilistmaps(
@@ -213,10 +234,11 @@ def get_onscreen_face_isetmap(
             global_tags = get_global_tags(face_filter)
             if len(global_tags) != len(face_filter.tags):
                 people_with_tags = person_tags_to_people(
-                    video_data_context, face_filter)
+                    video_data_context, face_filter.tags)
                 people = [p for p in people if p in people_with_tags]
                 if len(people) == 0:
-                    raise InvalidUsage('None of the specified people match the tags')
+                    raise InvalidUsage(
+                        'None of the specified people match the tags')
             gender_tag, host_tag = interpret_global_tags(global_tags)
         else:
             gender_tag, host_tag = None, None
@@ -262,9 +284,8 @@ def get_onscreen_face_isetmap(
                 else:
                     raise UnreachableCode()
         else:
-            people = person_tags_to_people(video_data_context, face_filter)
-            assert people is not None
-            ilistmaps = people_to_ilistmaps(video_data_context, people)
+            ilistmaps = person_tags_to_ilistmaps(
+                video_data_context, face_filter.tags)
             gender_tag, host_tag = interpret_global_tags(global_tags)
             payload_mask, payload_value = get_face_time_filter_mask(
                 gender_tag, host_tag)

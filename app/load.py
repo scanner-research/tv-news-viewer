@@ -36,6 +36,7 @@ class VideoDataContext(NamedTuple):
     face_intervals: FaceIntervals
     all_person_intervals: AllPersonIntervals
     all_person_tags: AllPersonTags
+    cached_tag_intervals: Dict[str, MmapIntervalListMapping]
 
 
 class CaptionDataContext(NamedTuple):
@@ -143,17 +144,17 @@ def _load_person_intervals(
             person_iset_dir, person_file_prefix + '.iset.bin')
         person_ilist_path = path.join(
             person_ilist_dir, person_file_prefix + '.ilist.bin')
-        if not check_person_name_in_lexicon(person_name):
-            skipped_count += 1
-            person_time = (
-                MmapIntervalSetMapping(person_iset_path).sum() / 60000)
-            skipped_time += person_time
-            skipped_counter[person_name] = person_time
-            continue
         try:
+            person_isetmap = MmapIntervalSetMapping(person_iset_path)
+            if not check_person_name_in_lexicon(person_name):
+                skipped_count += 1
+                person_time = person_isetmap.sum() / 60000
+                skipped_time += person_time
+                skipped_counter[person_name] = person_time
+                continue
             person_intervals = PersonIntervals(
                 ilistmap=MmapIntervalListMapping(person_ilist_path, 1),
-                isetmap=MmapIntervalSetMapping(person_iset_path))
+                isetmap=person_isetmap)
             all_person_intervals[person_name] = person_intervals
         except Exception as e:
             print('Unable to load: {} - {}'.format(person_name, e))
@@ -168,6 +169,10 @@ def _load_person_intervals(
     return all_person_intervals
 
 
+def sanitize_tag(tag: str) -> str:
+    return re.sub(r'\W+', '', tag.lower())
+
+
 def _load_person_metadata(
     data_dir: str, all_people: Set[str]
 ) -> AllPersonTags:
@@ -179,7 +184,7 @@ def _load_person_metadata(
         for name, tags in json.load(f).items():
             filtered_tags = []
             for tag, tag_source in tags:
-                tag = re.sub(r'\W+', '', tag.lower())
+                tag = sanitize_tag(tag)
                 if (
                     len(tag) > MIN_PERSON_ATTRIBUTE_LEN
                     and len(tag) < MAX_PERSON_ATTRIBUTE_LEN
@@ -195,6 +200,20 @@ def _load_person_metadata(
                 raw_person_tags[name_lower] = filtered_tags
         all_person_tags = AllPersonTags(raw_person_tags)
     return all_person_tags
+
+
+def _load_tag_intervals(data_dir: str) -> Dict[str, MmapIntervalListMapping]:
+    tag_ilist_dir = os.path.join(data_dir, 'derived', 'tags')
+
+    def parse_tag_name(fname: str) -> str:
+        return path.splitext(path.splitext(fname)[0])[0]
+
+    tag_to_intervals = {}
+    for tag_file in os.listdir(tag_ilist_dir):
+        tag_path = os.path.join(tag_ilist_dir, tag_file)
+        tag = sanitize_tag(parse_tag_name(tag_file))
+        tag_to_intervals[tag] = MmapIntervalListMapping(tag_path, 1)
+    return tag_to_intervals
 
 
 def load_caption_data(index_dir: str) -> CaptionDataContext:
@@ -237,8 +256,11 @@ def load_app_data(
     all_person_tags = _load_person_metadata(
         data_dir, set(all_person_intervals.keys()))
 
+    print('Loading cached tag intervals: please wait...')
+    cached_tag_intervals = _load_tag_intervals(data_dir)
+
     print('Done loading data!')
     return (caption_data,
             VideoDataContext(
                 videos, commercials, face_intervals, all_person_intervals,
-                all_person_tags))
+                all_person_tags, cached_tag_intervals))

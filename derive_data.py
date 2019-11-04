@@ -2,6 +2,8 @@
 
 import argparse
 import os
+import json
+from collections import Counter, defaultdict
 from multiprocessing import Pool
 from typing import List, Tuple
 
@@ -164,13 +166,14 @@ def derive_person_iset(person_ilist_file: str, outfile: str) -> None:
     print('Done:', outfile)
 
 
+def parse_person_name(fname: str) -> str:
+    return os.path.splitext(os.path.splitext(fname)[0])[0]
+
+
 def derive_person_isets(
     workers: Pool, person_ilist_dir: str, outdir: str
 ) -> None:
     mkdir_if_not_exists(outdir)
-
-    def parse_person_name(fname: str) -> str:
-        return os.path.splitext(os.path.splitext(fname)[0])[0]
 
     for person_file in os.listdir(person_ilist_dir):
         if not person_file.endswith('.ilist.bin'):
@@ -186,6 +189,61 @@ def derive_person_isets(
             error_callback=build_error_callback('Failed on: ' + person_file))
 
 
+def derive_tag_ilist(person_ilist_files: str, outfile: str) -> None:
+    ilistmaps = [MmapIntervalListMapping(f, 1) for f in person_ilist_files]
+
+    id_set = set()
+    for ilist in ilistmaps:
+        id_set.update(ilist.get_ids())
+
+    print('Writing:', outfile)
+    with IntervalListMappingWriter(outfile, 1) as writer:
+        for i in sorted(id_set):
+            intervals = []
+            for ilist in ilistmaps:
+                intervals.extend(ilist.get_intervals_with_payload(i, True))
+            intervals.sort()
+            writer.write(i, intervals)
+    print('Done:', outfile)
+
+
+def derive_tag_ilists(
+    workers: Pool, person_ilist_dir: str, metadata_path: str, outdir: str,
+    threshold: int = 100
+) -> None:
+    people_available = {
+        parse_person_name(p) for p in os.listdir(person_ilist_dir)
+        if p.endswith('.ilist.bin')
+    }
+
+    with open(metadata_path) as f:
+        people_to_tags = json.load(f)
+        people_to_tags = {
+            k.lower(): v for k, v in people_to_tags.items()
+            if k.lower() in people_available
+        }
+
+    tag_to_people = defaultdict(list)
+    for person, tags in people_to_tags.items():
+        for tag, _ in tags:
+            tag_to_people[tag].append(person)
+
+    mkdir_if_not_exists(outdir)
+
+    for tag, people in tag_to_people.items():
+        if len(people) >= threshold:
+            people_ilist_files = [
+                os.path.join(person_ilist_dir, '{}.ilist.bin'.format(p))
+                for p in people]
+            workers.apply_async(
+                derive_tag_ilist,
+                (
+                    people_ilist_files,
+                    os.path.join(outdir, tag + '.ilist.bin')
+                ),
+                error_callback=build_error_callback('Failed on: ' + tag))
+
+
 def main(datadir: str) -> None:
     outdir = os.path.join(datadir, 'derived')
     mkdir_if_not_exists(outdir)
@@ -197,6 +255,10 @@ def main(datadir: str) -> None:
         derive_person_isets(
             workers, os.path.join(datadir, 'people'),
             os.path.join(outdir, 'people'))
+        derive_tag_ilists(
+            workers, os.path.join(datadir, 'people'),
+            os.path.join(datadir, 'people.wikidata.json'),
+            os.path.join(outdir, 'tags'))
 
         workers.apply_async(
             derive_num_faces_ilist,
