@@ -8,10 +8,11 @@ from collections import Counter
 from pathlib import Path
 from typing import NamedTuple, Dict, Set, Tuple
 
-from captions import CaptionIndex, Documents, Lexicon   # type: ignore
-from captions.query import Query                        # type: ignore
-from rs_intervalset import (                            # type: ignore
+from captions import CaptionIndex, Documents, Lexicon       # type: ignore
+from captions.query import Query                            # type: ignore
+from rs_intervalset import (                                # type: ignore
     MmapIntervalSetMapping, MmapIntervalListMapping)
+from rs_intervalset.wrapper import MmapIListToISetMapping   # type: ignore
 
 from .types import *
 from .parsing import *
@@ -145,16 +146,21 @@ def _load_person_intervals(
         person_ilist_path = path.join(
             person_ilist_dir, person_file_prefix + '.ilist.bin')
         try:
-            person_isetmap = MmapIntervalSetMapping(person_iset_path)
+            person_ilist_map = MmapIntervalListMapping(person_ilist_path, 1)
+            person_isetmap = (
+                MmapIntervalSetMapping(person_iset_path)
+                if os.path.isfile(person_iset_path) else
+                MmapIListToISetMapping(person_ilist_map, 0, 0, 3000, 100))
+
             if not check_person_name_in_lexicon(person_name):
                 skipped_count += 1
                 person_time = person_isetmap.sum() / 60000
                 skipped_time += person_time
                 skipped_counter[person_name] = person_time
                 continue
+
             person_intervals = PersonIntervals(
-                ilistmap=MmapIntervalListMapping(person_ilist_path, 1),
-                isetmap=person_isetmap)
+                ilistmap=person_ilist_map, isetmap=person_isetmap)
             all_person_intervals[person_name] = person_intervals
         except Exception as e:
             print('Unable to load: {} - {}'.format(person_name, e))

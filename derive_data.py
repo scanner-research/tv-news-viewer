@@ -3,6 +3,7 @@
 import argparse
 import os
 import json
+import heapq
 from collections import Counter, defaultdict
 from multiprocessing import Pool
 from typing import List, Tuple
@@ -171,7 +172,8 @@ def parse_person_name(fname: str) -> str:
 
 
 def derive_person_isets(
-    workers: Pool, person_ilist_dir: str, outdir: str
+    workers: Pool, person_ilist_dir: str, outdir: str,
+    threshold_in_bytes: int = 100 * (2 ** 10)
 ) -> None:
     mkdir_if_not_exists(outdir)
 
@@ -179,12 +181,16 @@ def derive_person_isets(
         if not person_file.endswith('.ilist.bin'):
             print('Skipping:', person_file)
             continue
+        person_path = os.path.join(person_ilist_dir, person_file)
+        if os.path.getsize(person_path) < threshold_in_bytes:
+            print('Skipping (too small):', person_file)
+            continue
+
         person_name = parse_person_name(person_file)
         workers.apply_async(
             derive_person_iset,
             (
-                os.path.join(person_ilist_dir, person_file),
-                os.path.join(outdir, person_name + '.iset.bin')
+                person_path, os.path.join(outdir, person_name + '.iset.bin')
             ),
             error_callback=build_error_callback('Failed on: ' + person_file))
 
@@ -201,9 +207,8 @@ def derive_tag_ilist(person_ilist_files: str, outfile: str) -> None:
         for i in sorted(id_set):
             intervals = []
             for ilist in ilistmaps:
-                intervals.extend(ilist.get_intervals_with_payload(i, True))
-            intervals.sort()
-            writer.write(i, intervals)
+                intervals.append(ilist.get_intervals_with_payload(i, True))
+            writer.write(i, list(heapq.merge(*intervals)))
     print('Done:', outfile)
 
 
