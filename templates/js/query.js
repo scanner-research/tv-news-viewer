@@ -378,7 +378,8 @@ class SearchableQuery {
     let promises = [
       $.ajax({
         url: '/search', type: 'get',
-        data: getParams(this.main_args, true)
+        data: getParams(this.main_args, true),
+        error: onError
       }).then(resp => result.main = resp)
     ];
 
@@ -386,7 +387,8 @@ class SearchableQuery {
       promises.push(
         $.ajax({
           url: '/search', type: 'get',
-          data: getParams(this.normalize_args, false)
+          data: getParams(this.normalize_args, false),
+          error: onError
         }).then(resp => result.normalize = resp)
       );
     }
@@ -395,7 +397,8 @@ class SearchableQuery {
       promises.push(
         $.ajax({
           url: '/search', type: 'get',
-          data: getParams(this.subtract_args, false)
+          data: getParams(this.subtract_args, false),
+          error: onError
         }).then(resp => result.subtract = resp)
       );
     }
@@ -404,7 +407,9 @@ class SearchableQuery {
     let query_alias = this.alias;
     return Promise.all(promises).then(
       () => onSuccess(new SearchResult(query_str, query_alias, result))
-    ).catch(onError);
+    ).catch(function() {
+      Console.log('Uh oh. Something went wrong.');
+    });
   }
 
   searchInVideos(video_ids, onSuccess, onError) {

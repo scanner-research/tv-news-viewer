@@ -180,7 +180,7 @@ def _load_person_metadata(
     has_aws = any(p.startswith(AWS_NAME_PREFIX) for p in all_people)
 
     with open(path.join(data_dir, 'people.wikidata.json')) as f:
-        raw_person_tags = {}
+        person_to_tags = {}
         for name, tags in json.load(f).items():
             filtered_tags = []
             for tag, tag_source in tags:
@@ -197,8 +197,8 @@ def _load_person_metadata(
                 name_lower = AWS_NAME_PREFIX + name_lower
 
             if name_lower in all_people:
-                raw_person_tags[name_lower] = filtered_tags
-        all_person_tags = AllPersonTags(raw_person_tags)
+                person_to_tags[name_lower] = filtered_tags
+        all_person_tags = AllPersonTags(person_to_tags)
     return all_person_tags
 
 

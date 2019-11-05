@@ -761,16 +761,20 @@ function search() {
   Promise.all(lines.map((line, i) => {
     console.log('Executing query:', line.query);
 
-    function onError(xhr) {
+    var errored = false;
+    function onError(xhr, status, error) {
+      if (errored) {
+        return;
+      }
       var msg;
       try {
         msg = JSON.parse(xhr.responseText).message;
       } catch {
-        msg = 'Unknown server error';
+        msg = `Error: ${status}`;
       }
       alert(`[Query failed] ${line.query.query}\n\n${msg}\n\nThe chart may be incomplete.`);
-
       console.log('Failed:', line.query, xhr);
+      errored = true;
     }
 
     return line.query.search(
