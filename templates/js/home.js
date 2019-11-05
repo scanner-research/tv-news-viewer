@@ -6,8 +6,6 @@ const DEFAULT_START_DATE = '{{ start_date }}';
 const DEFAULT_END_DATE = '{{ end_date }}';
 const DEFAULT_AGGREGATE_BY = '{{ default_agg_by }}';
 
-const UI_SHADOW = '0 8px 20px 0 rgba(0, 0, 0, 0.8)';
-
 const QUERY_BUILDER_HTML = `<div class="query-builder">
   <table>
     <tr>
@@ -784,6 +782,16 @@ function search() {
   })).then(onDone).catch(onDone);
 }
 
+function addHighlight(trigger, targets) {
+  let affected = [trigger].concat(targets).join(', ');
+  $(trigger).mouseenter(function() {
+    $(affected).addClass('highlight');
+  });
+  $(trigger).mouseleave(function() {
+    $(affected).removeClass('highlight');
+  });
+}
+
 function initialize() {
   let params = (new URL(document.location)).searchParams;
   showTooltip = params.get('tooltip') != 0;
@@ -836,31 +844,10 @@ function initialize() {
     }
   });
 
-  // UI highlights
-  $('#plusMinusHover').mouseenter(function() {
-    $('.remove-row-btn, .add-row-btn').css('box-shadow', UI_SHADOW);
-  });
-  $('#plusMinusHover').mouseleave(function() {
-    $('.remove-row-btn, .add-row-btn').css('box-shadow', '');
-  });
-  $('#dropdownEditorHover').mouseenter(function() {
-    $('.toggle-query-builder-btn').css('box-shadow', UI_SHADOW);
-  });
-  $('#dropdownEditorHover').mouseleave(function() {
-    $('.toggle-query-builder-btn').css('box-shadow', '');
-  });
-  $('#chartAreaHover').mouseenter(function() {
-    $('#chart').css('box-shadow', UI_SHADOW);
-  });
-  $('#chartAreaHover').mouseleave(function() {
-    $('#chart').css('box-shadow', '');
-  });
-  $('#searchButtonHover').mouseenter(function() {
-    $('#searchButton').css('box-shadow', UI_SHADOW);
-  });
-  $('#searchButtonHover').mouseleave(function() {
-    $('#searchButton').css('box-shadow', '');
-  });
+  addHighlight('#plusMinusHover', ['.remove-row-btn', '.add-row-btn']);
+  addHighlight('#dropdownEditorHover', ['.toggle-query-builder-btn']);
+  addHighlight('#chartAreaHover', ['#chart']);
+  addHighlight('#searchButtonHover', ['#searchButton']);
 
   $('#infoToggle').click(function() {
     let info_text = $('#infoSpanText');
