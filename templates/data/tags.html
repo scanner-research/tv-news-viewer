@@ -73,6 +73,18 @@
     tag.
   </p>
 
+  <p>
+    The source column of the table below shows how tags were obtained. Tags
+    with "dbpedia" as the source are parsed from DBpedia properties. Tags
+    with "derived" are derived from DBpedia properties based on a small
+    number of heuristic parsing rules; for example, a person with the
+    tag "english_people_of_french_descent", will be given the derived
+    tags "english" and "people_of_french_descent". There may be multiple
+    rows for a single tag in the table below if the tag is both an original
+    property from DBpedia and a derived one. In this circumstance, searching in
+    the tool considers the union of the derived and dbpedia tags.
+  </p>
+
   <table class="table table-hover table-striped table-bordered table-sm data-table">
     <thead>
       <tr>
