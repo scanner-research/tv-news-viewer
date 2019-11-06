@@ -2,3 +2,10 @@
   display: none;
   padding-left: 10px;
 }
+.dataTables_filter label {
+  width: 100% !important;
+  text-align: right !important;
+}
+.dataTables_filter input {
+  width: 80% !important;
+}

@@ -5,6 +5,9 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.10.19/js/jquery.dataTables.min.js" integrity="sha256-t5ZQTZsbQi8NxszC10CseKjJ5QeMw5NINtOXQrESGSU=" crossorigin="anonymous"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.10.19/css/dataTables.bootstrap4.min.css" integrity="sha256-F+DaKAClQut87heMIC6oThARMuWne8+WzxIDT7jXuPA=" crossorigin="anonymous" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.10.19/js/dataTables.bootstrap4.min.js" integrity="sha256-hJ44ymhBmRPJKIaKRf3DSX5uiFEZ9xB/qx8cNbJvIMU=" crossorigin="anonymous"></script>
+
+<link rel="stylesheet" href="{{ url_for('static', filename='css/table.css') }}" />
+<script src="{{ url_for('static', filename='js/table.js') }}" /></script>
 {% endblock %}
 
 {% block content %}
@@ -36,9 +39,12 @@
         pageLength: 25,
         columns: [
           null,
-          null,
+          {render: x => x.length > 0 ? x : '&lt;unnamed&gt;' },
           {width: '15%', className: 'text-right'},
         ],
+        language: {
+          info: 'Showing _START_ to _END_ of _TOTAL_ shows',
+        },
         ajax: '/data/shows.json'
       });
     });

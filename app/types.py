@@ -78,6 +78,7 @@ class FaceIntervals(NamedTuple):
 
 
 class PersonIntervals(NamedTuple):
+    name: str
     ilistmap: MmapIntervalListMapping
     isetmap: MmapIntervalSetMapping
 

@@ -93,13 +93,13 @@
     and <code>{{ parameters.channel }}=MSNBC</code> into the search boxes, one per row so that
     the queries read:
 
-    <span class="centered">
+    <div class="code-block">
       <code>
         <b>COUNT</b> screen time <b>WHERE</b> {{ parameters.channel }}=CNN<br>
         <b>COUNT</b> screen time <b>WHERE</b> {{ parameters.channel }}=FOX<br>
         <b>COUNT</b> screen time <b>WHERE</b> {{ parameters.channel }}=MSNBC
       </code>
-    </span>
+    </div>
   </p>
 
   <p>
@@ -144,12 +144,12 @@
     with a man and woman, respectively. Both of these queries can also be
     made by selecting the gender tag in the dropdown search editor.
 
-    <span class="centered">
+    <div class="code-block">
       <code>
         <b>COUNT</b> screen time <b>WHERE</b> {{ parameters.onscreen_face }}="tag: male"<br>
         <b>COUNT</b> screen time <b>WHERE</b> {{ parameters.onscreen_face }}="tag: female"
       </code>
-    </span>
+    </div>
   </p>
 
   <p>
@@ -173,12 +173,12 @@
     <code>{{ parameters.onscreen_face }}="person: Donald Trump"</code>
     and <code>{{ parameters.onscreen_face }}="person: Hillary Clinton"</code>, respectively.
 
-    <span class="centered">
+    <div class="code-block">
       <code>
         <b>COUNT</b> screen time <b>WHERE</b> {{ parameters.onscreen_face }}="person: hillary clinton"<br>
         <b>COUNT</b> screen time <b>WHERE</b> {{ parameters.onscreen_face }}="person: donald trump"
       </code>
-    </span>
+    </div>
   </p>
 
   <p>
@@ -219,11 +219,11 @@
     <code>{{ parameters.caption_text }}="UNITED NATIONS"</code> finds all times when
     the phrase <code>"UNITED NATIONS"</code> appears in the transcripts.
 
-    <span class="centered">
+    <div class="code-block">
       <code>
         <b>COUNT</b> screen time <b>WHERE</b> {{ parameters.caption_text }}="UNITED NATIONS"
       </code>
-    </span>
+    </div>
   </p>
 
   <p>
@@ -243,11 +243,11 @@
     around all times when the <code>"UNITED NATIONS"</code> appears, then
     we need the following.
 
-    <span class="centered">
+    <div class="code-block">
       <code>
         <b>COUNT</b> screen time <b>WHERE</b> {{ parameters.caption_text }}="UNITED NATIONS" <b>AND</b> transcript.window=30
       </code>
-    </span>
+    </div>
   </p>
 
   <p>
@@ -263,35 +263,35 @@
     the screen time of men, can be extended to count the screen time of
     men on a single channel:
 
-    <span class="centered">
+    <div class="code-block">
       <code><b>COUNT</b> screen time <b>WHERE</b> {{ parameters.onscreen_face }}="tag: male" <b>AND</b> {{ parameters.channel }}=CNN</code>
-    </span>
+    </div>
 
     Likewise, we can combine a query on identities with text. For example,
     to find the screen time of Donald Trump when the phrase
     <code>"BORDER WALL"</code> appears in the transcript, we can
     write the following query.
 
-    <span class="centered">
+    <div class="code-block">
       <code><b>COUNT</b> screen time <b>WHERE</b> {{ parameters.onscreen_face }}="person: donald trump"
             <b>AND</b> {{ parameters.caption_text }}="BORDER WALL"</code>
-    </span>
+    </div>
 
     A further refinement of the query is to find when Donald Trump is on screen
     within 30 seconds of <code>"BORDER WALL"</code> being said.
 
-    <span class="centered">
+    <div class="code-block">
       <code><b>COUNT</b> screen time <b>WHERE</b> {{ parameters.onscreen_face }}="person: donald trump"
             <b>AND</b> {{ parameters.caption_text }}="BORDER WALL" <b>AND</b> {{ parameters.caption_window }}=30</code>
-    </span>
+    </div>
 
     Similarly, the tool can compute screen time where two people (e.g., Donald Trump and
     Hillary Clinton) are shown on screen together.
 
-    <span class="centered">
+    <div class="code-block">
       <code><b>COUNT</b> screen time <b>WHERE</b> {{ parameters.onscreen_face }}="person: donald trump"
             <b>AND</b> {{ parameters.onscreen_face }}="person: hillary clinton"</code>
-    </span>
+    </div>
 
     Please read the <a href="/detailed" target="_blank">detailed documentation</a> page
     to understand the query syntax, the available query options, and advanced features such

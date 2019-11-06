@@ -9,9 +9,7 @@ const VGRID_INSTRUCTIONS = $('<ul />').append(
     `Detected faces are shown for
     <mark style="background-color: ${DEFAULT_MALE_COLOR};">men</mark> and
     <mark style="background-color: ${DEFAULT_FEMALE_COLOR};">women</mark>.
-    Expand the video thumbnail to show labeled identities. <br>
-    Note: the frames were sampled every 3 seconds so the results may not be
-    accurate on all frames.`)
+    Expand the video thumbnail to show labeled identities.`)
 );
 
 var SERVE_FROM_INTERNET_ARCHIVE = true;

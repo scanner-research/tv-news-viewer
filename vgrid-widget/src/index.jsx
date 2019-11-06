@@ -106,7 +106,7 @@ function loadJsonData(json_data, caption_data, face_data, highlight_phrases) {
 
     interval_blocks.push({
       video_id: video_id,
-      title: video_name,
+      title: get_video_title(video_json.metadata),
       interval_sets: [{
         name: 'results',
         interval_set: new IntervalSet(
@@ -152,6 +152,12 @@ function format_time(s) {
     ret = `${h}h ` + ret;
   }
   return ret;
+}
+
+function get_video_title(video) {
+  let [y, m, d] = video.date.split('-').map(x => Number.parseInt(x));
+  let show = video.show.length > 0 ? video.show : '&lt;unnamed&gt;';
+  return `<span title="${video.name}">${video.channel}, ${show} on ${m}/${d}/${y}</span>`
 }
 
 const INTERNET_ARCHIVE_MAX_CLIP_LEN = 180;
@@ -246,7 +252,7 @@ function loadJsonDataForInternetArchive(json_data, caption_data, face_data,
 
     interval_blocks.push({
       video_id: video_id,
-      title: `${video_name} (from ${format_time(block_start)} to ${format_time(block_end)})`,
+      title: `${get_video_title(video_json.metadata)} (from ${format_time(block_start)} to ${format_time(block_end)})`,
       interval_sets: [{
         name: 'results',
         interval_set: new IntervalSet(

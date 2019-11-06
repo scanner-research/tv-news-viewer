@@ -14,8 +14,10 @@ from rs_intervalset import (                                # type: ignore
     MmapIntervalSetMapping, MmapIntervalListMapping)
 from rs_intervalset.wrapper import MmapIListToISetMapping   # type: ignore
 
-from .types import *
-from .parsing import *
+from .types import (
+    Video, FaceIntervals, PersonIntervals, Tag, AllPersonTags,
+    AllPersonIntervals)
+from .parsing import load_json, parse_date_from_video_name
 
 
 MAX_PERSON_ATTRIBUTE_LEN = 50
@@ -56,19 +58,17 @@ def _load_videos(data_dir: str) -> Dict[str, Video]:
             name,
             show,
             channel,
-            date_str,
-            minute,
             num_frames,
             fps,
             width,
             height
         ) = v
-        name = get_video_name(name)
-        date = parse_date(date_str)
+        video_name = get_video_name(name)
+        date, minute = parse_date_from_video_name(video_name)
         assert date is not None
         dayofweek = date.isoweekday()  # Mon == 1, Sun == 7
         videos[name] = Video(
-            id=id, name=name, show=show, channel=channel,
+            id=id, name=video_name, show=show, channel=channel,
             date=date, dayofweek=dayofweek, hour=math.floor(minute / 60),
             num_frames=num_frames, fps=fps, width=width, height=height
         )
@@ -139,7 +139,8 @@ def _load_person_intervals(
     skipped_counter = Counter()
     all_person_intervals = {}
     for person_file_prefix in person_file_prefixes:
-        person_name = re.sub(r'[^\w :]', r'', person_file_prefix.lower())
+        person_name = re.sub(r'[^\w :]', r'', person_file_prefix)
+        person_name_lower = person_name.lower()
 
         person_iset_path = path.join(
             person_iset_dir, person_file_prefix + '.iset.bin')
@@ -152,16 +153,17 @@ def _load_person_intervals(
                 if os.path.isfile(person_iset_path) else
                 MmapIListToISetMapping(person_ilist_map, 0, 0, 3000, 100))
 
-            if not check_person_name_in_lexicon(person_name):
+            if not check_person_name_in_lexicon(person_name_lower):
                 skipped_count += 1
                 person_time = person_isetmap.sum() / 60000
                 skipped_time += person_time
-                skipped_counter[person_name] = person_time
+                skipped_counter[person_name_lower] = person_time
                 continue
 
             person_intervals = PersonIntervals(
-                ilistmap=person_ilist_map, isetmap=person_isetmap)
-            all_person_intervals[person_name] = person_intervals
+                name=person_name, ilistmap=person_ilist_map,
+                isetmap=person_isetmap)
+            all_person_intervals[person_name_lower] = person_intervals
         except Exception as e:
             print('Unable to load: {} - {}'.format(person_name, e))
             skipped_count += 1

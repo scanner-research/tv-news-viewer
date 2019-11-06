@@ -534,7 +534,7 @@ def build_app(
     people = list(filter(
         lambda x: x.screen_time * 60 > min_person_screen_time, [
             Person(
-                name, round(intervals.isetmap.sum() / 60000),
+                intervals.name, round(intervals.isetmap.sum() / 60000),
                 video_data_context.all_person_tags.name_to_tags(name)
             )
             for name, intervals in
@@ -575,7 +575,7 @@ def build_app(
         for v in video_data_context.video_dict.values():
             tmp[(v.channel, v.show)] += v.num_frames / v.fps
         channel_and_show = [
-            (channel, show, round(seconds / 3600))
+            (channel, show, round(seconds / 3600, 1))
             for (channel, show), seconds in tmp.items()]
         channel_and_show.sort()
         return jsonify({'data': channel_and_show})
@@ -795,6 +795,9 @@ def build_app(
         return {
             'id': video.id,
             'name': video.name,
+            'channel': video.channel,
+            'show': video.show,
+            'date': format_date(video.date),
             'width': video.width,
             'height': video.height,
             'fps': video.fps,
