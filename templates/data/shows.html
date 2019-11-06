@@ -32,9 +32,15 @@
 
   <script>
     $(document).ready(function() {
-      $('.table').DataTable(
-        {pageLength: 25, ajax: '/data/shows.json'}
-      );
+      $('.table').DataTable({
+        pageLength: 25,
+        columns: [
+          null,
+          null,
+          {width: '15%', className: 'text-right'},
+        ],
+        ajax: '/data/shows.json'
+      });
     });
   </script>
 </div>

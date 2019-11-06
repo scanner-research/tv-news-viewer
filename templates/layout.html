@@ -23,7 +23,9 @@
   {% block header %}
   <div class="top-header">
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
-      <span class="navbar-brand">Stanford Cable TV News Analyzer</span>
+      <a href="/">
+        <span class="navbar-brand">Stanford Cable TV News Analyzer</span>
+      </a>
       <button class="navbar-toggler" type="button" data-toggle="collapse"
               data-target="#navbarSupportedContent"
               aria-controls="navbarSupportedContent"
@@ -33,17 +35,8 @@
 
       <div class="collapse navbar-collapse" id="navbarSupportedContent">
         <ul class="navbar-nav mr-auto">
-          <li class="nav-item {% if self | quoted == 'home.html' %}active{% endif %}">
-            <a class="nav-link" href="/">Home</a>
-          </li>
           <li class="nav-item {% if self | quoted == 'getting-started.html' %}active{% endif %}">
             <a class="nav-link" href="/getting-started">Getting Started</a>
-          </li>
-          <li class="nav-item {% if self | quoted == 'detailed.html' %}active{% endif %}">
-            <a class="nav-link" href="/detailed">Detailed Documentation</a>
-          </li>
-          <li class="nav-item {% if self | quoted == 'methodology.html' %}active{% endif %}">
-            <a class="nav-link" href="/methodology">Methodology</a>
           </li>
           <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown"
@@ -62,6 +55,12 @@
               <a class="dropdown-item"
                  href="/data/tags">List of tags</a>
             </div>
+          </li>
+          <li class="nav-item {% if self | quoted == 'detailed.html' %}active{% endif %}">
+            <a class="nav-link" href="/detailed">Documentation</a>
+          </li>
+          <li class="nav-item {% if self | quoted == 'methodology.html' %}active{% endif %}">
+            <a class="nav-link" href="/methodology">Methodology</a>
           </li>
           <li class="nav-item {% if self | quoted == 'about-us.html' %}active{% endif %}">
             <a class="nav-link" href="/about-us">About Us</a>

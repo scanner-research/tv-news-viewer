@@ -534,7 +534,7 @@ def build_app(
     people = list(filter(
         lambda x: x.screen_time * 60 > min_person_screen_time, [
             Person(
-                name, round(intervals.isetmap.sum() / 60000, 2),
+                name, round(intervals.isetmap.sum() / 60000),
                 video_data_context.all_person_tags.name_to_tags(name)
             )
             for name, intervals in

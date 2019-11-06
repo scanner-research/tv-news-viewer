@@ -55,7 +55,7 @@ function displayVideos(page_i) {
     next_button.prop('disabled', true);
   }
   page_buttons_div.find('button[name="info"]').text(
-    `Page ${(page_i + 1).toLocaleString()} / ${n_pages.toLocaleString()}. (${params.video_count.toLocaleString()} videos)`
+    `Page ${(page_i + 1).toLocaleString()} / ${n_pages.toLocaleString()} (${params.video_count.toLocaleString()} videos)`
   );
   console.log('Executing query:', query);
 

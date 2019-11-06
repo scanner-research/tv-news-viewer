@@ -6,12 +6,8 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.10.19/css/dataTables.bootstrap4.min.css" integrity="sha256-F+DaKAClQut87heMIC6oThARMuWne8+WzxIDT7jXuPA=" crossorigin="anonymous" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.10.19/js/dataTables.bootstrap4.min.js" integrity="sha256-hJ44ymhBmRPJKIaKRf3DSX5uiFEZ9xB/qx8cNbJvIMU=" crossorigin="anonymous"></script>
 
-<style>
-.longDataValue {
-  display: none;
-  padding-left: 10px;
-}
-</style>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/table.css') }}" />
+<script src="{{ url_for('static', filename='js/table.js') }}" /></script>
 {% endblock %}
 
 {% block content %}
@@ -89,32 +85,21 @@
     <thead>
       <tr>
         <th>Name</th>
-        <th>Origin</th>
-        <th>Count</th>
+        <th>Source</th>
+        <th>Number of people with tag</th>
         <th>People with tag</th>
       </tr>
     </thead>
   </table>
 
   <script>
-    function toggleDataVis(e) {
-      $(e).parent().find('.longDataValue').toggle();
-    }
-
     $(document).ready(function() {
       $('.data-table').DataTable({
         pageLength: 25, columns: [
-          {width: '20%'}, {width: '10%'}, {width: '10%'}, {
-            render: function(x) {
-              if (x.length > 250) {
-                var html = $('<a href="javascript:void(0);" onclick="toggleDataVis(this);"/>').text('show/hide').prop('outerHTML');
-                html += $('<span class="longDataValue" />').text(x).prop('outerHTML');
-                return html;
-              } else {
-                return x;
-              }
-            }
-          }
+          {width: '20%'},
+          {width: '10%', className: 'text-right'},
+          {width: '15%', className: 'text-right'},
+          {render: renderLongDataValue}
         ],
         ajax: '/data/tags.json'
       });
