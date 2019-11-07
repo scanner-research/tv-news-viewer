@@ -792,6 +792,10 @@ function addHighlight(trigger, targets) {
   });
 }
 
+function setDataVersionWarning(version_id) {
+  $('#dataVersionWarning').text(`Warning! The data version has changed from ${version_id} to ${DATA_VERSION_ID}. Remove "dataVersion=${encodeURIComponent(version_id)}" from the shared link/URL to disable this message.`).show();
+}
+
 function initialize() {
   let params = (new URL(document.location)).searchParams;
   showTooltip = params.get('tooltip') != 0;
@@ -800,7 +804,7 @@ function initialize() {
     let version_id = decodeURIComponent(params.get('dataVersion'));
     if (DATA_VERSION_ID != version_id) {
       console.log(`data version mismatch ${DATA_VERSION_ID} != ${version_id}`);
-      alert(`Warning: the data version has changed from ${version_id} to ${DATA_VERSION_ID}. Remove "dataVersion=${encodeURIComponent(version_id)}" from the shared link/URL to disable this warning.`);
+      setDataVersionWarning(version_id);
     }
   }
 
