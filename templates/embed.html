@@ -7,12 +7,12 @@
 <script src="https://cdn.jsdelivr.net/npm/vega-lite@3.1.0"></script>
 <script src="https://cdn.jsdelivr.net/npm/vega-embed@4.0.0"></script>
 
+<link rel="stylesheet" href="{{ url_for('static', filename='css/embed.css') }}" />
+<link rel="stylesheet" href="{{ url_for('static', filename='css/chart.css') }}" />
 <script src="{{ url_for('static', filename='js/constant.js') }}" /></script>
 <script src="{{ url_for('static', filename='js/chart.js') }}" /></script>
 <script src="{{ url_for('static', filename='js/values.js') }}" /></script>
 <script src="{{ url_for('static', filename='js/query.js') }}" /></script>
-
-<link rel="stylesheet" href="{{ url_for('static', filename='css/embed.css') }}" />
 {% endblock %}
 
 {% block header %}{% endblock %}

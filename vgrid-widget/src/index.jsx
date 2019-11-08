@@ -9,6 +9,11 @@ import '@wcrichto/vgrid/dist/vgrid.css';
 
 const HIGHLIGHT_STYLE = {backgroundColor: 'yellow'};
 
+const FACE_FADE_PARAMS = {amount: 0.8, duration: 1};
+
+const INTERNET_ARCHIVE_MAX_CLIP_LEN = 180;
+const INTERNET_ARCHIVE_PAD_START = 30;
+
 function getHighlightIndexes(captions, highlight_phrases) {
   let highlight_phrase_arr = Array.from(highlight_phrases);
   let max_highlight_len = 1 + Math.max(
@@ -98,7 +103,7 @@ function loadJsonData(json_data, caption_data, face_data, highlight_phrases) {
         new Bounds(t0, t1, new BoundingBox(x1, x2, y1, y2)),
         {
           spatial_type: new SpatialType_Bbox({
-            fade: 0.75, text: face.i ? face_id_to_name[face.i] : null
+            fade: FACE_FADE_PARAMS, text: face.i ? face_id_to_name[face.i] : null
           })
         }
       );
@@ -159,9 +164,6 @@ function get_video_title(video) {
   let show = video.show.length > 0 ? video.show : '&lt;unnamed&gt;';
   return `<span title="${video.name}">${video.channel}, ${show} on ${m}/${d}/${y}</span>`
 }
-
-const INTERNET_ARCHIVE_MAX_CLIP_LEN = 180;
-const INTERNET_ARCHIVE_PAD_START = 30;
 
 function loadJsonDataForInternetArchive(json_data, caption_data, face_data,
                                         highlight_phrases) {
@@ -244,7 +246,7 @@ function loadJsonDataForInternetArchive(json_data, caption_data, face_data,
         makeBounds(t0, t1, new BoundingBox(x1, x2, y1, y2)),
         {
           spatial_type: new SpatialType_Bbox({
-            fade: 0.75, text: face.i ? face_id_to_name[face.i] : null
+            fade: FACE_FADE_PARAMS, text: face.i ? face_id_to_name[face.i] : null
           })
         }
       );

@@ -4,7 +4,6 @@ let params = (new URL(document.location)).searchParams;
 let hide_legend = params.get('hideLegend') == 1;
 let data_str = params.get('data');
 let data = JSON.parse(data_str);
-console.log(data);
 let width = params.get('width');
 let height = params.get('height');
 
@@ -13,34 +12,36 @@ function renderText(lines) {
     let version_id = decodeURIComponent(params.get('dataVersion'));
     if (DATA_VERSION_ID != version_id) {
       $('#warning').append(
-        $('<span />').html(`<b>Warning:</b> the requested data version has changed from <b>${version_id}</b> to <b>${DATA_VERSION_ID}</b>. The following chart may have changed.`)
+        $('<span>').html(`<b>Warning:</b> the requested data version has changed from <b>${version_id}</b> to <b>${DATA_VERSION_ID}</b>. The following chart may have changed.`)
       ).show();
     }
   }
 
   $('#options').append(
     'Showing results from ',
-    $('<b />').text(
+    $('<b>').text(
       new Date(data.options.start_date).toLocaleDateString(undefined, {timeZone: 'UTC'})),
     ' to ',
-    $('<b />').text(
+    $('<b>').text(
       new Date(data.options.end_date).toLocaleDateString(undefined, {timeZone: 'UTC'})),
     ' aggregated by ',
-    $('<b />').text(data.options.aggregate)
+    $('<b>').text(data.options.aggregate)
   );
 
   // TODO: XSS attack here
   lines.forEach(line => {
     $('#searchTable tbody').append(
-      $('<tr />').append(
-        $('<td />').append('<div class="color-box" />').css('background-color', line.color),
-        $('<td />').append(
+      $('<tr>').append(
+        $('<td>').append(
+          $('<div>').addClass('color-box').css('background-color', line.color)
+        ),
+        $('<td>').append(
           line.query.alias ?
-            [$('<code />').text(line.query.alias), '&nbsp;',
-              $('<span />').html('&#9432;').attr('title', line.query.query)]
-            : [$('<code />').text(line.query.query),
+            [$('<code>').text(line.query.alias), '&nbsp;',
+              $('<span>').html('&#9432;').attr('title', line.query.query)]
+            : [$('<code>').text(line.query.query),
                 $.trim(line.query.query).endsWith('WHERE') ?
-                  $('<code />').css('color', 'gray').text('all the data') : null]
+                  $('<code>').css('color', 'gray').text('all the data') : null]
         )
       ));
   });

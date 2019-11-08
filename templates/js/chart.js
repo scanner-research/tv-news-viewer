@@ -101,9 +101,9 @@ function getMomentDateFormat(agg) {
   if (agg == 'year') {
     return 'YYYY';
   } else if (agg == 'month') {
-    return 'MMMM YYYY';
+    return 'MMM YYYY';
   } else {
-    return 'LL';
+    return 'll';
   }
 };
 
@@ -171,7 +171,7 @@ class Chart {
         if (unit == 'minutes') {
           value = secondsToMinutes(value);
         }
-        value_str = `${value.toLocaleString(undefined, {maximumFractionDigits: 2})} ${unit}`;
+        value_str = `${value.toLocaleString(undefined, {maximumFractionDigits: 2})}`;
       }
       return {value: value, text: value_str};
     }
@@ -328,21 +328,13 @@ class Chart {
       ({spec, view}) => {
         if (options.show_tooltip) {
           let tooltip = $('<div class="chart-tooltip" />').append(
-            $('<span />').append($('<h6 name="time" />')
-          ));
-          this_chart.search_results.forEach(
-            ([color, result]) => {
-              tooltip.append(
-                result.alias ?
-                  $('<span />').append(
-                    $(`<span />`).css('color', color).text(result.alias)) :
-                  $('<span />').append(
-                    $(`<code />`).css('color', color).text(result.query),
-                    $.trim(result.query).endsWith('WHERE') ?
-                      $('<code />').css('color', 'gray').text('all the data') : null));
-              tooltip.append(
-                $('<span />').append($('<i />').attr('color', color)));
-            })
+            $('<span class="tooltip-time" />'),
+            this_chart.search_results.map(([color, result]) =>
+              $('<span class="tooltip-entry" />').append(
+                $('<span class="tooltip-legend" />').css('color', color).html('&#9632;'),
+                $('<span class="tooltip-data" />').attr('color', color))
+            )
+          );
           $(div_id).append(tooltip);
 
           $(div_id).on('mouseleave', function() {
@@ -353,12 +345,12 @@ class Chart {
             if (item && item.datum) {
               let t = new Date(item.datum.datum.time).toISOString().split('T')[0];
               let t_str = moment(t).format(moment_date_format);
-              tooltip.find('h6[name="time"]').text(t_str);
+              tooltip.find('.tooltip-time').text(t_str);
               this_chart.search_results.forEach(
                 ([color, result]) => {
                   let video_data = _.get(result.main, t, []);
                   let x = getPointValue(result, video_data, t);
-                  tooltip.find(`i[color="${color}"]`).text(`${x.text}, ${video_data.length.toLocaleString()} videos`);
+                  tooltip.find(`.tooltip-data[color="${color}"]`).text(x.text);
                 }
               );
 
