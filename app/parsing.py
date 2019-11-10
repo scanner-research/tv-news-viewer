@@ -34,9 +34,7 @@ def parse_date_from_video_name(p, tz=ET) -> Tuple[datetime, int]:
             timestamp_et.hour * 60 + timestamp_et.minute)
 
 
-def parse_hour_set(s: Optional[str]) -> Optional[Set[int]]:
-    if s is None or not s.strip():
-        return None
+def parse_hour_set(s: str) -> Set[int]:
     result: Set[int] = set()
     for t in s.strip().split(','):
         t = t.strip()
@@ -62,9 +60,7 @@ def parse_hour_set(s: Optional[str]) -> Optional[Set[int]]:
 DAYS_OF_WEEK = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']
 
 
-def parse_day_of_week_set(s: Optional[str]) -> Optional[Set[int]]:
-    if s is None or not s.strip():
-        return None
+def parse_day_of_week_set(s: str) -> Set[int]:
     result: Set[int] = set()
     for t in s.strip().split(','):
         t = t.strip()
@@ -85,45 +81,9 @@ def parse_day_of_week_set(s: Optional[str]) -> Optional[Set[int]]:
 
 
 class PersonTags(NamedTuple):
-    tags: List[str]
+    tags: Set[str]
     join_op: str
 
 
-class FaceFilter(NamedTuple):
-    all: bool
-    people: Optional[Set[str]] = None
-    tags: Optional[Set[str]] = None
-    tags_join_op: Optional[str] = None
-
-
-def parse_face_filter_str(s: str) -> FaceFilter:
-    if s == '':
-        raise InvalidUsage('Face filter cannot be blank')
-    if s.lower() != 'all':
-        people = None
-        tags = None
-        for kv in s.split(','):
-            kv = kv.strip()
-            try:
-                k, v = kv.split(':', 1)
-                k = k.strip()
-                v = v.strip()
-                if k == 'person':
-                    tmp = {x.strip() for x in v.split('&')}
-                    if people:
-                        people |= tmp
-                    else:
-                        people = tmp
-                elif k == 'tag':
-                    tmp = {x.strip() for x in v.split('&')}
-                    if tags:
-                        tags |= tmp
-                    else:
-                        tags = tmp
-                else:
-                    raise InvalidUsage('Invalid face filter: {}'.format(k))
-            except:
-                raise InvalidUsage('Failed to parse face filter: {}'.format(kv))
-        return FaceFilter(False, people, tags)
-    else:
-        return FaceFilter(True)
+def parse_tags(s: str) -> PersonTags:
+    return PersonTags(tags={t.strip() for t in s.split(',')}, join_op='AND')

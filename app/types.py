@@ -12,39 +12,37 @@ class Aggregate(Enum):
     year = 'year'
 
 
-class Countable(Enum):
-    videotime = 'screen time'
-
-
 class Ternary(Enum):
     true = 'true'
     false = 'false'
     both = 'both'
 
 
-class SearchParameter:
-    count = 'count'
-    aggregate = 'aggregate'
-    start_date = 'start_date'
-    end_date = 'end_date'
-    detailed = 'detailed'
-
+class SearchKey:
     video = 'video'
     channel = 'channel'
     show = 'show'
     hour = 'hour'
     day_of_week = 'dayofweek'
 
-    onscreen_face = 'face'
-    onscreen_numfaces = 'face.count'
+    face_name = 'name'
+    face_tag = 'tag'
+    face_count = 'facecount'
 
-    caption_text = 'transcript'
-    caption_window = 'transcript.window'
+    text = 'text'
+    text_window = 'textwindow'
 
-    is_commercial = 'iscommercial'
 
+class SearchParam:
+    aggregate = 'aggregate'
+    start_date = 'start_date'
+    end_date = 'end_date'
+    detailed = 'detailed'
+
+    is_commercial = 'is_commercial'
+
+    query = 'query'
     video_ids = 'ids'
-
     alias = 'seriesname'
 
 

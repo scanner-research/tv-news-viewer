@@ -10,6 +10,7 @@ function getPhrasesToHighlight(query) {
     return w.match(/^[0-9a-z\s']+$/i);
   }
   let phrases = new Set();
+  // FIXME: needs to walk the tree
   Object.entries(query.main_args).forEach(([k, v]) => {
     if (k == '{{ parameters.caption_text }}') {
       v.split(/[&|\^]+/).map($.trim).filter(token_filter).forEach(
@@ -63,7 +64,7 @@ function displayVideos(page_i) {
   let face_data = {}
   Promise.all(
     video_ids.map(i =>
-      $.get(`/captions/${i}`).then(
+      $.get(`/transcript/${i}`).then(
         resp => caption_data[i] = resp
       ).catch(e => `Failed to get captions: ${i}`)),
     video_ids.map(i =>
@@ -75,7 +76,7 @@ function displayVideos(page_i) {
       video_ids,
       json_data => {
         try {
-          $('#videos').empty().append(`<div id="videos-${page_i}" />`);
+          $('#videos').empty().append($('<div>').attr('id', `videos-${page_i}`);
 
           let vgrid_settings = {
             show_timeline: true,
@@ -126,24 +127,24 @@ function loadVideos(params, serve_from_internet_archive) {
 
   if (QUERY.alias) {
     $('#text-info').empty().append(
-      $('<span />').css(
-        'color', PARAMS.color
-      ).text(QUERY.alias),
+      $('<span>').css('color', PARAMS.color).text(QUERY.alias),
       '&nbsp;',
-      $('<span />').html('&#9432;').attr('title', QUERY.query)
+      $('<span>').html('&#9432;').attr('title', QUERY.query)
     );
   } else {
     $('#text-info').empty().append(
-      $('<code />').css('color', PARAMS.color).text(QUERY.query),
+      $('<code>').css('color', PARAMS.color).text(QUERY.query),
       $.trim(QUERY.query).endsWith('WHERE') ?
-        $('<code />').css('color', 'gray').text('all the data') : null
+        $('<code>').css('color', 'gray').text('all the data') : null
     );
   }
   if (PARAMS.video_count > 0) {
     $('body').css('min-height', '220px');
     displayVideos(CURR_PAGE);
   } else {
-    $('#videos').empty().append($('<p />').css('text-align', 'center').text('No videos to display.'));
+    $('#videos').empty().append(
+      $('<p>').css('text-align', 'center').text('No videos to display.')
+    );
     $("#page-buttons").hide();
   }
 }

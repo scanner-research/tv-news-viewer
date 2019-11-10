@@ -1,7 +1,5 @@
 const DATA_VERSION_ID = {% if data_version is not none %}"{{ data_version }}"{% else %}null{% endif %};
 
-const VIDEO_TIME = '{{ countables.videotime.value }}';
-
 const DEFAULT_START_DATE = '{{ start_date }}';
 const DEFAULT_END_DATE = '{{ end_date }}';
 const DEFAULT_AGGREGATE_BY = '{{ default_agg_by }}';
@@ -40,7 +38,7 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
       </td>
       <td>
         <span>
-          <select multiple class="chosen-select chosen-basic-select"
+          <select multiple class="chosen-select chosen-single-select"
                   data-placeholder="no names selected"
                   name="face:person" data-width="fit">
           </select>
@@ -73,7 +71,7 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
       </td>
       <td type="value-col">
         <input type="number" class="form-control no-enter-submit num-faces-input"
-               name="{{ parameters.onscreen_numfaces }}"
+               name="{{ search_keys.face_count }}"
                min="1" max="25" placeholder="enter a number">
         faces on-screen
       </td>
@@ -86,7 +84,7 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
       </td>
       <td type="value-col">
         <textarea type="text" class="form-control no-enter-submit"
-               name="{{ parameters.caption_text }}"
+               name="{{ search_keys.text }}"
                value="" placeholder='one or more keywords or phrases, separated by "|"'
                rows="1"></textarea>
       </td>
@@ -97,7 +95,7 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
       <td type="value-col">
         (with a window of
           <input type="number" class="form-control"
-                 name="{{ parameters.caption_window }}"
+                 name="{{ search_keys.text_window }}"
                  min="0" max="3600" placeholder="{{ default_text_window }}"
                  style="width:70px;">
           seconds around each mention)
@@ -108,7 +106,8 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
     <tr>
       <td type="key-col">the channel is</td>
       <td type="value-col">
-        <select class="chosen-select chosen-basic-select" name="{{ parameters.channel }}" data-width="fit">
+        <select class="chosen-select chosen-basic-select"
+                name="{{ search_keys.channel }}" data-width="fit">
           <option value="" selected="selected">All - CNN, FOX, or MSNBC</option>
           <option value="CNN">CNN</option>
           <option value="FOX">FOX</option>
@@ -119,7 +118,8 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
     <tr>
       <td type="key-col">the show is</td>
       <td type="value-col">
-        <select class="chosen-select chosen-basic-select" name="{{ parameters.show }}" data-width="fit">
+        <select class="chosen-select chosen-basic-select"
+                name="{{ search_keys.show }}" data-width="fit">
           <option value="" selected="selected">All shows</option>
         </select>
       </td>
@@ -129,19 +129,19 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
     <tr>
       <td type="key-col">the hour of day is between</td>
       <td type="value-col"><input type="text" class="form-control no-enter-submit"
-          name="{{ parameters.hour }}" value="" placeholder="0-23"> (in Eastern Time)
+          name="{{ search_keys.hour }}" value="" placeholder="0-23"> (in Eastern Time)
       </td>
     </tr>
     <tr>
       <td type="key-col">the day of week is</td>
       <td type="value-col"><input type="text" class="form-control no-enter-submit"
-          name="{{ parameters.day_of_week }}" value="" placeholder="mon-sun"></td>
+          name="{{ search_keys.day_of_week }}" value="" placeholder="mon-sun"></td>
     </tr>
     <tr disabled="true">
       <td type="key-col">is a commercial</td>
       <td type="value-col">
-        <select class="chosen-select chosen-single-select" name="{{ parameters.is_commercial }}"
-                data-width="fit">
+        <select class="chosen-select chosen-single-select"
+                name="{{ params.is_commercial }}" data-width="fit">
           <option value="false" selected="selected">false</option>
           <option value="both">both</option>
           <option value="true">true</option>
@@ -171,7 +171,7 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
       </td>
       <td type="value-col">
         <input type="text" class="form-control no-enter-submit" style="width: 100%;"
-               name="{{ parameters.alias }}" value="">
+               name="{{ params.alias }}" value="">
       </td>
     </tr>
   </table>
@@ -273,7 +273,7 @@ function getQueryBuilder() {
     builder = _QUERY_BUILDER;
   } else {
     builder = $(QUERY_BUILDER_HTML);
-    let show_select = builder.find('select[name="{{ parameters.show }}"]');
+    let show_select = builder.find('select[name="{{ search_keys.show }}"]');
     ALL_SHOWS.forEach(x => show_select.append($('<option>').val(x).text(x)));
     let person_select = builder.find(
       'select[name="face:person"]'
@@ -289,29 +289,29 @@ function getQueryBuilder() {
   }
 
   // Reset the builder defaults
-  builder.find('[name="{{ parameters.channel }}"]').val('');
-  builder.find('[name="{{ parameters.show }}"]').val('');
-  builder.find('[name="{{ parameters.hour }}"]').val('');
-  builder.find('[name="{{ parameters.day_of_week }}"]').val('');
-  builder.find('[name="{{ parameters.is_commercial }}"]').val('false');
-  builder.find('[name="{{ parameters.caption_text }}"]').val('');
-  builder.find('[name="{{ parameters.caption_window }}"]').val('{{ default_text_window }}');
+  builder.find('[name="{{ search_keys.channel }}"]').val('');
+  builder.find('[name="{{ search_keys.show }}"]').val('');
+  builder.find('[name="{{ search_keys.hour }}"]').val('');
+  builder.find('[name="{{ search_keys.day_of_week }}"]').val('');
+  builder.find('[name="{{ params.is_commercial }}"]').val('false');
+  builder.find('[name="{{ search_keys.text }}"]').val('');
+  builder.find('[name="{{ search_keys.text_window }}"]').val('{{ default_text_window }}');
   builder.find('[name="face:person"]').val(null).parent();
   builder.find('[name="face:tag"]').val(null).parent();
   builder.find('[name="face:all"]').prop('checked', false);
-  builder.find('[name="{{ parameters.onscreen_numfaces }}"]').val('');
+  builder.find('[name="{{ search_keys.face_count }}"]').val('');
   builder.find('[name="normalize"]').prop('checked', false);
-  builder.find('[name="{{ parameters.alias }}"]').val('');
+  builder.find('[name="{{ params.alias }}"]').val('');
   builder.find('.toggle-face').show();
   return builder;
 }
 
 function loadQueryBuilder(search_table_row) {
-  let where_box = search_table_row.find('input[name="where"]');
+  let query_input = search_table_row.find('input[name="query"]');
 
   search_table_row.find('.query-td').append(getQueryBuilder());
   var current_query = new SearchableQuery(
-    `${QUERY_KEYWORDS.where} ${where_box.val()}`, true);
+    `${QUERY_KEYWORDS.where} ${query_input.val()}`, true);
 
   let query_builder = search_table_row.find('.query-builder');
   let setIfDefined = k => {
@@ -321,20 +321,20 @@ function loadQueryBuilder(search_table_row) {
     }
   };
 
-  var channel = current_query.main_args['{{ parameters.channel }}'];
+  var channel = current_query.main_args['{{ search_keys.channel }}'];
   if (channel) {
-    query_builder.find(`select[name="{{ parameters.channel }}"]`).val(
+    query_builder.find(`select[name="{{ search_keys.channel }}"]`).val(
       channel.toUpperCase() == 'FOXNEWS' ? 'FOX' : channel);
   }
 
-  setIfDefined('{{ parameters.show }}');
-  setIfDefined('{{ parameters.hour }}');
-  setIfDefined('{{ parameters.day_of_week }}');
-  setIfDefined('{{ parameters.caption_text }}');
-  setIfDefined('{{ parameters.caption_window }}');
-  setIfDefined('{{ parameters.is_commercial }}');
+  setIfDefined('{{ search_keys.show }}');
+  setIfDefined('{{ search_keys.hour }}');
+  setIfDefined('{{ search_keys.day_of_week }}');
+  setIfDefined('{{ search_keys.text }}');
+  setIfDefined('{{ search_keys.text_window }}');
+  setIfDefined('{{ params.is_commercial }}');
 
-  let onscreen_face = current_query.main_args['{{ parameters.onscreen_face }}'];
+  let onscreen_face = current_query.main_args['{{ params.onscreen_face }}'];
   if (onscreen_face) {
     try {
       let face_params = parseFaceFilterString(onscreen_face);
@@ -356,17 +356,15 @@ function loadQueryBuilder(search_table_row) {
     }
   }
 
-  let onscreen_numfaces = current_query.main_args['{{ parameters.onscreen_numfaces }}'];
+  let onscreen_numfaces = current_query.main_args['{{ search_keys.face_count }}'];
   if (onscreen_numfaces) {
     query_builder.find(
-      `[name="{{ parameters.onscreen_numfaces }}"]`
+      `[name="{{ search_keys.face_count }}"]`
     ).val(onscreen_numfaces);
   }
 
   if (current_query.alias) {
-    query_builder.find(
-      '[name="{{ parameters.alias }}"]'
-    ).val(current_query.alias);
+    query_builder.find('[name="{{ params.alias }}"]').val(current_query.alias);
   }
 
   if (current_query.normalize_args) {
@@ -395,22 +393,22 @@ function loadQueryBuilder(search_table_row) {
   });
 
   // Disable where input
-  where_box.attr('disabled', true);
+  query_input.attr('disabled', true);
 }
 
 function closeQueryBuilder(search_table_row) {
-  let where_box = search_table_row.find('input[name="where"]');
+  let query_input = search_table_row.find('input[name="query"]');
   let query_builder = search_table_row.find('.query-builder');
   if (query_builder.length > 0) {
     query_builder.find('.chosen-select').chosen('destroy');
     query_builder.remove();
-    where_box.attr('disabled', false);
+    query_input.attr('disabled', false);
   }
 }
 
 function toggleQueryBuilder() {
   let search_table_row = $(this).closest('tr');
-  let where_box = search_table_row.find('input[name="where"]');
+  let query_input = search_table_row.find('input[name="query"]');
   if (search_table_row.find('.query-builder').length > 0) {
     closeQueryBuilder(search_table_row);
   } else {
@@ -441,111 +439,94 @@ function updateQueryBox(search_table_row) {
 
   let getBuilderValue = e => builder.find(e).val().replace(/"/gi, '');
 
-  let alias = builder.find('[name="{{ parameters.alias }}"]').val();
+  let alias = builder.find('[name="{{ params.alias }}"]').val();
   if (alias) {
-    filters.push(`{{ parameters.alias }}="${alias}"`);
+    filters.push(`{{ params.alias }}="${alias}"`);
   }
 
-  let channel = getBuilderValue('select[name="{{ parameters.channel }}"]');
+  let channel = getBuilderValue('select[name="{{ search_keys.channel }}"]');
   if (channel) {
-    filters.push(`{{ parameters.channel }}="${channel}"`);
+    filters.push(`{{ search_keys.channel }}="${channel}"`);
   }
-  let show = getBuilderValue('select[name="{{ parameters.show }}"]');
+  let show = getBuilderValue('select[name="{{ search_keys.show }}"]');
   if (show) {
-    filters.push(`{{ parameters.show }}="${show}"`);
+    filters.push(`{{ search_keys.show }}="${show}"`);
   }
-  let hour = getBuilderValue('input[name="{{ parameters.hour }}"]');
+  let hour = getBuilderValue('input[name="{{ search_keys.hour }}"]');
   if (hour) {
-    filters.push(`{{ parameters.hour }}="${hour}"`);
+    filters.push(`{{ search_keys.hour }}="${hour}"`);
   }
-  let day_of_week = getBuilderValue('input[name="{{ parameters.day_of_week }}"]');
+  let day_of_week = getBuilderValue('input[name="{{ search_keys.day_of_week }}"]');
   if (day_of_week) {
-    filters.push(`{{ parameters.day_of_week }}="${day_of_week}"`);
+    filters.push(`{{ search_keys.day_of_week }}="${day_of_week}"`);
   }
 
-  let is_commercial = getBuilderValue('select[name="{{ parameters.is_commercial }}"]');
+  let is_commercial = getBuilderValue('select[name="{{ params.is_commercial }}"]');
   if (is_commercial != 'false') {
-    filters.push(`{{ parameters.is_commercial }}=${is_commercial}`);
+    filters.push(`{{ params.is_commercial }}=${is_commercial}`);
   }
 
   let face_all = builder.find('input[name="face:all"]').is(':checked');
   if (face_all) {
-    filters.push(`{{ parameters.onscreen_face }}="all"`);
+    filters.push(`{{ params.onscreen_face }}="all"`);
   } else {
     let face_params = [];
 
     let face_person = builder.find('select[name="face:person"]').val();
     if (face_person && face_person.length > 0) {
-      face_params.push('person: ' + face_person.join(' & '));
+      face_params.push('person: ' + face_person[0]);
     }
 
     let face_tag = builder.find('select[name="face:tag"]').val();
     if (face_tag && face_tag.length > 0) {
-      face_params.push('tag: ' + face_tag.join(` & `));
+      face_params.push('tag: ' + face_tag.join(','));
     }
 
     if (face_params.length > 0) {
-      filters.push(`{{ parameters.onscreen_face }}="${face_params.join(', ')}"`);
+      filters.push(`{{ params.onscreen_face }}="${face_params.join(', ')}"`);
     }
   }
 
-  let num_faces = builder.find('input[name="{{ parameters.onscreen_numfaces }}"]').val();
+  let num_faces = builder.find('input[name="{{ search_keys.face_count }}"]').val();
   if (num_faces) {
-    filters.push(`{{ parameters.onscreen_numfaces }}=${num_faces}`);
+    filters.push(`{{ search_keys.face_count }}=${num_faces}`);
   }
 
-  let caption_text = getBuilderValue('textarea[name="{{ parameters.caption_text }}"]');
-  if (caption_text) {
-    filters.push(`{{ parameters.caption_text }}="${caption_text}"`);
+  let text = getBuilderValue('textarea[name="{{ search_keys.text }}"]');
+  if (text) {
+    filters.push(`{{ search_keys.text }}="${text}"`);
   }
-  let caption_window = builder.find('input[name="{{ parameters.caption_window }}"]').val();
-  if (caption_window && caption_window != 0) {
-    filters.push(`{{ parameters.caption_window }}=${caption_window}`);
+  let text_window = builder.find('input[name="{{ search_keys.text_window }}"]').val();
+  if (text_window && text_window != 0) {
+    filters.push(`{{ search_keys.text_window }}=${text_window}`);
   }
 
   let normalize = getBuilderValue('[name="normalize"]') == 'true';
 
   // Construct the new query
-  var new_where = filters.length > 0 ? filters.join(` ${QUERY_KEYWORDS.and} `) : '';
+  var new_query = filters.length > 0 ? filters.join(` ${QUERY_KEYWORDS.and} `) : '';
   if (normalize) {
-    new_where += ` ${QUERY_KEYWORDS.normalize}`;
+    new_query += ` ${QUERY_KEYWORDS.normalize}`;
   }
 
-  let where_input = search_table_row.find('input[name="where"]');
-  where_input.val(new_where);
-  onWhereUpdate(where_input);
+  let query_input = search_table_row.find('input[name="query"]');
+  query_input.val(new_query);
+  onQueryUpdate(query_input);
 }
 
 function getDefaultQuery() {
   if ($('#searchTable tr[name="query"]').length > 0) {
-    return 'WHERE ' + $('#searchTable input[type="text"][name="where"]:last').val();
+    return $('#searchTable input[type="text"][name="query"]:last').val();
   } else {
-    return 'WHERE';
+    return '';
   }
 }
 
-function onWhereUpdate(element) {
-  // Rewrite query with default normalization if necessary
-  function checkFaceFilters(filters) {
-    Object.keys(filters).forEach(k => {
-      if (k.match(/^{{ parameters.onscreen_face }}\d+/)) {
-        face_filter = parseFaceFilterString(filters[k]);
-      }
-    });
-  }
-
-  // Check the query
-  let query = `COUNT "${VIDEO_TIME}" WHERE ${$(element).val()}`;
+function onQueryUpdate(element) {
+  let query = $(element).val();
   var err = false;
   try {
-    let parsed_query = new SearchableQuery(query, false);
-    checkFaceFilters(parsed_query.main_args);
-    if (parsed_query.normalize_args) {
-      checkFaceFilters(parsed_query.normalize_args);
-    }
-    if (parsed_query.subtract_args) {
-      checkFaceFilters(parsed_query.subtract_args);
-    }
+    new SearchableQuery(query, false);
   } catch (e) {
     console.log(e);
     err = true;
@@ -565,7 +546,6 @@ function changeRowColor() {
 function addRow(query) {
   let color = _.get(query, 'color', getColor());
   let text = _.get(query, 'text', getDefaultQuery());
-  let query_clauses = new SearchableQuery(text).clauses();
 
   let new_row = $('<tr>').attr({name: 'query', 'data-color': color}).append(
     $('<td>').attr('valign', 'top').append(
@@ -594,14 +574,14 @@ function addRow(query) {
         $('<div>').addClass('input-group-prepend noselect').append(
           $('<span>').addClass('input-group-text query-text').attr({
             name: 'count-type-prefix'
-          }).text(`COUNT ${VIDEO_TIME} WHERE`)
+          }).text(`COUNT screen time WHERE`)
         ),
         $('<input>').addClass(
           'form-control query-text'
         ).attr({
-          type: 'text', name: 'where',
+          type: 'text', name: 'query',
           placeholder: 'enter search here (all the data, if blank)'
-        }).change(onWhereUpdate).val(query_clauses.where)
+        }).change(onQueryUpdate).val(text)
       )
     ),
   );
@@ -614,7 +594,7 @@ function addRow(query) {
   }
   setRemoveButtonsState();
 
-  onWhereUpdate(new_row.find('input[name="where"]'));
+  onQueryUpdate(new_row.find('input[name="query"]'));
 }
 $('#searchTable .add-row-btn').click(() => {addRow();});
 
@@ -721,10 +701,10 @@ function getRawQueries() {
   let queries = [];
   $('#searchTable > tbody > tr').each(function() {
     if ($(this).attr('name')) {
-      let where_str = $.trim($(this).find('input[name="where"]').val());
+      let query_str = $.trim($(this).find('input[name="query"]').val());
       queries.push({
         color: $(this).attr('data-color'),
-        text: `COUNT "${VIDEO_TIME}" WHERE ${where_str}`
+        text: query_str
       });
     }
   });
@@ -766,11 +746,11 @@ function search() {
       }
       var msg;
       try {
-        msg = JSON.parse(xhr.responseText).message;
+        msg = `${status}=${JSON.parse(xhr.responseText).message}`;
       } catch {
-        msg = `Error: ${status}`;
+        msg = `${status}=${error}`;
       }
-      alert(`[Query failed] ${line.query.query}\n\n${msg}\n\nThe chart may be incomplete.`);
+      alert(`[Query failed]\n\n${line.query.query}\n${msg}\n\nThe chart may be incomplete.`);
       console.log('Failed:', line.query, xhr);
       errored = true;
     }
@@ -820,8 +800,8 @@ function initialize() {
     }
   } else {
     initChartOptions();
-    addRow({text: 'WHERE face="person: barack obama"'});
-    addRow({text: 'WHERE face="person: donald trump"'});
+    addRow({text: 'name="barack obama"'});
+    addRow({text: 'name="donald trump"'});
     if (params.get('blank') != 1) {
       search();
     }
@@ -835,7 +815,7 @@ function initialize() {
         if ($(this).index() > 0) {
           removeRow($(this));
         } else {
-          $(this).find('input[name="where"]').val('');
+          $(this).find('input[name="query"]').val('');
         }
       });
 

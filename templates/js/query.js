@@ -1,78 +1,56 @@
 const QUERY_KEYWORDS = {
   and: 'AND',
+  or: 'OR',
   normalize: 'NORMALIZE',
   subtract: 'SUBTRACT',
-  where: 'WHERE',
   all: 'all'
 }
 
 const QUERY_GRAMMAR = `
 Start
-  = Blank a:Query Blank "NORMALIZE"i Blank b:Query2 Blank {
-    if (b.count_var == null) {
-      b.count_var = a.count_var;
-    }
+  = Blank "(" Blank a:Query Blank ")" Blank "NORMALIZE"i Blank b:Query Blank {
     return {main: a, normalize: b};
   }
-  / Blank a:Query Blank "SUBTRACT"i Blank b:Query2 Blank {
-    if (b.count_var == null) {
-      b.count_var = a.count_var;
-    }
+  / Blank "(" Blank a:Query Blank ")" Blank "SUBTRACT"i Blank b:Query Blank {
+    return {main: a, subtract: b};
+  }
+  / Blank a:Query Blank "NORMALIZE"i Blank b:Query Blank {
+    return {main: a, normalize: b};
+  }
+  / Blank a:Query Blank "SUBTRACT"i Blank b:Query Blank {
     return {main: a, subtract: b};
   }
   / Blank a:Query Blank { return {main: a}; }
 
 Query
-  = "COUNT"i Blank a:CountVarName Blank b:WhereClause ? {
-    return {count_var: a, count: null, where: b ? b : {}};
+  = "(" Blank a:Node Blank ")" { return a; }
+  / a:Node { return a; }
+  / "" { return []; }
+
+Node
+  = a:NodeOrKeyValue Blank "AND"i Blank b:AndList {
+  	return ['and', [a].concat(b)];
   }
-  / a:WhereClause { return {count_var: null, count: null, where: a}; }
-  / a:CountClause Blank b:WhereClause ? {
-    return {count_var: null, count: a, where: b ? b : {}};
+  / a:NodeOrKeyValue Blank "OR"i Blank b:OrList {
+  	return ['or', [a].concat(b)];
   }
-  / Blank {
-    return {count_var: null, count: null, where: {}};
-  }
-
-Query2
-  = "(" Blank a:AndList Blank ")" { return {count_var: null, count: null, where: a}; }
-  / a:AndList { return {count_var: null, count: null, where: a}; }
-  / "(" Blank a:Query Blank ")" { return a; }
-  / a:Query { return a; }
-
-CountVarName
-  = '"' s:TokenInclSpace '"' { return s; }
-  / "'" s:TokenInclSpace "'" { return s; }
-  / CountVarNameTokenList
-
-CountVarNameTokenList
-  = & (Blank ReservedWords) { return ''; }
-  / a:(Blank TokenNoSpace) b:CountVarNameTokenList { return a.join('') + b; }
-  / a:(Blank TokenNoSpace) { return a.join(''); }
-
-CountClause
-  = Printable
-
-WhereClause
-  = "WHERE"i Blank a:AndList { return a; }
-  / "WHERE"i Blank { return {}; }
+  / a:NodeOrKeyValue { return a; }
 
 AndList
-  = a:KeyValue Blank "AND"i Blank b:AndList {
-    let [k, v] = a;
-    if (b.hasOwnProperty(k)) {
-      b[k].push(v);
-    } else {
-      b[k] = [v];
-    }
-    return b;
+  = a:NodeOrKeyValue Blank "AND"i Blank b:AndList {
+	return [a].concat(b);
   }
-  / a:KeyValue {
-    let [k, v] = a;
-    let ret = {};
-    ret[k] = [v];
-    return ret;
+  / a:NodeOrKeyValue { return [a]; }
+
+OrList
+  = a:NodeOrKeyValue Blank "OR"i Blank b:OrList {
+	return [a].concat(b);
   }
+  / a:NodeOrKeyValue { return [a]; }
+
+NodeOrKeyValue
+  = a:KeyValue { return a; }
+  / "(" Blank a:Node Blank ")" { return a; }
 
 KeyValue
   = k:TokenNoSpace Blank "=" Blank v:Printable { return [k, v]; }
@@ -80,9 +58,6 @@ KeyValue
 TokenNoSpace
   = s:[a-zA-Z0-9.]+ { return s.join(''); }
 
-TokenInclSpace
-  = s:[a-zA-Z0-9. ]+ { return s.join(''); }
-
 Printable
   = "'" s:[^']* "'" { return s.join(''); }
   / '"' s:[^"]* '"' { return s.join(''); }
@@ -97,195 +72,15 @@ PrintableNoDelim
   = a:[^ \t)]+ { return a.join(''); }
 
 ReservedWords
-  = "OF"i / "WHERE"i / "COUNT"i / "NORMALIZE"i / "SUBTRACT"i / "AND"i
+  = "NORMALIZE"i / "SUBTRACT"i / "AND"i / "OR"i
 
 Blank
   = [ \t]*
 `
 
-QUERY_CLAUSE_GRAMMAR = `
-Start
-  = Blank q:Query Blank { return q; }
-
-Query
-  = "COUNT"i Blank a:CountVarName Blank b:WhereClause {
-  	return {count_var: a, count: '', where: b};
-  }
-  / b:WhereClause {
-    return {count_var: null, count: '', where: b};
-  }
-  / a:Printable Blank b:WhereClause {
-    return {count_var: null, count: a, where: b};
-  }
-  / a:Printable { return {count_var: null, count: a, where: ""};}
-
-WhereClause
-  = "WHERE"i Blank a:Any { return a; }
-  / a:(("NORMALIZE"i / "SUBTRACT"i) Blank Any) { return a.join(''); }
-
-CountVarName
-  = '"' s:TokenInclSpace '"' { return s; }
-  / "'" s:TokenInclSpace "'" { return s; }
-  / CountVarNameTokenList
-
-CountVarNameTokenList
-  = & (Blank ReservedWords) { return ''; }
-  / a:(Blank TokenNoSpace) b:CountVarNameTokenList { return a.join('') + b; }
-  / a:(Blank TokenNoSpace) { return a.join(''); }
-
-TokenNoSpace
-  = s:[a-zA-Z0-9.]+ { return s.join(''); }
-
-TokenInclSpace
-  = s:[a-zA-Z0-9. ]+ { return s.join(''); }
-
-Printable
-  = "'" s:[^']* "'" { return s.join(''); }
-  / '"' s:[^"]* '"' { return s.join(''); }
-  / PrintableTokenList
-
-PrintableTokenList
-  = & (Blank ReservedWords) { return ''; }
-  / a:(Blank PrintableNoDelim) b:PrintableTokenList { return a.join('') + b; }
-  / a:(Blank PrintableNoDelim) { return a.join(''); }
-
-PrintableNoDelim
-  = a:[^ \t)]+ { return a.join(''); }
-
-ReservedWords
-  = "OF"i / "WHERE"i / "COUNT"i / "NORMALIZE"i / "SUBTRACT"i / "AND"i
-
-Any
-  = s:[^]* { return s.join(''); }
-
-Blank
-  = s:[ \t]* { return s.join(''); }
-`
-
 const QUERY_PARSER = PEG.buildParser(QUERY_GRAMMAR);
-const QUERY_CLAUSE_PARSER = PEG.buildParser(QUERY_CLAUSE_GRAMMAR);
 
 class QueryParseError extends Error {}
-
-function parseTernary(s) {
-  if (s.match(/^true$/i)) {
-    return 'true';
-  } else if (s.match(/^false$/i)) {
-    return 'false';
-  } else if (s.match(/^both$/i)) {
-    return 'both';
-  } else {
-    throw new QueryParseError(`${s} is neither true, false, nor both`);
-  }
-}
-
-function parseFaceFilterString(s) {
-  let result = {};
-  s = $.trim(s).toLowerCase();
-  if (s == 'all') {
-    result.all = true;
-  } else {
-    s.split(',').forEach(kv => {
-      let [k, v] = $.trim(kv).split(':').map(s => $.trim(s));
-      if (k == 'person' || k == 'tag') {
-        if (result.hasOwnProperty(k)) {
-          result[k] = result[k] + ' & ' + v;
-        } else {
-          result[k] = v;
-        }
-      } else {
-        throw new QueryParseError(`${k} is not a valid filter`);
-      }
-    });
-  }
-  return result;
-}
-
-function findShow(v) {
-  let v_up = v.toUpperCase();
-  var show = null;
-  for (var i in ALL_SHOWS) {
-    if (ALL_SHOWS[i].toUpperCase() == v_up) {
-      show = ALL_SHOWS[i];
-      break;
-    }
-  }
-  return show;
-}
-
-function getSingleValue(key, arr) {
-  if (arr.length > 1) {
-    throw new QueryParseError(`${key} is specified multiple times`);
-  }
-  return $.trim(arr[0]);
-}
-
-function translateArgumentDict(raw_filters, no_err) {
-  let filters = {};
-  var alias;
-  Object.entries(raw_filters).forEach(([k, v_arr]) => {
-    try {
-      if (k == '{{ parameters.alias }}') {
-        alias = getSingleValue(k, v_arr);
-      } else if (k == '{{ parameters.caption_text }}') {
-        filters[k] = getSingleValue(k, v_arr);
-      } else if (k == '{{ parameters.face }}'
-                 || k == '{{ parameters.onscreen_face }}') {
-        v_arr.forEach((v, i) => {
-          if (i == 0) {
-            filters[k] = v;
-          } else {
-            filters[`${k}${i + 1}`] = v;
-          }
-        });
-      } else if (k == '{{ parameters.onscreen_numfaces }}') {
-        filters[k] = parseInt(getSingleValue(k, v_arr));
-      } else if (k == '{{ parameters.caption_window }}') {
-        let i = parseInt(getSingleValue(k, v_arr));
-        if (Number.isNaN(i)) {
-          throw new QueryParseError(`Invalid window value: ${i}`);
-        } else {
-          filters[k] = i;
-        }
-      } else if (k == '{{ parameters.channel }}') {
-        let v = getSingleValue(k, v_arr);
-        let v_up = v.toUpperCase();
-        if (v_up == 'FOX') {
-          filters[k] = 'FOXNEWS';
-        } else if (v_up == 'CNN' || v_up == 'MSNBC' ||  v_up == 'FOXNEWS') {
-          filters[k] = v_up;
-        } else {
-          throw new QueryParseError(`Unknown channel: ${v}`);
-        }
-      } else if (k == '{{ parameters.show }}') {
-        let v = getSingleValue(k, v_arr);
-        let show = findShow(v);
-        if (show) {
-          filters[k] = show;
-        } else {
-          throw new QueryParseError(`Unknown show: ${show}`);
-        }
-      } else if (k == '{{ parameters.day_of_week }}'
-                 || k == '{{ parameters.hour }}') {
-        filters[k] = getSingleValue(k, v_arr);
-      } else if (k == '{{ parameters.is_commercial }}') {
-        try {
-          let v = getSingleValue(k, v_arr);
-          filters[k] = parseTernary(v);
-        } catch (e) {
-          if (!no_err) throw e;
-        }
-      } else if (k == '{{ parameters.video }}') {
-        filters[k] = getSingleValue(k, v_arr);
-      } else {
-        throw new QueryParseError(`Unknown filter: ${k}`);
-      }
-    } catch (e) {
-      if (!no_err) throw e;
-    }
-  });
-  return {filters: filters, alias: alias};
-}
 
 class SearchResult {
 
@@ -307,6 +102,125 @@ class SearchResult {
 
 }
 
+function findCaseInsInArr(arr, v) {
+  let v_up = v.toUpperCase();
+  for (var i = 0; i < arr.length; i++) {
+    if (arr[i].toUpperCase() == v_up) {
+      return arr[i];
+    }
+  }
+  return null;
+}
+
+
+function parseTernary(s) {
+  if (s.match(/^true$/i)) {
+    return 'true';
+  } else if (s.match(/^false$/i)) {
+    return 'false';
+  } else if (s.match(/^both$/i)) {
+    return 'both';
+  } else {
+    throw new QueryParseError(`${s} is neither true, false, nor both`);
+  }
+}
+
+function validateKeyValue(key, value, no_err) {
+  key = key.toLowerCase();
+  let getKVError = () => new QueryParseError(`Unknown ${key}: ${value}`);
+  switch (key) {
+    case '{{ search_keys.text }}':
+      break;
+    case '{{ search_keys.text_window }}': {
+      if (value.match(/^[0-9]+$/)) {
+        value = parseInt(value);
+      } else {
+        throw new QueryParseError(`${key} must be an integer`);
+      }
+      break;
+    }
+    case '{{ search_keys.face_name }}': {
+      let name = findCaseInsInArr(ALL_PEOPLE, value);
+      if (name) {
+        value = name;
+      } else {
+        throw getKVError();
+      }
+      break;
+    }
+    case '{{ search_keys.face_tag }}': {
+      value = tag.split(',').map(t => {
+        let tt = findCaseInsInArr(ALL_TAGS, $.trim(t));
+        if (!tt) {
+          throw new QueryParseError(`Unknown ${key}: ${tt}`)
+        }
+        return tt;
+      }).join(',');
+      break;
+    }
+    case '{{ search_keys.face_count }}': {
+      if (value.match(/^[0-9]+$/)) {
+        value = parseInt(value);
+        if (value == 0) {
+          throw new QueryParseError(`${key} must be greater than 0`);
+        }
+      } else {
+        throw new QueryParseError(`${key} must be an integer`);
+      }
+      break;
+    }
+    case '{{ search_keys.channel }}': {
+      let v_up = value.toUpperCase();
+      switch (v_up) {
+        case 'CNN':
+        case 'MSNBC':
+        case 'FOXNEWS':
+          value = v_up;
+          break;
+        case 'FOX':
+          value = 'FOXNEWS';
+          break;
+        default:
+          throw getKVError();
+      }
+      break;
+    }
+    case '{{ search_keys.show }}': {
+      let show = findCaseInsInArr(ALL_SHOWS, show);
+      if (show) {
+        value = show;
+      } else {
+        throw getKVError();
+      }
+      break;
+    }
+    case '{{ search_keys.video }}':
+    case '{{ search_keys.hour }}':
+    case '{{ search_keys.day_of_week }}':
+      break;
+    case '{{ params.is_commercial }}': {
+      value = parseTernary(value);
+      break;
+    }
+    default:
+      throw new QueryParseError('Unknown key: ' + key);
+  }
+  return [key, value];
+}
+
+function validateQuery(query, no_err) {
+  let [k, v] = query;
+  switch (k) {
+    case 'and':
+    case 'or':
+      // Flatten one layer of nesting
+      return [k, v.map(
+        x => _.flatMap(validateQuery(x, no_err), c => c[0] == k ? c : [c]))];
+    default:
+      return validateKeyValue(k, v, no_err);
+  }
+}
+
 function getSortedQueryString(obj) {
   return Object.keys(obj).sort().map(
     k => `${encodeURIComponent(k)}=${encodeURIComponent(obj[k])}`
@@ -315,17 +229,10 @@ function getSortedQueryString(obj) {
 
 class SearchableQuery {
   constructor(s, no_err) {
-
-    function getArgs(obj) {
-      let result = translateArgumentDict(obj.where ? obj.where : {}, no_err);
-      let args = result.filters;
-      args.count = '{{ countables.videotime.value }}';
-      return {args: args, alias: result.alias};
-    }
-
     this.query = s;
-    this.normalize_args = null;
-    this.subtract_args = null;
+    this.norm_query = null;
+    this.sub_query = null;
+    this.main_query = null;
     this.alias = null;
 
     var p;
@@ -334,42 +241,28 @@ class SearchableQuery {
         p = QUERY_PARSER.parse(s);
       } catch {
         console.log('Failed to parse:', s);
-        p = {main: {count_var: null, count: '', where: null}};
+        p = {main: []};
       }
     } else {
       p = QUERY_PARSER.parse(s);
     }
     if (p.normalize) {
-      let tmp = getArgs(p.normalize);
-      this.normalize_args = tmp.args;
-      this.alias = tmp.alias;
+      this.norm_query = validateQuery(p.normalize, no_err);
     }
     if (p.subtract) {
-      let tmp = getArgs(p.subtract);
-      this.subtract_args = tmp.args;
-      this.alias = tmp.alias;
+      this.sub_query = validateQuery(p.subtract, no_err);
     }
-
-    let tmp = getArgs(p.main);
-    this.main_args = tmp.args;
-    if (tmp.alias) {
-      if (this.alias) {
-        throw new QueryParseError('Alias can only be specified once');
-      }
-      this.alias = tmp.alias;
-    }
-  }
-
-  clauses() {
-    return QUERY_CLAUSE_PARSER.parse(this.query);
+    this.main_query = validateQuery(p.main, no_err);
   }
 
   search(chart_options, onSuccess, onError) {
-    function getParams(args, detailed) {
-      let obj = Object.assign({detailed: detailed}, args);
-      obj.{{ parameters.start_date }} = chart_options.start_date;
-      obj.{{ parameters.end_date }} = chart_options.end_date;
-      obj.{{ parameters.aggregate }} = chart_options.aggregate;
+    function getParams(query, detailed) {
+      let obj = {
+        query: JSON.stringify(query), detailed: detailed,
+        {{ params.start_date }}: chart_options.start_date,
+        {{ params.end_date }}: chart_options.end_date,
+        {{ params.aggregate }}: chart_options.aggregate
+      }
       return getSortedQueryString(obj);
     }
 
@@ -378,26 +271,26 @@ class SearchableQuery {
     let promises = [
       $.ajax({
         url: '/search', type: 'get',
-        data: getParams(this.main_args, true),
+        data: getParams(this.main_query, true),
         error: onError
       }).then(resp => result.main = resp)
     ];
 
-    if (this.normalize_args) {
+    if (this.norm_query) {
       promises.push(
         $.ajax({
           url: '/search', type: 'get',
-          data: getParams(this.normalize_args, false),
+          data: getParams(this.norm_query, false),
           error: onError
         }).then(resp => result.normalize = resp)
       );
     }
 
-    if (this.subtract_args) {
+    if (this.sub_query) {
       promises.push(
         $.ajax({
           url: '/search', type: 'get',
-          data: getParams(this.subtract_args, false),
+          data: getParams(this.sub_query, false),
           error: onError
         }).then(resp => result.subtract = resp)
       );
@@ -413,10 +306,10 @@ class SearchableQuery {
   }
 
   searchInVideos(video_ids, onSuccess, onError) {
-    let args = Object.assign({
-      {{ parameters.count }}: '{{ countables.videotime.value }}',
-      {{ parameters.video_ids }}: JSON.stringify(video_ids)
-    }, this.main_args);
+    let args = {
+      {{ params.video_ids }}: JSON.stringify(video_ids),
+      query: JSON.stringify(this.main_query)
+    };
     return $.ajax({
       url: '/search-videos', type: 'get', data: getSortedQueryString(args)
     }).then(onSuccess).catch(onError);
