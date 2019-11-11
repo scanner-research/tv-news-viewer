@@ -23,7 +23,7 @@ class PersonNotInDatabase(InvalidUsage):
 
     def __init__(self, person: str):
         InvalidUsage.__init__(
-            self, 'Person "{}" is not in our database'.format(person))
+            self, 'Name "{}" is not in our database'.format(person))
 
 
 class TagNotInDatabase(InvalidUsage):
@@ -31,6 +31,13 @@ class TagNotInDatabase(InvalidUsage):
     def __init__(self, tag: str):
         InvalidUsage.__init__(
             self, 'Tag "{}" is not in our database'.format(tag))
+
+
+class VideoNotInDatabase(InvalidUsage):
+
+    def __init__(self, video: str):
+        InvalidUsage.__init__(
+            self, 'Video "{}" is not in our database'.format(video))
 
 
 class InvalidTranscriptSearch(InvalidUsage):

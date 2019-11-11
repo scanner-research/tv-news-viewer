@@ -25,7 +25,7 @@ Start
 Query
   = "(" Blank a:Node Blank ")" { return a; }
   / a:Node { return a; }
-  / "" { return []; }
+  / "" { return null; }
 
 Node
   = a:NodeOrKeyValue Blank "AND"i Blank b:AndList {
@@ -149,7 +149,7 @@ function validateKeyValue(key, value, no_err) {
       break;
     }
     case '{{ search_keys.face_tag }}': {
-      value = tag.split(',').map(t => {
+      value = value.split(',').map(t => {
         let tt = findCaseInsInArr(ALL_TAGS, $.trim(t));
         if (!tt) {
           throw new QueryParseError(`Unknown ${key}: ${tt}`)
@@ -209,6 +209,9 @@ function validateKeyValue(key, value, no_err) {
 }
 
 function validateQuery(query, no_err) {
+  if (query == null) {
+    return null;
+  }
   let [k, v] = query;
   switch (k) {
     case 'and':
@@ -258,10 +261,13 @@ class SearchableQuery {
   search(chart_options, onSuccess, onError) {
     function getParams(query, detailed) {
       let obj = {
-        query: JSON.stringify(query), detailed: detailed,
+        detailed: detailed,
         {{ params.start_date }}: chart_options.start_date,
         {{ params.end_date }}: chart_options.end_date,
         {{ params.aggregate }}: chart_options.aggregate
+      }
+      if (query) {
+        obj.query = JSON.stringify(query);
       }
       return getSortedQueryString(obj);
     }
@@ -270,8 +276,7 @@ class SearchableQuery {
 
     let promises = [
       $.ajax({
-        url: '/search', type: 'get',
-        data: getParams(this.main_query, true),
+        url: '/search', type: 'get', data: getParams(this.main_query, true),
         error: onError
       }).then(resp => result.main = resp)
     ];
@@ -279,8 +284,7 @@ class SearchableQuery {
     if (this.norm_query) {
       promises.push(
         $.ajax({
-          url: '/search', type: 'get',
-          data: getParams(this.norm_query, false),
+          url: '/search', type: 'get', data: getParams(this.norm_query, false),
           error: onError
         }).then(resp => result.normalize = resp)
       );
@@ -289,8 +293,7 @@ class SearchableQuery {
     if (this.sub_query) {
       promises.push(
         $.ajax({
-          url: '/search', type: 'get',
-          data: getParams(this.sub_query, false),
+          url: '/search', type: 'get', data: getParams(this.sub_query, false),
           error: onError
         }).then(resp => result.subtract = resp)
       );

@@ -511,7 +511,6 @@ function updateQueryBox(search_table_row) {
 
   let query_input = search_table_row.find('input[name="query"]');
   query_input.val(new_query);
-  onQueryUpdate(query_input);
 }
 
 function getDefaultQuery() {
@@ -522,16 +521,16 @@ function getDefaultQuery() {
   }
 }
 
-function onQueryUpdate(element) {
-  let query = $(element).val();
+function onQueryUpdate() {
+  let query_input = $(this);
   var err = false;
   try {
-    new SearchableQuery(query, false);
+    new SearchableQuery(query_input.val(), false);
   } catch (e) {
     console.log(e);
     err = true;
   }
-  $(element).css('background-color', err ? '#fee7e2' : '');
+  query_input.css('background-color', err ? '#fee7e2' : '');
 }
 
 function changeRowColor() {
@@ -594,7 +593,7 @@ function addRow(query) {
   }
   setRemoveButtonsState();
 
-  onQueryUpdate(new_row.find('input[name="query"]'));
+  new_row.find('input[name="query"]').trigger('change');
 }
 $('#searchTable .add-row-btn').click(() => {addRow();});
 

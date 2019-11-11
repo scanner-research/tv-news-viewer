@@ -54,9 +54,9 @@ class SearchResult(NamedTuple):
 
 
 class SearchContext(NamedTuple):
-    start_date: Optional[datetime]
-    end_date: Optional[datetime]
-    video: Optional[str] = None
+    start_date: Optional[datetime] = None
+    end_date: Optional[datetime] = None
+    videos: Optional[Set[int]] = None
     channel: Optional[str] = None
     show: Optional[str] = None
     hours: Optional[Set[int]] = None
@@ -112,13 +112,25 @@ def get_aggregate_fn() -> AggregateFn:
     raise InvalidUsage('invalid aggregation parameter: {}'.format(agg))
 
 
+def get_video_as_intervals(video: Video) -> List[Interval]:
+    return [(0, int(1000 * video.num_frames / video.fps))]
+
+
 def get_transcript_intervals(
     cdc: CaptionDataContext, vdc: VideoDataContext,
-    text_str: str, text_window: int, video_filter: VideoFilterFn
+    document_by_name: Dict[str, Documents.Document],
+    text_str: str, context: SearchContext
 ) -> Generator[Tuple[Video, List[Interval]], None, None]:
     missing_videos = 0
     matched_videos = 0
     filtered_videos = 0
+
+    text_window = context.text_window
+    video_filter = get_video_filter(vdc, context)
+
+    documents = None
+    if context.videos is not None:
+        documents = {document_by_name.get(v.name) for v in context.videos}
 
     query = None
     try:
@@ -126,7 +138,7 @@ def get_transcript_intervals(
     except Exception as e:
         raise InvalidTranscriptSearch(text_str)
     for result in query.execute(
-        cdc.lexicon, cdc.index, ignore_word_not_found=True
+        cdc.lexicon, cdc.index, documents=documents, ignore_word_not_found=True
     ):
         document = cdc.documents[result.id]
         video = vdc.video_dict.get(document.name)
@@ -297,13 +309,12 @@ def get_video_filter(
 
 def get_videos_in_context(
     vdc: VideoDataContext, context: SearchContext
-) -> Optional[Set[Video]]:
-    if context.video is not None:
-        video = vdc.video_dict.get(context.video)
-        return {video} if video else set()
+) -> Optional[Set[int]]:
+    if context.videos is not None:
+        return context.videos
     video_filter = get_video_filter(vdc, context)
     if video_filter:
-        return {v for v in vdc.video_dict.values() if video_filter(v)}
+        return {v.id for v in vdc.video_dict.values() if video_filter(v)}
     return None
 
 
@@ -501,7 +512,7 @@ def build_app(
                 static_folder=STATIC_DIR)
 
     @app.template_filter('quoted')
-    def quoted(s):
+    def quoted(s: str) -> Optional[str]:
         l = re.findall('\'([^\']*)\'', str(s))
         if l:
             return l[0]
@@ -687,7 +698,7 @@ def build_app(
     @app.route('/static/js/videos.js')
     def get_videos_js() -> Response:
         return render_template(
-            'js/videos.js', params=SearchParam,
+            'js/videos.js', search_keys=SearchKey, params=SearchParam,
             video_endpoint=video_endpoint,
             frameserver_endpoint=frameserver_endpoint,
             archive_video_endpoint=archive_video_endpoint)
@@ -705,10 +716,12 @@ def build_app(
         for c in children:
             kc, vc = c
             if kc == SearchKey.video:
-                if context.video is not None and context.video != vc:
+                video = video_data_context.video_dict.get(vc)
+                if video is None:
+                    raise VideoNotInDatabase(vc)
+                if context.videos is not None:
                     return None
-                else:
-                    context = context._replace(video=vc)
+                context = context._replace(videos={video.id})
 
             elif kc == SearchKey.channel:
                 if context.channel is not None and context.channel != vc:
@@ -760,6 +773,7 @@ def build_app(
                 r1 = curr_result
                 r2 = child_result
 
+                # Symmetric cases
                 if (
                     r2.type == SearchResultType.video_set
                     or (r1.type != SearchResultType.video_set
@@ -774,12 +788,12 @@ def build_app(
                     elif r2.type == SearchResultType.python_iset:
                         curr_result = r2._replace(
                             data=filter(
-                                lambda v, d: v in r1.data,
+                                lambda v, d: v.id in r1.data,
                                 r2.data))
                     elif r2.type == SearchResultType.rust_iset:
                         curr_result = r2._replace(
                             data=MmapISetSubsetMapping(
-                                r2.data, {v.id for v in r1.data}))
+                                r2.data, r1.data))
                     else:
                         raise UnreachableCode()
 
@@ -800,6 +814,8 @@ def build_app(
                         curr_result = r1._replace(
                             data=MmapISetIntersectionMapping(
                                 [r1.data, r2.data]))
+                    else:
+                        raise UnreachableCode()
 
                 else:
                     raise UnreachableCode()
@@ -823,17 +839,32 @@ def build_app(
     def _join_isetmap_with_context(
         isetmap: MmapIntervalSetMapping, context: SearchContext
     ) -> Optional[SearchResult]:
-        videos = get_videos_in_context(video_data_context, context)
-        if videos is not None:
-            isetmap = MmapISetSubsetMapping(isetmap, {v.id for v in videos})
-        return SearchResult(SearchResultType.rust_iset, isetmap)
+        video_filter = get_video_filter(video_data_context, context)
+        video_ids = set()
+        for video_id in (
+            context.videos if context.videos else isetmap.get_ids()
+        ):
+            video = video_by_id.get(video_id)
+            if video:
+                if video_filter is None or video_filter(video):
+                    video_ids.add(video_id)
+        if video_ids:
+            isetmap = MmapISetSubsetMapping(isetmap, video_ids)
+            return SearchResult(SearchResultType.rust_iset, isetmap)
+        else:
+            return None
 
     def _search_recusive(
         query: Any, context: SearchContext
     ) -> Optional[SearchResult]:
         print(query)
         k, v = query
-        if k == 'or':
+        if k == 'all':
+            return SearchResult(
+                SearchResultType.video_set,
+                get_videos_in_context(video_data_context, context))
+
+        elif k == 'or':
             return _search_or(v, context)
 
         elif k == 'and':
@@ -858,9 +889,8 @@ def build_app(
             return SearchResult(
                 SearchResultType.python_iset,
                 get_transcript_intervals(
-                    caption_data_context, video_data_context,
-                    v, context.text_window,
-                    get_video_filter(video_data_context, context)))
+                    caption_data_context, video_data_context, document_by_name,
+                    v, context))
 
         elif k == SearchKey.text_window:
             # FIXME: this doesnt make any real sense here
@@ -917,6 +947,18 @@ def build_app(
 
         raise UnreachableCode()
 
+    def _join_intervals_with_commercials(
+        video: Video, intervals: List[Interval], is_commercial: Ternary
+    ) -> Optional[List[Interval]]:
+        if is_commercial != Ternary.both:
+            if is_commercial == Ternary.true:
+                intervals = intersect_isetmap(
+                    video, video_data_context.commercial_isetmap, intervals)
+            else:
+                intervals = minus_isetmap(
+                    video, video_data_context.commercial_isetmap, intervals)
+        return intervals
+
     @app.route('/search')
     def search() -> Response:
         aggregate_fn = get_aggregate_fn()
@@ -928,9 +970,10 @@ def build_app(
             ) == 'true' else SimpleDateAcumulator(aggregate_fn))
 
         query_str = request.args.get(SearchParam.query, type=str)
-        if not query_str:
-            raise InvalidUsage('Received empty query')
-        query = json.loads(query_str)
+        if query_str:
+            query = json.loads(query_str)
+        else:
+            query = ['all', None]
 
         start_date = parse_date(
             request.args.get(SearchParam.start_date, None, type=str))
@@ -944,32 +987,44 @@ def build_app(
                 start_date=start_date, end_date=end_date,
                 text_window=default_text_window))
 
-        def accumulate(v: Video, intervals: List[Interval]) -> None:
-            if is_commercial != Ternary.both:
-                if is_commercial == Ternary.true:
-                    intervals = intersect_isetmap(
-                        v, video_data_context.commercial_isetmap, intervals)
-                else:
-                    intervals = minus_isetmap(
-                        v, video_data_context.commercial_isetmap, intervals)
-                if not intervals:
-                    return
-            accumulator.add(
-                v.date, v.id, sum(i[1] - i[0] for i in intervals) / 1000)
-
         if result is None:
             pass
-        elif result.type == SearchResultType.video_set:
-            for v in result.data:
-                accumulate(v, [(0, int(1000 * v.num_frames / v.fps))])
+
+        elif (result.type == SearchResultType.video_set
+              or result.type == SearchResultType.python_iset):
+            for data in result.data:
+                if result.type == SearchResultType.video_set:
+                    v = data
+                    intervals = get_video_as_intervals(v)
+                else:
+                    v, intervals = data
+
+                intervals = _join_intervals_with_commercials(
+                    v, intervals, is_commercial)
+                if intervals:
+                    accumulator.add(
+                        v.date, v.id,
+                        sum(i[1] - i[0] for i in intervals) / 1000)
+
         elif result.type == SearchResultType.rust_iset:
             for v_id in result.data.get_ids():
                 v = video_by_id.get(v_id)
-                if v is not None:
-                    accumulate(v, result.data.get_intervals(v_id, True))
-        elif result.type == SearchResultType.python_iset:
-            for v, intervals in result.data:
-                accumulate(v, intervals)
+                if is_commercial == Ternary.false:
+                    intervals = minus_isetmap(
+                        v, video_data_context.commercial_isetmap,
+                        get_video_as_intervals(v))
+                elif is_commercial == Ternary.true:
+                    intervals = (
+                        video_data_context.commercial_isetmap.get_intervals(
+                            v.id, True))
+                elif is_commercial == Ternary.both:
+                    intervals = get_video_as_intervals(v)
+                accumulator.add(
+                    v.date, v.id,
+                    result.data.intersect_sum(v.id, intervals, True) / 1000)
+
+        else:
+            raise UnreachableCode()
 
         return jsonify(accumulator.get())
 
@@ -987,92 +1042,56 @@ def build_app(
             'intervals': [(0, video.num_frames)],
         }
 
-    # def _count_time_in_videos(
-    #     videos: List[Video],
-    #     caption_query_str: str, caption_window: int,
-    #     is_commercial: Ternary,
-    #     onscreen_face_isetmaps: Optional[List[MmapIntervalSetMapping]]
-    # ) -> List[JsonObject]:
-    #     results = []
-    #
-    #     def helper(
-    #         video: Video,
-    #         intervals: Optional[List[Interval]] = None
-    #     ) -> None:
-    #         if is_commercial != Ternary.both:
-    #             if is_commercial == Ternary.true:
-    #                 intervals = intersect_isetmap(
-    #                     video, video_data_context.commercial_isetmap,
-    #                     intervals)
-    #             else:
-    #                 intervals = minus_isetmap(
-    #                     video, video_data_context.commercial_isetmap,
-    #                     intervals)
-    #             if not intervals:
-    #                 return
-    #
-    #         if onscreen_face_isetmaps:
-    #             for isetmap in onscreen_face_isetmaps:
-    #                 intervals = intersect_isetmap(video, isetmap, intervals)
-    #                 if not intervals:
-    #                     return
-    #
-    #         if intervals is not None:
-    #             assert len(intervals) > 0
-    #             document = document_by_name.get(video.name)
-    #             results.append({
-    #                 'metadata': _video_to_dict(video),
-    #                 'intervals': list(merge_close_intervals(
-    #                     (i[0] / 1000, i[1] / 1000) for i in intervals
-    #                 ))
-    #             })
-    #         else:
-    #             results.append(_get_entire_video(video))
-    #
-    #     if caption_query_str:
-    #         # Run the query on the selected videos
-    #         query = None
-    #         try:
-    #             query = Query(caption_query_str.upper())
-    #         except Exception as e:
-    #             raise InvalidTranscriptSearch(caption_query_str)
-    #         for result in query.execute(
-    #             caption_data_context.lexicon,
-    #             caption_data_context.index,
-    #             [caption_data_context.documents[v.name] for v in videos
-    #              if v.name in caption_data_context.documents]
-    #         ):
-    #             document = caption_data_context.documents[result.id]
-    #             video = video_data_context.video_dict[document.name]
-    #             postings = result.postings
-    #             if caption_window > 0:
-    #                 postings = PostingUtil.deoverlap(PostingUtil.dilate(
-    #                     postings, caption_window,
-    #                     video.num_frames / video.fps))
-    #             helper(video, [(milliseconds(p.start), milliseconds(p.end))
-    #                            for p in postings])
-    #     else:
-    #         for v in videos:
-    #             helper(v)
-    #     return results
+    @app.route('/search-videos')
+    def search_videos() -> Response:
+        video_ids_str = request.args.get(SearchParam.video_ids, None, type=str)
+        if not video_ids_str:
+            raise InvalidUsage('must specify video ids')
+        video_ids = set(json.loads(video_ids_str))
 
-    # @app.route('/search-videos')
-    # def search_videos() -> Response:
-    #     ids = request.args.get(SearchParam.video_ids, None, type=str)
-    #     if not ids:
-    #         raise InvalidUsage('must specify video ids')
-    #     videos = [video_by_id[i] for i in json.loads(ids)]
-    #     is_commercial = _get_is_commercial()
-    #
-    #     caption_query = request.args.get(
-    #         SearchParam.caption_text, '', type=str).strip()
-    #     caption_window = request.args.get(
-    #         SearchParam.caption_window, default_text_window, type=int)
-    #     results = _count_time_in_videos(
-    #         videos, caption_query, caption_window, is_commercial,
-    #         get_onscreen_face_isetmaps(video_data_context))
-    #
-    #     return jsonify(results)
+        query_str = request.args.get(SearchParam.query, type=str)
+        if query_str:
+            query = json.loads(query_str)
+        else:
+            query = ['all', None]
+
+        is_commercial = _get_is_commercial()
+
+        results = []
+
+        def collect(v: Video, intervals: List[Interval]) -> None:
+            intervals = _join_intervals_with_commercials(
+                v, intervals, is_commercial)
+            if intervals:
+                results.append({
+                    'metadata': get_video_metadata_json(v),
+                    'intervals': list(merge_close_intervals(
+                        (i[0] / 1000, i[1] / 1000) for i in intervals
+                    ))
+                })
+
+        search_result = _search_recusive(
+            query, SearchContext(
+                videos=video_ids, text_window=default_text_window))
+        if search_result is None:
+            pass
+        elif search_result.type == SearchResultType.video_set:
+            for v_id in search_result.data:
+                v = video_by_id.get(v_id)
+                if v is not None:
+                    collect(v, get_video_as_intervals(v))
+        elif search_result.type == SearchResultType.rust_iset:
+            for v_id in search_result.data.get_ids():
+                v = video_by_id.get(v_id)
+                if v is not None:
+                    collect(v, search_result.data.get_intervals(v_id, True))
+        elif search_result.type == SearchResultType.python_iset:
+            for v, intervals in search_result.data:
+                collect(v, intervals)
+        else:
+            raise UnreachableCode()
+
+        return jsonify(results)
 
     @app.route('/transcript/<int:i>')
     def get_transcript(i: int) -> Response:

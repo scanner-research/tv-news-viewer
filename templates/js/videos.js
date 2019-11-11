@@ -10,22 +10,30 @@ function getPhrasesToHighlight(query) {
     return w.match(/^[0-9a-z\s']+$/i);
   }
   let phrases = new Set();
-  // FIXME: needs to walk the tree
-  Object.entries(query.main_args).forEach(([k, v]) => {
-    if (k == '{{ parameters.caption_text }}') {
-      v.split(/[&|\^]+/).map($.trim).filter(token_filter).forEach(
-        w => { phrases.add(w.toLowerCase()); }
-      );
-    } else if (k != '{{ parameters.onscreen_numfaces }}' &&
-               k.startsWith('{{ parameters.onscreen_face }}')) {
-      let f = parseFaceFilterString(v.toLowerCase());
-      if (f.person) {
-        f.person.split(' ').map($.trim).filter(token_filter).forEach(
-          w => { phrases.add(w.toLowerCase()); }
-        );
+  if (query.main_query) {
+    let visit_queue = [query.main_query];
+    while (visit_queue.length > 0) {
+      let [k, v] = visit_queue.pop();
+      switch (k) {
+        case 'and':
+        case 'or':
+          v.forEach(x => visit_queue.push(x));
+          break;
+        case '{{ search_keys.text }}': {
+          v.split(/[&|\^]+/).map($.trim).filter(token_filter).forEach(
+            w => { phrases.add(w.toLowerCase()); }
+          );
+          break;
+        }
+        case '{{ search_keys.name }}': {
+          v.split(' ').map($.trim).filter(token_filter).forEach(
+            w => { phrases.add(w.toLowerCase()); }
+          );
+          break;
+        }
       }
     }
-  });
+  }
   return phrases;
 }
 
@@ -76,7 +84,7 @@ function displayVideos(page_i) {
       video_ids,
       json_data => {
         try {
-          $('#videos').empty().append($('<div>').attr('id', `videos-${page_i}`);
+          $('#videos').empty().append($('<div>').attr('id', `videos-${page_i}`));
 
           let vgrid_settings = {
             show_timeline: true,
