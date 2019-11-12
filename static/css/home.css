@@ -200,7 +200,7 @@
   width: 150px;
 }
 .query-builder .alias-input {
-  width: 100
+  width: 100%;
 }
 .chosen-container-multi {
   min-width: 200px;
