@@ -26,26 +26,18 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
     </tr>
     <tr>
       <td type="key-col">
-        is any face
-      </td>
-      <td>
-        <input type="checkbox" name="face:all">
-      </td>
-    </tr>
-    <tr class="toggle-face">
-      <td type="key-col">
         is a person
       </td>
       <td>
         <span>
-          <select multiple class="chosen-select chosen-single-select"
+          <select multiple class="chosen-select chosen-basic-select"
                   data-placeholder="no names selected"
-                  name="face:person" data-width="fit">
+                  name="{{ search_keys.face_name }}" data-width="fit">
           </select>
         </span>
       </td>
     </tr>
-    <tr class="toggle-face">
+    <tr>
       <td type="key-col">
         has tag
       </td>
@@ -53,12 +45,12 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
         <span>
           <select multiple class="chosen-select chosen-basic-select"
                   data-placeholder="no tags selected"
-                  name="face:tag" data-width="fit">
+                  name="{{ search_keys.face_tag }}" data-width="fit">
             {% for tag in global_face_tags %}
             <option value="{{ tag }}">{{ tag }}*</option>
             {% endfor %}
           </select>
-          (combined by "and")
+          (on the same face)
           <span title='Tags marked with an * are computed on all faces; otherwise, tags are applied to faces with identities.'>
             &#9432;
           </span>
@@ -136,20 +128,6 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
       <td type="key-col">the day of week is</td>
       <td type="value-col"><input type="text" class="form-control no-enter-submit"
           name="{{ search_keys.day_of_week }}" value="" placeholder="mon-sun"></td>
-    </tr>
-    <tr disabled="true">
-      <td type="key-col">is a commercial</td>
-      <td type="value-col">
-        <select class="chosen-select chosen-single-select"
-                name="{{ params.is_commercial }}" data-width="fit">
-          <option value="false" selected="selected">false</option>
-          <option value="both">both</option>
-          <option value="true">true</option>
-        </select>
-        <span title='Commcerials are excluded by default ("false"). Use "both" to include commercials and "true" for only commercials.'>
-          &#9432;
-        </span>
-      </td>
     </tr>
 
     <tr disabled="true">
@@ -275,16 +253,10 @@ function getQueryBuilder() {
     builder = $(QUERY_BUILDER_HTML);
     let show_select = builder.find('select[name="{{ search_keys.show }}"]');
     ALL_SHOWS.forEach(x => show_select.append($('<option>').val(x).text(x)));
-    let person_select = builder.find(
-      'select[name="face:person"]'
-    );
+    let person_select = builder.find('select[name="{{ search_keys.face_name }}"]');
     ALL_PEOPLE.forEach(x => person_select.append($('<option>').val(x).text(x)));
-    let person_tag_select = builder.find(
-      'select[name="face:tag"]'
-    );
-    ALL_PERSON_TAGS.forEach(
-      x => person_tag_select.append($('<option>').val(x).text(x))
-    );
+    let person_tag_select = builder.find('select[name="{{ search_keys.face_tag }}"]');
+    ALL_PERSON_TAGS.forEach(x => person_tag_select.append($('<option>').val(x).text(x)));
     _QUERY_BUILDER = builder;
   }
 
@@ -293,16 +265,13 @@ function getQueryBuilder() {
   builder.find('[name="{{ search_keys.show }}"]').val('');
   builder.find('[name="{{ search_keys.hour }}"]').val('');
   builder.find('[name="{{ search_keys.day_of_week }}"]').val('');
-  builder.find('[name="{{ params.is_commercial }}"]').val('false');
   builder.find('[name="{{ search_keys.text }}"]').val('');
   builder.find('[name="{{ search_keys.text_window }}"]').val('{{ default_text_window }}');
-  builder.find('[name="face:person"]').val(null).parent();
-  builder.find('[name="face:tag"]').val(null).parent();
-  builder.find('[name="face:all"]').prop('checked', false);
+  builder.find('[name="{{ search_keys.face_name }}"]').val(null);
+  builder.find('[name="{{ search_keys.face_tag }}"]').val(null);
   builder.find('[name="{{ search_keys.face_count }}"]').val('');
   builder.find('[name="normalize"]').prop('checked', false);
   builder.find('[name="{{ params.alias }}"]').val('');
-  builder.find('.toggle-face').show();
   return builder;
 }
 
@@ -310,64 +279,65 @@ function loadQueryBuilder(search_table_row) {
   let query_input = search_table_row.find('input[name="query"]');
 
   search_table_row.find('.query-td').append(getQueryBuilder());
-  var current_query = new SearchableQuery(
-    `${QUERY_KEYWORDS.where} ${query_input.val()}`, true);
+  let parsed_query = new SearchableQuery(query_input.val(), true);
+  let top_level_kv = {};
+  if (parsed_query.main_query) {
+    let [k, v] = parsed_query.main_query;
+    if (k == 'and') {
+      v.forEach(([a, b]) => {
+        if (top_level_kv.hasOwnProperty(a)) {
+          top_level_kv[a].push(b);
+        } else {
+          top_level_kv[a] = [b];
+        }
+      });
+    } else {
+      top_level_kv[k] = [v];
+    }
+  }
+  console.log(top_level_kv, parsed_query);
 
   let query_builder = search_table_row.find('.query-builder');
-  let setIfDefined = k => {
-    let v = current_query.main_args[k];
+  let setOneIfDefined = k => {
+    let v = top_level_kv[k];
     if (v) {
-      query_builder.find(`[name="${k}"]`).val(v);
+      query_builder.find(`[name="${k}"]`).val(v[0]);
     }
   };
 
-  var channel = current_query.main_args['{{ search_keys.channel }}'];
+  var channel = top_level_kv['{{ search_keys.channel }}'];
   if (channel) {
     query_builder.find(`select[name="{{ search_keys.channel }}"]`).val(
       channel.toUpperCase() == 'FOXNEWS' ? 'FOX' : channel);
   }
 
-  setIfDefined('{{ search_keys.show }}');
-  setIfDefined('{{ search_keys.hour }}');
-  setIfDefined('{{ search_keys.day_of_week }}');
-  setIfDefined('{{ search_keys.text }}');
-  setIfDefined('{{ search_keys.text_window }}');
-  setIfDefined('{{ params.is_commercial }}');
+  setOneIfDefined('{{ search_keys.show }}');
+  setOneIfDefined('{{ search_keys.hour }}');
+  setOneIfDefined('{{ search_keys.day_of_week }}');
+  setOneIfDefined('{{ search_keys.text }}');
+  setOneIfDefined('{{ search_keys.text_window }}');
 
-  let onscreen_face = current_query.main_args['{{ params.onscreen_face }}'];
-  if (onscreen_face) {
-    try {
-      let face_params = parseFaceFilterString(onscreen_face);
-      if (face_params.all) {
-        query_builder.find(`input[name="face:all"]`).prop('checked', true);
-        query_builder.find('.toggle-face').hide();
-      } else {
-        let tag_select = query_builder.find(`select[name="face:tag"]`);
-        if (face_params.tag) {
-          tag_select.val(face_params.tag.split('&').map(x => $.trim(x)));
-        }
-        let person_select = query_builder.find(`select[name="face:person"]`);
-        if (face_params.person) {
-          person_select.val(face_params.person.split('&').map(x => $.trim(x)));
-        }
-      }
-    } catch (e) {
-      console.log(e);
-    }
+  let face_names = top_level_kv['{{ search_keys.face_name }}'];
+  if (face_names) {
+    query_builder.find('[name="{{ search_keys.face_name }}"]').val(face_names);
   }
 
-  let onscreen_numfaces = current_query.main_args['{{ search_keys.face_count }}'];
-  if (onscreen_numfaces) {
-    query_builder.find(
-      `[name="{{ search_keys.face_count }}"]`
-    ).val(onscreen_numfaces);
+  let face_tags = top_level_kv['{{ search_keys.face_tag }}'];
+  if (face_tags) {
+    query_builder.find('[name="{{ search_keys.face_tag }}"]').val(
+      face_tags.split(',').map($.trim));
   }
 
-  if (current_query.alias) {
-    query_builder.find('[name="{{ params.alias }}"]').val(current_query.alias);
+  let face_count = top_level_kv['{{ search_keys.face_count }}'];
+  if (face_count) {
+    query_builder.find('[name="{{ search_keys.face_count }}"]').val(parseInt(face_count));
   }
 
-  if (current_query.normalize_args) {
+  if (parsed_query.alias) {
+    query_builder.find('[name="{{ params.alias }}"]').val(parsed_query.alias);
+  }
+
+  if (parsed_query.norm_query) {
     query_builder.find('[name="normalize"]').val('true');
   }
 
@@ -378,14 +348,6 @@ function loadQueryBuilder(search_table_row) {
     width: 'auto', max_selected_options: 1
   });
   query_builder.find('.chosen-basic-select').chosen({width: 'auto'});
-
-  query_builder.find('[name="face:all"]').change(function() {
-    if ($(this).is(':checked')) {
-      query_builder.find('.toggle-face').hide();
-    } else {
-      query_builder.find('.toggle-face').show();
-    }
-  });
 
   // Listen for change events
   query_builder.find('input, select, textarea').change(function() {
@@ -435,76 +397,62 @@ function clearChart() {
 
 function updateQueryBox(search_table_row) {
   let builder = search_table_row.find('.query-builder');
-  let filters = [];
+  let parts = [];
 
   let getBuilderValue = e => builder.find(e).val().replace(/"/gi, '');
 
   let alias = builder.find('[name="{{ params.alias }}"]').val();
   if (alias) {
-    filters.push(`{{ params.alias }}="${alias}"`);
+    parts.push(`{{ params.alias }}="${alias}"`);
   }
 
   let channel = getBuilderValue('select[name="{{ search_keys.channel }}"]');
   if (channel) {
-    filters.push(`{{ search_keys.channel }}="${channel}"`);
+    parts.push(`{{ search_keys.channel }}="${channel}"`);
   }
   let show = getBuilderValue('select[name="{{ search_keys.show }}"]');
   if (show) {
-    filters.push(`{{ search_keys.show }}="${show}"`);
+    parts.push(`{{ search_keys.show }}="${show}"`);
   }
   let hour = getBuilderValue('input[name="{{ search_keys.hour }}"]');
   if (hour) {
-    filters.push(`{{ search_keys.hour }}="${hour}"`);
+    parts.push(`{{ search_keys.hour }}="${hour}"`);
   }
   let day_of_week = getBuilderValue('input[name="{{ search_keys.day_of_week }}"]');
   if (day_of_week) {
-    filters.push(`{{ search_keys.day_of_week }}="${day_of_week}"`);
+    parts.push(`{{ search_keys.day_of_week }}="${day_of_week}"`);
   }
 
-  let is_commercial = getBuilderValue('select[name="{{ params.is_commercial }}"]');
-  if (is_commercial != 'false') {
-    filters.push(`{{ params.is_commercial }}=${is_commercial}`);
+  let face_names = builder.find('select[name="{{ search_keys.face_name }}"]').val();
+  if (face_names && face_names.length > 0) {
+    face_names.forEach(name => {
+      parts.push(`{{ search_keys.face_name }}="${name}"`);
+    });
   }
 
-  let face_all = builder.find('input[name="face:all"]').is(':checked');
-  if (face_all) {
-    filters.push(`{{ params.onscreen_face }}="all"`);
-  } else {
-    let face_params = [];
-
-    let face_person = builder.find('select[name="face:person"]').val();
-    if (face_person && face_person.length > 0) {
-      face_params.push('person: ' + face_person[0]);
-    }
-
-    let face_tag = builder.find('select[name="face:tag"]').val();
-    if (face_tag && face_tag.length > 0) {
-      face_params.push('tag: ' + face_tag.join(','));
-    }
-
-    if (face_params.length > 0) {
-      filters.push(`{{ params.onscreen_face }}="${face_params.join(', ')}"`);
-    }
+  let face_tag = builder.find('select[name="{{ search_keys.face_tag }}"]').val();
+  if (face_tag && face_tag.length > 0) {
+    parts.push(`{{ search_keys.face_tag }}="${face_tag.join(',')}"`);
   }
 
-  let num_faces = builder.find('input[name="{{ search_keys.face_count }}"]').val();
-  if (num_faces) {
-    filters.push(`{{ search_keys.face_count }}=${num_faces}`);
+  let face_count = builder.find('input[name="{{ search_keys.face_count }}"]').val();
+  if (face_count) {
+    parts.push(`{{ search_keys.face_count }}=${face_count}`);
   }
 
   let text = getBuilderValue('textarea[name="{{ search_keys.text }}"]');
   if (text) {
-    filters.push(`{{ search_keys.text }}="${text}"`);
+    parts.push(`{{ search_keys.text }}="${text}"`);
   }
   let text_window = builder.find('input[name="{{ search_keys.text_window }}"]').val();
   if (text_window && text_window != 0) {
-    filters.push(`{{ search_keys.text_window }}=${text_window}`);
+    parts.push(`{{ search_keys.text_window }}=${text_window}`);
   }
 
   let normalize = getBuilderValue('[name="normalize"]') == 'true';
 
   // Construct the new query
-  var new_query = filters.length > 0 ? filters.join(` ${QUERY_KEYWORDS.and} `) : '';
+  var new_query = parts.length > 0 ? parts.join(` ${QUERY_KEYWORDS.and} `) : '';
   if (normalize) {
     new_query += ` ${QUERY_KEYWORDS.normalize}`;
   }
