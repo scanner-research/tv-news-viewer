@@ -63,7 +63,7 @@ class SearchContext(NamedTuple):
 
 class SearchResult(NamedTuple):
     type: SearchResultType
-    context: SearchContext = None
+    context: Optional[SearchContext] = None
     data: Any = None
 
 
@@ -183,12 +183,26 @@ def get_aggregate_fn() -> AggregateFn:
     raise InvalidUsage('invalid aggregation parameter: {}'.format(agg))
 
 
-def get_python_intervals_for_videos(
+def get_python_iset_from_filter(
     vdc: VideoDataContext, video_filter: Optional[VideoFilterFn]
 ) -> PythonISetDataGenerator:
     for v in vdc.video_dict.values():  # sorted iterator
         if video_filter is not None and video_filter(v):
             yield PythonISetData(v, True)
+
+
+def get_python_iset_from_rust_iset(
+    vdc: VideoDataContext, isetmap: MmapIntervalSetMapping,
+    video_filter: Optional[VideoFilterFn]
+) -> PythonISetDataGenerator:
+    for video_id in isetmap.get_ids():
+        video = vdc.video_by_id.get(video_id)
+        if video is not None and (
+            video_filter is None or video_filter(video)
+        ):
+            intervals = isetmap.get_intervals(video_id, True)
+            if intervals:
+                yield PythonISetData(video, False, intervals=intervals)
 
 
 def get_transcript_intervals(
@@ -244,6 +258,230 @@ def get_transcript_intervals(
             video, False,
             [(int(p.start * 1000), int(p.end * 1000)) for p in postings]))
     return iter(sorted(results, key=lambda x: x.video.id))
+
+
+def search_result_to_python_iset(
+    vdc: VideoDataContext, result: SearchResult
+) -> PythonISetDataGenerator:
+    if result.type == SearchResultType.video_set:
+        video_filter = get_video_filter(result.context)
+        return get_python_iset_from_filter(
+            vdc, video_filter)
+
+    elif result.type == SearchResultType.rust_iset:
+        video_filter = get_video_filter(result.context)
+        return get_python_iset_from_rust_iset(
+            vdc, result.data, video_filter)
+
+    elif result.type == SearchResultType.python_iset:
+        return result.data
+
+    raise UnreachableCode()
+
+
+def and_python_isets(
+    r1: SearchResult, r2: SearchResult
+) -> PythonISetDataGenerator:
+    prev = None
+    for curr in heapq.merge(
+        ((d.video.id, d) for d in r1.data),
+        ((d.video.id, d) for d in r2.data)
+    ):
+        if prev is None:
+            prev = curr
+        elif prev[0] == curr[0]:
+            if prev[1].is_entire_video:
+                yield curr[1]
+            elif curr[1].is_entire_video:
+                yield prev[1]
+            else:
+                yield PythonISetData(
+                    curr[1].video, False,
+                    list(merge_close_intervals(intersect_sorted_intervals(
+                            prev[1].intervals, curr[1].intervals))))
+            prev = None
+        else:
+            assert prev[0] < curr[0]
+            prev = curr
+
+
+def or_python_iset_with_filter(
+    vdc: VideoDataContext, video_filter: VideoFilterFn,
+    search_result: SearchResult
+) -> PythonISetDataGenerator:
+    assert video_filter is not None
+    assert search_result.type == SearchResultType.python_iset
+
+    all_videos_iter = iter(vdc.video_dict.values())
+
+    # Match videos from search_result to all videos
+    for curr in search_result.data:
+        curr_video = curr.video
+        all_videos_head = next(all_videos_iter)
+        while all_videos_head and all_videos_head.id < curr_video.id:
+            if video_filter(all_videos_head):
+                yield PythonISetData(curr_video, True)
+            all_videos_head = next(all_videos_iter)
+
+        assert all_videos_head.id == curr_video.id
+        if video_filter(curr_video):
+            yield PythonISetData(curr_video, True)
+        else:
+            yield curr
+
+    # Finish up all_videos_iter
+    for video in all_videos_iter:
+        if video_filter(video):
+            yield PythonISetData(video, True)
+
+
+def or_python_isets(
+    r1: SearchResult, r2: SearchResult
+) -> PythonISetDataGenerator:
+    assert r1.type == SearchResultType.python_iset
+    assert r2.type == SearchResultType.python_iset
+
+    prev = None
+    for curr in heapq.merge(
+        ((s.video.id, s) for s in r1.data),
+        ((s.video.id, s) for s in r2.data)
+    ):
+        if prev is None:
+            prev = curr
+        elif curr[0] == prev[0]:
+            if curr[1].is_entire_video:
+                yield curr[1]
+            elif prev[1].is_entire_video:
+                yield prev[1]
+            else:
+                yield PythonISetData(
+                    curr[1].video, False,
+                    deoverlap_intervals(
+                        heapq.merge(curr[1].intervals, prev[1].intervals),
+                        100))
+            prev = None
+        else:
+            assert curr[0] > prev[0]
+            yield prev[1]
+            prev = curr
+    if prev is not None:
+        yield prev[1]
+
+
+def or_python_iset_with_rust_iset(
+    vdc: VideoDataContext, python_result: SearchResult,
+    rust_result: SearchResult
+) -> PythonISetDataGenerator:
+    assert python_result.type == SearchResultType.python_iset
+    assert rust_result.type == SearchResultType.rust_iset
+
+    try:
+        python_result_head = next(python_result.data)
+    except StopIteration:
+        python_result_head = None
+
+    video_filter = get_video_filter(rust_result.context)
+    for video_id in rust_result.data.get_ids():
+        video = vdc.video_by_id.get(video_id)
+        if not video:
+            continue
+
+        while (
+            python_result_head is not None
+            and python_result_head.video.id < video_id
+        ):
+            yield python_result_head
+            try:
+                python_result_head = next(python_result.data)
+            except StopIteration:
+                python_result_head = None
+
+        assert (python_result_head is None
+                or python_result_head.video.id >= video_id)
+        if (
+            python_result_head is None
+            or python_result_head.video.id != video_id
+        ):
+            if video_filter is None or video_filter(video):
+                intervals = rust_result.data.get_intervals(video_id, True)
+                if intervals:
+                    yield PythonISetData(video, False, intervals=intervals)
+        else:
+            assert python_result_head.video.id == video_id
+            if (
+                python_result_head.is_entire_video
+                or (video_filter is not None and not video_filter(video))
+            ):
+                yield python_result_head
+            else:
+                yield PythonISetData(
+                    video, False,
+                    deoverlap_intervals(heapq.merge(
+                        python_result_head.intervals,
+                        rust_result.data.get_intervals(video_id, True)),
+                        100))
+            try:
+                python_result_head = next(python_result.data)
+            except StopIteration:
+                python_result_head = None
+
+    # yield any remaining results
+    if python_result_head is not None:
+        yield python_result_head
+        for x in python_result.data:
+            yield x
+
+
+def or_rust_isets(
+    vdc: VideoDataContext, r1: SearchResult, r2: SearchResult
+) -> PythonISetDataGenerator:
+    assert r1.type == SearchResultType.rust_iset
+    assert r2.type == SearchResultType.rust_iset
+
+    r1_filter = get_video_filter(r1.context)
+    r2_filter = get_video_filter(r2.context)
+    r1_ids = set(r1.data.get_ids())
+    r2_ids = set(r2.data.get_ids())
+    for video_id in sorted(r1_ids | r2_ids):
+        video = vdc.video_by_id.get(video_id)
+        if video is None:
+            continue
+
+        r1_intervals = (
+            r1.data.get_intervals(video_id, True)
+            if (
+                video.id in r1_ids
+                and (r1_filter is None or r1_filter(video))
+            ) else None)
+        r2_intervals = (
+            r2.data.get_intervals(video_id, True)
+            if (
+                video.id in r2_ids
+                and (r2_filter is None or r2_filter(video))
+            ) else None)
+        if r1_intervals and r2_intervals:
+            yield PythonISetData(
+                video, False,
+                deoverlap_intervals(
+                    heapq.merge(r1_intervals, r2_intervals), 100))
+        elif r1_intervals:
+            yield PythonISetData(video, False, r1_intervals)
+        elif r2_intervals:
+            yield PythonISetData(video, False, r2_intervals)
+
+
+def join_intervals_with_commercials(
+    vdc: VideoDataContext, video: Video, intervals: List[Interval],
+    is_commercial: Ternary
+) -> List[Interval]:
+    if is_commercial != Ternary.both:
+        if is_commercial == Ternary.true:
+            intervals = intersect_isetmap(
+                video, vdc.commercial_isetmap, intervals)
+        else:
+            intervals = minus_isetmap(
+                video, vdc.commercial_isetmap, intervals)
+    return intervals
 
 
 GLOBAL_TAGS = {'all', 'male', 'female', 'host', 'nonhost'}
@@ -355,7 +593,7 @@ def get_face_time_filter_mask(
     return payload_mask, payload_value
 
 
-def get_video_filter(context: SearchContext) -> VideoFilterFn:
+def get_video_filter(context: SearchContext) -> Optional[VideoFilterFn]:
     if (
         context.videos is not None
         or context.start_date is not None
@@ -451,10 +689,10 @@ def get_face_count_intervals(
 ) -> MmapIntervalSetMapping:
     if face_count < 1:
         raise InvalidUsage('"{}" cannot be less than 1'.format(
-                           SearchParam.face_count))
+                           SearchKey.face_count))
     if face_count > 0xFF:
         raise InvalidUsage('"{}" cannot be less than {}'.format(
-                           SearchParam.face_count, 0xFF))
+                           SearchKey.face_count, 0xFF))
     return MmapIListToISetMapping(
         vdc.face_intervals.num_faces_ilistmap,
         0xFF, face_count, 3000, 0)
@@ -774,8 +1012,7 @@ def build_app(
         end_date = min(max(
             v.date for v in video_data_context.video_dict.values()), max_date)
         resp = make_response(render_template(
-            'js/home.js',
-            search_keys=SearchKey, params=SearchParam,
+            'js/home.js', search_keys=SearchKey, params=SearchParam,
             host=request.host, data_version=data_version,
             start_date=format_date(start_date),
             end_date=format_date(end_date),
@@ -798,31 +1035,6 @@ def build_app(
     def get_embed_js() -> Response:
         return render_template('js/embed.js', host=request.host,
                                data_version=data_version)
-
-    def _and_python_isets(
-        r1: SearchResult, r2: SearchResult
-    ) -> PythonISetDataGenerator:
-        prev = None
-        for curr in heapq.merge(
-            ((d.video.id, d) for d in r1.data),
-            ((d.video.id, d) for d in r2.data)
-        ):
-            if prev is None:
-                prev = curr
-            elif prev[0] == curr[0]:
-                if prev[1].is_entire_video:
-                    yield curr[1]
-                elif curr[1].is_entire_video:
-                    yield prev[1]
-                else:
-                    yield PythonISetData(
-                        curr[1].video, False,
-                        list(merge_close_intervals(intersect_sorted_intervals(
-                                prev[1].intervals, curr[1].intervals))))
-                prev = None
-            else:
-                assert prev[0] < curr[0]
-                prev = curr
 
     def _search_and(
         children: Iterable[Any], context: SearchContext
@@ -928,7 +1140,7 @@ def build_app(
                         # Result: python_iset
                         curr_result = SearchResult(
                             SearchResultType.python_iset,
-                            data=_and_python_isets(r1, r2))
+                            data=and_python_isets(r1, r2))
                     elif r2.type == SearchResultType.rust_iset:
                         # Result: python_iset
                         video_filter = get_video_filter(r2.context)
@@ -962,183 +1174,6 @@ def build_app(
             return curr_result
         else:
             return SearchResult(SearchResultType.video_set, context=context)
-
-    def _or_python_iset_with_filter(
-        video_filter: VideoFilterFn, search_result: SearchResult
-    ) -> PythonISetDataGenerator:
-        assert video_filter is not None
-        assert search_result.type == SearchResultType.python_iset
-
-        all_videos_iter = iter(video_data_context.video_dict.values())
-
-        # Match videos from search_result to all videos
-        for curr in search_result.data:
-            curr_video = curr.video
-            all_videos_head = next(all_videos_iter)
-            while all_videos_head and all_videos_head.id < curr_video.id:
-                if video_filter(all_videos_head):
-                    yield PythonISetData(curr_video, True)
-                all_videos_head = next(all_videos_iter)
-
-            assert all_videos_head.id == curr_video.id
-            if video_filter(curr_video):
-                yield PythonISetData(curr_video, True)
-            else:
-                yield curr
-
-        # Finish up all_videos_iter
-        for video in all_videos_iter:
-            if video_filter(video):
-                yield PythonISetData(video, True)
-
-    def _or_rust_iset_with_filter(
-        video_filter: VideoFilterFn, search_result: SearchResult
-    ) -> PythonISetDataGenerator:
-        assert video_filter is not None
-        assert search_result.type == SearchResultType.rust_iset
-
-        rust_iset_filter = get_video_filter(search_result.context)
-        isetmap = search_result.data
-        for video in video_data_context.video_dict.values():
-            if video_filter(video):
-                yield PythonISetData(video, True)
-            elif isetmap.has_id(video.id) and (
-                rust_iset_filter is None or rust_iset_filter(video)
-            ):
-                yield PythonISetData(
-                    video, False,
-                    isetmap.get_intervals(video.id, True))
-
-    def _or_rust_isets(
-        r1: SearchResult, r2: SearchResult
-    ) -> PythonISetDataGenerator:
-        assert r1.type == SearchResultType.rust_iset
-        assert r2.type == SearchResultType.rust_iset
-
-        r1_filter = get_video_filter(r1.context)
-        r2_filter = get_video_filter(r2.context)
-        r1_ids = set(r1.data.get_ids())
-        r2_ids = set(r2.data.get_ids())
-        for video_id in sorted(r1_ids | r2_ids):
-            video = video_data_context.video_by_id.get(video_id)
-            if video is None:
-                continue
-
-            r1_intervals = (
-                r1.data.get_intervals(video_id, True)
-                if (
-                    video.id in r1_ids
-                    and (r1_filter is None or r1_filter(video))
-                ) else None)
-            r2_intervals = (
-                r2.data.get_intervals(video_id, True)
-                if (
-                    video.id in r2_ids
-                    and (r2_filter is None or r2_filter(video))
-                ) else None)
-            if r1_intervals and r2_intervals:
-                yield PythonISetData(
-                    video, False,
-                    deoverlap_intervals(
-                        heapq.merge(r1_intervals, r2_intervals), 100))
-            elif r1_intervals:
-                yield PythonISetData(video, False, r1_intervals)
-            elif r2_intervals:
-                yield PythonISetData(video, False, r2_intervals)
-
-    def _or_python_isets(
-        r1: SearchResult, r2: SearchResult
-    ) -> PythonISetDataGenerator:
-        assert r1.type == SearchResultType.python_iset
-        assert r2.type == SearchResultType.python_iset
-
-        prev = None
-        for curr in heapq.merge(
-            ((s.video.id, s) for s in r1.data),
-            ((s.video.id, s) for s in r2.data)
-        ):
-            if prev is None:
-                prev = curr
-            elif curr[0] == prev[0]:
-                if curr[1].is_entire_video:
-                    yield curr[1]
-                elif prev[1].is_entire_video:
-                    yield prev[1]
-                else:
-                    yield PythonISetData(
-                        curr[1].video, False,
-                        deoverlap_intervals(
-                            heapq.merge(curr[1].intervals, prev[1].intervals),
-                            100))
-                prev = None
-            else:
-                assert curr[0] > prev[0]
-                yield prev[1]
-                prev = curr
-        if prev is not None:
-            yield prev[1]
-
-    def _or_python_iset_with_rust_iset(
-        python_result: SearchResult, rust_result: SearchResult
-    ) -> PythonISetDataGenerator:
-        assert python_result.type == SearchResultType.python_iset
-        assert rust_result.type == SearchResultType.rust_iset
-
-        try:
-            python_result_head = next(python_result.data)
-        except StopIteration:
-            python_result_head = None
-
-        video_filter = get_video_filter(rust_result.context)
-        for video_id in rust_result.data.get_ids():
-            video = video_data_context.video_by_id.get(video_id)
-            if not video:
-                continue
-
-            while (
-                python_result_head is not None
-                and python_result_head.video.id < video_id
-            ):
-                yield python_result_head
-                try:
-                    python_result_head = next(python_result.data)
-                except StopIteration:
-                    python_result_head = None
-
-            assert (python_result_head is None
-                    or python_result_head.video.id >= video_id)
-            if (
-                python_result_head is None
-                or python_result_head.video.id != video_id
-            ):
-                if video_filter is None or video_filter(video):
-                    intervals = rust_result.data.get_intervals(video_id, True)
-                    if intervals:
-                        yield PythonISetData(video, False, intervals=intervals)
-            else:
-                assert python_result_head.video.id == video_id
-                if (
-                    python_result_head.is_entire_video
-                    or (video_filter is not None and not video_filter(video))
-                ):
-                    yield python_result_head
-                else:
-                    yield PythonISetData(
-                        video, False,
-                        deoverlap_intervals(heapq.merge(
-                            python_result_head.intervals,
-                            rust_result.data.get_intervals(video_id, True)),
-                            100))
-                try:
-                    python_result_head = next(python_result.data)
-                except StopIteration:
-                    python_result_head = None
-
-        # yield any remaining results
-        if python_result_head is not None:
-            yield python_result_head
-            for x in python_result.data:
-                yield x
 
     def _search_or(
         children: Iterable[Any], context: SearchContext
@@ -1175,7 +1210,7 @@ def build_app(
         if child_video_filters:
             curr_result = SearchResult(
                 SearchResultType.python_iset,
-                data=get_python_intervals_for_videos(
+                data=get_python_iset_from_filter(
                     video_data_context,
                     lambda v: any(f(v) for f in child_video_filters)))
 
@@ -1213,19 +1248,26 @@ def build_app(
                         # Return: python_iset
                         curr_result = SearchResult(
                             SearchResultType.python_iset,
-                            data=get_python_intervals_for_videos(
+                            data=get_python_iset_from_filter(
                                 video_data_context,
                                 lambda v: r1_filter(v) or r2_filter(v)))
                 elif r2.type == SearchResultType.python_iset:
                     # Return: python_iset
                     curr_result = SearchResult(
                         SearchResultType.python_iset,
-                        data=_or_python_iset_with_filter(r1_filter, r2))
+                        data=or_python_iset_with_filter(
+                            video_data_context, r1_filter, r2))
                 elif r2.type == SearchResultType.rust_iset:
                     # Return: python_iset
                     curr_result = SearchResult(
                         SearchResultType.python_iset,
-                        data=_or_rust_iset_with_filter(r1_filter, r2))
+                        data=or_python_iset_with_rust_iset(
+                            video_data_context,
+                            SearchResult(
+                                SearchResultType.python_iset,
+                                data=get_python_iset_from_filter(
+                                    video_data_context, r1_filter)
+                            ), r2))
                 else:
                     raise UnreachableCode()
 
@@ -1233,11 +1275,12 @@ def build_app(
                 if r2.type == SearchResultType.python_iset:
                     curr_result = SearchResult(
                         SearchResultType.python_iset,
-                        data=_or_python_isets(r1, r2))
+                        data=or_python_isets(r1, r2))
                 elif r2.type == SearchResultType.rust_iset:
                     curr_result = SearchResult(
                         SearchResultType.python_iset,
-                        data=_or_python_iset_with_rust_iset(r1, r2))
+                        data=or_python_iset_with_rust_iset(
+                            video_data_context, r1, r2))
                 else:
                     raise UnreachableCode()
 
@@ -1246,7 +1289,7 @@ def build_app(
                     # Return: python_iset
                     curr_result = SearchResult(
                         SearchResultType.python_iset,
-                        data=_or_rust_isets(r1, r2))
+                        data=or_rust_isets(video_data_context, r1, r2))
                 else:
                     raise UnreachableCode()
 
@@ -1294,12 +1337,12 @@ def build_app(
             return None
 
         elif k == SearchKey.video:
-            if context.video is not None and context.video != v:
+            if context.videos is not None and v in context.videos:
                 return None
             else:
                 return SearchResult(
                     SearchResultType.video_set,
-                    context=context._replace(video=v))
+                    context=context._replace(videos={v}))
 
         elif k == SearchKey.channel:
             if context.channel is not None and context.channel != v:
@@ -1339,18 +1382,6 @@ def build_app(
 
         raise UnreachableCode()
 
-    def _join_intervals_with_commercials(
-        video: Video, intervals: List[Interval], is_commercial: Ternary
-    ) -> Optional[List[Interval]]:
-        if is_commercial != Ternary.both:
-            if is_commercial == Ternary.true:
-                intervals = intersect_isetmap(
-                    video, video_data_context.commercial_isetmap, intervals)
-            else:
-                intervals = minus_isetmap(
-                    video, video_data_context.commercial_isetmap, intervals)
-        return intervals
-
     @app.route('/search')
     def search() -> Response:
         aggregate_fn = get_aggregate_fn()
@@ -1379,56 +1410,24 @@ def build_app(
                 start_date=start_date, end_date=end_date,
                 text_window=default_text_window))
 
-        if search_result is None:
-            pass
-
-        elif (search_result.type == SearchResultType.video_set
-              or search_result.type == SearchResultType.python_iset):
-
+        if search_result is not None:
             def helper(video: Video, intervals: List[Interval]) -> None:
-                intervals = _join_intervals_with_commercials(
-                    video, intervals, is_commercial)
+                intervals = join_intervals_with_commercials(
+                    video_data_context, video, intervals, is_commercial)
                 if intervals:
                     accumulator.add(
                         video.date, video.id,
                         sum(i[1] - i[0] for i in intervals) / 1000)
 
-            if search_result.type == SearchResultType.video_set:
-                video_filter = get_video_filter(search_result.context)
-                for video in video_data_context.video_dict.values():
-                    if video_filter is None or video_filter(video):
-                        helper(video, get_entire_video_ms_interval(video))
-            else:
-                for data in search_result.data:
-                    helper(
-                        data.video,
-                        get_entire_video_ms_interval(data.video)
-                        if data.is_entire_video else data.intervals)
-
-        elif search_result.type == SearchResultType.rust_iset:
-            video_filter = get_video_filter(search_result.context)
-            for video_id in search_result.data.get_ids():
-                video = video_data_context.video_by_id.get(video_id)
-                if video_filter is not None and not video_filter(video):
-                    continue
-
-                if is_commercial == Ternary.false:
-                    intervals = minus_isetmap(
-                        video, video_data_context.commercial_isetmap,
-                        get_entire_video_ms_interval(video))
-                elif is_commercial == Ternary.true:
-                    intervals = (
-                        video_data_context.commercial_isetmap.get_intervals(
-                            video.id, True))
-                elif is_commercial == Ternary.both:
-                    intervals = get_entire_video_ms_interval(video)
-                accumulator.add(
-                    video.date, video.id,
-                    search_result.data.intersect_sum(video.id, intervals, True)
-                    / 1000)
-
-        else:
-            raise UnreachableCode()
+            for data in search_result_to_python_iset(
+                video_data_context, search_result
+            ):
+                if data.is_entire_video:
+                    intervals = get_entire_video_ms_interval(data.video)
+                else:
+                    assert data.intervals is not None
+                    intervals = data.intervals
+                helper(data.video, intervals)
 
         return jsonify(accumulator.get())
 
@@ -1465,12 +1464,12 @@ def build_app(
 
         results = []
 
-        def collect(v: Video, intervals: List[Interval]) -> None:
-            intervals = _join_intervals_with_commercials(
-                v, intervals, is_commercial)
+        def collect(video: Video, intervals: List[Interval]) -> None:
+            intervals = join_intervals_with_commercials(
+                video_data_context, video, intervals, is_commercial)
             if intervals:
                 results.append({
-                    'metadata': get_video_metadata_json(v),
+                    'metadata': get_video_metadata_json(video),
                     'intervals': list(merge_close_intervals(
                         (i[0] / 1000, i[1] / 1000) for i in intervals
                     ))
@@ -1480,40 +1479,19 @@ def build_app(
             query, SearchContext(
                 videos=video_ids, text_window=default_text_window))
 
-        if search_result is None:
-            pass
-
-        elif search_result.type == SearchResultType.video_set:
-            video_filter = get_video_filter(search_result.context)
-            for video_id in video_ids:
-                video = video_data_context.video_by_id.get(video_id)
-                # TODO: investigate linter warning
-                if video is not None and (
-                    video_filter is None or video_filter(video)
-                ):
-                    collect(video, get_entire_video_ms_interval(video))
-
-        elif search_result.type == SearchResultType.rust_iset:
-            video_filter = get_video_filter(search_result.context)
-            for video_id in video_ids:
-                video = video_data_context.video_by_id.get(video_id)
-                if video is not None and (
-                    video_filter is None or video_filter(video)
-                ):
-                    collect(
-                        video,
-                        search_result.data.get_intervals(video_id, True))
-
-        elif search_result.type == SearchResultType.python_iset:
-            for data in search_result.data:
-                assert data.video.id in video_ids
-                collect(
-                    data.video,
-                    get_entire_video_ms_interval(data.video)
-                    if data.is_entire_video else data.intervals)
-
-        else:
-            raise UnreachableCode()
+        if search_result is not None:
+            for data in search_result_to_python_iset(
+                video_data_context, search_result
+            ):
+                assert data.video.id in video_ids, \
+                    'Unexpected video {}, not in {}'.format(
+                        data.video.id, video_ids)
+                if data.is_entire_video:
+                    intervals = get_entire_video_ms_interval(data.video)
+                else:
+                    assert data.intervals is not None
+                    intervals = data.intervals
+                collect(data.video, intervals)
 
         assert len(results) <= len(video_ids), \
             'Expected {} results, got {}'.format(len(video_ids), len(results))
