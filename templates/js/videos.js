@@ -49,7 +49,7 @@ function displayVideos(page_i) {
 
   let n_pages = Math.ceil(params.video_ids.length / VIDEOS_PER_PAGE);
 
-  let page_buttons_div = $("#page-buttons");
+  let page_buttons_div = $('#pageButtons');
   page_buttons_div.show();
   let prev_button = page_buttons_div.find('button[name="previous"]');
   if (page_i > 0) {
@@ -133,19 +133,15 @@ function loadVideos(params, serve_from_internet_archive) {
   QUERY = new SearchableQuery(PARAMS.query, false);
   CURR_PAGE = 0;
 
-  if (QUERY.alias) {
-    $('#text-info').empty().append(
-      $('<span>').css('color', PARAMS.color).text(QUERY.alias),
-      '&nbsp;',
-      $('<span>').html('&#9432;').attr('title', QUERY.query)
-    );
-  } else {
-    $('#text-info').empty().append(
-      $('<code>').css('color', PARAMS.color).text(QUERY.query),
-      $.trim(QUERY.query).endsWith('WHERE') ?
-        $('<code>').css('color', 'gray').text('all the data') : null
-    );
-  }
+  $('#textInfo').append(
+    QUERY.alias ?
+      [$('<span>').css('color', PARAMS.color).text(QUERY.alias),
+       '&nbsp;',
+       $('<span>').html('&#9432;').attr('title', QUERY.query)]
+      : $('<code>').css('color', PARAMS.color).text(
+        $.trim(QUERY.query) ? QUERY.query : '<blank query: i.e. all the data>')
+  );
+
   if (PARAMS.video_count > 0) {
     $('body').css('min-height', '220px');
     displayVideos(CURR_PAGE);
@@ -153,6 +149,6 @@ function loadVideos(params, serve_from_internet_archive) {
     $('#videos').empty().append(
       $('<p>').css('text-align', 'center').text('No videos to display.')
     );
-    $("#page-buttons").hide();
+    $('#pageButtons').hide();
   }
 }

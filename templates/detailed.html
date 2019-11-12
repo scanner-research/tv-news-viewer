@@ -29,8 +29,8 @@
     </div>
 
     consisting of the data being counted ("screen time") and filters, separated
-    by "AND". In the earlier example, we saw two filters "{{ parameters.onscreen_face }}1" and
-    "channel", and their respective values "person: hillary clinton" and "CNN".
+    by "AND". In the getting started guide, we saw two filters "{{ search_keys.face_name }}" and
+    "{{ search_keys.channel }}", and their respective values "hillary clinton" and "CNN".
     The table below shows the filter options that the application currently supports.
   </p>
 
@@ -43,7 +43,7 @@
 
     <tbody>
       <tr>
-        <td rowspan="4">{{ parameters.channel }}</td>
+        <td rowspan="4">{{ search_keys.channel }}</td>
         <td>description</td>
         <td>name of the channel</td>
       </tr>
@@ -59,13 +59,13 @@
       </tr>
       <tr>
         <td>example</td>
-        <td><code>{{ parameters.channel }}="CNN"</code></td>
+        <td><code>{{ search_keys.channel }}="CNN"</code></td>
       </tr>
     </tbody>
 
     <tbody>
       <tr>
-        <td rowspan="4">{{ parameters.show }}</td>
+        <td rowspan="4">{{ search_keys.show }}</td>
         <td>description</td>
         <td>name of the show</td>
       </tr>
@@ -81,13 +81,13 @@
       </tr>
       <tr>
         <td>example</td>
-        <td><code>{{ parameters.show }}="CNN Newsroom"</code></td>
+        <td><code>{{ search_keys.show }}="CNN Newsroom"</code></td>
       </tr>
     </tbody>
 
     <tbody>
       <tr>
-        <td rowspan="4">{{ parameters.hour }}</td>
+        <td rowspan="4">{{ search_keys.hour }}</td>
         <td>description</td>
         <td>ranges (inclusive) of hours in 24h format in Eastern Time</td>
       </tr>
@@ -103,13 +103,13 @@
       </tr>
       <tr>
         <td>example</td>
-        <td><code>{{ parameters.hour }}="9-17"</code></td>
+        <td><code>{{ search_keys.hour }}="9-17"</code></td>
       </tr>
     </tbody>
 
     <tbody>
       <tr>
-        <td rowspan="4">{{ parameters.day_of_week }}</td>
+        <td rowspan="4">{{ search_keys.day_of_week }}</td>
         <td>description</td>
         <td>range (inclusive) or list of days of the week</td>
       </tr>
@@ -125,35 +125,13 @@
       </tr>
       <tr>
         <td>example</td>
-        <td><code>{{ parameters.day_of_week }}="sat-sun"</code></td>
+        <td><code>{{ search_keys.days_of_week }}="sat-sun"</code></td>
       </tr>
     </tbody>
 
     <tbody>
       <tr>
-        <td rowspan="4">{{ parameters.is_commercial }}</td>
-        <td>description</td>
-        <td>filter or select commercials</td>
-      </tr>
-      <tr>
-        <td>values</td>
-        <td>true, false, both</td>
-      </tr>
-      <tr>
-        <td>default</td>
-        <td>
-          <var>{{ default_is_commercial }}</var>
-        </td>
-      </tr>
-      <tr>
-        <td>example</td>
-        <td><code>{{ parameters.is_commercial }}={{ default_is_commercial }}</code></td>
-      </tr>
-    </tbody>
-
-    <tbody>
-      <tr>
-        <td rowspan="4">{{ parameters.caption_text }}</td>
+        <td rowspan="4">{{ search_keys.text }}</td>
         <td>description</td>
         <td>keywords nearby in the captions</td>
       </tr>
@@ -170,15 +148,15 @@
       <tr>
         <td>example</td>
         <td>
-          <code>{{ parameters.caption_text }}="affordable care act"</code><br>
-          <code>{{ parameters.caption_text }}="affordable care act | obamacare"</code><br>
+          <code>{{ search_keys.text }}="affordable care act"</code><br>
+          <code>{{ search_keys.text }}="affordable care act | obamacare"</code><br>
         </td>
       </tr>
     </tbody>
 
     <tbody>
       <tr>
-        <td rowspan="4">{{ parameters.caption_window }}</td>
+        <td rowspan="4">{{ search_keys.text_window }}</td>
         <td>description</td>
         <td>threshold (in seconds) for windows around keywords</td>
       </tr>
@@ -194,28 +172,24 @@
       </tr>
       <tr>
         <td>example</td>
-        <td><code>{{ parameters.caption_window }}={{ default_text_window }}</code></td>
+        <td><code>{{ search_keys.text_window }}={{ default_text_window }}</code></td>
       </tr>
     </tbody>
 
     <tbody>
       <tr>
         <td rowspan="4">
-          {{ parameters.onscreen_face }}<br>
+          {{ search_keys.face_name }}<br>
         </td>
         <td>description</td>
         <td>
-          constrain results to at least one matching face on screen.
-          Can be specified multiple times for different contraints.
-          Options separated by commas.
+          constrain results to when the person specified is on screen.
         </td>
       </tr>
       <tr>
         <td>values</td>
         <td>
-          all,<br>
-          person: <i>name</i> <a href="/data/people" target="_blank">(list of people)</a>,<br>
-          tag: (fe)male, (non)host, <i>tag of person</i> <a href="/data/tags" target="_blank">(list of tags)</a>
+          <i>name</i> <a href="/data/people" target="_blank">(list of people)</a>
         </td>
       </tr>
       <tr>
@@ -226,11 +200,7 @@
         <td>example</td>
         <td>
           <code>
-            {{ parameters.onscreen_face }}="all" <br>
-            {{ parameters.onscreen_face }}="person:Barack Obama" <br>
-            {{ parameters.onscreen_face }}="tag:male" <br>
-            {{ parameters.onscreen_face }}="tag:male & host" <br>
-            {{ parameters.onscreen_face }}="tag:journalist"
+            {{ search_keys.face_name }}="Barack Obama"
           </code>
         </td>
       </tr>
@@ -238,9 +208,42 @@
 
     <tbody>
       <tr>
-        <td rowspan="4">{{ parameters.onscreen_numfaces }}</td>
+        <td rowspan="4">
+          {{ search_keys.face_tag }}<br>
+        </td>
         <td>description</td>
-        <td>Number of faces on screeen.</td>
+        <td>
+          constrain results to when a face with the tag(s) is on screen.
+          Multiple tags can be specified with commas.
+        </td>
+      </tr>
+      <tr>
+        <td>values</td>
+        <td>
+          (fe)male, (non)host, <i>tag on person</i> <a href="/data/tags" target="_blank">(list of tags)</a>
+        </td>
+      </tr>
+      <tr>
+        <td>default</td>
+        <td>n/a</td>
+      </tr>
+      <tr>
+        <td>example</td>
+        <td>
+          <code>
+            {{ search_keys.face_tag }}="male" <br>
+            {{ search_keys.face_tag }}="male,host" <br>
+            {{ search_keys.face_tag }}="journalist"
+          </code>
+        </td>
+      </tr>
+    </tbody>
+
+    <tbody>
+      <tr>
+        <td rowspan="4">{{ search_keys.face_count }}</td>
+        <td>description</td>
+        <td>number of faces on screeen.</td>
       </tr>
       <tr>
         <td>values</td>
@@ -252,7 +255,7 @@
       </tr>
       <tr>
         <td>example</td>
-        <td><code>{{ parameters.onscreen_numfaces }}=2</code></td>
+        <td><code>{{ search_keys.face_count }}=2</code></td>
       </tr>
     </tbody>
   </table>
@@ -275,21 +278,13 @@
     write:
 
     <div class="code-block">
-      <code>
-        <b>COUNT</b> "screen time" <b>WHERE</b> channel="CNN" <b>NORMALIZE</b> (<b>COUNT</b> "screen time")
-      </code>
-    </div>
-
-    This is verbose. As a shorthand, we can write:
-
-    <div class="code-block">
-      <code><b>COUNT</b> "screen time" <b>WHERE</b> channel="CNN" <b>NORMALIZE</b></code>
+      <code><b>COUNT</b> "screen time" <b>WHERE</b> {{ search_keys.channel }}="CNN" <b>NORMALIZE</b></code>
     </div>
 
     Likewise, to express the proportion of time when a man is on screen on CNN,
     we can write:
 
-    <iframe width="100%" height="370" src="//{{ host }}/embed?width=600&height=270&data=%7B%22options%22%3A%7B%22start_date%22%3A%222010-01-01%22%2C%22end_date%22%3A%222018-04-01%22%2C%22count%22%3A%22screen%20time%22%2C%22aggregate%22%3A%22month%22%7D%2C%22queries%22%3A%5B%7B%22color%22%3A%22%234E79A7%22%2C%22text%22%3A%22COUNT%20%5C%22screen%20time%5C%22%20WHERE%20{{ parameters.onscreen_face }}%3D%5C%22tag%3A%20male%5C%22%20AND%20channel%3D%5C%22CNN%5C%22%20NORMALIZE%20channel%3D%5C%22CNN%5C%22%22%7D%5D%7D"></iframe>
+    <iframe width="100%" height="370"></iframe>
 
   </p>
 
@@ -303,7 +298,7 @@
     </div>
 
     For example, the net screen time of two individuals can be computed as follows:
-    <iframe width="100%" height="370" src="//{{ host }}/embed?width=600&height=270&data=%7B%22options%22%3A%7B%22start_date%22%3A%222010-01-01%22%2C%22end_date%22%3A%222018-04-01%22%2C%22count%22%3A%22screen%20time%22%2C%22aggregate%22%3A%22month%22%7D%2C%22queries%22%3A%5B%7B%22color%22%3A%22%234E79A7%22%2C%22text%22%3A%22COUNT%20%5C%22screen%20time%5C%22%20WHERE%20{{ parameters.onscreen_face }}%3D%5C%22person%3A%20donald%20trump%5C%22%20SUBTRACT%20{{ parameters.onscreen_face }}%3D%5C%22person%3A%20hillary%20clinton%5C%22%22%7D%5D%7D"></iframe>
+    <iframe width="100%" height="370"></iframe>
   </p>
 </div>
 {% endblock %}

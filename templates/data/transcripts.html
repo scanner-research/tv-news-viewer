@@ -9,10 +9,10 @@
     For most of the videos in the data set, we have access to the transcripts.
     These have been time aligned at word granularity to the audio. You can
     search for video using transcripts with the
-    <code>{{ parameters.caption_text }}="..."</code> predicate. For example,
-    <code>{{ parameters.caption_text }}="United Kingdom"</code> will find all
+    <code>{{ search_keys.text }}="..."</code> predicate. For example,
+    <code>{{ search_keys.text }}="United Kingdom"</code> will find all
     times where the phrase "United Kingdom" is spoken. In its basic usage,
-    the <code>{{ parameters.caption_text }}</code> filter accepts
+    the <code>{{ search_keys.text }}</code> filter accepts
     individual words and phrases, where a phrase is defined as an n-gram
     where all the words must appear in a sequence.
   </p>
@@ -30,7 +30,7 @@
     words/phrases. For example, the "European Union" can be also be referred to
     as the EU or E.U. in the transcripts. When this is the case, use the "|"
     character to delimit multiple words and phrases. For example,
-    <code>{{ parameters.caption_text}}="European Union | EU | E.U."</code>
+    <code>{{ search_keys.text}}="European Union | EU | E.U."</code>
     will search for any of the three. This can be repeated for an arbitrary
     number of words and phrases.
   </p>
@@ -43,7 +43,7 @@
     when words are singular or plural. To search for all inflected forms of
     a word without specifying them manually, surround the word with
     <code>[...]</code> brackets. For example,
-    <code>{{ parameters.caption_text}}="[truck]"</code> will find instances of
+    <code>{{ search_keys.text}}="[truck]"</code> will find instances of
     truck, trucks, and trucking. If multiple words are surrounded by
     <code>[...]</code>, then inflections will be found for any of the words.
   </p>
@@ -52,14 +52,13 @@
     Windowing around mentions
   </h3>
   <p>
-    By default, <code>{{ parameters.caption_text}}</code> will precisely find
+    By default, <code>{{ search_keys.text}}</code> will precisely find
     the intervals of time where a word or phrase is spoken. This means that
     each mention will count for the few hundred milliseconds when the phrase
     is uttered. For analyzing topic coverage, set the
-    <code>{{ parameters.caption_window }}</code> to a larger value to dilate
-    a window around each mention of the phrases.
-    For example,
-    <code>{{ parameters.caption_text }}="immigration" AND {{ parameters.caption_window }}=30</code>
+    <code>{{ search_keys.text_window }}</code> to a larger value to dilate
+    a window around each mention of the phrases. For example,
+    <code>{{ search_keys.text }}="immigration" AND {{ search_keys.text_window }}=30</code>
     will find video intervals starting and ending 30 seconds before and after
     each mention of the word immigration.
   </p>

@@ -1,0 +1,15 @@
+body {
+  overflow: hidden;
+}
+#textInfo {
+  text-align: center;
+  margin-bottom: 0;
+}
+#textInfo code {
+  font-size: 18px;
+}
+#pageButtons {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+}

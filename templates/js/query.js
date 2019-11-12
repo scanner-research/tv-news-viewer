@@ -311,8 +311,10 @@ class SearchableQuery {
   searchInVideos(video_ids, onSuccess, onError) {
     let args = {
       {{ params.video_ids }}: JSON.stringify(video_ids),
-      query: JSON.stringify(this.main_query)
     };
+    if (this.main_query) {
+      args.query = JSON.stringify(this.main_query);
+    }
     return $.ajax({
       url: '/search-videos', type: 'get', data: getSortedQueryString(args)
     }).then(onSuccess).catch(onError);

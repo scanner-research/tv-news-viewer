@@ -40,7 +40,7 @@ function renderText(lines) {
             [$('<code>').text(line.query.alias), '&nbsp;',
               $('<span>').html('&#9432;').attr('title', line.query.query)]
             : [$('<code>').text(line.query.query),
-                $.trim(line.query.query).endsWith('WHERE') ?
+                $.trim(line.query.query).length == 0 ?
                   $('<code>').css('color', 'gray').text('all the data') : null]
         )
       ));
@@ -50,8 +50,7 @@ function renderText(lines) {
 let lines = data.queries.map(raw_query => {
   var parsed;
   try {
-    parsed_query = new SearchableQuery(
-      raw_query.text, false);
+    parsed_query = new SearchableQuery(raw_query.text, false);
   } catch (e) {
     alertAndThrow(e.message);
   }

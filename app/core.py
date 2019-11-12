@@ -242,7 +242,7 @@ def get_transcript_intervals(
     return iter(sorted(results, key=lambda x: x.video.id))
 
 
-GLOBAL_TAGS = {'male', 'female', 'host', 'nonhost'}
+GLOBAL_TAGS = {'all', 'male', 'female', 'host', 'nonhost'}
 
 
 def get_global_tags(tag: PersonTags) -> Set[str]:
@@ -254,7 +254,7 @@ def either_tag_or_none(a: str, b: str, s: set) -> Optional[str]:
     has_b = b in s
     if has_a and has_b:
         raise InvalidUsage(
-            'Cannot use {} and {} tags simultaneously'.format(a, b))
+            'Cannot use {} and {} tags simultaneously. Try using "all".'.format(a, b))
     elif has_a:
         return a
     elif has_b:
@@ -277,10 +277,11 @@ def people_to_ilistmaps(
 
 def interpret_global_tags(
     global_tags: Set[str]
-) -> Tuple[Optional[str], Optional[str]]:
+) -> Tuple[bool, Optional[str], Optional[str]]:
     gender_tag = either_tag_or_none('male', 'female', global_tags)
     host_tag = either_tag_or_none('host', 'nonhost', global_tags)
-    return gender_tag, host_tag
+    is_all = 'all' in global_tags and gender_tag is None and host_tag is None
+    return is_all, gender_tag, host_tag
 
 
 def person_tags_to_people(
@@ -394,8 +395,10 @@ def get_face_tag_intervals(
     all_tags = parse_tags(tag_str)
     global_tags = get_global_tags(all_tags)
     if len(global_tags) == len(all_tags.tags):
-        gender_tag, host_tag = interpret_global_tags(global_tags)
-        if gender_tag is None:
+        is_all, gender_tag, host_tag = interpret_global_tags(global_tags)
+        if is_all:
+            isetmap = vdc.face_intervals.all_isetmap
+        elif gender_tag is None:
             if host_tag == 'host':
                 isetmap = vdc.face_intervals.host_isetmap
             elif host_tag == 'nonhost':
@@ -422,7 +425,7 @@ def get_face_tag_intervals(
                 raise UnreachableCode()
     else:
         ilistmaps = person_tags_to_ilistmaps(vdc, all_tags.tags)
-        gender_tag, host_tag = interpret_global_tags(global_tags)
+        _, gender_tag, host_tag = interpret_global_tags(global_tags)
         payload_mask, payload_value = get_face_time_filter_mask(
             gender_tag, host_tag)
         isetmap = MmapUnionIlistsToISetMapping(
@@ -651,15 +654,14 @@ def build_app(
     @app.route('/getting-started')
     def get_getting_started() -> Response:
         return render_template(
-            'getting-started.html', host=request.host,
-            params=SearchParam,
+            'getting-started.html', host=request.host, search_keys=SearchKey,
             default_text_window=default_text_window,
             default_is_commercial=default_is_commercial.name)
 
     @app.route('/detailed')
     def get_detailed() -> Response:
         return render_template(
-            'detailed.html', host=request.host, params=SearchParam,
+            'detailed.html', host=request.host, search_keys=SearchKey,
             default_text_window=default_text_window,
             default_is_commercial=default_is_commercial.name)
 
@@ -686,7 +688,7 @@ def build_app(
 
     @app.route('/data/people')
     def get_data_people() -> Response:
-        return render_template('data/people.html', params=SearchParam)
+        return render_template('data/people.html', search_keys=SearchKey)
 
     @app.route('/data/people.json')
     def get_data_people_json() -> Response:
@@ -698,7 +700,7 @@ def build_app(
 
     @app.route('/data/tags')
     def get_data_tags() -> Response:
-        return render_template('data/tags.html', params=SearchParam)
+        return render_template('data/tags.html', search_keys=SearchKey)
 
     @app.route('/data/tags.json')
     def get_data_tags_json() -> Response:
@@ -709,7 +711,7 @@ def build_app(
 
     @app.route('/data/shows')
     def get_data_shows() -> Response:
-        return render_template('data/shows.html', params=SearchParam)
+        return render_template('data/shows.html', search_keys=SearchKey)
 
     @app.route('/data/shows.json')
     def get_data_shows_json() -> Response:
@@ -742,6 +744,7 @@ def build_app(
     def get_values_js() -> Response:
         resp = make_response(render_template(
             'js/values.js', shows=all_shows, people=[x.name for x in people],
+            global_face_tags=list(sorted(GLOBAL_TAGS)),
             person_tags=video_data_context.all_person_tags.tags))
         resp.headers['Content-type'] = 'text/javascript'
         return resp
@@ -749,8 +752,7 @@ def build_app(
     @app.route('/static/js/query.js')
     def get_query_js() -> Response:
         resp = make_response(render_template(
-            'js/query.js', search_keys=SearchKey, params=SearchParam
-        ))
+            'js/query.js', search_keys=SearchKey, params=SearchParam))
         resp.headers['Content-type'] = 'text/javascript'
         return resp
 

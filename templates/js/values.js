@@ -11,5 +11,5 @@ const ALL_PERSON_TAGS = [
 ];
 
 const ALL_TAGS = [
-  'male', 'female', 'host', 'nonhost', {% for tag in person_tags %}"{{ tag }}",{% endfor %}
+  {% for tag in global_face_tags %}"{{ tag }}",{% endfor %},{% for tag in person_tags %}"{{ tag }}",{% endfor %}
 ];

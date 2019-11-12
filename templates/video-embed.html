@@ -4,35 +4,21 @@
   {{ super() }}
   <link rel="stylesheet" href="{{ url_for('static', filename='vgrid/index.css') }}" />
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/video-embed.css') }}" />
   <script src="{{ url_for('static', filename='js/constant.js') }}" /></script>
   <script src="{{ url_for('static', filename='js/values.js') }}" /></script>
   <script src="{{ url_for('static', filename='js/query.js') }}" /></script>
   <script src="{{ url_for('static', filename='js/videos.js') }}" /></script>
-
-  <style>
-    body {
-      overflow: hidden;
-    }
-    #text-info {
-      text-align: center;
-      margin-bottom: 0;
-    }
-    #page-buttons {
-      position: absolute;
-      bottom: 0;
-      right: 0;
-    }
-  </style>
 {% endblock %}
 
 {% block body %}
-<div>
-  <div id="page-buttons" class="btn-group">
+<div class=video-div>
+  <div id="pageButtons" class="btn-group">
     <button name="previous" type="button" class="btn btn-outline-secondary btn-sm">Previous</button>
     <button name="next" type="button" class="btn btn-outline-secondary btn-sm">Next</button>
     <button name="info" type="button" class="btn btn-secondary btn-sm" disabled></button>
   </div>
-  <p id="text-info"></p>
+  <p id="textInfo"></p>
   <div id="videos"></div>
 </div>
 <script src="{{ url_for('static', filename='vgrid/bundle.js') }}"></script>
