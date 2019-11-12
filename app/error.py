@@ -47,6 +47,10 @@ class InvalidTranscriptSearch(InvalidUsage):
             self, '"{}" is not a valid transcript search'.format(s))
 
 
+class QueryTooExpensive(InvalidUsage):
+    pass
+
+
 class NotFound(Exception):
 
     def __init__(self, message: str):

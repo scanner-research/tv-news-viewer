@@ -13,7 +13,7 @@ from app.hash import sha256
 
 
 DEFAULT_VIDEO_ENDPOINT = 'https://storage.cloud.google.com/esper'
-ARCHIVE_VIDEO_ENDPOINT = 'https://ia801301.us.archive.org/0/items'
+ARCHIVE_VIDEO_ENDPOINT = 'https://archive.org/download'
 
 
 def get_args() -> argparse.Namespace:

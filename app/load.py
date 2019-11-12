@@ -4,7 +4,7 @@ import os
 import json
 import unidecode
 from os import path
-from collections import Counter
+from collections import Counter, OrderedDict
 from pathlib import Path
 from typing import NamedTuple, Dict, Set, Tuple
 
@@ -35,6 +35,7 @@ def get_video_name(s: str) -> str:
 class VideoDataContext(NamedTuple):
     """Wrapper object for video data"""
     video_dict: Dict[str, Video]
+    video_by_id: Dict[int, Video]
     commercial_isetmap: MmapIntervalSetMapping
     face_intervals: FaceIntervals
     all_person_intervals: AllPersonIntervals
@@ -50,9 +51,9 @@ class CaptionDataContext(NamedTuple):
 
 
 def _load_videos(data_dir: str) -> Dict[str, Video]:
-    videos = {}
+    videos = OrderedDict()
     video_path = path.join(data_dir, 'videos.json')
-    for v in load_json(video_path):
+    for v in sorted(load_json(video_path), key=lambda x: x[0]):
         (
             id,
             name,
@@ -63,6 +64,15 @@ def _load_videos(data_dir: str) -> Dict[str, Video]:
             width,
             height
         ) = v
+        assert isinstance(id, int)
+        assert isinstance(name, str)
+        assert isinstance(show, str)
+        assert isinstance(channel, str)
+        assert isinstance(num_frames, int)
+        assert isinstance(fps, float)
+        assert isinstance(width, int)
+        assert isinstance(height, int)
+
         video_name = get_video_name(name)
         date, minute = parse_date_from_video_name(video_name)
         assert date is not None
@@ -270,5 +280,6 @@ def load_app_data(
     print('Done loading data!')
     return (caption_data,
             VideoDataContext(
-                videos, commercials, face_intervals, all_person_intervals,
+                videos, {v.id: v for v in videos.values()},
+                commercials, face_intervals, all_person_intervals,
                 all_person_tags, cached_tag_intervals))

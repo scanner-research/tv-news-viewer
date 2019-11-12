@@ -186,7 +186,7 @@ function validateKeyValue(key, value, no_err) {
       break;
     }
     case '{{ search_keys.show }}': {
-      let show = findCaseInsInArr(ALL_SHOWS, show);
+      let show = findCaseInsInArr(ALL_SHOWS, value);
       if (show) {
         value = show;
       } else {

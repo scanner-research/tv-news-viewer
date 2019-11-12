@@ -9,7 +9,7 @@ import '@wcrichto/vgrid/dist/vgrid.css';
 
 const HIGHLIGHT_STYLE = {backgroundColor: 'yellow'};
 
-const FACE_FADE_PARAMS = {amount: 0.8, duration: 1};
+const FACE_FADE_PARAMS = {amount: 0.75};
 
 const INTERNET_ARCHIVE_MAX_CLIP_LEN = 180;
 const INTERNET_ARCHIVE_PAD_START = 30;
