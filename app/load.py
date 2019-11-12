@@ -188,7 +188,11 @@ def _load_person_intervals(
 
 
 def sanitize_tag(tag: str) -> str:
-    return re.sub(r'\W+', '', tag.lower())
+    tag = re.sub(r'\W+', '', tag.lower())
+    # FIXME: this avoids a conflict with the host tag
+    if tag == 'host':
+        tag = 'tv_host'
+    return tag
 
 
 def _load_person_metadata(
