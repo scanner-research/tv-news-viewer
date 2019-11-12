@@ -239,7 +239,7 @@ def get_transcript_intervals(
         results.append(PythonISetData(
             video, False,
             [(int(p.start * 1000), int(p.end * 1000)) for p in postings]))
-    return sorted(results, key=lambda x: x.video.id)
+    return iter(sorted(results, key=lambda x: x.video.id))
 
 
 GLOBAL_TAGS = {'male', 'female', 'host', 'nonhost'}
@@ -1099,12 +1099,16 @@ def build_app(
                 python_result_head is None
                 or python_result_head.video.id != video_id
             ):
-                intervals = rust_result.data.get_intervals(video_id, True)
-                if intervals:
-                    yield PythonISetData(video, False, intervals=intervals)
+                if video_filter is None or video_filter(video):
+                    intervals = rust_result.data.get_intervals(video_id, True)
+                    if intervals:
+                        yield PythonISetData(video, False, intervals=intervals)
             else:
                 assert python_result_head.video.id == video_id
-                if python_result_head.is_entire_video:
+                if (
+                    python_result_head.is_entire_video
+                    or (video_filter is not None and not video_filter(video))
+                ):
                     yield python_result_head
                 else:
                     yield PythonISetData(
