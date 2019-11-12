@@ -8,21 +8,31 @@ const QUERY_KEYWORDS = {
 
 const QUERY_GRAMMAR = `
 Start
-  = Blank "(" Blank a:Query Blank ")" Blank "NORMALIZE"i Blank b:Query Blank {
-    return {main: a, normalize: b};
+  = Blank "[" Blank a:Alias Blank "]" Blank b:Query Blank {
+    b.alias = a;
+    return b;
   }
-  / Blank "(" Blank a:Query Blank ")" Blank "SUBTRACT"i Blank b:Query Blank {
-    return {main: a, subtract: b};
-  }
-  / Blank a:Query Blank "NORMALIZE"i Blank b:Query Blank {
-    return {main: a, normalize: b};
-  }
-  / Blank a:Query Blank "SUBTRACT"i Blank b:Query Blank {
-    return {main: a, subtract: b};
-  }
-  / Blank a:Query Blank { return {main: a}; }
+  / Blank a:Query Blank { return a; }
+
+Alias
+  = a:[^\\]]+ { return a.join(''); }
 
 Query
+  = "(" Blank a:SingleQuery Blank ")" Blank "NORMALIZE"i Blank b:SingleQuery {
+    return {main: a, normalize: b};
+  }
+  / "(" Blank a:SingleQuery Blank ")" Blank "SUBTRACT"i Blank b:SingleQuery {
+    return {main: a, subtract: b};
+  }
+  / a:SingleQuery Blank "NORMALIZE"i Blank b:SingleQuery {
+    return {main: a, normalize: b};
+  }
+  / a:SingleQuery Blank "SUBTRACT"i Blank b:SingleQuery {
+    return {main: a, subtract: b};
+  }
+  / a:SingleQuery { return {main: a}; }
+
+SingleQuery
   = "(" Blank a:Node Blank ")" { return a; }
   / a:Node { return a; }
   / "" { return null; }
@@ -254,6 +264,9 @@ class SearchableQuery {
     }
     if (p.subtract) {
       this.sub_query = validateQuery(p.subtract, no_err);
+    }
+    if (p.alias) {
+      this.alias = p.alias;
     }
     this.main_query = validateQuery(p.main, no_err);
   }

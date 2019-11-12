@@ -19,7 +19,7 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
         the screen has a face that:
       </td>
       <td type="value-col">
-        <span title='A face is on screen if it is visible anywhere in the frame. This definition includes faces in the foreground or background; live or still; and big or small. Note: this will update onscreen.face="...". To filter on multiple faces, edit the search box manually.'>
+        <span title='A face is on screen if it is visible anywhere in the frame. This definition includes faces in the foreground or background; live or still; and big or small.'>
           &#9432;
         </span>
       </td>
@@ -148,7 +148,7 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
         </span>
       </td>
       <td type="value-col">
-        <input type="text" class="form-control no-enter-submit" style="width: 100%;"
+        <input type="text" class="form-control no-enter-submit alias-input"
                name="{{ params.alias }}" value="">
       </td>
     </tr>
@@ -276,69 +276,72 @@ function getQueryBuilder() {
 }
 
 function loadQueryBuilder(search_table_row) {
-  let query_input = search_table_row.find('input[name="query"]');
-
   search_table_row.find('.query-td').append(getQueryBuilder());
-  let parsed_query = new SearchableQuery(query_input.val(), true);
-  let top_level_kv = {};
-  if (parsed_query.main_query) {
-    let [k, v] = parsed_query.main_query;
-    if (k == 'and') {
-      v.forEach(([a, b]) => {
-        if (top_level_kv.hasOwnProperty(a)) {
-          top_level_kv[a].push(b);
-        } else {
-          top_level_kv[a] = [b];
-        }
-      });
-    } else {
-      top_level_kv[k] = [v];
-    }
-  }
-  console.log(top_level_kv, parsed_query);
-
+  let query_input = search_table_row.find('input[name="query"]');
   let query_builder = search_table_row.find('.query-builder');
-  let setOneIfDefined = k => {
-    let v = top_level_kv[k];
-    if (v) {
-      query_builder.find(`[name="${k}"]`).val(v[0]);
+
+  try {
+    let parsed_query = new SearchableQuery(query_input.val(), true);
+    let top_level_kv = {};
+    if (parsed_query.main_query) {
+      let [k, v] = parsed_query.main_query;
+      if (k == 'and') {
+        v.forEach(([a, b]) => {
+          if (top_level_kv.hasOwnProperty(a)) {
+            top_level_kv[a].push(b);
+          } else {
+            top_level_kv[a] = [b];
+          }
+        });
+      } else {
+        top_level_kv[k] = [v];
+      }
     }
-  };
 
-  var channel = top_level_kv['{{ search_keys.channel }}'];
-  if (channel) {
-    query_builder.find(`select[name="{{ search_keys.channel }}"]`).val(
-      channel.toUpperCase() == 'FOXNEWS' ? 'FOX' : channel);
-  }
+    let setOneIfDefined = k => {
+      let v = top_level_kv[k];
+      if (v) {
+        query_builder.find(`[name="${k}"]`).val(v[0]);
+      }
+    };
 
-  setOneIfDefined('{{ search_keys.show }}');
-  setOneIfDefined('{{ search_keys.hour }}');
-  setOneIfDefined('{{ search_keys.day_of_week }}');
-  setOneIfDefined('{{ search_keys.text }}');
-  setOneIfDefined('{{ search_keys.text_window }}');
+    var channel = top_level_kv['{{ search_keys.channel }}'];
+    if (channel) {
+      query_builder.find(`select[name="{{ search_keys.channel }}"]`).val(
+        channel.toUpperCase() == 'FOXNEWS' ? 'FOX' : channel);
+    }
 
-  let face_names = top_level_kv['{{ search_keys.face_name }}'];
-  if (face_names) {
-    query_builder.find('[name="{{ search_keys.face_name }}"]').val(face_names);
-  }
+    setOneIfDefined('{{ search_keys.show }}');
+    setOneIfDefined('{{ search_keys.hour }}');
+    setOneIfDefined('{{ search_keys.day_of_week }}');
+    setOneIfDefined('{{ search_keys.text }}');
+    setOneIfDefined('{{ search_keys.text_window }}');
 
-  let face_tags = top_level_kv['{{ search_keys.face_tag }}'];
-  if (face_tags) {
-    query_builder.find('[name="{{ search_keys.face_tag }}"]').val(
-      face_tags.split(',').map($.trim));
-  }
+    let face_names = top_level_kv['{{ search_keys.face_name }}'];
+    if (face_names) {
+      query_builder.find('[name="{{ search_keys.face_name }}"]').val(face_names);
+    }
 
-  let face_count = top_level_kv['{{ search_keys.face_count }}'];
-  if (face_count) {
-    query_builder.find('[name="{{ search_keys.face_count }}"]').val(parseInt(face_count));
-  }
+    let face_tags = top_level_kv['{{ search_keys.face_tag }}'];
+    if (face_tags && face_tags.length > 0) {
+      query_builder.find('[name="{{ search_keys.face_tag }}"]').val(
+        face_tags[0].split(',').map($.trim));
+    }
 
-  if (parsed_query.alias) {
-    query_builder.find('[name="{{ params.alias }}"]').val(parsed_query.alias);
-  }
+    let face_count = top_level_kv['{{ search_keys.face_count }}'];
+    if (face_count) {
+      query_builder.find('[name="{{ search_keys.face_count }}"]').val(parseInt(face_count));
+    }
 
-  if (parsed_query.norm_query) {
-    query_builder.find('[name="normalize"]').val('true');
+    if (parsed_query.alias) {
+      query_builder.find('[name="{{ params.alias }}"]').val(parsed_query.alias);
+    }
+
+    if (parsed_query.norm_query) {
+      query_builder.find('[name="normalize"]').val('true');
+    }
+  } catch (e) {
+    console.log('Failed to populate query builder', e);
   }
 
   query_builder.find('.no-enter-submit').keypress(e => e.which != 13);
@@ -401,11 +404,6 @@ function updateQueryBox(search_table_row) {
 
   let getBuilderValue = e => builder.find(e).val().replace(/"/gi, '');
 
-  let alias = builder.find('[name="{{ params.alias }}"]').val();
-  if (alias) {
-    parts.push(`{{ params.alias }}="${alias}"`);
-  }
-
   let channel = getBuilderValue('select[name="{{ search_keys.channel }}"]');
   if (channel) {
     parts.push(`{{ search_keys.channel }}="${channel}"`);
@@ -455,6 +453,11 @@ function updateQueryBox(search_table_row) {
   var new_query = parts.length > 0 ? parts.join(` ${QUERY_KEYWORDS.and} `) : '';
   if (normalize) {
     new_query += ` ${QUERY_KEYWORDS.normalize}`;
+  }
+
+  let alias = builder.find('[name="{{ params.alias }}"]').val();
+  if (alias) {
+    new_query = `[${alias}] ${new_query}`;
   }
 
   let query_input = search_table_row.find('input[name="query"]');
