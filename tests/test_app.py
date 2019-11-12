@@ -74,14 +74,14 @@ def test_get_data(client: FlaskClient) -> None:
     _is_ok(client.get('/data/shows'))
     _is_ok(client.get('/data/people'))
     _is_ok(client.get('/data/videos'))
-    _is_ok(client.get('/data/person-tags'))
+    _is_ok(client.get('/data/tags'))
 
 
-def test_get_captions(client: FlaskClient) -> None:
-    """Make sure that captions can be fetched"""
+def test_get_transcript(client: FlaskClient) -> None:
+    """Make sure that transcript can be fetched"""
     base_id = 10000
     for i in range(100):
-        _is_ok(client.get('/captions/{}'.format(base_id)))
+        _is_ok(client.get('/transcript/{}'.format(base_id)))
 
 
 # Search tests
@@ -103,13 +103,18 @@ def _test_get(
 def _combination_test_get(
     client: FlaskClient, path: str,
     param_options: Dict[str, List[Optional[str]]],
+    key_options: Dict[str, List[Optional[str]]],
     response_fn: ResponseFn,
     n: Optional[int] = None,
+    join_ops: List[str] = ['and', 'or']
 ) -> None:
     """Enumerate combinations of params_options"""
     num_combos = 1
     for v in param_options.values():
         num_combos *= len(v)
+    for v in key_options.values():
+        num_combos *= len(v)
+    num_combos *= len(join_ops)
 
     if n is None:
         print('Testing {} possible combinations'.format(num_combos))
@@ -117,18 +122,33 @@ def _combination_test_get(
         print('Testing {} of {} possible combinations'.format(
               min(n, num_combos), num_combos))
 
-    keys = list(sorted(param_options))
-    params = {}
+    param_names = list(sorted(param_options))
+    key_names = list(sorted(key_options))
     for i in (
         range(num_combos) if n is None
         else random.sample(range(num_combos), min(n, num_combos))
     ):
-        for k in keys:
+        get_params = {}
+        for k in param_names:
             idx = i % len(param_options[k])
-            params[k] = param_options[k][idx]
+            get_params[k] = param_options[k][idx]
             i = int(i / len(param_options[k]))
+
+        query_params = []
+        for k in key_names:
+            idx = i % len(key_options[k])
+            value = key_options[k][idx]
+            if value is not None:
+                query_params.append([k, value])
+            i = int(i / len(key_options[k]))
+
+        join_op = join_ops[i % len(join_ops)]
+        i = int(i / len(join_ops))
+
+        if len(query_params) > 0:
+            get_params['query'] = json.dumps([join_op, query_params])
         assert i == 0
-        _test_get(client, path, params, response_fn)
+        _test_get(client, path, get_params, response_fn)
 
 
 TEST_DETAILED_OPTIONS = ['true', 'false']
@@ -138,11 +158,12 @@ TEST_CHANNEL_OPTIONS = [None, 'CNN', 'FOXNEWS', 'MSNBC']
 TEST_HOUR_OPTIONS = [None, '9-5', '5', '5,6', '5-6,7']
 TEST_DAYOFWEEK_OPTIONS = [None, 'mon-wed,thu,fri', 'sat', 'sat-sun', 'sat,sun']
 TEST_IS_COMMERCIAL_OPTIONS = [None, 'false', 'true', 'both']
-TEST_FACE_OPTIONS = [
-    None, 'tag:female', 'tag:host', 'person:wolf blitzer',
-    'tag:female & host', 'tag: host, person:wolf blitzer',
-    'tag:male & host,person:wolf blitzer', 'tag:journalist'
+TEST_FACE_NAME_OPTIONS = [None, 'wolf blitzer', 'rachel maddow']
+TEST_FACE_TAG_OPTIONS = [
+    None, 'all', 'journalist', 'tv_host', 'female', 'male,host',
+    'female,journalist'
 ]
+TEST_TEXT_OPTIONS = [None, 'united states of america', 'health care']
 TEST_TEXT_WINDOW_OPTIONS = [None, '0', '15', '120']
 
 
@@ -156,34 +177,33 @@ def _check_count_result(
 def test_count_video_time(client: FlaskClient) -> None:
     _combination_test_get(
         client, '/search', {
-            'count': ['screen time'],
-            # General options
             'start_date': [None, '2017-01-01'],
             'end_date': [None, '2018-01-01'],
             'detailed': TEST_DETAILED_OPTIONS,
             'aggregate': TEST_AGGREGATE_OPTIONS,
+            'is_commercial': TEST_IS_COMMERCIAL_OPTIONS
+        }, {
             'channel': TEST_CHANNEL_OPTIONS,
             'show': TEST_SHOW_OPTIONS,
             'hour': TEST_HOUR_OPTIONS,
             'dayofweek': TEST_DAYOFWEEK_OPTIONS,
-            'iscommercial': TEST_IS_COMMERCIAL_OPTIONS,
-            'onscreen.face1': TEST_FACE_OPTIONS,
-            'caption.window': TEST_TEXT_WINDOW_OPTIONS,
-            'caption.window': [None, 'united states of america'],
+            'name': TEST_FACE_NAME_OPTIONS,
+            'tag': TEST_FACE_TAG_OPTIONS,
+            'text': [None, 'united states of america'],
+            'textwindow': TEST_TEXT_WINDOW_OPTIONS,
         }, _check_count_result, n=100)
     _combination_test_get(
         client, '/search', {
-            'count': ['screen time'],
             'detailed': ['true'],
             'aggregate': TEST_AGGREGATE_OPTIONS,
-        }, _check_count_result)
+        }, {}, _check_count_result)
 
 
 # Search within a video tests
 
 
 TEST_VIDEO_IDS = [json.dumps(list(range(10000, 10010)))]
-TEST_COMMON_TEXT_OPTIONS = ['the']  # Use a common token
+TEST_COMMON_TEXT_OPTIONS = ['the', 'united states']  # Use a common token
 
 
 def _check_search_in_video_result(
@@ -204,11 +224,10 @@ def test_search_time_in_videos(client: FlaskClient) -> None:
     _combination_test_get(
         client, '/search-videos', {
             'ids': TEST_VIDEO_IDS,
-            # Count options
-            'count': ['screen time'],
-            # General options
-            'iscommercial': TEST_IS_COMMERCIAL_OPTIONS,
-            'onscreen.face1': TEST_FACE_OPTIONS,
-            'caption.window': TEST_TEXT_WINDOW_OPTIONS,
-            'caption.text': [None] + TEST_COMMON_TEXT_OPTIONS
+            'is_commercial': TEST_IS_COMMERCIAL_OPTIONS
+        }, {
+            'name': TEST_FACE_NAME_OPTIONS,
+            'tag': TEST_FACE_TAG_OPTIONS,
+            'text': [None] + TEST_COMMON_TEXT_OPTIONS,
+            'textwindow': TEST_TEXT_WINDOW_OPTIONS,
         }, _check_search_in_video_result)

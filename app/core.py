@@ -208,8 +208,12 @@ def get_transcript_intervals(
         documents = []
         for video_id in context.videos:
             video = vdc.video_by_id[video_id]
-            document = document_by_name.get(video.name)
-            documents.append(document)
+            if video_filter is None or video_filter(video):
+                document = document_by_name.get(video.name)
+                if document is not None:
+                    documents.append(document)
+        if len(documents) == 0:
+            return iter(())
 
     results = []
     query = None
