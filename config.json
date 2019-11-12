@@ -3,5 +3,5 @@
   "index_dir": "index",
   "video_endpoint": null,
   "frameserver_endpoint": null,
-  "archive_video_endpoint": "https://ia801301.us.archive.org/0/items"
+  "archive_video_endpoint": "https://archive.org/download"
 }

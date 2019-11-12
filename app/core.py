@@ -1076,7 +1076,7 @@ def build_app(
         python_result: SearchResult, rust_result: SearchResult
     ) -> PythonISetDataGenerator:
         assert python_result.type == SearchResultType.python_iset
-        assert rust_result.type == SearchResultType.python_iset
+        assert rust_result.type == SearchResultType.rust_iset
 
         python_result_head = next(python_result.data)
 
