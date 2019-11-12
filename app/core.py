@@ -1080,7 +1080,10 @@ def build_app(
         assert python_result.type == SearchResultType.python_iset
         assert rust_result.type == SearchResultType.rust_iset
 
-        python_result_head = next(python_result.data)
+        try:
+            python_result_head = next(python_result.data)
+        except StopIteration:
+            python_result_head = None
 
         video_filter = get_video_filter(rust_result.context)
         for video_id in rust_result.data.get_ids():
@@ -1088,7 +1091,10 @@ def build_app(
             if not video:
                 continue
 
-            while python_result_head.video.id < video_id:
+            while (
+                python_result_head is not None
+                and python_result_head.video.id < video_id
+            ):
                 yield python_result_head
                 try:
                     python_result_head = next(python_result.data)
@@ -1497,7 +1503,6 @@ def build_app(
         elif search_result.type == SearchResultType.python_iset:
             for data in search_result.data:
                 assert data.video.id in video_ids
-                print(data.video.id)
                 collect(
                     data.video,
                     get_entire_video_ms_interval(data.video)

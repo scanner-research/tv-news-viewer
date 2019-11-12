@@ -18,23 +18,17 @@ Alias
   = a:[^\\]]+ { return a.join(''); }
 
 Query
-  = "(" Blank a:SingleQuery Blank ")" Blank "NORMALIZE"i Blank b:SingleQuery {
-    return {main: a, normalize: b};
-  }
-  / "(" Blank a:SingleQuery Blank ")" Blank "SUBTRACT"i Blank b:SingleQuery {
-    return {main: a, subtract: b};
-  }
-  / a:SingleQuery Blank "NORMALIZE"i Blank b:SingleQuery {
-    return {main: a, normalize: b};
+  = a:SingleQuery Blank "NORMALIZE"i Blank b:SingleQuery {
+    return {main: a, normalize: b, has_normalize: true};
   }
   / a:SingleQuery Blank "SUBTRACT"i Blank b:SingleQuery {
-    return {main: a, subtract: b};
+    return {main: a, subtract: b, has_subtract: true};
   }
   / a:SingleQuery { return {main: a}; }
 
 SingleQuery
-  = "(" Blank a:Node Blank ")" { return a; }
-  / a:Node { return a; }
+  = a:Node { return a; }
+  / "(" Blank a:Node Blank ")" { return a; }
   / "" { return null; }
 
 Node
@@ -243,7 +237,9 @@ function getSortedQueryString(obj) {
 class SearchableQuery {
   constructor(s, no_err) {
     this.query = s;
+    this.has_norm = false;
     this.norm_query = null;
+    this.has_sub = false;
     this.sub_query = null;
     this.main_query = null;
     this.alias = null;
@@ -254,15 +250,17 @@ class SearchableQuery {
         p = QUERY_PARSER.parse(s);
       } catch {
         console.log('Failed to parse:', s);
-        p = {main: []};
+        p = {main: null};
       }
     } else {
       p = QUERY_PARSER.parse(s);
     }
-    if (p.normalize) {
+    if (p.has_normalize) {
+      this.has_norm = true;
       this.norm_query = validateQuery(p.normalize, no_err);
     }
-    if (p.subtract) {
+    if (p.has_sub) {
+      this.has_sub = true;
       this.sub_query = validateQuery(p.subtract, no_err);
     }
     if (p.alias) {
@@ -294,7 +292,7 @@ class SearchableQuery {
       }).then(resp => result.main = resp)
     ];
 
-    if (this.norm_query) {
+    if (this.has_norm) {
       promises.push(
         $.ajax({
           url: '/search', type: 'get', data: getParams(this.norm_query, false),
@@ -303,7 +301,7 @@ class SearchableQuery {
       );
     }
 
-    if (this.sub_query) {
+    if (this.has_sub) {
       promises.push(
         $.ajax({
           url: '/search', type: 'get', data: getParams(this.sub_query, false),
