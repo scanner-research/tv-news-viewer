@@ -162,7 +162,7 @@ function validateKeyValue(key, value, no_err) {
       value = value.split(',').map(t => {
         let tt = findCaseInsInArr(ALL_TAGS, $.trim(t));
         if (!tt) {
-          throw new QueryParseError(`Unknown ${key}: ${tt}`)
+          throw new QueryParseError(`Unknown ${key}: ${t}`)
         }
         return tt;
       }).join(',');
