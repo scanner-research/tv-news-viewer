@@ -169,9 +169,9 @@ def assert_param_not_set(
         raise InvalidUsage(mesg)
 
 
-def get_aggregate_fn() -> AggregateFn:
+def get_aggregate_fn(default_agg_by: str) -> AggregateFn:
     agg = request.args.get(SearchParam.aggregate, None, type=str)
-    e = Aggregate[agg] if agg else Aggregate.day
+    e = Aggregate[agg] if agg else default_agg_by
     if e == Aggregate.day:
         return lambda d: d
     elif e == Aggregate.month:
@@ -180,7 +180,7 @@ def get_aggregate_fn() -> AggregateFn:
         return lambda d: d - timedelta(days=d.isoweekday() - 1)
     elif e == Aggregate.year:
         return lambda d: datetime(d.year, 1, 1)
-    raise InvalidUsage('invalid aggregation parameter: {}'.format(agg))
+    raise UnreachableCode()
 
 
 def get_python_iset_from_filter(
@@ -1036,6 +1036,17 @@ def build_app(
         return render_template('js/embed.js', host=request.host,
                                data_version=data_version)
 
+    @app.route('/static/js/instructions.js')
+    def get_instructions_js() -> Response:
+        start_date = max(min(
+            v.date for v in video_data_context.video_dict.values()), min_date)
+        end_date = min(max(
+            v.date for v in video_data_context.video_dict.values()), max_date)
+        return render_template(
+            'js/instructions.js', host=request.host,
+            start_date=format_date(min_date), end_date=format_date(end_date),
+            default_agg_by=default_aggregate_by)
+
     def _search_and(
         children: Iterable[Any], context: SearchContext
     ) -> Optional[SearchResult]:
@@ -1384,7 +1395,7 @@ def build_app(
 
     @app.route('/search')
     def search() -> Response:
-        aggregate_fn = get_aggregate_fn()
+        aggregate_fn = get_aggregate_fn(default_aggregate_by)
 
         accumulator = (
             DetailedDateAccumulator(aggregate_fn)

@@ -3,6 +3,8 @@
 {% block head %}
   {{ super() }}
   <link rel="stylesheet" href="{{ url_for('static', filename='css/instructions.css') }}" />
+  <script src="{{ url_for('static', filename='js/constant.js') }}" /></script>
+  <script src="{{ url_for('static', filename='js/instructions.js') }}" /></script>
 {% endblock %}
 
 
@@ -220,7 +222,8 @@
       <tr>
         <td>values</td>
         <td>
-          (fe)male, (non)host, <i>tag on person</i> <a href="/data/tags" target="_blank">(list of tags)</a>
+          (fe)male, (non)host,
+          <i>tag on person</i> <a href="/data/tags" target="_blank">(list of tags)</a>
         </td>
       </tr>
       <tr>
@@ -233,6 +236,7 @@
           <code>
             {{ search_keys.face_tag }}="male" <br>
             {{ search_keys.face_tag }}="male,host" <br>
+            {{ search_keys.face_tag }}="male AND host" <br>
             {{ search_keys.face_tag }}="journalist"
           </code>
         </td>
@@ -278,13 +282,16 @@
     write:
 
     <div class="code-block">
-      <code><b>COUNT</b> "screen time" <b>WHERE</b> {{ search_keys.channel }}="CNN" <b>NORMALIZE</b></code>
+      <code>
+        <b>COUNT</b> "screen time" <b>WHERE</b>
+        {{ search_keys.channel }}="CNN" <b>NORMALIZE</b>
+      </code>
     </div>
 
     Likewise, to express the proportion of time when a man is on screen on CNN,
     we can write:
 
-    <iframe width="100%" height="370"></iframe>
+    <iframe width="100%" height="0" id="normCNNMan"></iframe>
 
   </p>
 
@@ -298,7 +305,19 @@
     </div>
 
     For example, the net screen time of two individuals can be computed as follows:
-    <iframe width="100%" height="370"></iframe>
+    <iframe width="100%" height="0" id="subClintonSanders"></iframe>
   </p>
+
+  <script>
+    initialize();
+    setIframeSource(
+      '#normCNNMan', [
+        '{{ search_keys.face_tag }}=male AND {{ search_keys.channel }}=CNN NORMALIZE {{ search_keys.channel }}=CNN'
+      ], 600, 300);
+    setIframeSource(
+      '#subClintonSanders', [
+        '{{ search_keys.face_name }}=hillary clinton SUBTRACT {{ search_keys.face_name }}=female'
+      ], 600, 300);
+  </script>
 </div>
 {% endblock %}

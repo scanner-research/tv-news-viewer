@@ -29,22 +29,25 @@ function renderText(lines) {
   );
 
   // TODO: XSS attack here
-  lines.forEach(line => {
-    $('#searchTable tbody').append(
-      $('<tr>').append(
-        $('<td>').append(
-          $('<div>').addClass('color-box').css('background-color', line.color)
-        ),
-        $('<td>').append(
-          line.query.alias ?
-            [$('<code>').text(line.query.alias), '&nbsp;',
-              $('<span>').html('&#9432;').attr('title', line.query.query)]
-            : [$('<code>').text(line.query.query),
-                $.trim(line.query.query).length == 0 ?
-                  $('<code>').css('color', 'gray').text('all the data') : null]
-        )
-      ));
-  });
+  $('#legend').append(lines.map(line => {
+    var entry;
+    if (line.query.alias) {
+      entry = [
+        $('<code>').text(line.query.alias), '&nbsp;',
+        $('<span>').html('&#9432;').attr('title', line.query.query)
+      ];
+    } else {
+      entry = [
+        $('<code>').text(line.query.query),
+        $.trim(line.query.query).length == 0 ?
+          $('<code>').css('color', 'gray').text('all the data') : null
+      ];
+    }
+    return $('<span>').addClass('legend-item').append(
+      $('<span>').addClass('legend-color').css('color', line.color).html('&#9632;'),
+      $('<span>').addClass('legend-text').append(entry)
+    );
+  }));
 }
 
 let lines = data.queries.map(raw_query => {

@@ -84,6 +84,8 @@ Blank
 
 const QUERY_PARSER = PEG.buildParser(QUERY_GRAMMAR);
 
+const FACE_TAG_SPLIT_RE = /(?:\s+and\s+)|(?:\s*,\s*)/i;
+
 class QueryParseError extends Error {}
 
 class SearchResult {
@@ -115,7 +117,6 @@ function findCaseInsInArr(arr, v) {
   }
   return null;
 }
-
 
 function parseTernary(s) {
   if (s.match(/^true$/i)) {
@@ -153,7 +154,7 @@ function validateKeyValue(key, value, no_err) {
       break;
     }
     case '{{ search_keys.face_tag }}': {
-      value = value.split(',').map(t => {
+      value = value.split(FACE_TAG_SPLIT_RE).map(t => {
         let tt = findCaseInsInArr(ALL_TAGS, $.trim(t));
         if (!tt) {
           throw new QueryParseError(`Unknown ${key}: ${t}`)
@@ -259,7 +260,7 @@ class SearchableQuery {
       this.has_norm = true;
       this.norm_query = validateQuery(p.normalize, no_err);
     }
-    if (p.has_sub) {
+    if (p.has_subtract) {
       this.has_sub = true;
       this.sub_query = validateQuery(p.subtract, no_err);
     }

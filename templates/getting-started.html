@@ -3,6 +3,8 @@
 {% block head %}
   {{ super() }}
   <link rel="stylesheet" href="{{ url_for('static', filename='css/instructions.css') }}" />
+  <script src="{{ url_for('static', filename='js/constant.js') }}" /></script>
+  <script src="{{ url_for('static', filename='js/instructions.js') }}" /></script>
 {% endblock %}
 
 
@@ -82,16 +84,17 @@
     While the amount of data is mostly constant across time,
     there are periods of time with more or less data available.
   </p>
-  <iframe width="100%" height="0"></iframe>
-  
+  <iframe width="100%" height="0" id="allData"></iframe>
+
   <p>
     The previous chart includes all of the data from all three channels
     (CNN, FOX and MSNBC) in a single line. We can perform a comparison of
     the number of hours of video by charting each channel separately.
     To do this, use the + button to add two more rows and to write
-    <code>{{ search_keys.channel }}=CNN</code>, <code>{{ search_keys.channel }}=FOX</code>,
-    and <code>{{ search_keys.channel }}=MSNBC</code> into the search boxes, one per row so that
-    the queries read:
+    <code>{{ search_keys.channel }}=CNN</code>,
+    <code>{{ search_keys.channel }}=FOX</code>,
+    and <code>{{ search_keys.channel }}=MSNBC</code>
+    into the search boxes, one per row so that the queries read:
 
     <div class="code-block">
       <code>
@@ -111,7 +114,7 @@
     now generate a chart that looks similar to this (hover over it for
     a legend and tooltip):
   </p>
-  <iframe width="100%" height="0"></iframe>
+  <iframe width="100%" height="0" id="dataByChannel"></iframe>
   <p>
     Filtering on other basic metadata such as the show follows a similar
     pattern. For a full list of options, read the
@@ -161,7 +164,7 @@
     and female faces is trending upwards, but also that male screen time is
     roughly double that of female screen time.
   </p>
-  <iframe width="100%" height="0"></iframe>
+  <iframe width="100%" height="0" id="menVsWomen"></iframe>
   <p>
     We can also make queries about people who have been identified in the videos.
     For example, if we were to compare the screen time of Donald Trump with
@@ -185,11 +188,9 @@
 
   <p>
     If you entered the queries above, you should see a chart similar to the
-    one below. Notice that the screen time of both male
-    and female faces is trending upwards, but also that male screen time is
-    roughly double that of female screen time.
+    one below.
   </p>
-  <iframe width="100%" height="0"></iframe>
+  <iframe width="100%" height="0" id="trumpVsClinton"></iframe>
 
   <p>
     To see the list of people who are searchable, click
@@ -219,7 +220,8 @@
 
     <div class="code-block">
       <code>
-        <b>COUNT</b> screen time <b>WHERE</b> {{ search_keys.text }}="UNITED NATIONS"
+        <b>COUNT</b> screen time <b>WHERE</b>
+        {{ search_keys.text }}="UNITED NATIONS"
       </code>
     </div>
   </p>
@@ -233,7 +235,7 @@
     following:
   </p>
 
-  <iframe width="100%" height="0"></iframe>
+  <iframe width="100%" height="0" id="unitedNations"></iframe>
 
   <p>
     Notice that, by default, the tool finds only the exact moments when words
@@ -243,7 +245,9 @@
 
     <div class="code-block">
       <code>
-        <b>COUNT</b> screen time <b>WHERE</b> {{ search_keys.text }}="UNITED NATIONS" <b>AND</b> {{ search_keys.text_window }}=30
+        <b>COUNT</b> screen time <b>WHERE</b>
+        {{ search_keys.text }}="UNITED NATIONS"
+        <b>AND</b> {{ search_keys.text_window }}=30
       </code>
     </div>
   </p>
@@ -262,7 +266,11 @@
     men on a single channel:
 
     <div class="code-block">
-      <code><b>COUNT</b> screen time <b>WHERE</b> {{ search_keys.face_tag }}=male" <b>AND</b> {{ search_keys.channel }}=CNN</code>
+      <code>
+        <b>COUNT</b> screen time <b>WHERE</b>
+        {{ search_keys.face_tag }}=male"
+        <b>AND</b> {{ search_keys.channel }}=CNN
+      </code>
     </div>
 
     Likewise, we can combine a query on identities with text. For example,
@@ -271,50 +279,67 @@
     write the following query.
 
     <div class="code-block">
-      <code><b>COUNT</b> screen time <b>WHERE</b> {{ search_keys.face_name }}="donald trump"
-            <b>AND</b> {{ search_keys.text }}="BORDER WALL"</code>
+      <code>
+        <b>COUNT</b> screen time <b>WHERE</b>
+        {{ search_keys.face_name }}="donald trump"
+        <b>AND</b> {{ search_keys.text }}="BORDER WALL"
+      </code>
     </div>
 
     A further refinement of the query is to find when Donald Trump is on screen
     within 30 seconds of <code>"BORDER WALL"</code> being said.
 
     <div class="code-block">
-      <code><b>COUNT</b> screen time <b>WHERE</b> {{ search_keys.face_name }}="donald trump"
-            <b>AND</b> {{ search_keys.text }}="BORDER WALL" <b>AND</b> {{ search_keys.text_window }}=30</code>
+      <code>
+        <b>COUNT</b> screen time <b>WHERE</b>
+        {{ search_keys.face_name }}="donald trump"
+        <b>AND</b> {{ search_keys.text }}="BORDER WALL"
+        <b>AND</b> {{ search_keys.text_window }}=30
+      </code>
     </div>
 
     Similarly, the tool can compute screen time where two people (e.g., Donald Trump and
     Hillary Clinton) are shown on screen together.
 
     <div class="code-block">
-      <code><b>COUNT</b> screen time <b>WHERE</b> {{ search_keys.face_name }}="donald trump"
-            <b>AND</b> {{ search_keys.face_name }}="hillary clinton"</code>
+      <code>
+        <b>COUNT</b> screen time <b>WHERE</b>
+        {{ search_keys.face_name }}="donald trump"
+        <b>AND</b> {{ search_keys.face_name }}="hillary clinton"
+      </code>
     </div>
 
-    Please read the <a href="/detailed" target="_blank">detailed documentation</a> page
-    to understand the query syntax, the available query options, and advanced features such
-    as normalization. Many of these queries can also be constructed using the dropdown search
-    editor. Click <a href='/'>here</a> to return to the homepage.
+    Please read the
+    <a href="/detailed" target="_blank">detailed documentation</a> page
+    to understand the query syntax, the available query options, and advanced
+    features such as normalization. Many of these queries can also be
+    constructed using the dropdown search editor.
+    Click <a href='/'>here</a> to return to the homepage.
   </p>
-</div>
 
-<script>
-  $('.try-it-btn').click(function() {
-    window.open('/?blank=1', '_blank');
-  });
-  function resizeIFrames() {
-    $('iframe').each(function() {
-      let iframe = $(this)[0];
-      if (iframe && document.contains(iframe)) {
-        $(iframe).ready(function() {
-          if (iframe.contentWindow.document.body) {
-            iframe.height = iframe.contentWindow.document.body.scrollHeight + 1;
-          }
-        });
-      }
-    });
-    setTimeout(resizeIFrames, 100);
-  }
-  resizeIFrames();
-</script>
+  <script>
+    initialize();
+    setIframeSource('#allData', [''], 600, 300);
+    setIframeSource(
+      '#dataByChannel', [
+        '{{ search_keys.channel }}=CNN',
+        '{{ search_keys.channel }}=FOX',
+        '{{ search_keys.channel }}=MSNBC'
+      ], 600, 300);
+    setIframeSource(
+      '#menVsWomen', [
+        '{{ search_keys.face_tag }}=male',
+        '{{ search_keys.face_tag }}=female'
+      ], 600, 300);
+    setIframeSource(
+      '#trumpVsClinton', [
+        '{{ search_keys.face_name }}=hillary clinton',
+        '{{ search_keys.face_name }}=donald trump'
+      ], 600, 300);
+    setIframeSource(
+      '#unitedNations', [
+        '{{ search_keys.text }}="UNITED NATIONS"'
+      ], 600, 300);
+  </script>
+</div>
 {% endblock %}

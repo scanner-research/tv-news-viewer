@@ -143,7 +143,7 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
     <tr>
       <td type="key-col">
         Optionally, give this line a name
-        <span title="This name will be used in the tooltip and any embedded chart legends.">
+        <span title="This name will be used in any embedded chart legends.">
           &#9432;
         </span>
       </td>
@@ -430,7 +430,7 @@ function updateQueryBox(search_table_row) {
 
   let face_tag = builder.find('select[name="{{ search_keys.face_tag }}"]').val();
   if (face_tag && face_tag.length > 0) {
-    parts.push(`{{ search_keys.face_tag }}="${face_tag.join(',')}"`);
+    parts.push(`{{ search_keys.face_tag }}="${face_tag.join(' AND ')}"`);
   }
 
   let face_count = builder.find('input[name="{{ search_keys.face_count }}"]').val();
