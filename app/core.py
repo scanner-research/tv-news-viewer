@@ -882,8 +882,7 @@ def build_app(
         return response
 
     def _root() -> Response:
-        return render_template(
-            'home.html', uptime=_get_uptime())
+        return render_template('home.html', uptime=_get_uptime())
 
     if auth:
         @app.route('/')
@@ -905,17 +904,13 @@ def build_app(
 
     @app.route('/getting-started')
     def get_getting_started() -> Response:
-        return render_template(
-            'getting-started.html', host=request.host, search_keys=SearchKey,
-            default_text_window=default_text_window,
-            default_is_commercial=default_is_commercial.name)
+        return render_template('getting-started.html', search_keys=SearchKey)
 
     @app.route('/detailed')
     def get_detailed() -> Response:
         return render_template(
-            'detailed.html', host=request.host, search_keys=SearchKey,
-            default_text_window=default_text_window,
-            default_is_commercial=default_is_commercial.name)
+            'detailed.html', search_keys=SearchKey,
+            default_text_window=default_text_window)
 
     @app.route('/methodology')
     def get_methodology() -> Response:
@@ -990,7 +985,24 @@ def build_app(
     @app.route('/data/transcripts')
     def get_data_transcripts() -> Response:
         return render_template(
-            'data/transcripts.html', params=SearchParam)
+            'data/transcripts.html', params=SearchParam,
+            search_keys=SearchKey)
+
+    @app.route('/static/js/defaults.js')
+    def get_defaults_js() -> Response:
+        start_date = max(min(
+            v.date for v in video_data_context.video_dict.values()), min_date)
+        end_date = min(max(
+            v.date for v in video_data_context.video_dict.values()), max_date)
+        resp = make_response(render_template(
+            'js/defaults.js', host=request.host, data_version=data_version,
+            start_date=format_date(start_date),
+            end_date=format_date(end_date),
+            default_agg_by=default_aggregate_by,
+            default_text_window=default_text_window
+        ))
+        resp.headers['Content-type'] = 'text/javascript'
+        return resp
 
     @app.route('/static/js/values.js')
     def get_values_js() -> Response:
@@ -1023,11 +1035,6 @@ def build_app(
             v.date for v in video_data_context.video_dict.values()), max_date)
         resp = make_response(render_template(
             'js/home.js', search_keys=SearchKey, params=SearchParam,
-            host=request.host, data_version=data_version,
-            start_date=format_date(start_date),
-            end_date=format_date(end_date),
-            default_agg_by=default_aggregate_by,
-            default_text_window=default_text_window,
             global_face_tags=list(sorted(GLOBAL_TAGS))
         ))
         resp.headers['Content-type'] = 'text/javascript'
@@ -1043,19 +1050,11 @@ def build_app(
 
     @app.route('/static/js/embed.js')
     def get_embed_js() -> Response:
-        return render_template('js/embed.js', host=request.host,
-                               data_version=data_version)
+        return render_template('js/embed.js', host=request.host)
 
     @app.route('/static/js/instructions.js')
     def get_instructions_js() -> Response:
-        start_date = max(min(
-            v.date for v in video_data_context.video_dict.values()), min_date)
-        end_date = min(max(
-            v.date for v in video_data_context.video_dict.values()), max_date)
-        return render_template(
-            'js/instructions.js', host=request.host,
-            start_date=format_date(min_date), end_date=format_date(end_date),
-            default_agg_by=default_aggregate_by)
+        return render_template('js/instructions.js', host=request.host)
 
     def _search_and(
         children: Iterable[Any], context: SearchContext

@@ -2,8 +2,12 @@
 
 {% block head %}
   {{ super() }}
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.48.4/codemirror.min.css" integrity="sha256-vZ3SaLOjnKO/gGvcUWegySoDU6ff33CS5i9ot8J9Czk=" crossorigin="anonymous" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.48.4/theme/elegant.css" integrity="sha256-At+BZ4vozwp4DkMDlbD2Trd4/qwiFqOx7KtShIq8j+Y=" crossorigin="anonymous" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.48.4/codemirror.min.js" integrity="sha256-dPTL2a+npIonoK5i0Tyes0txCMUWZBf8cfKRfACRotc=" crossorigin="anonymous"></script>
+
   <link rel="stylesheet" href="{{ url_for('static', filename='css/instructions.css') }}" />
-  <script src="{{ url_for('static', filename='js/constant.js') }}" /></script>
+  <script src="{{ url_for('static', filename='js/defaults.js') }}" /></script>
   <script src="{{ url_for('static', filename='js/instructions.js') }}" /></script>
 {% endblock %}
 
@@ -22,20 +26,37 @@
 <div class="container">
   <h3>How do I write queries?</h3>
   <p>
-    Screen time queries are broken in to several parts. A query has the form
-    <div class="code-block">
-      <code>
-        <b>COUNT</b> "screen time" <b>WHERE</b>
-          filter1="value1" <b>AND</b> filter2="value2" <b>AND</b> ...
-      </code>
-    </div>
-
+    Screen time queries are broken in to several parts. A basic
+    query has the form
+    <div class="code-block" id="andSyntax"></div>
     consisting of the data being counted ("screen time") and filters, separated
-    by "AND". In the getting started guide, we saw two filters "{{ search_keys.face_name }}" and
-    "{{ search_keys.channel }}", and their respective values "hillary clinton" and "CNN".
-    The table below shows the filter options that the application currently supports.
+    by "AND"s. For example, we can write the query for Hillary Clinton's screen
+    time on CNN as the following:
+    <div class="code-block" id="andExample"></div>
+
+    Likewise, "OR" is also supported.
+    <div class="code-block" id="orSyntax"></div>
+    To express the amount of screen time on CNN or MSNBC, we write:
+    <div class="code-block" id="orExample"></div>
+
+    You can combine AND and OR using parentheses in order
+    to construct more complex queries.
+    <div class="code-block" id="parenSyntax"></div>
+    Putting the examples above together, we can express the amount of screen
+    time that Hillary Clinton received on CNN or MSNBC as the following:
+    <div class="code-block" id="parenExample"></div>
+
+    <script type="text/javascript">
+      setCodeArea('#andSyntax', ['filter1="..." AND filter2="..." AND ... ']);
+      setCodeArea('#andExample', ['{{ search_keys.face_name }}="Hillary Clinton" AND {{ search_keys.channel }}=CNN']);
+      setCodeArea('#orSyntax', ['filter1="..." OR filter2="..." OR ... ']);
+      setCodeArea('#orExample', ['{{ search_keys.channel }}="CNN" OR {{ search_keys.channel }}=MSNBC']);
+      setCodeArea('#parenSyntax', ['(filter1="..." AND filter2="...") OR filter3="..."']);
+      setCodeArea('#parenExample', ['{{ search_keys.face_name }}="Hillary Clinton" AND ({{ search_keys.channel }}=CNN OR {{ search_keys.channel }}=MSNBC)']);
+    </script>
   </p>
 
+  <h3>What filters does the tool support?</h3>
   <table class="table table-striped table-bordered table-sm">
     <tbody>
       <tr>
@@ -273,25 +294,21 @@
     on screen, we need to introduce a NORMALIZE operator.
     This used in the following way:
 
-    <div class="code-block">
-      <code>query1 <b>NORMALIZE</b> query2</code>
-    </div>
+    <div class="code-block" id="normSyntax"></div>
+    <script type="text/javascript">
+      setCodeArea('#normSyntax', ['query1 NORMALIZE query2']);
+    </script>
 
     Succintly put, NORMALIZE allows you to normalize one query by another query.
     For instance, to express the proportion of the data set that is CNN, we can
     write:
 
-    <div class="code-block">
-      <code>
-        <b>COUNT</b> "screen time" <b>WHERE</b>
-        {{ search_keys.channel }}="CNN" <b>NORMALIZE</b>
-      </code>
-    </div>
+    <div class="code-block" id="normExampleCode"></div>
 
     Likewise, to express the proportion of time when a man is on screen on CNN,
     we can write:
 
-    <iframe width="100%" height="0" id="normCNNMan"></iframe>
+    <iframe width="100%" height="0" id="normExample"></iframe>
   </p>
 
   <hr>
@@ -299,24 +316,30 @@
   <p>
     Addition is not supported. Subtraction can be expressed as:
 
-    <div class="code-block">
-      <code>query1 <b>SUBTRACT</b> query2</code>
-    </div>
+    <div class="code-block" id="subSyntax"></div>
+    <script type="text/javascript">
+      setCodeArea('#subSyntax', ['query1 SUBTRACT query2']);
+    </script>
 
     For example, the net screen time of two individuals can be computed as follows:
-    <iframe width="100%" height="0" id="subClintonSanders"></iframe>
+    <div class="code-block" id="subExampleCode"></div>
+    <iframe width="100%" height="0" id="subExample"></iframe>
   </p>
 
-  <script>
+  <script type="text/javascript">
     initialize();
-    setIframeSource(
-      '#normCNNMan', [
-        '{{ search_keys.face_tag }}=male AND {{ search_keys.channel }}=CNN NORMALIZE {{ search_keys.channel }}=CNN'
-      ], 600, 300);
-    setIframeSource(
-      '#subClintonSanders', [
-        '{{ search_keys.face_name }}=hillary clinton SUBTRACT {{ search_keys.face_name }}=bernie sanders'
-      ], 600, 300);
+
+    let norm_cnn_queries = [
+      '{{ search_keys.face_tag }}=male AND {{ search_keys.channel }}=CNN NORMALIZE {{ search_keys.channel }}=CNN'
+    ];
+    setIframeSource('#normExample', norm_cnn_queries, 600, 300);
+    setCodeArea('#normExampleCode', norm_cnn_queries);
+
+    let subtract_queries = [
+      '{{ search_keys.face_name }}=hillary clinton SUBTRACT {{ search_keys.face_name }}=bernie sanders'
+    ];
+    setIframeSource('#subExample', subtract_queries, 600, 300);
+    setCodeArea('#subExampleCode', norm_cnn_queries);
   </script>
 </div>
 {% endblock %}

@@ -1,5 +1,3 @@
-const DATA_VERSION_ID = {% if data_version is not none %}"{{ data_version }}"{% else %}null{% endif %};
-
 let params = (new URL(document.location)).searchParams;
 let hide_legend = params.get('hideLegend') == 1;
 let data_str = params.get('data');
@@ -69,7 +67,7 @@ function onDone() {
     data.options, search_results, {width: width, height: height}
   ).load('#chart', {
     show_tooltip: true,
-    href: '//{{ host }}/?data=' + encodeURIComponent(data_str)
+    href: `//${SERVER_HOST}/?data=` + encodeURIComponent(data_str)
   });
   if (!hide_legend) {
     renderText(lines);

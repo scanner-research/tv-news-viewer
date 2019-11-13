@@ -1,4 +1,3 @@
-
 function initialize() {
   $('.try-it-btn').click(function() {
     window.open('/?blank=1', '_blank');
@@ -20,12 +19,19 @@ function initialize() {
   resizeIFrames();
 }
 
+function setCodeArea(area, queries) {
+  CodeMirror($(area)[0], {
+    value: queries.map(x => QUERY_PREFIX + ' ' + x).join('\n'),
+    lineNumbers: true, readOnly: 'nocursor', theme: 'elegant'
+  });
+}
+
 function setIframeSource(iframe, queries, width, height, chart_options) {
   let data = {
     options: chart_options ? chart_options : {
-      aggregate: '{{ default_agg_by }}',
-      start_date: '{{ start_date }}',
-      end_date: '{{ end_date }}'
+      aggregate: DEFAULT_AGGREGATE_BY,
+      start_date: DEFAULT_START_DATE,
+      end_date: DEFAULT_END_DATE
     },
     queries: queries.map((x, i) => ({
       color:DEFAULT_COLORS[i % DEFAULT_COLORS.length],
@@ -33,6 +39,6 @@ function setIframeSource(iframe, queries, width, height, chart_options) {
     }))
   };
   let data_str = encodeURIComponent(JSON.stringify(data));
-  let embed_url = `//{{ host }}/embed?width=${width}&height=${height}&data=${data_str}`;
+  let embed_url = `//${SERVER_HOST}/embed?width=${width}&height=${height}&data=${data_str}`;
   $(iframe).attr('src', embed_url);
 }

@@ -2,8 +2,12 @@
 
 {% block head %}
   {{ super() }}
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.48.4/codemirror.min.css" integrity="sha256-vZ3SaLOjnKO/gGvcUWegySoDU6ff33CS5i9ot8J9Czk=" crossorigin="anonymous" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.48.4/theme/elegant.css" integrity="sha256-At+BZ4vozwp4DkMDlbD2Trd4/qwiFqOx7KtShIq8j+Y=" crossorigin="anonymous" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.48.4/codemirror.min.js" integrity="sha256-dPTL2a+npIonoK5i0Tyes0txCMUWZBf8cfKRfACRotc=" crossorigin="anonymous"></script>
+
   <link rel="stylesheet" href="{{ url_for('static', filename='css/instructions.css') }}" />
-  <script src="{{ url_for('static', filename='js/constant.js') }}" /></script>
+  <script src="{{ url_for('static', filename='js/defaults.js') }}" /></script>
   <script src="{{ url_for('static', filename='js/instructions.js') }}" /></script>
 {% endblock %}
 
@@ -65,7 +69,7 @@
   </p>
 
   <p>
-    Each search query begins with "<code><b>COUNT</b> screen time <b>WHERE</b></code>",
+    Each search query begins with "<code>COUNT screen time WHERE</code>",
     followed by a set of search filters. If no filters are given, then all of the
     video is counted. The search box can be edited directly or using the
     dropdown search editor (click the &#x1F50D; button).
@@ -96,13 +100,7 @@
     and <code>{{ search_keys.channel }}=MSNBC</code>
     into the search boxes, one per row so that the queries read:
 
-    <div class="code-block">
-      <code>
-        <b>COUNT</b> screen time <b>WHERE</b> {{ search_keys.channel }}=CNN<br>
-        <b>COUNT</b> screen time <b>WHERE</b> {{ search_keys.channel }}=FOX<br>
-        <b>COUNT</b> screen time <b>WHERE</b> {{ search_keys.channel }}=MSNBC
-      </code>
-    </div>
+    <div class="code-block" id="channelCode"></div>
   </p>
 
   <p>
@@ -146,12 +144,7 @@
     with a man and woman, respectively. Both of these queries can also be
     made by selecting the gender tag in the dropdown search editor.
 
-    <div class="code-block">
-      <code>
-        <b>COUNT</b> screen time <b>WHERE</b> {{ search_keys.face_tag }}="male"<br>
-        <b>COUNT</b> screen time <b>WHERE</b> {{ search_keys.face_tag }}="female"
-      </code>
-    </div>
+    <div class="code-block" id="menVsWomenCode"></div>
   </p>
 
   <p>
@@ -174,12 +167,7 @@
     <code>{{ search_keys.face_name }}="Donald Trump"</code>
     and <code>{{ search_keys.face_name }}="Hillary Clinton"</code>, respectively.
 
-    <div class="code-block">
-      <code>
-        <b>COUNT</b> screen time <b>WHERE</b> {{ search_keys.face_name }}="hillary clinton"<br>
-        <b>COUNT</b> screen time <b>WHERE</b> {{ search_keys.face_name }}="donald trump"
-      </code>
-    </div>
+    <div class="code-block" id="trumpVsClintonCode"></div>
   </p>
 
   <p>
@@ -218,12 +206,7 @@
     <code>{{ search_keys.text }}="UNITED NATIONS"</code> finds all times when
     the phrase <code>"UNITED NATIONS"</code> appears in the transcripts.
 
-    <div class="code-block">
-      <code>
-        <b>COUNT</b> screen time <b>WHERE</b>
-        {{ search_keys.text }}="UNITED NATIONS"
-      </code>
-    </div>
+    <div class="code-block" id="unitedNationsCode"></div>
   </p>
 
   <p>
@@ -243,13 +226,19 @@
     around all times when the <code>"UNITED NATIONS"</code> appears, then
     we need the following.
 
-    <div class="code-block">
-      <code>
-        <b>COUNT</b> screen time <b>WHERE</b>
-        {{ search_keys.text }}="UNITED NATIONS"
-        <b>AND</b> {{ search_keys.text_window }}=30
-      </code>
-    </div>
+    <div class="code-block" id="unitedNationsWindowCode"></div>
+  </p>
+
+  <p>
+    <button type="button" class="btn btn-primary try-it-btn" title="Opens a new page">Try it yourself!</button>
+  </p>
+
+  <p>
+    The chart has the same pattern, but has been scaled. When multiple
+    text matches are found in a screen time window, then the screen time is
+    counted only once. This is useful when specifying more complex queries
+    across multiple terms.
+    <iframe width="100%" height="0" id="unitedNationsWindow"></iframe>
   </p>
 
   <p>
@@ -265,49 +254,44 @@
     the screen time of men, can be extended to count the screen time of
     men on a single channel:
 
-    <div class="code-block">
-      <code>
-        <b>COUNT</b> screen time <b>WHERE</b>
-        {{ search_keys.face_tag }}=male"
-        <b>AND</b> {{ search_keys.channel }}=CNN
-      </code>
-    </div>
+    <div class="code-block" id="menAndCNNCode"></div>
+    <script type="text/javascript">
+      setCodeArea('#menAndCNNCode', [
+        '{{ search_keys.face_tag }}=male" AND {{ search_keys.channel }}=CNN'
+      ]);
+    </script>
 
     Likewise, we can combine a query on identities with text. For example,
     to find the screen time of Donald Trump when the phrase
     <code>"BORDER WALL"</code> appears in the transcript, we can
     write the following query.
 
-    <div class="code-block">
-      <code>
-        <b>COUNT</b> screen time <b>WHERE</b>
-        {{ search_keys.face_name }}="donald trump"
-        <b>AND</b> {{ search_keys.text }}="BORDER WALL"
-      </code>
-    </div>
+    <div class="code-block" id="trumpAndWallCode"></div>
+    <script type="text/javascript">
+      setCodeArea('#trumpAndWallCode', [
+        '{{ search_keys.face_name }}="donald trump" AND {{ search_keys.text }}="BORDER WALL"'
+      ]);
+    </script>
 
     A further refinement of the query is to find when Donald Trump is on screen
     within 30 seconds of <code>"BORDER WALL"</code> being said.
 
-    <div class="code-block">
-      <code>
-        <b>COUNT</b> screen time <b>WHERE</b>
-        {{ search_keys.face_name }}="donald trump"
-        <b>AND</b> {{ search_keys.text }}="BORDER WALL"
-        <b>AND</b> {{ search_keys.text_window }}=30
-      </code>
-    </div>
+    <div class="code-block" id="trumpAndWallWindowCode"></div>
+    <script type="text/javascript">
+      setCodeArea('#trumpAndWallWindowCode', [
+        '{{ search_keys.face_name }}="donald trump" AND {{ search_keys.text }}="BORDER WALL" AND {{ search_keys.text_window }}=30'
+      ]);
+    </script>
 
     Similarly, the tool can compute screen time where two people (e.g., Donald Trump and
     Hillary Clinton) are shown on screen together.
 
-    <div class="code-block">
-      <code>
-        <b>COUNT</b> screen time <b>WHERE</b>
-        {{ search_keys.face_name }}="donald trump"
-        <b>AND</b> {{ search_keys.face_name }}="hillary clinton"
-      </code>
-    </div>
+    <div class="code-block" id="trumpAndClintonCode"></div>
+    <script type="text/javascript">
+      setCodeArea('#trumpAndClintonCode', [
+        '{{ search_keys.face_name }}="donald trump" AND {{ search_keys.face_name }}="hillary clinton"'
+      ]);
+    </script>
 
     Please read the
     <a href="/detailed" target="_blank">detailed documentation</a> page
@@ -317,29 +301,41 @@
     Click <a href='/'>here</a> to return to the homepage.
   </p>
 
-  <script>
+  <script type="text/javascript">
     initialize();
     setIframeSource('#allData', [''], 600, 300);
-    setIframeSource(
-      '#dataByChannel', [
-        '{{ search_keys.channel }}=CNN',
-        '{{ search_keys.channel }}=FOX',
-        '{{ search_keys.channel }}=MSNBC'
-      ], 600, 300);
-    setIframeSource(
-      '#menVsWomen', [
-        '{{ search_keys.face_tag }}=male',
-        '{{ search_keys.face_tag }}=female'
-      ], 600, 300);
-    setIframeSource(
-      '#trumpVsClinton', [
-        '{{ search_keys.face_name }}=hillary clinton',
-        '{{ search_keys.face_name }}=donald trump'
-      ], 600, 300);
-    setIframeSource(
-      '#unitedNations', [
-        '{{ search_keys.text }}="UNITED NATIONS"'
-      ], 600, 300);
+
+    let channel_queries = [
+      '{{ search_keys.channel }}=CNN',
+      '{{ search_keys.channel }}=FOX',
+      '{{ search_keys.channel }}=MSNBC'
+    ];
+    setIframeSource('#dataByChannel', channel_queries, 600, 300);
+    setCodeArea('#channelCode', channel_queries);
+
+    let men_women_queries = [
+      '{{ search_keys.face_tag }}=male',
+      '{{ search_keys.face_tag }}=female'
+    ];
+    setIframeSource('#menVsWomen', men_women_queries, 600, 300);
+    setCodeArea('#menVsWomenCode', men_women_queries);
+
+    let trump_clinton_queries = [
+      '{{ search_keys.face_name }}=hillary clinton',
+      '{{ search_keys.face_name }}=donald trump'
+    ];
+    setIframeSource('#trumpVsClinton', trump_clinton_queries, 600, 300);
+    setCodeArea('#trumpVsClintonCode', trump_clinton_queries);
+
+    let united_nations_queries = ['{{ search_keys.text }}="UNITED NATIONS"'];
+    setIframeSource('#unitedNations', united_nations_queries, 600, 300);
+    setCodeArea('#unitedNationsCode', united_nations_queries);
+
+    let united_nations_window_queries = [
+      '{{ search_keys.text }}="UNITED NATIONS" AND {{ search_keys.text_window }}=30'
+    ];
+    setIframeSource('#unitedNationsWindow', united_nations_window_queries, 600, 300);
+    setCodeArea('#unitedNationsWindowCode', united_nations_window_queries);
   </script>
 </div>
 {% endblock %}

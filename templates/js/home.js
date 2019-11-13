@@ -1,9 +1,3 @@
-const DATA_VERSION_ID = {% if data_version is not none %}"{{ data_version }}"{% else %}null{% endif %};
-
-const DEFAULT_START_DATE = '{{ start_date }}';
-const DEFAULT_END_DATE = '{{ end_date }}';
-const DEFAULT_AGGREGATE_BY = '{{ default_agg_by }}';
-
 const QUERY_BUILDER_HTML = `<div class="query-builder">
   <table>
     <tr>
@@ -88,7 +82,7 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
         (with a window of
           <input type="number" class="form-control"
                  name="{{ search_keys.text_window }}"
-                 min="0" max="3600" placeholder="{{ default_text_window }}"
+                 min="0" max="3600" placeholder="${DEFAULT_TEXT_WINDOW}"
                  style="width:70px;">
           seconds around each mention)
       </td>
@@ -266,7 +260,7 @@ function getQueryBuilder() {
   builder.find('[name="{{ search_keys.hour }}"]').val('');
   builder.find('[name="{{ search_keys.day_of_week }}"]').val('');
   builder.find('[name="{{ search_keys.text }}"]').val('');
-  builder.find('[name="{{ search_keys.text_window }}"]').val('{{ default_text_window }}');
+  builder.find('[name="{{ search_keys.text_window }}"]').val(DEFAULT_TEXT_WINDOW);
   builder.find('[name="{{ search_keys.face_name }}"]').val(null);
   builder.find('[name="{{ search_keys.face_tag }}"]').val(null);
   builder.find('[name="{{ search_keys.face_count }}"]').val('');
@@ -305,7 +299,7 @@ function loadQueryBuilder(search_table_row) {
       }
     };
 
-    var channel = top_level_kv['{{ search_keys.channel }}'];
+    let channel = top_level_kv['{{ search_keys.channel }}'];
     if (channel) {
       query_builder.find(`select[name="{{ search_keys.channel }}"]`).val(
         channel.toUpperCase() == 'FOXNEWS' ? 'FOX' : channel);
@@ -556,7 +550,7 @@ function getDataString(chart_options, lines) {
 }
 
 function getEmbedUrl(data) {
-  var prefix = 'https://{{ host }}/embed?';
+  var prefix = `https://${SERVER_HOST}/embed?`;
   if (DATA_VERSION_ID) {
     prefix += 'dataVersion=' + encodeURIComponent(DATA_VERSION_ID) + '&';
   }
@@ -625,7 +619,7 @@ function displaySearchResults(
     setCopyUrl = () => {
       var dummy = document.createElement('input');
       document.body.appendChild(dummy);
-      dummy.setAttribute('value', 'https://{{ host }}' + chart_path);
+      dummy.setAttribute('value', 'https://' + SERVER_HOST + chart_path);
       dummy.select();
       document.execCommand("copy");
       document.body.removeChild(dummy);
