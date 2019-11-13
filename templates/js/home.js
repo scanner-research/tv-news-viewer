@@ -710,7 +710,7 @@ function search(event) {
       } catch {
         msg = `${status}=${error}`;
       }
-      alert(`[Query failed]\n\n${line.query.query}\n${msg}\n\nThe chart may be incomplete.`);
+      alert(`[Query failed. The chart is incomplete.]\n\t${line.query.query}\n\n${msg}.`);
       console.log('Failed:', line.query, xhr);
       errored = true;
     }

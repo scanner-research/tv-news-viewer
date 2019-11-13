@@ -205,6 +205,9 @@ def get_python_iset_from_rust_iset(
                 yield PythonISetData(video, False, intervals=intervals)
 
 
+MAX_TRANSCRIPT_SEARCH_COST = 0.005
+
+
 def get_transcript_intervals(
     cdc: CaptionDataContext, vdc: VideoDataContext,
     document_by_name: Dict[str, Documents.Document],
@@ -235,6 +238,13 @@ def get_transcript_intervals(
         query = Query(text_str.upper())
     except Exception as e:
         raise InvalidTranscriptSearch(text_str)
+
+    if documents is None:
+        if query.estimate_cost(cdc.lexicon) > MAX_TRANSCRIPT_SEARCH_COST:
+            raise QueryTooExpensive(
+                'The text query is too expensive to compute. '
+                '"{}" contains too many common words/phrases.'.format(text_str))
+
     for raw_result in query.execute(
         cdc.lexicon, cdc.index, documents=documents, ignore_word_not_found=True
     ):
