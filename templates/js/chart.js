@@ -218,12 +218,12 @@ class Chart {
     var y_axis_title;
     if (this.search_results.some(kv => kv[1].has_normalization())) {
       if (this.search_results.some(kv => !kv[1].has_normalization())) {
-        y_axis_title = 'Unknown: normalized and raw units';
+        y_axis_title = 'Warning: mixing normalized and absolute units';
       } else {
         y_axis_title = `Normalized fraction of ${unit}`;
       }
     } else {
-      y_axis_title = `Number of ${unit}`;
+      y_axis_title = unit.charAt(0).toUpperCase() + unit.slice(1);
     }
 
     let vega_layers = [{
