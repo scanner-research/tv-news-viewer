@@ -710,7 +710,7 @@ function search(event) {
       } catch {
         msg = `${status}=${error}`;
       }
-      alert(`[Query failed. The chart is incomplete.]\n\n${line.query.query}\n\n${msg}.`);
+      alert(`[Query failed. The chart is incomplete.]\n\n${line.query.query}\n\n${msg}`);
       console.log('Failed:', line.query, xhr);
       errored = true;
     }
@@ -761,9 +761,11 @@ function initialize() {
     }
   } else {
     initChartOptions();
-    addRow({text: 'name="barack obama"'});
-    addRow({text: 'name="donald trump"'});
-    if (params.get('blank') != 1) {
+    if (params.get('blank') == 1) {
+      addRow({text: ''});
+    } else {
+      addRow({text: 'name="barack obama"'});
+      addRow({text: 'name="donald trump"'});
       search();
     }
   }
