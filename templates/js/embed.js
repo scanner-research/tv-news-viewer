@@ -44,7 +44,7 @@ function renderText(lines) {
       ];
     }
     return $('<span>').addClass('legend-item').append(
-      $('<span>').addClass('legend-color').css('color', line.color).html('&#9632;'),
+      $('<div>').addClass('legend-color').css('background-color', line.color),
       $('<span>').addClass('legend-text').append(entry)
     );
   }));

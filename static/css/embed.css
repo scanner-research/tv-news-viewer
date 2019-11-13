@@ -15,11 +15,6 @@
 .query-td {
   text-align: left;
 }
-.color-box {
-  margin: auto;
-  width: 10px;
-  height: 10px;
-}
 .legend-item {
   margin-left: 10px;
   margin-right: 10px;
@@ -28,9 +23,13 @@
 }
 .legend-color {
   margin-right: 2px;
+  width: 10px;
+  height: 10px;
+  display: inline-block;
 }
 .legend-text {
   margin-left: 2px;
+  display: inline-block;
 }
 code {
   color: black;

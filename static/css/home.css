@@ -37,8 +37,9 @@
 }
 #searchTable .color-box {
   margin: auto;
-  width: 40px;
+  width: 35px;
   min-height: 30px;
+  border-radius: 4px;
   cursor: pointer;
 }
 #searchTable .remove-row-btn {

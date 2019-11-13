@@ -23,8 +23,10 @@
   width: 100%;
 }
 .tooltip-entry .tooltip-legend {
-  display: inline;
+  display: inline-block;
   margin-right: 5px;
+  width: 10px;
+  height: 10px;
 }
 .tooltip-entry .tooltip-data {
   display: inline;

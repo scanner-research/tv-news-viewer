@@ -171,7 +171,8 @@ class Chart {
         if (unit == 'minutes') {
           value = secondsToMinutes(value);
         }
-        value_str = `${value.toLocaleString(undefined, {maximumFractionDigits: 2})}`;
+        let frac_digits = value > 30 ? 0 : 2;
+        value_str = `${value.toLocaleString(undefined, {maximumFractionDigits: frac_digits})}`;
       }
       return {value: value, text: value_str};
     }
@@ -344,7 +345,7 @@ class Chart {
             $('<span>').addClass('tooltip-time'),
             this_chart.search_results.map(([color, result]) =>
               $('<span>').addClass('tooltip-entry').append(
-                $('<span>').addClass('tooltip-legend').css('color', color).html('&#9632;'),
+                $('<div>').addClass('tooltip-legend').css('background-color', color),
                 $('<span>').addClass('tooltip-data').attr('color', color))
             )
           );
