@@ -210,7 +210,7 @@ function initChartOptions(chart_options) {
   }).datepicker('setDate', toDatepickerStr(end_date));
 }
 
-const EMBED_DIMS = {width: 1000, height: 400};
+const DEFAULT_CHART_DIMS = {width: 1000, height: 400};
 
 function getRandomSample(arr) {
   return arr[Math.floor(Math.random() * arr.length)];
@@ -560,7 +560,7 @@ function getEmbedUrl(data) {
   if (DATA_VERSION_ID) {
     prefix += 'dataVersion=' + encodeURIComponent(DATA_VERSION_ID) + '&';
   }
-  return prefix + `width=${EMBED_DIMS.width}&height=${EMBED_DIMS.height}&data=${data}`;
+  return prefix + `width=${DEFAULT_CHART_DIMS.width}&height=${DEFAULT_CHART_DIMS.height}&data=${data}`;
 }
 
 function getChartPath(data) {
@@ -603,13 +603,18 @@ function getDownloadUrl(search_results) {
   return URL.createObjectURL(data_blob);
 }
 
-var showTooltip;
+var minimalMode, chartHeight;
 var setCopyUrl, setEmbedUrl;
 
-function displaySearchResults(chart_options, lines, search_results) {
+function displaySearchResults(
+  chart_options, lines, search_results, push_state
+) {
   new Chart(chart_options, search_results, {
-    width: $("#chartArea").width(), height: EMBED_DIMS.height
-  }).load('#chart', {show_tooltip: showTooltip, video_div: '#vgridArea'});
+    width: $("#chartArea").width(), height: chartHeight
+  }).load('#chart', {
+    video_div: '#vgridArea', show_tooltip: !minimalMode,
+    vega_actions: minimalMode
+  });
 
   if (search_results.length == lines.length) {
     // Allow embedding if all queries are ok
@@ -638,11 +643,15 @@ function displaySearchResults(chart_options, lines, search_results) {
        <a href="#" onclick="setEmbedUrl(); return false;">embed</a> chart, or
        <a href="${getDownloadUrl(search_results)}" download="data.csv" type="text/json">download</a> the data.`
     );
-    window.history.pushState(null, '', chart_path);
+    if (push_state && !minimalMode) {
+      window.history.pushState(null, '', chart_path);
+    }
   } else {
     // Allow embedding if all queries are ok
     $('#embedArea p[name="text"]').empty();
-    window.history.pushState(null, '', '')
+    if (push_state && !minimalMode) {
+      window.history.pushState(null, '', '');
+    }
   }
   $('#embedArea').show();
 }
@@ -661,7 +670,7 @@ function getRawQueries() {
   return queries;
 }
 
-function search() {
+function search(event) {
   clearChart();
 
   let chart_options = getChartOptions();
@@ -682,7 +691,8 @@ function search() {
     $('#shade').hide();
     indexed_search_results.sort();
     displaySearchResults(
-      chart_options, lines, indexed_search_results.map(([i, v]) => v)
+      chart_options, lines, indexed_search_results.map(([i, v]) => v),
+      event != undefined
     );
   }
 
@@ -728,7 +738,8 @@ function setDataVersionWarning(version_id) {
 
 function initialize() {
   let params = (new URL(document.location)).searchParams;
-  showTooltip = params.get('tooltip') != 0;
+  minimalMode = params.get('minimal') == 1;
+  chartHeight = params.get('chartHeight') ? parseInt(params.get('chartHeight')) : DEFAULT_CHART_DIMS.height;
 
   if (params.get('dataVersion')) {
     let version_id = decodeURIComponent(params.get('dataVersion'));

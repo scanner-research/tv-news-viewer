@@ -226,6 +226,47 @@ class Chart {
       y_axis_title = `Number of ${unit}`;
     }
 
+    let vega_layers = [{
+      data: {values: line_data},
+      mark: {
+        type: 'line',
+        interpolate: 'linear'
+      },
+      encoding: {
+        x: {
+          field: 'time', type: 'temporal', timeUnit: 'utcyearmonthdate',
+          title: null, scale: {
+            domain: [x_start_date, x_end_date]
+          }
+        },
+        y: {
+          field: 'value', type: 'quantitative', title: y_axis_title,
+          axis: {
+            titleFontSize: 12, labelFontSize: 12, tickCount: 5
+          }
+        },
+        color: {field: 'color', type: 'nominal', scale: null},
+        size: {value: 2},
+        opacity: {value: 0.6}
+      }
+    }];
+
+    if (options.show_tooltip) {
+      vega_layers.push({
+        mark: 'rule',
+        selection: {
+          hover: {type: 'single', on: 'mouseover', nearest: true}
+        },
+        encoding: {
+          color: {
+            condition: {
+              selection: {not: 'hover'}, value: 'transparent'
+            }
+          },
+        }
+      });
+    }
+
     let vega_spec = {
       $schema: 'https://vega.github.io/schema/vega-lite/v3.json',
       width: this.dimensions.width,
@@ -246,42 +287,7 @@ class Chart {
         },
         tooltip: null
       },
-      layer: [{
-        data: {values: line_data},
-        mark: {
-          type: 'line',
-          interpolate: 'linear'
-        },
-        encoding: {
-          x: {
-            field: 'time', type: 'temporal', timeUnit: 'utcyearmonthdate',
-            scale: {
-              domain: [x_start_date, x_end_date]
-            }
-          },
-          y: {
-            field: 'value', type: 'quantitative', title: y_axis_title,
-            axis: {
-              titleFontSize: 12, labelFontSize: 12, tickCount: 5
-            }
-          },
-          color: {field: 'color', type: 'nominal', scale: null},
-          size: {value: 2},
-          opacity: {value: 0.6}
-        }
-      }, {
-        mark: 'rule',
-        selection: {
-          hover: {type: 'single', on: 'mouseover', nearest: true}
-        },
-        encoding: {
-          color: {
-            condition: {
-              selection: {not: 'hover'}, value: 'transparent'
-            }
-          },
-        }
-      }]
+      layer: vega_layers
     };
 
     let moment_date_format = getMomentDateFormat(this.options.aggregate);
@@ -324,15 +330,17 @@ class Chart {
       }, 1000);
     }
 
-    vegaEmbed(div_id, vega_spec, {actions: false}).then(
+    vegaEmbed(
+      div_id, vega_spec, {actions: _.get(options, 'vega_actions', false)}
+    ).then(
       ({spec, view}) => {
         if (options.show_tooltip) {
-          let tooltip = $('<div class="chart-tooltip" />').append(
-            $('<span class="tooltip-time" />'),
+          let tooltip = $('<div>').addClass('chart-tooltip').append(
+            $('<span>').addClass('tooltip-time'),
             this_chart.search_results.map(([color, result]) =>
-              $('<span class="tooltip-entry" />').append(
-                $('<span class="tooltip-legend" />').css('color', color).html('&#9632;'),
-                $('<span class="tooltip-data" />').attr('color', color))
+              $('<span>').addClass('tooltip-entry').append(
+                $('<span>').addClass('tooltip-legend').css('color', color).html('&#9632;'),
+                $('<span>').addClass('tooltip-data').attr('color', color))
             )
           );
           $(div_id).append(tooltip);

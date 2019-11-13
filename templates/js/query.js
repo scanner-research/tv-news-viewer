@@ -42,13 +42,19 @@ Node
 
 AndList
   = a:NodeOrKeyValue Blank "AND"i Blank b:AndList {
-	return [a].concat(b);
+	  return [a].concat(b);
+  }
+  / a:NodeOrKeyValue Blank "OR"i Blank b:AndList {
+	  throw new Error('Using AND and OR ambiguously. Perhaps add some ()s.');
   }
   / a:NodeOrKeyValue { return [a]; }
 
 OrList
   = a:NodeOrKeyValue Blank "OR"i Blank b:OrList {
-	return [a].concat(b);
+	  return [a].concat(b);
+  }
+  / a:NodeOrKeyValue Blank "AND"i Blank b:OrList {
+    throw new Error('Using AND and OR ambiguously. Perhaps add some ()s.');
   }
   / a:NodeOrKeyValue { return [a]; }
 
