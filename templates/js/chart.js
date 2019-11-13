@@ -235,7 +235,12 @@ class Chart {
       encoding: {
         x: {
           field: 'time', type: 'temporal', timeUnit: 'utcyearmonthdate',
-          title: null, scale: {
+          axis: {
+            titleFontSize: 12, labelFontSize: 12, tickCount: x_tick_count,
+            format: getVegaDateFormat(this.options.aggregate), title: null,
+            labelAngle: -30
+          },
+          scale: {
             domain: [x_start_date, x_end_date]
           }
         },
