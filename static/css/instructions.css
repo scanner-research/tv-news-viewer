@@ -26,4 +26,5 @@ iframe {
 }
 .CodeMirror {
   height: auto !important;
+  background: none;
 }

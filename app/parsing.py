@@ -1,4 +1,5 @@
 import json
+import re
 from datetime import datetime
 from pytz import timezone
 from typing import Optional, Set, Tuple, NamedTuple, List
@@ -34,50 +35,49 @@ def parse_date_from_video_name(p, tz=ET) -> Tuple[datetime, int]:
             timestamp_et.hour * 60 + timestamp_et.minute)
 
 
+HOUR_RE = r'(\d+)(?:-(\d+))?'
+
+
 def parse_hour_set(s: str) -> Set[int]:
-    result: Set[int] = set()
-    for t in s.strip().split(','):
-        t = t.strip()
-        if t == '':
-            continue
-        elif '-' in t:
-            t0_str, t1_str = t.split('-', 1)
-            t0 = int(t0_str.strip())
-            t1 = int(t1_str.strip())
-            if t0 >= 0 and t0 <= 23 and t1 >= 0 and t1 <= 23:
-                result.update(range(t0, t1 + 1))
+    result = None
+    m = HOUR_RE.match(s)
+    if m:
+        h0 = int(m[1])
+        if h0 < 24:
+            if m[2]:
+                h1 = int(m[2])
+                if h0 < h1 and h1 <= 23:
+                    result = set(range(h0, h1 + 1))
             else:
-                raise InvalidUsage('invalid hour range: {}'.format(t))
-        else:
-            t0 = int(t)
-            if t0 >= 0 and t0 <= 23:
-                result.add(t0)
-            else:
-                raise InvalidUsage('invalid hour: {}'.format(t))
-    return result if result else None
+                result = {h0}
+    if result is None:
+        raise InvalidUsage('Invalid hour filter:'.format(s))
+    return result
 
 
 DAYS_OF_WEEK = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']
+DAY_OF_WEEK_RE = r'(\w{3})(?:-(\w{3}))?'
 
 
 def parse_day_of_week_set(s: str) -> Set[int]:
-    result: Set[int] = set()
-    for t in s.strip().split(','):
-        t = t.strip()
-        t_low = t.lower()
+    result = None
+    m = DAY_OF_WEEK_RE.match(s)
+    if m:
         try:
-            if t_low == '':
-                continue
-            elif '-' in t:
-                t0, t1 = t_low.split('-', 1)
-                result.update(range(
-                    DAYS_OF_WEEK.index(t0.strip()) + 1,
-                    DAYS_OF_WEEK.index(t1.strip()) + 2))
+            d0 = m[1].lower()
+            d0_idx = DAYS_OF_WEEK.index(d0.strip())
+            if m[2]:
+                d1 = m[2].lower()
+                d1_idx = DAYS_OF_WEEK.index(d0.strip())
+                if d0_idx < d1_idx:
+                    result = set(range(d0_idx + 1, d1_idx + 2))
             else:
-                result.add(DAYS_OF_WEEK.index(t_low) + 1)
+                result = {d0_idx + 1}
         except ValueError:
-            raise InvalidUsage('invalid day of week: {}'.format(t))
-    return result if result else None
+            pass
+    if result is None:
+        raise InvalidUsage('invalid day of week filter: {}'.format(s))
+    return result
 
 
 class PersonTags(NamedTuple):

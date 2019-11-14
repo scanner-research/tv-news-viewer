@@ -3,11 +3,13 @@
 {% block head %}
   {{ super() }}
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.48.4/codemirror.min.css" integrity="sha256-vZ3SaLOjnKO/gGvcUWegySoDU6ff33CS5i9ot8J9Czk=" crossorigin="anonymous" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.48.4/theme/elegant.css" integrity="sha256-At+BZ4vozwp4DkMDlbD2Trd4/qwiFqOx7KtShIq8j+Y=" crossorigin="anonymous" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.48.4/codemirror.min.js" integrity="sha256-dPTL2a+npIonoK5i0Tyes0txCMUWZBf8cfKRfACRotc=" crossorigin="anonymous"></script>
 
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/syntax-highlight.css') }}" />
   <link rel="stylesheet" href="{{ url_for('static', filename='css/instructions.css') }}" />
   <script src="{{ url_for('static', filename='js/defaults.js') }}" /></script>
+  <script src="{{ url_for('static', filename='js/values.js') }}" /></script>
+  <script src="{{ url_for('static', filename='js/syntax-highlight.js') }}" /></script>
   <script src="{{ url_for('static', filename='js/instructions.js') }}" /></script>
 {% endblock %}
 
@@ -255,11 +257,6 @@
     men on a single channel:
 
     <div class="code-block" id="menAndCNNCode"></div>
-    <script type="text/javascript">
-      setCodeArea('#menAndCNNCode', [
-        '{{ search_keys.face_tag }}=male" AND {{ search_keys.channel }}=CNN'
-      ]);
-    </script>
 
     Likewise, we can combine a query on identities with text. For example,
     to find the screen time of Donald Trump when the phrase
@@ -267,11 +264,6 @@
     write the following query.
 
     <div class="code-block" id="trumpAndWallCode"></div>
-    <script type="text/javascript">
-      setCodeArea('#trumpAndWallCode', [
-        '{{ search_keys.face_name }}="donald trump" AND {{ search_keys.text }}="BORDER WALL"'
-      ]);
-    </script>
 
     A further refinement of the query is to find when Donald Trump is on screen
     within 30 seconds of <code>"BORDER WALL"</code> being said.
@@ -287,11 +279,6 @@
     Hillary Clinton) are shown on screen together.
 
     <div class="code-block" id="trumpAndClintonCode"></div>
-    <script type="text/javascript">
-      setCodeArea('#trumpAndClintonCode', [
-        '{{ search_keys.face_name }}="donald trump" AND {{ search_keys.face_name }}="hillary clinton"'
-      ]);
-    </script>
 
     Please read the
     <a href="/detailed" target="_blank">detailed documentation</a> page
@@ -336,6 +323,16 @@
     ];
     setIframeSource('#unitedNationsWindow', united_nations_window_queries, 600, 300);
     setCodeArea('#unitedNationsWindowCode', united_nations_window_queries);
+
+    setCodeArea('#menAndCNNCode', [
+      '{{ search_keys.face_tag }}=male" AND {{ search_keys.channel }}=CNN'
+    ]);
+    setCodeArea('#trumpAndWallCode', [
+      '{{ search_keys.face_name }}="donald trump" AND {{ search_keys.text }}="BORDER WALL"'
+    ]);
+    setCodeArea('#trumpAndClintonCode', [
+      '{{ search_keys.face_name }}="donald trump" AND {{ search_keys.face_name }}="hillary clinton"'
+    ]);
   </script>
 </div>
 {% endblock %}

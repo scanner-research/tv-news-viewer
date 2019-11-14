@@ -6,8 +6,11 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.48.4/theme/elegant.css" integrity="sha256-At+BZ4vozwp4DkMDlbD2Trd4/qwiFqOx7KtShIq8j+Y=" crossorigin="anonymous" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.48.4/codemirror.min.js" integrity="sha256-dPTL2a+npIonoK5i0Tyes0txCMUWZBf8cfKRfACRotc=" crossorigin="anonymous"></script>
 
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/syntax-highlight.css') }}" />
   <link rel="stylesheet" href="{{ url_for('static', filename='css/instructions.css') }}" />
   <script src="{{ url_for('static', filename='js/defaults.js') }}" /></script>
+  <script src="{{ url_for('static', filename='js/values.js') }}" /></script>
+  <script src="{{ url_for('static', filename='js/syntax-highlight.js') }}" /></script>
   <script src="{{ url_for('static', filename='js/instructions.js') }}" /></script>
 {% endblock %}
 
@@ -45,15 +48,6 @@
     Putting the examples above together, we can express the amount of screen
     time that Hillary Clinton received on CNN or MSNBC as the following:
     <div class="code-block" id="parenExample"></div>
-
-    <script type="text/javascript">
-      setCodeArea('#andSyntax', ['filter1="..." AND filter2="..." AND ... ']);
-      setCodeArea('#andExample', ['{{ search_keys.face_name }}="Hillary Clinton" AND {{ search_keys.channel }}=CNN']);
-      setCodeArea('#orSyntax', ['filter1="..." OR filter2="..." OR ... ']);
-      setCodeArea('#orExample', ['{{ search_keys.channel }}="CNN" OR {{ search_keys.channel }}=MSNBC']);
-      setCodeArea('#parenSyntax', ['(filter1="..." AND filter2="...") OR filter3="..."']);
-      setCodeArea('#parenExample', ['{{ search_keys.face_name }}="Hillary Clinton" AND ({{ search_keys.channel }}=CNN OR {{ search_keys.channel }}=MSNBC)']);
-    </script>
   </p>
 
   <h3>What filters does the tool support?</h3>
@@ -116,7 +110,7 @@
       </tr>
       <tr>
         <td>values</td>
-        <td>0-23 or 0, 1, 2, ...</td>
+        <td>0-23</td>
       </tr>
       <tr>
         <td>default</td>
@@ -126,7 +120,12 @@
       </tr>
       <tr>
         <td>example</td>
-        <td><code>{{ search_keys.hour }}="9-17"</code></td>
+        <td>
+          <code>
+            {{ search_keys.hour }}="10"<br>
+            {{ search_keys.hour }}="9-17"
+          </code>
+        </td>
       </tr>
     </tbody>
 
@@ -134,21 +133,26 @@
       <tr>
         <td rowspan="4">{{ search_keys.day_of_week }}</td>
         <td>description</td>
-        <td>range (inclusive) or list of days of the week</td>
+        <td>range (inclusive) or a day in the week</td>
       </tr>
       <tr>
         <td>values</td>
-        <td>mon-sun or mon, tue, ...</td>
+        <td>mon, tue, wed, thu, fri, sat, sun</td>
       </tr>
       <tr>
         <td>default</td>
         <td>
-          <var>all</var>
+          <var>mon-sun</var>
         </td>
       </tr>
       <tr>
         <td>example</td>
-        <td><code>{{ search_keys.days_of_week }}="sat-sun"</code></td>
+        <td>
+          <code>
+            {{ search_keys.days_of_week }}="mon"<br>
+            {{ search_keys.days_of_week }}="sat-sun"
+          </code>
+        </td>
       </tr>
     </tbody>
 
@@ -295,9 +299,6 @@
     This used in the following way:
 
     <div class="code-block" id="normSyntax"></div>
-    <script type="text/javascript">
-      setCodeArea('#normSyntax', ['query1 NORMALIZE query2']);
-    </script>
 
     Succintly put, NORMALIZE allows you to normalize one query by another query.
     For instance, to express the proportion of the data set that is CNN, we can
@@ -317,9 +318,6 @@
     Addition is not supported. Subtraction can be expressed as:
 
     <div class="code-block" id="subSyntax"></div>
-    <script type="text/javascript">
-      setCodeArea('#subSyntax', ['query1 SUBTRACT query2']);
-    </script>
 
     For example, the net screen time of two individuals can be computed as follows:
     <div class="code-block" id="subExampleCode"></div>
@@ -329,12 +327,21 @@
   <script type="text/javascript">
     initialize();
 
+    setCodeArea('#andSyntax', ['filter1="..." AND filter2="..." AND ... ']);
+    setCodeArea('#andExample', ['{{ search_keys.face_name }}="Hillary Clinton" AND {{ search_keys.channel }}=CNN']);
+    setCodeArea('#orSyntax', ['filter1="..." OR filter2="..." OR ... ']);
+    setCodeArea('#orExample', ['{{ search_keys.channel }}="CNN" OR {{ search_keys.channel }}=MSNBC']);
+    setCodeArea('#parenSyntax', ['(filter1="..." AND filter2="...") OR filter3="..."']);
+    setCodeArea('#parenExample', ['{{ search_keys.face_name }}="Hillary Clinton" AND ({{ search_keys.channel }}=CNN OR {{ search_keys.channel }}=MSNBC)']);
+
+    setCodeArea('#normSyntax', ['query1 NORMALIZE query2']);
     let norm_cnn_queries = [
       '{{ search_keys.face_tag }}=male AND {{ search_keys.channel }}=CNN NORMALIZE {{ search_keys.channel }}=CNN'
     ];
     setIframeSource('#normExample', norm_cnn_queries, 600, 300);
     setCodeArea('#normExampleCode', norm_cnn_queries);
 
+    setCodeArea('#subSyntax', ['query1 SUBTRACT query2']);
     let subtract_queries = [
       '{{ search_keys.face_name }}=hillary clinton SUBTRACT {{ search_keys.face_name }}=bernie sanders'
     ];

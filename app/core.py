@@ -807,7 +807,7 @@ def get_video_metadata_json(video: Video) -> JsonObject:
 def build_app(
     data_dir: str,
     index_dir: str,
-    video_endpoint: str,
+    video_endpoint: Optional[str],
     frameserver_endpoint: Optional[str],
     archive_video_endpoint: Optional[str],
     authorized_users: Optional[List[LoginCredentials]],
@@ -999,7 +999,14 @@ def build_app(
             start_date=format_date(start_date),
             end_date=format_date(end_date),
             default_agg_by=default_aggregate_by,
-            default_text_window=default_text_window
+            default_text_window=default_text_window,
+            video_endpoint=video_endpoint,
+            search_params=[
+                (k, v) for k, v in SearchParam.__dict__.items()
+                if not k.startswith('__')],
+            search_keys=[
+                (k, v) for k, v in SearchKey.__dict__.items()
+                if not k.startswith('__')]
         ))
         resp.headers['Content-type'] = 'text/javascript'
         return resp
@@ -1010,20 +1017,6 @@ def build_app(
             'js/values.js', shows=all_shows, people=[x.name for x in people],
             global_face_tags=list(sorted(GLOBAL_TAGS)),
             person_tags=video_data_context.all_person_tags.tags))
-        resp.headers['Content-type'] = 'text/javascript'
-        return resp
-
-    @app.route('/static/js/query.js')
-    def get_query_js() -> Response:
-        resp = make_response(render_template(
-            'js/query.js', search_keys=SearchKey, params=SearchParam))
-        resp.headers['Content-type'] = 'text/javascript'
-        return resp
-
-    @app.route('/static/js/chart.js')
-    def get_chart_js() -> Response:
-        resp = make_response(render_template(
-            'js/chart.js', video_endpoint=video_endpoint))
         resp.headers['Content-type'] = 'text/javascript'
         return resp
 
@@ -1047,14 +1040,6 @@ def build_app(
             video_endpoint=video_endpoint,
             frameserver_endpoint=frameserver_endpoint,
             archive_video_endpoint=archive_video_endpoint)
-
-    @app.route('/static/js/embed.js')
-    def get_embed_js() -> Response:
-        return render_template('js/embed.js', host=request.host)
-
-    @app.route('/static/js/instructions.js')
-    def get_instructions_js() -> Response:
-        return render_template('js/instructions.js', host=request.host)
 
     def _search_and(
         children: Iterable[Any], context: SearchContext

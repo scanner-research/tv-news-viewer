@@ -18,7 +18,41 @@ const DEFAULT_TEXT_WINDOW = '{{ default_text_window }}';
 
 const QUERY_PREFIX = 'COUNT screen time WHERE';
 
+const SEARCH_KEY = {
+  {% for kv in search_keys %}{{ kv.0 }}: '{{ kv.1 }}', {% endfor %}
+};
+
+const SEARCH_PARAM = {
+  {% for kv in search_params %}{{ kv.0 }}: '{{ kv.1 }}', {% endfor %}
+};
+
+const CHANNEL_REGEX = /CNN|FOX(?:NEWS)?|MSNBC/i;
+const HOUR_REGEX = /(\d+)(?:-(\d+))?/;
+
+const DAYS_OF_WEEK = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
+const DAY_OF_WEEK_REGEX = new RegExp(`(${DAYS_OF_WEEK.join('|')})(?:-(${DAYS_OF_WEEK.join('|')}))?`, 'i');
+
+var SERVE_FROM_INTERNET_ARCHIVE = true;
+
+function testVideoAuth() {
+  {% if video_endpoint is not none %}
+  let img = new Image();
+  img.onload = () => { SERVE_FROM_INTERNET_ARCHIVE = false; };
+  img.src = '{{ video_endpoint }}/do_not_delete.jpg';
+  {% endif %}
+}
+
 function alertAndThrow(msg) {
   alert(msg);
   throw Error(msg);
+}
+
+function findInArrayCaseInsensitive(arr, v) {
+  let v_up = v.toUpperCase();
+  for (var i = 0; i < arr.length; i++) {
+    if (arr[i].toUpperCase() == v_up) {
+      return arr[i];
+    }
+  }
+  return null;
 }

@@ -1,9 +1,13 @@
 function initialize() {
+  addParsingMode('tvnews', {
+    allow_free_tokens: true, check_values: false, multi_line: true
+  });
+
   $('.try-it-btn').click(function() {
     window.open('/?blank=1', '_blank');
   });
 
-  function resizeIFrames() {
+  setInterval(() => {
     $('iframe').each(function() {
       let iframe = $(this)[0];
       if (iframe && document.contains(iframe)) {
@@ -14,15 +18,13 @@ function initialize() {
         });
       }
     });
-    setTimeout(resizeIFrames, 100);
-  }
-  resizeIFrames();
+  }, 100);
 }
 
 function setCodeArea(area, queries) {
   CodeMirror($(area)[0], {
-    value: queries.map(x => QUERY_PREFIX + ' ' + x).join('\n'),
-    lineNumbers: true, readOnly: 'nocursor', theme: 'elegant'
+    mode:'tvquery', value: queries.map(x => QUERY_PREFIX + ' ' + x).join('\n'),
+    lineNumbers: true, readOnly: 'nocursor', theme: 'tvnews'
   });
 }
 

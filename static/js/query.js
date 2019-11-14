@@ -18,10 +18,10 @@ Alias
   = a:[^\\]]+ { return a.join(''); }
 
 Query
-  = a:SingleQuery Blank "NORMALIZE"i Blank b:SingleQuery {
+  = a:SingleQuery Blank "${QUERY_KEYWORDS.normalize}"i Blank b:SingleQuery {
     return {main: a, normalize: b, has_normalize: true};
   }
-  / a:SingleQuery Blank "SUBTRACT"i Blank b:SingleQuery {
+  / a:SingleQuery Blank "${QUERY_KEYWORDS.subtract}"i Blank b:SingleQuery {
     return {main: a, subtract: b, has_subtract: true};
   }
   / a:SingleQuery { return {main: a}; }
@@ -32,28 +32,28 @@ SingleQuery
   / "" { return null; }
 
 Node
-  = a:NodeOrKeyValue Blank "AND"i Blank b:AndList {
+  = a:NodeOrKeyValue Blank "${QUERY_KEYWORDS.and}"i Blank b:AndList {
   	return ['and', [a].concat(b)];
   }
-  / a:NodeOrKeyValue Blank "OR"i Blank b:OrList {
+  / a:NodeOrKeyValue Blank "${QUERY_KEYWORDS.or}"i Blank b:OrList {
   	return ['or', [a].concat(b)];
   }
   / a:NodeOrKeyValue { return a; }
 
 AndList
-  = a:NodeOrKeyValue Blank "AND"i Blank b:AndList {
+  = a:NodeOrKeyValue Blank "${QUERY_KEYWORDS.and}"i Blank b:AndList {
 	  return [a].concat(b);
   }
-  / a:NodeOrKeyValue Blank "OR"i Blank b:AndList {
+  / a:NodeOrKeyValue Blank "${QUERY_KEYWORDS.or}"i Blank b:AndList {
 	  throw new Error('Using AND and OR ambiguously. Perhaps add some ()s.');
   }
   / a:NodeOrKeyValue { return [a]; }
 
 OrList
-  = a:NodeOrKeyValue Blank "OR"i Blank b:OrList {
+  = a:NodeOrKeyValue Blank "${QUERY_KEYWORDS.or}"i Blank b:OrList {
 	  return [a].concat(b);
   }
-  / a:NodeOrKeyValue Blank "AND"i Blank b:OrList {
+  / a:NodeOrKeyValue Blank "${QUERY_KEYWORDS.and}"i Blank b:OrList {
     throw new Error('Using AND and OR ambiguously. Perhaps add some ()s.');
   }
   / a:NodeOrKeyValue { return [a]; }
@@ -64,6 +64,9 @@ NodeOrKeyValue
 
 KeyValue
   = k:TokenNoSpace Blank "=" Blank v:Printable { return [k, v]; }
+  / k:Printable {
+    throw new Error('"' + k + '" is not a valid filter');
+  }
 
 TokenNoSpace
   = s:[a-zA-Z0-9.]+ { return s.join(''); }
@@ -82,7 +85,7 @@ PrintableNoDelim
   = a:[^ \t)]+ { return a.join(''); }
 
 ReservedWords
-  = "NORMALIZE"i / "SUBTRACT"i / "AND"i / "OR"i
+  = "${QUERY_KEYWORDS.normalize}"i / "${QUERY_KEYWORDS.subtract}"i / "${QUERY_KEYWORDS.and}"i / "${QUERY_KEYWORDS.or}"i
 
 Blank
   = [ \t]*
@@ -114,16 +117,6 @@ class SearchResult {
 
 }
 
-function findCaseInsInArr(arr, v) {
-  let v_up = v.toUpperCase();
-  for (var i = 0; i < arr.length; i++) {
-    if (arr[i].toUpperCase() == v_up) {
-      return arr[i];
-    }
-  }
-  return null;
-}
-
 function parseTernary(s) {
   if (s.match(/^true$/i)) {
     return 'true';
@@ -140,9 +133,9 @@ function validateKeyValue(key, value, no_err) {
   key = key.toLowerCase();
   let getKVError = () => new QueryParseError(`Unknown ${key}: ${value}`);
   switch (key) {
-    case '{{ search_keys.text }}':
+    case SEARCH_KEY.text:
       break;
-    case '{{ search_keys.text_window }}': {
+    case SEARCH_KEY.text_window: {
       if (value.match(/^[0-9]+$/)) {
         value = parseInt(value);
       } else {
@@ -150,8 +143,8 @@ function validateKeyValue(key, value, no_err) {
       }
       break;
     }
-    case '{{ search_keys.face_name }}': {
-      let name = findCaseInsInArr(ALL_PEOPLE, value);
+    case SEARCH_KEY.face_name: {
+      let name = findInArrayCaseInsensitive(ALL_PEOPLE, value);
       if (name) {
         value = name;
       } else {
@@ -159,9 +152,9 @@ function validateKeyValue(key, value, no_err) {
       }
       break;
     }
-    case '{{ search_keys.face_tag }}': {
+    case SEARCH_KEY.face_tag: {
       value = value.split(FACE_TAG_SPLIT_RE).map(t => {
-        let tt = findCaseInsInArr(ALL_TAGS, $.trim(t));
+        let tt = findInArrayCaseInsensitive(ALL_TAGS, $.trim(t));
         if (!tt) {
           throw new QueryParseError(`Unknown ${key}: ${t}`)
         }
@@ -169,7 +162,7 @@ function validateKeyValue(key, value, no_err) {
       }).join(',');
       break;
     }
-    case '{{ search_keys.face_count }}': {
+    case SEARCH_KEY.face_count: {
       if (value.match(/^[0-9]+$/)) {
         value = parseInt(value);
         if (value == 0) {
@@ -180,7 +173,7 @@ function validateKeyValue(key, value, no_err) {
       }
       break;
     }
-    case '{{ search_keys.channel }}': {
+    case SEARCH_KEY.channel: {
       let v_up = value.toUpperCase();
       switch (v_up) {
         case 'CNN':
@@ -196,8 +189,8 @@ function validateKeyValue(key, value, no_err) {
       }
       break;
     }
-    case '{{ search_keys.show }}': {
-      let show = findCaseInsInArr(ALL_SHOWS, value);
+    case SEARCH_KEY.show: {
+      let show = findInArrayCaseInsensitive(ALL_SHOWS, value);
       if (show) {
         value = show;
       } else {
@@ -205,14 +198,10 @@ function validateKeyValue(key, value, no_err) {
       }
       break;
     }
-    case '{{ search_keys.video }}':
-    case '{{ search_keys.hour }}':
-    case '{{ search_keys.day_of_week }}':
+    case SEARCH_KEY.video:
+    case SEARCH_KEY.hour:
+    case SEARCH_KEY.day_of_week:
       break;
-    case '{{ params.is_commercial }}': {
-      value = parseTernary(value);
-      break;
-    }
     default:
       throw new QueryParseError('Unknown key: ' + key);
   }
@@ -278,12 +267,10 @@ class SearchableQuery {
 
   search(chart_options, onSuccess, onError) {
     function getParams(query, detailed) {
-      let obj = {
-        detailed: detailed,
-        {{ params.start_date }}: chart_options.start_date,
-        {{ params.end_date }}: chart_options.end_date,
-        {{ params.aggregate }}: chart_options.aggregate
-      }
+      let obj = {detailed: detailed};
+      obj[SEARCH_PARAM.start_date] = chart_options.start_date;
+      obj[SEARCH_PARAM.end_date] = chart_options.end_date;
+      obj[SEARCH_PARAM.aggregate] = chart_options.aggregate;
       if (query) {
         obj.query = JSON.stringify(query);
       }
@@ -327,9 +314,8 @@ class SearchableQuery {
   }
 
   searchInVideos(video_ids, onSuccess, onError) {
-    let args = {
-      {{ params.video_ids }}: JSON.stringify(video_ids),
-    };
+    let args = {};
+    args[SEARCH_PARAM.video_ids] = JSON.stringify(video_ids);
     if (this.main_query) {
       args.query = JSON.stringify(this.main_query);
     }

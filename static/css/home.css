@@ -32,14 +32,17 @@
 #searchTable .query-td {
   width: 100%;
 }
+#searchTable .prefix-td {
+  width: 120px;
+}
 #searchTable .option-td {
   padding-left: 10px;
 }
 #searchTable .color-box {
   margin: auto;
   width: 35px;
-  min-height: 30px;
-  border-radius: 4px;
+  height: 30px;
+  border-radius: .2rem;
   cursor: pointer;
 }
 #searchTable .remove-row-btn {
@@ -56,8 +59,26 @@
   vertical-align: middle;
   font-size: 12px;
 }
-#searchTable .query-text {
-  font-family: monospace;
+#searchTable .code-editor {
+  width: 100%;
+  max-width: 100%;
+  min-height: 30px;
+  border: 1px solid transparent;
+  border-color: #6C7578;
+  border-radius: .2rem;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+#searchTable .code-editor[disable] {
+  background-color: rgba(0, 0, 0, 0.15);
+}
+#searchTable .code-editor .CodeMirror{
+  height: auto !important;
+  background: none;
+}
+#searchTable .code-editor .CodeMirror-placeholder{
+  font-style: italic;
+  color: rgba(0, 0, 0, 0.5);
 }
 #searchTable .add-row-btn {
   width: 35px;

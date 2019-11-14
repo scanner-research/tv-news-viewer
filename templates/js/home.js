@@ -1,3 +1,5 @@
+const CODE_EDITORS = {};
+
 const QUERY_BUILDER_HTML = `<div class="query-builder">
   <table>
     <tr>
@@ -233,7 +235,9 @@ function setRemoveButtonsState() {
 function removeRow(element) {
   let search_table_row = $(element).closest('tr');
   closeQueryBuilder(search_table_row);
+  let color = search_table_row.attr('data-color');
   search_table_row.remove();
+  delete CODE_EDITORS[color];
   $('#searchTable .add-row-btn').prop('disabled', false);
   setRemoveButtonsState();
 }
@@ -271,11 +275,12 @@ function getQueryBuilder() {
 
 function loadQueryBuilder(search_table_row) {
   search_table_row.find('.query-td').append(getQueryBuilder());
-  let query_input = search_table_row.find('input[name="query"]');
+  let data_color = search_table_row.attr('data-color');
+  let editor = CODE_EDITORS[data_color];
   let query_builder = search_table_row.find('.query-builder');
 
   try {
-    let parsed_query = new SearchableQuery(query_input.val(), true);
+    let parsed_query = new SearchableQuery(editor.getValue(), true);
     let top_level_kv = {};
     if (parsed_query.main_query) {
       let [k, v] = parsed_query.main_query;
@@ -351,17 +356,21 @@ function loadQueryBuilder(search_table_row) {
     updateQueryBox(search_table_row);
   });
 
-  // Disable where input
-  query_input.attr('disabled', true);
+  // Disable the text box
+  search_table_row.find('.code-editor').attr('disable', '');
+  CODE_EDITORS[data_color].setOption('readOnly', 'nocursor');
 }
 
 function closeQueryBuilder(search_table_row) {
-  let query_input = search_table_row.find('input[name="query"]');
   let query_builder = search_table_row.find('.query-builder');
   if (query_builder.length > 0) {
     query_builder.find('.chosen-select').chosen('destroy');
     query_builder.remove();
-    query_input.attr('disabled', false);
+
+    // Reenable editing
+    let data_color = search_table_row.attr('data-color');
+    search_table_row.find('.code-editor').removeAttr('disable');
+    CODE_EDITORS[data_color].setOption('readOnly', false);
   }
 }
 
@@ -392,7 +401,13 @@ function clearChart() {
   $('#embedArea').hide();
 }
 
+function setCodeEditorValue(editor, value) {
+  editor.setValue(value);
+  setTimeout(function() { editor.refresh(); }, 50);
+}
+
 function updateQueryBox(search_table_row) {
+  let data_color = search_table_row.attr('data-color');
   let builder = search_table_row.find('.query-builder');
   let parts = [];
 
@@ -454,28 +469,17 @@ function updateQueryBox(search_table_row) {
     new_query = `[${alias}] ${new_query}`;
   }
 
-  let query_input = search_table_row.find('input[name="query"]');
-  query_input.val(new_query);
+  setCodeEditorValue(CODE_EDITORS[data_color], new_query);
 }
 
 function getDefaultQuery() {
   if ($('#searchTable tr[name="query"]').length > 0) {
-    return $('#searchTable input[type="text"][name="query"]:last').val();
+    let last_row = $('#searchTable tr[name="query"]:last');
+    let last_row_color = last_row.attr('data-color');
+    return CODE_EDITORS[last_row_color].getValue();
   } else {
     return '';
   }
-}
-
-function onQueryUpdate() {
-  let query_input = $(this);
-  var err = false;
-  try {
-    new SearchableQuery(query_input.val(), false);
-  } catch (e) {
-    console.log(e);
-    err = true;
-  }
-  query_input.css('background-color', err ? '#fee7e2' : '');
 }
 
 function changeRowColor() {
@@ -483,8 +487,11 @@ function changeRowColor() {
   let old_color = query_row.attr('data-color');
   let old_color_idx = DEFAULT_COLORS.indexOf(old_color);
   let new_color = getColor(old_color_idx + 1);
+  let editor = CODE_EDITORS[old_color];
   query_row.find('.color-box').css('background-color', new_color);
   query_row.attr('data-color', new_color);
+  CODE_EDITORS[new_color] = editor;
+  delete CODE_EDITORS[old_color];
 }
 
 function addRow(query) {
@@ -514,21 +521,19 @@ function addRow(query) {
       ).css('background-color', color)
     ),
     $('<td>').addClass('query-td').append(
-      $('<div>').addClass('input-group').append(
-        $('<div>').addClass('input-group-prepend noselect').append(
-          $('<span>').addClass('input-group-text query-text').attr({
-            name: 'count-type-prefix'
-          }).text(`COUNT screen time WHERE`)
-        ),
-        $('<input>').addClass(
-          'form-control query-text'
-        ).attr({
-          type: 'text', name: 'query',
-          placeholder: 'enter search here (all the data, if blank)'
-        }).change(onQueryUpdate).val(text)
-      )
+      $('<div>').addClass('code-editor')
     ),
   );
+
+  let editor = CodeMirror(new_row.find('.code-editor')[0], {
+    mode:'tvquery', theme: 'tvnews', lineNumbers: false,
+    autoCloseBrackets: true, matchBrackets: true,
+    lineWrapping: true, noNewlines: true, scrollbarStyle: null,
+    placeholder: 'enter search here (all the data, if blank)',
+    extraKeys: { Enter: search }
+  });
+  setCodeEditorValue(editor, text);
+  CODE_EDITORS[color] = editor;
 
   let tbody = $('#searchTable > tbody');
   tbody.append(new_row);
@@ -654,11 +659,9 @@ function getRawQueries() {
   let queries = [];
   $('#searchTable > tbody > tr').each(function() {
     if ($(this).attr('name')) {
-      let query_str = $.trim($(this).find('input[name="query"]').val());
-      queries.push({
-        color: $(this).attr('data-color'),
-        text: query_str
-      });
+      let color = $(this).attr('data-color');
+      let query_str = CODE_EDITORS[color].getValue();
+      queries.push({color: color, text: $.trim(query_str)});
     }
   });
   return queries;
@@ -667,7 +670,13 @@ function getRawQueries() {
 function search(event) {
   clearChart();
 
-  let chart_options = getChartOptions();
+  var chart_options;
+  try {
+    chart_options = getChartOptions();
+  } catch (e) {
+    alertAndThrow(e.message);
+  }
+
   let lines = getRawQueries().map(
     raw_query => {
       var parsed_query;
@@ -677,7 +686,8 @@ function search(event) {
         alertAndThrow(e.message);
       }
       return {color: raw_query.color, query: parsed_query};
-    });
+    }
+  );
 
   $('#shade').show();
   let indexed_search_results = [];
@@ -731,6 +741,8 @@ function setDataVersionWarning(version_id) {
 }
 
 function initialize() {
+  addParsingMode('tvnews', {no_prefix: true, check_values: true});
+
   let params = (new URL(document.location)).searchParams;
   minimalMode = params.get('minimal') == 1;
   chartHeight = params.get('chartHeight') ? parseInt(params.get('chartHeight')) : DEFAULT_CHART_DIMS.height;
@@ -763,6 +775,8 @@ function initialize() {
       search();
     }
   }
+
+  // setInterval(() => {Object.values(CODE_EDITORS).forEach(e => e.refresh())}, 250);
 
   $(".chosen-select").chosen({width: 'auto'});
   $('#searchButton').click(search);

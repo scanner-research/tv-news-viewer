@@ -19,13 +19,13 @@ function getPhrasesToHighlight(query) {
         case 'or':
           v.forEach(x => visit_queue.push(x));
           break;
-        case '{{ search_keys.text }}': {
+        case SEARCH_KEY.text: {
           v.split(/[&|\^]+/).map($.trim).filter(token_filter).forEach(
             w => { phrases.add(w.toLowerCase()); }
           );
           break;
         }
-        case '{{ search_keys.name }}': {
+        case SEARCH_KEY.face_name: {
           v.split(' ').map($.trim).filter(token_filter).forEach(
             w => { phrases.add(w.toLowerCase()); }
           );
@@ -38,6 +38,9 @@ function getPhrasesToHighlight(query) {
 }
 
 function displayVideos(page_i) {
+  // Kill any pending requests
+  window.stop();
+
   let params = PARAMS;
   let query = QUERY;
 
@@ -66,7 +69,6 @@ function displayVideos(page_i) {
   page_buttons_div.find('button[name="info"]').text(
     `Page ${(page_i + 1).toLocaleString()} / ${n_pages.toLocaleString()} (${params.video_count.toLocaleString()} videos)`
   );
-  console.log('Executing query:', query);
 
   let caption_data = {};
   let face_data = {}
@@ -102,8 +104,10 @@ function displayVideos(page_i) {
             vgrid_settings.video_endpoint = '{{ archive_video_endpoint }}';
             vgrid_settings.show_timeline_controls = false;
           } else {
+            {% if video_endpoint is not none %}
             vgrid_settings.video_endpoint = '{{ video_endpoint }}';
             vgrid_settings.show_timeline_controls = true;
+            {% endif %}
 
             {% if frameserver_endpoint is not none %}
             // FIXME: this reveals the frameserver
@@ -120,11 +124,18 @@ function displayVideos(page_i) {
         }
       },
       error => {
-        alert('Search failed.');
         console.log(error);
       }
     );
   });
+}
+
+function convertHex(hex, a){
+    hex = hex.replace('#', '');
+    r = parseInt(hex.substring(0,2), 16);
+    g = parseInt(hex.substring(2,4), 16);
+    b = parseInt(hex.substring(4,6), 16);
+    return `rgba(${r},${g},${b},${a})`;
 }
 
 function loadVideos(params, serve_from_internet_archive) {
@@ -134,12 +145,17 @@ function loadVideos(params, serve_from_internet_archive) {
   CURR_PAGE = 0;
 
   $('#textInfo').append(
-    QUERY.alias ?
-      [$('<span>').css('color', PARAMS.color).text(QUERY.alias),
-       '&nbsp;',
-       $('<span>').html('&#9432;').attr('title', QUERY.query)]
-      : $('<code>').css('color', PARAMS.color).text(
-        $.trim(QUERY.query) ? QUERY.query : '<blank query: i.e. all the data>')
+    $('<div>').addClass('query-title').css({
+      'border-color': PARAMS.color,
+      'background-color': convertHex(PARAMS.color, 0.5)
+    }).append(
+      QUERY.alias ? [
+        $('<span>').text(QUERY.alias), '&nbsp;',
+        $('<span>').html('&#9432;').attr('title', QUERY.query)
+      ] : $('<code>').text(
+        $.trim(QUERY.query) ? QUERY.query : '<blank query: i.e. all the data>'
+      )
+    )
   );
 
   if (PARAMS.video_count > 0) {

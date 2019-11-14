@@ -12,17 +12,6 @@ const VGRID_INSTRUCTIONS = $('<ul />').append(
     Expand the video thumbnail to show labeled identities.`)
 );
 
-var SERVE_FROM_INTERNET_ARCHIVE = true;
-
-{% if video_endpoint is not none %}
-function test_auth() {
-  let img = new Image();
-  img.onload = () => { SERVE_FROM_INTERNET_ARCHIVE = false; };
-  img.src = '{{ video_endpoint }}/do_not_delete.jpg';
-}
-test_auth();
-{% endif %}
-
 String.prototype.replaceAll = function(search, replacement) {
     var target = this;
     return target.split(search).join(replacement);
@@ -396,23 +385,23 @@ class Chart {
   }
 }
 
-function resizeVideoIFrames() {
-  $('.vgrid-iframe').each(function() {
-    let iframe = $(this)[0];
-    if (iframe && document.contains(iframe)) {
-      $(iframe).ready(function() {
-        if (iframe.contentWindow.document.body) {
-          iframe.height = iframe.contentWindow.document.body.scrollHeight;
-        }
-      });
-    }
-  });
-  setTimeout(resizeVideoIFrames, 100);
-}
-resizeVideoIFrames();
+setInterval(() => {
+ $('.vgrid-iframe').each(function() {
+   let iframe = $(this)[0];
+   if (iframe && document.contains(iframe)) {
+     $(iframe).ready(function() {
+       if (iframe.contentWindow.document.body) {
+         iframe.height = iframe.contentWindow.document.body.scrollHeight;
+       }
+     });
+   }
+ });
+}, 100);
 
 // Invalidate all tooltips
 function hideTooltips() {
   $('.chart-tooltip').hide();
 }
 $(window).scroll(hideTooltips);
+
+testVideoAuth();
