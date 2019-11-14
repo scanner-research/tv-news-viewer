@@ -118,7 +118,8 @@ function generateCodeMirrorParser(options) {
     function getStartState() {
       return {
         prefix: READ_STATE.notStarted, alias: READ_STATE.notStarted,
-        match_next: null, paren_depth: 0, curr_key: null
+        match_next: null, paren_depth: 0, curr_key: null,
+        ready_for_key: true
       };
     };
     return {
@@ -179,8 +180,11 @@ function generateCodeMirrorParser(options) {
           } else if (stream.eat('(')) {
             state.prefix = READ_STATE.done;
             state.paren_depth += 1;
+            state.ready_for_key = true;
             return null;
           } else if (stream.eat(')')) {
+            state.prefix = READ_STATE.done;
+            state.ready_for_key = true;
             state.paren_depth -= 1;
             if (state.paren_depth < 0) {
               fail(stream);
@@ -189,15 +193,20 @@ function generateCodeMirrorParser(options) {
             }
           } else if (stream.match(KEYWORD_REGEX)) {
             state.prefix = READ_STATE.done;
+            state.ready_for_key = true;
             return 'keyword';
           } else {
             var token;
             if (token = stream.match(/([^=\s]+)(\s*=)/)) {
+              if (!state.ready_for_key) {
+                return fail(stream);
+              }
               let key = token[1];
               stream.backUp(token[2].length);
               state.prefix = READ_STATE.done;
               state.match_next = /\s*=\s*/;
               state.curr_key = key;
+              state.ready_for_key = false;
               if (options.check_values) {
                 if (VALID_KEYS.indexOf(key) < 0) {
                   return 'error';
