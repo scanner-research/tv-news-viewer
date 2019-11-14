@@ -215,7 +215,7 @@ class Chart {
       if (this.search_results.some(kv => !kv[1].has_normalization())) {
         y_axis_title = 'Warning: mixing normalized and absolute screen time';
       } else {
-        y_axis_title = `Normalized Screen Time`;
+        y_axis_title = `Fraction of Screen Time`;
       }
     } else {
       y_axis_title = 'Minutes';
