@@ -146,9 +146,6 @@ class Chart {
       new Date(this.options.start_date).getUTCFullYear()
     );
 
-    // Counting unit
-    let unit = 'minutes';
-
     // Helper to compute values
     let raw_precision = 2;
     let exp_threshold = 0.001;
@@ -156,7 +153,6 @@ class Chart {
       var value = video_data.reduce((acc, x) => acc + x[1], 0);
       var value_str;
       if (result.normalize) {
-        // Normalized is unitless
         var denom = _.get(result.normalize, t, null);
         if (denom) { // TODO: what if this is NaN
           value /= denom;
@@ -168,11 +164,9 @@ class Chart {
         if (result.subtract) {
           value -= _.get(result.subtract, t, 0.);
         }
-        if (unit == 'minutes') {
-          value = secondsToMinutes(value);
-        }
+        value = secondsToMinutes(value);
         let frac_digits = value > 30 ? 0 : 2;
-        value_str = `${value.toLocaleString(undefined, {maximumFractionDigits: frac_digits})}`;
+        value_str = value.toLocaleString(undefined, {maximumFractionDigits: frac_digits});
       }
       return {value: value, text: value_str};
     }
@@ -219,12 +213,12 @@ class Chart {
     var y_axis_title;
     if (this.search_results.some(kv => kv[1].has_normalization())) {
       if (this.search_results.some(kv => !kv[1].has_normalization())) {
-        y_axis_title = 'Warning: mixing normalized and absolute units';
+        y_axis_title = 'Warning: mixing normalized and absolute screen time';
       } else {
-        y_axis_title = `Normalized fraction of ${unit}`;
+        y_axis_title = `Normalized Screen Time`;
       }
     } else {
-      y_axis_title = unit.charAt(0).toUpperCase() + unit.slice(1);
+      y_axis_title = 'Minutes';
     }
 
     let vega_layers = [{
