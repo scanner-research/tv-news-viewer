@@ -16,7 +16,7 @@ const DEFAULT_AGGREGATE_BY = '{{ default_agg_by }}';
 
 const DEFAULT_TEXT_WINDOW = '{{ default_text_window }}';
 
-const QUERY_PREFIX = 'COUNT screen time WHERE';
+const QUERY_PREFIX = '';
 
 const SEARCH_KEY = {
   {% for kv in search_keys %}{{ kv.0 }}: '{{ kv.1 }}', {% endfor %}

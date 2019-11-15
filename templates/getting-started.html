@@ -141,8 +141,8 @@
     For example, we can compute the total screen time of men and women in the
     data set. This can be done using the <code>{{ search_keys.face_tag }}</code>
     filter predicate. In this case, we want to filter on gender, so the filters
-    will be <code>{{ search_keys.face_tag }}=male"</code> and
-    <code>{{ search_keys.face_tag }}=female"</code> for frames that contain a face
+    will be <code>{{ search_keys.face_tag }}="male"</code> and
+    <code>{{ search_keys.face_tag }}"=female"</code> for frames that contain a face
     with a man and woman, respectively. Both of these queries can also be
     made by selecting the gender tag in the dropdown search editor.
 
@@ -325,7 +325,7 @@
     setCodeArea('#unitedNationsWindowCode', united_nations_window_queries);
 
     setCodeArea('#menAndCNNCode', [
-      '{{ search_keys.face_tag }}=male" AND {{ search_keys.channel }}=CNN'
+      '{{ search_keys.face_tag }}="male" AND {{ search_keys.channel }}=CNN'
     ]);
     setCodeArea('#trumpAndWallCode', [
       '{{ search_keys.face_name }}="donald trump" AND {{ search_keys.text }}="BORDER WALL"'
