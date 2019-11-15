@@ -530,7 +530,15 @@ function addRow(query) {
   setCodeEditorValue(editor, text);
   editor.on('cursorActivity', (cm) => {
     if (!cm.state.completeActive) {
-      cm.showHint();
+      // Only show hint if the query builder is closed
+      let tmp = Object.entries(CODE_EDITORS).filter(([c, e]) => e == editor);
+      if (tmp.length > 0) {
+        let data_color = tmp[0][0];
+        let search_table_row = $(`#searchTable tr[data-color="${data_color}"]`);
+        if (search_table_row.find('.query-builder').length == 0) {
+          cm.showHint();
+        }
+      }
     }
   });
   editor.on('change', onCodeUpdate);
