@@ -525,12 +525,17 @@ function addRow(query) {
     autoCloseBrackets: true, matchBrackets: true,
     lineWrapping: true, noNewlines: true, scrollbarStyle: null,
     placeholder: 'enter search here (all the data, if blank)',
-    extraKeys: {Enter: search, Tab: 'autocomplete'},
     hintOptions: {hint: CodeMirror.hint.tvnews}
   });
   setCodeEditorValue(editor, text);
+  editor.on('cursorActivity', (cm) => {
+    if (!cm.state.completeActive) {
+      cm.showHint();
+    }
+  });
+  editor.on('change', onCodeUpdate);
   CODE_EDITORS[color] = editor;
-  
+
   let tbody = $('#searchTable > tbody');
   tbody.append(new_row);
 
@@ -541,7 +546,21 @@ function addRow(query) {
 
   new_row.find('input[name="query"]').trigger('change');
 }
-$('#searchTable .add-row-btn').click(() => {addRow();});
+
+function onCodeUpdate() {
+  Object.entries(CODE_EDITORS).forEach(([data_color, editor]) => {
+    var err = false;
+    try {
+      new SearchableQuery(editor.getValue(), false);
+    } catch (e) {
+      console.log(e);
+      err = true;
+    }
+    $(`#searchTable tr[data-color="${data_color}"]`).find('.code-editor').css(
+      'background-color', err ? '#fee7e2' : ''
+    );
+  });
+}
 
 function getDataString(chart_options, lines) {
   return encodeURIComponent(JSON.stringify({
@@ -776,6 +795,7 @@ function initialize() {
   // setInterval(() => {Object.values(CODE_EDITORS).forEach(e => e.refresh())}, 250);
 
   $(".chosen-select").chosen({width: 'auto'});
+  $('#searchTable .add-row-btn').click(() => {addRow();});
   $('#searchButton').click(search);
   $('#resetButton').click(function() {
     if (window.confirm('Warning! This will clear all of your current queries.')) {

@@ -242,7 +242,7 @@ function generateCodeMirrorParser(options) {
               state.curr_key = key;
               state.ready_for_key = false;
               state.ready_for_keyword = false;
-              if (options.check_values) {
+              if (options.check_values && !options.allow_free_tokens) {
                 if (ValidKeys.indexOf(key) < 0) {
                   return 'error';
                 }
@@ -279,12 +279,16 @@ function addCodeHintHelper(name) {
   let keywords_regex = new RegExp('^(' + keywords_regex_str + ')$', 'i');
   let inv_keywords_regex_str = reverseString(keywords_regex_str);
 
-  let suffix_regex = new RegExp(`^(.*?)(?:["')(?:$=]|${keywords_regex_str})`, 'i');
-  let inv_prefix_regex_1 = new RegExp(`^\\s*(?:${inv_keywords_regex_str})`);
-  let inv_prefix_regex_2 = new RegExp(`^(.*?)[="')($]`);
+  let unit_suffix_regex = new RegExp(`^(.*?)(?:["')(?:$=]|\s*(${keywords_regex_str}))`, 'i');
+  let unit_inv_prefix_regex_1 = new RegExp(`^\\s*(?:${inv_keywords_regex_str})`, 'i');
+  let unit_inv_prefix_regex_2 = new RegExp(`^(.*?)[="')($]`);
 
   let search_keys = Object.values(SEARCH_KEY).filter(x => x != SEARCH_KEY.video);
-  let search_keys_regex = new RegExp('^(' + search_keys.join('|') + ')$', 'i');
+  let searck_keys_regex_str = search_keys.join('|');
+  let search_keys_regex = new RegExp('^(' + searck_keys_regex_str + ')$', 'i');
+
+  let unquoted_value_suffix_regex = new RegExp(`^(.*?)\\s*(?:[()$]|${keywords_regex_str})`, 'i');
+  let should_propose_key_regex = new RegExp(`(?:[()]|${keywords_regex_str})(\\s*)$`, 'i');
 
   let hours = [];
   for (var i = 0; i < 24; i++) {
@@ -331,133 +335,149 @@ function addCodeHintHelper(name) {
     var start = cursor.ch;
     var end = start;
 
+    if ($.trim(line).length == 0) {
+      return {
+        list: search_keys.map(x => `${x}=`),
+        from: CodeMirror.Pos(cursor.line, end),
+        to: CodeMirror.Pos(cursor.line, end)
+      }
+    }
+
+    // Find the extent of the current token that we are in
     while (end < line.length && token_chars_regex.test(line.charAt(end))) {
       ++end;
     }
     while (start && token_chars_regex.test(line.charAt(start - 1))) {
       --start;
     }
-    var curr_unit = start !== end && line.slice(start, end);
+    var curr_unit = line.slice(start, end);
 
     var suffix = line.substring(end);
     var inv_prefix = reverseString(line.substring(0, start));
 
-    var match;
-    if (curr_unit) {
-      if (curr_unit.match(keywords_regex)) {
-        if (suffix.length == 0 || !suffix.match(/^[\w\s]*["']/)) {
-          return {
-            list: search_keys.map(x => ` ${x}=`),
-            from: CodeMirror.Pos(cursor.line, end),
-            to: CodeMirror.Pos(cursor.line, end)
-          }
+    if (inv_prefix.match(/^.*?\[/) && prefix.match(/^.*?\]/)) {
+      // Inside the alias
+      return null;
+    }
+
+    console.log(0, curr_unit);
+    if (curr_unit.match(keywords_regex)) {
+      return $.trim(suffix).length > 0 ? null : {
+        list: search_keys.map(x => ` ${x}=`),
+        from: CodeMirror.Pos(cursor.line, end),
+        to: CodeMirror.Pos(cursor.line, end)
+      };
+    }
+    console.log(1, curr_unit);
+
+    // Extend current unit
+    if (match = suffix.match(unit_suffix_regex)) {
+      end += match[1].length;
+    }
+    if (match = inv_prefix.match(unit_inv_prefix_regex_1)) {
+      // hit a keyword
+    } else if (match = inv_prefix.match(unit_inv_prefix_regex_2)) {
+      // hit a special token
+      start -= match[1].length;
+    }
+
+    curr_unit = line.slice(start, end);
+    suffix = line.substring(end);
+    inv_prefix = reverseString(line.substring(0, start));
+
+    console.log(2, curr_unit);
+    if ($.trim(curr_unit).match(search_keys_regex)) {
+      // cursor is in a key
+      let key = curr_unit;
+      var values = getValuesForKey(key).map(x => `"${x}"`);
+      if (match = suffix.match(/^\s*=/)) {
+        end += match[0].length;
+        curr_unit = line.slice(start, end);
+      } else {
+        values = values.map(x => '=' + x);
+      }
+      suffix = line.substring(end);
+
+      if (match = suffix.match(/^\s*(?:".*?"|'.*?'|["'].*?$)/)) {
+        // Overwrite existing quoted value
+        return {
+          list: values,
+          from: CodeMirror.Pos(cursor.line, end),
+          to: CodeMirror.Pos(cursor.line, end + match[0].length)
+        }
+      } else if (match = suffix.match(unquoted_value_suffix_regex)) {
+        // Overwrite existing unquoted value
+        return {
+          list: values,
+          from: CodeMirror.Pos(cursor.line, end),
+          to: CodeMirror.Pos(cursor.line, end + match[1].length)
         }
       } else {
-        if (match = suffix.match(suffix_regex)) {
-          curr_unit += match[1];
-          end += match[1].length;
-        }
-        if (match = inv_prefix.match(inv_prefix_regex_1)) {
-          // hit a keyword
-        } else if (match = inv_prefix.match(inv_prefix_regex_2)) {
-          // hit a special token
-          curr_unit = reverseString(match[1]) + curr_unit;
-          start -= match[1].length;
-        }
-
-        suffix = line.substring(end);
-        inv_prefix = reverseString(line.substring(0, start));
-        if (match = curr_unit.match(search_keys_regex)) {
-          // curr_unit is a search key
-          let key = curr_unit;
-          var values = getValuesForKey(key).map(x => `"${x}"`);
-          if (match = suffix.match(/^\s*=/)) {
-            end += match[0].length;
-          } else {
-            values = values.map(x => '=' + x);
-          }
-          suffix = line.substring(end);
-          // Dont overwrite existing
-          if (!suffix.match(/^(\s*(".*?"|'.*?')|\w+)/)) {
-            return {
-              list: values,
-              from: CodeMirror.Pos(cursor.line, end),
-              to: CodeMirror.Pos(cursor.line, end)
-            }
-          }
-        } else if (match = inv_prefix.match(/^(["'])?\s*=/)) {
-          // curr_unit is a value
-          let key = reverseString(inv_prefix.match(/\s*=(\w+)/)[1]);
-          var values = [];
-          if (key.match(search_keys_regex)) {
-            values = getValuesForKey(key, curr_unit).map(v => `"${v}"`);
-          }
-          if (match[1]) {
-            start--;
-          }
-          if (suffix.match(/^["']/)) {
-            end++;
-          }
-          return {
-            list: values,
-            from: CodeMirror.Pos(cursor.line, start),
-            to: CodeMirror.Pos(cursor.line, end)
-          }
-        } else {
-          let token_regex = new RegExp('^' + curr_unit);
-          if (match = inv_prefix.match(/^(\s*)[)"']/)) {
-            let padding = match[1] ? '' : ' ';
-            return {
-              list: ['AND', 'OR'].map(x => padding + x),
-              from: CodeMirror.Pos(cursor.line, end),
-              to: CodeMirror.Pos(cursor.line, end)
-            }
-          } else {
-            var values = search_keys.filter(x => x.match(token_regex));
-            if (values.length == 0) {
-              values = search_keys;
-            }
-            if (suffix.length > 0 && !suffix.match(/^\s*=/)) {
-              values = values.map(x => x + '=');
-            }
-            return {
-              list: values,
-              from: CodeMirror.Pos(cursor.line, start),
-              to: CodeMirror.Pos(cursor.line, end)
-            }
-          }
+        // No existing value
+        return {
+          list: values,
+          from: CodeMirror.Pos(cursor.line, end),
+          to: CodeMirror.Pos(cursor.line, end)
         }
       }
+    }
+
+    console.log(3, curr_unit);
+    // Find the extent of the current value string
+    if (match = inv_prefix.match(/^(.*?)(["'=])/)) {
+      let quote_char = match[2] == '=' ? null : match[2];
+      start -= match[1].length;
+      inv_prefix = reverseString(line.substring(0, start));
+      if (quote_char) {
+        match = suffix.match(new RegExp(`^(.*?)(?:\\w+=|${quote_char})`));
+      } else {
+        match = suffix.match(unquoted_value_suffix_regex);
+      }
+      if (match) {
+        end += match[1].length;
+      }
+    }
+
+    curr_unit = line.slice(start, end);
+    suffix = line.substring(end);
+    inv_prefix = reverseString(line.substring(0, start));
+
+    console.log(4, curr_unit);
+    if (match = inv_prefix.match(/^(["'])?\s*=/)) {
+      // cursor is in a value
+      let key = reverseString(inv_prefix.match(/\s*=\s*(\w+)/)[1]);
+      var values = [];
+      if (key.match(search_keys_regex)) {
+        values = getValuesForKey(key, curr_unit).map(v => `"${v}"`);
+      }
+      if (match[1]) {
+        start--;
+      }
+      if (suffix.match(/^["']/)) {
+        end++;
+      }
+      return {
+        list: values,
+        from: CodeMirror.Pos(cursor.line, start),
+        to: CodeMirror.Pos(cursor.line, end)
+      }
     } else {
-      if (match = inv_prefix.match(/^(\s*)["']/)) {
-        // Previous token was a data value
+      if ($.trim(suffix).length == 0 &&
+          (match = curr_unit.match(should_propose_key_regex))) {
+        // Propose a new key filter
+        let padding = match[1] ? '' : ' ';
+        return {
+          list: search_keys.map(x => `${padding}${x}= `),
+          from: CodeMirror.Pos(cursor.line, end),
+          to: CodeMirror.Pos(cursor.line, end)
+        }
+      } else if (match = inv_prefix.match(/^(\s*)[)"']/)) {
+        // Propose a new conjunction
         let padding = match[1] ? '' : ' ';
         return {
           list: ['AND', 'OR'].map(x => padding + x),
           from: CodeMirror.Pos(cursor.line, end),
           to: CodeMirror.Pos(cursor.line, end)
-        }
-      } else if (inv_prefix.match(/^\s*=/)) {
-        let key = reverseString(inv_prefix.match(/\s*=(\w+)/)[1]);
-        var values = [];
-        if (key.match(search_keys_regex)) {
-          values = getValuesForKey(key).map(x => `"${x}"`);
-        }
-        return {
-          list: values,
-          from: CodeMirror.Pos(cursor.line, start),
-          to: CodeMirror.Pos(cursor.line, end)
-        }
-      } else {
-        if (suffix.length == 0 || !suffix.match(/^[\w\s]*["']/)) {
-          let padding = (
-            inv_prefix.length > 0 && !inv_prefix.charAt(0).match(/[\s(]/) ?
-            ' ' : '');
-          return {
-            list: search_keys.map(x => padding + x + '='),
-            from: CodeMirror.Pos(cursor.line, end),
-            to: CodeMirror.Pos(cursor.line, end)
-          }
         }
       }
     }
