@@ -26,12 +26,6 @@ const SEARCH_PARAM = {
   {% for kv in search_params %}{{ kv.0 }}: '{{ kv.1 }}', {% endfor %}
 };
 
-const CHANNEL_REGEX = /CNN|FOX(?:NEWS)?|MSNBC/i;
-const HOUR_REGEX = /(\d+)(?:-(\d+))?/;
-
-const DAYS_OF_WEEK = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
-const DAY_OF_WEEK_REGEX = new RegExp(`(${DAYS_OF_WEEK.join('|')})(?:-(${DAYS_OF_WEEK.join('|')}))?`, 'i');
-
 var SERVE_FROM_INTERNET_ARCHIVE = true;
 
 function testVideoAuth() {

@@ -526,11 +526,12 @@ function addRow(query) {
   );
 
   let editor = CodeMirror(new_row.find('.code-editor')[0], {
-    mode:'tvquery', theme: 'tvnews', lineNumbers: false,
+    mode: 'tvnews', theme: 'tvnews', lineNumbers: false,
     autoCloseBrackets: true, matchBrackets: true,
     lineWrapping: true, noNewlines: true, scrollbarStyle: null,
     placeholder: 'enter search here (all the data, if blank)',
-    extraKeys: { Enter: search }
+    extraKeys: {Enter: search, Tab: 'autocomplete'},
+    hintOptions: {hint: CodeMirror.hint.tvnews}
   });
   setCodeEditorValue(editor, text);
   CODE_EDITORS[color] = editor;
@@ -742,6 +743,7 @@ function setDataVersionWarning(version_id) {
 
 function initialize() {
   addParsingMode('tvnews', {no_prefix: true, check_values: true});
+  addCodeHintHelper('tvnews');
 
   let params = (new URL(document.location)).searchParams;
   minimalMode = params.get('minimal') == 1;

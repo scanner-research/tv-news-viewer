@@ -35,7 +35,7 @@ def parse_date_from_video_name(p, tz=ET) -> Tuple[datetime, int]:
             timestamp_et.hour * 60 + timestamp_et.minute)
 
 
-HOUR_RE = r'(\d+)(?:-(\d+))?'
+HOUR_RE = re.compile(r'(\d+)(?:-(\d+))?')
 
 
 def parse_hour_set(s: str) -> Set[int]:
@@ -56,7 +56,7 @@ def parse_hour_set(s: str) -> Set[int]:
 
 
 DAYS_OF_WEEK = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']
-DAY_OF_WEEK_RE = r'(\w{3})(?:-(\w{3}))?'
+DAY_OF_WEEK_RE = re.compile(r'(\w{3})(?:-(\w{3}))?')
 
 
 def parse_day_of_week_set(s: str) -> Set[int]:

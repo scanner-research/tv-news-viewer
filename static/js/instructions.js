@@ -1,5 +1,7 @@
+const PARSING_MODE = 'tvnews';
+
 function initialize() {
-  addParsingMode('tvnews', {
+  addParsingMode(PARSING_MODE, {
     allow_free_tokens: true, check_values: false, multi_line: true
   });
 
@@ -23,8 +25,9 @@ function initialize() {
 
 function setCodeArea(area, queries) {
   CodeMirror($(area)[0], {
-    mode:'tvquery', value: queries.map(x => QUERY_PREFIX + ' ' + x).join('\n'),
-    lineNumbers: true, readOnly: 'nocursor', theme: 'tvnews'
+    mode: PARSING_MODE, lineNumbers: true, readOnly: 'nocursor', theme: 'tvnews'
+    value: queries.map(x => QUERY_PREFIX + ' ' + x).join('\n'),
+
   });
 }
 

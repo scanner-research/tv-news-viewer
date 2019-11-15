@@ -1,10 +1,12 @@
-const READ_STATE = {notStarted: 1, inProgress: 2, done: 3};
-const KEYWORD_REGEX_STR = 'AND|OR|NORMALIZE|SUBTRACT';
-const KEYWORD_REGEX = new RegExp(KEYWORD_REGEX_STR, 'i');
-const SPACE_KEYWORD_REGEX = new RegExp(`\\s+(?:${KEYWORD_REGEX_STR})`, 'i');
-const VALID_KEYS = Object.values(SEARCH_KEY);
+const KEYWORDS = ['AND', 'OR', 'NORMALIZE', 'SUBTRACT']
 
 function generateCodeMirrorParser(options) {
+
+  let ReadState = {notStarted: 1, inProgress: 2, done: 3};
+  let ValidKeys = Object.values(SEARCH_KEY);
+
+  let keyword_regex = new RegExp(KEYWORDS.join('|'), 'i');
+  let space_keyword_regex = new RegExp(`\\s+(?:${KEYWORDS.join('|')})`, 'i');
 
   function fail(stream) {
     if (!stream.skipTo('\n')) {
@@ -33,7 +35,7 @@ function generateCodeMirrorParser(options) {
       // Unquoted case
       let buf = [];
       while (!stream.eol()) {
-        if (stream.peek() == ')' || stream.match(SPACE_KEYWORD_REGEX, false)) {
+        if (stream.peek() == ')' || stream.match(space_keyword_regex, false)) {
           break;
         }
         buf.push(stream.next());
@@ -106,7 +108,7 @@ function generateCodeMirrorParser(options) {
           return findInArrayCaseInsensitive(ALL_PEOPLE, value) ? 'name' : 'error';
         case SEARCH_KEY.face_count:
         case SEARCH_KEY.text_window:
-          return value.match(/d+/) ? 'number' : 'error';
+          return value.match(/\d+/) ? 'number' : 'error';
         case SEARCH_KEY.text:
           return 'string';
       }
@@ -117,7 +119,7 @@ function generateCodeMirrorParser(options) {
   return function() {
     function getStartState() {
       return {
-        prefix: READ_STATE.notStarted, alias: READ_STATE.notStarted,
+        prefix: ReadState.notStarted, alias: ReadState.notStarted,
         match_next: null, paren_depth: 0, curr_key: null,
         ready_for_key: true
       };
@@ -138,14 +140,14 @@ function generateCodeMirrorParser(options) {
 
         // Prefix state
         if (!options.no_prefix) {
-          if (state.prefix == READ_STATE.notStarted) {
+          if (state.prefix == ReadState.notStarted) {
             if (stream.match(/COUNT/i)) {
-              state.prefix = READ_STATE.inProgress;
+              state.prefix = ReadState.inProgress;
               return 'keyword';
             }
-          } else if (state.prefix == READ_STATE.inProgress) {
+          } else if (state.prefix == ReadState.inProgress) {
             if (stream.match(/WHERE/i)) {
-              state.prefix = READ_STATE.done;
+              state.prefix = ReadState.done;
               return 'keyword';
             } if (stream.eatSpace()) {
               return null;
@@ -158,10 +160,10 @@ function generateCodeMirrorParser(options) {
         }
 
         // Read user defined alias
-        if (state.alias != READ_STATE.done) {
+        if (state.alias != ReadState.done) {
           if (stream.match(/\[([^\]])+\]/)) {
-            state.prefix = READ_STATE.done;
-            state.alias = READ_STATE.done;
+            state.prefix = ReadState.done;
+            state.alias = ReadState.done;
             return null;
           }
         }
@@ -178,12 +180,12 @@ function generateCodeMirrorParser(options) {
           if (stream.eatSpace()) {
             return null;
           } else if (stream.eat('(')) {
-            state.prefix = READ_STATE.done;
+            state.prefix = ReadState.done;
             state.paren_depth += 1;
             state.ready_for_key = true;
             return null;
           } else if (stream.eat(')')) {
-            state.prefix = READ_STATE.done;
+            state.prefix = ReadState.done;
             state.ready_for_key = true;
             state.paren_depth -= 1;
             if (state.paren_depth < 0) {
@@ -191,8 +193,8 @@ function generateCodeMirrorParser(options) {
             } else {
               return null;
             }
-          } else if (stream.match(KEYWORD_REGEX)) {
-            state.prefix = READ_STATE.done;
+          } else if (stream.match(keyword_regex)) {
+            state.prefix = ReadState.done;
             state.ready_for_key = true;
             return 'keyword';
           } else {
@@ -203,18 +205,18 @@ function generateCodeMirrorParser(options) {
               }
               let key = token[1];
               stream.backUp(token[2].length);
-              state.prefix = READ_STATE.done;
+              state.prefix = ReadState.done;
               state.match_next = /\s*=\s*/;
               state.curr_key = key;
               state.ready_for_key = false;
               if (options.check_values) {
-                if (VALID_KEYS.indexOf(key) < 0) {
+                if (ValidKeys.indexOf(key) < 0) {
                   return 'error';
                 }
               }
               return 'key';
             } else if (options.allow_free_tokens && stream.match(/[^\s]+/)) {
-              state.prefix = READ_STATE.done;
+              state.prefix = ReadState.done;
               return null;
             } else {
               return fail(stream);
@@ -227,8 +229,183 @@ function generateCodeMirrorParser(options) {
   }
 }
 
+function reverseString(str) {
+  return str.split('').reverse().join('');
+}
+
 function addParsingMode(name, options) {
-  CodeMirror.defineMode('tvquery', generateCodeMirrorParser(options));
+  CodeMirror.defineMode(name, generateCodeMirrorParser(options));
+}
+
+function addCodeHintHelper(name) {
+  let token_chars_regex = /[\w\-|&$]/;
+
+  let keywords_regex_str = KEYWORDS.join('|');
+  let keywords_regex = new RegExp('^(' + keywords_regex_str + ')$', 'i');
+  let inv_keywords_regex_str = reverseString(keywords_regex_str);
+
+  let suffix_regex = new RegExp(`^(.*?)(?:["')(?:$=]|${keywords_regex_str})`, 'i');
+  let inv_prefix_regex_1 = new RegExp(`^\\s*(?:${inv_keywords_regex_str})`);
+  let inv_prefix_regex_2 = new RegExp(`^(.*?)[="')($]`);
+
+  let search_keys = Object.values(SEARCH_KEY).filter(x => x != SEARCH_KEY.video);
+  let search_keys_regex = new RegExp('^(' + search_keys.join('|') + ')$', 'i');
+
+  function getValuesForKey(key, prefix) {
+    var values = [];
+    switch (key) {
+      case SEARCH_KEY.channel:
+        values = CHANNELS;
+        break;
+      case SEARCH_KEY.show:
+        values = ALL_SHOWS;
+        break;
+      case SEARCH_KEY.face_name:
+        values = ALL_PEOPLE;
+        break;
+      case SEARCH_KEY.face_tag:
+        values = ALL_TAGS;
+        break;
+      case SEARCH_KEY.day_of_week:
+        values = DAYS_OF_WEEK;
+        break;
+      case SEARCH_KEY.hour:
+        values = Array(24).keys();
+        break;
+      default:
+        break;
+    }
+    if (prefix) {
+      let prefix_regex = new RegExp('^' + prefix, 'i');
+      let partial_matches = values.filter(x => x.match(prefix_regex));
+      if (partial_matches.length > 0) {
+        values = partial_matches;
+      }
+    }
+    return values.filter(x => x.length > 0);
+  }
+
+  CodeMirror.registerHelper('hint', name, function(editor) {
+    let cursor = editor.getCursor();
+    let line = editor.getLine(cursor.line);
+    var start = cursor.ch;
+    var end = start;
+
+    while (end < line.length && token_chars_regex.test(line.charAt(end))) {
+      ++end;
+    }
+    while (start && token_chars_regex.test(line.charAt(start - 1))) {
+      --start;
+    }
+    var curr_unit = start !== end && line.slice(start, end);
+
+    var suffix = line.substring(end);
+    var inv_prefix = reverseString(line.substring(0, start));
+
+    var match;
+    if (curr_unit) {
+      if (curr_unit.match(keywords_regex)) {
+        // curr_unit is AND, OR, etc
+        return {
+          list: search_keys.map(x => ` ${x}=`),
+          from: CodeMirror.Pos(cursor.line, end),
+          to: CodeMirror.Pos(cursor.line, end)
+        }
+      } else {
+        if (match = suffix.match(suffix_regex)) {
+          curr_unit += match[1];
+          end += match[1].length;
+        }
+        if (match = inv_prefix.match(inv_prefix_regex_1)) {
+          // hit a keyword
+        } else if (match = inv_prefix.match(inv_prefix_regex_2)) {
+          // hit a special token
+          curr_unit = reverseString(match[1]) + curr_unit;
+          start -= match[1].length;
+        }
+
+        suffix = line.substring(end);
+        inv_prefix = reverseString(line.substring(0, start));
+        if (match = curr_unit.match(search_keys_regex)) {
+          // curr_unit is a search key
+          let key = curr_unit;
+          var values = getValuesForKey(key).map(x => `"${x}"`);
+          if (match = suffix.match(/^\s*=/)) {
+            end += match[0].length;
+          } else {
+            values = values.map(x => '=' + x);
+          }
+          return {
+            list: values,
+            from: CodeMirror.Pos(cursor.line, end),
+            to: CodeMirror.Pos(cursor.line, end)
+          }
+        } else if (match = inv_prefix.match(/^(["'])?\s*=/)) {
+          // curr_unit is a value
+          let key = reverseString(inv_prefix.match(/\s*=(\w+)/)[1]);
+          var values = [];
+          if (key.match(search_keys_regex)) {
+            values = getValuesForKey(key, curr_unit).map(v => `"${v}"`);
+          }
+          if (match[1]) {
+            start--;
+          }
+          if (suffix.match(/^["']/)) {
+            end++;
+          }
+          return {
+            list: values,
+            from: CodeMirror.Pos(cursor.line, start),
+            to: CodeMirror.Pos(cursor.line, end)
+          }
+        } else {
+          let token_regex = new RegExp('^' + curr_unit);
+          var values = search_keys.filter(x => x.match(token_regex));
+          if (values.length == 0) {
+            values = search_keys;
+          }
+          if (suffix.length > 0 && !suffix.match(/^\s*=/)) {
+            values = values.map(x => x + '=');
+          }
+          return {
+            list: values,
+            from: CodeMirror.Pos(cursor.line, start),
+            to: CodeMirror.Pos(cursor.line, end)
+          }
+        }
+      }
+    } else {
+      if (match = inv_prefix.match(/^(\s*)["']/)) {
+        // Previous token was a data value
+        let padding = match[1] ? '' : ' ';
+        return {
+          list: ['AND', 'OR'].map(x => padding + x),
+          from: CodeMirror.Pos(cursor.line, end),
+          to: CodeMirror.Pos(cursor.line, end)
+        }
+      } else if (inv_prefix.match(/^\s*=/)) {
+        let key = reverseString(inv_prefix.match(/\s*=(\w+)/)[1]);
+        var values = [];
+        if (key.match(search_keys_regex)) {
+          values = getValuesForKey(key).map(x => `"${x}"`);
+        }
+        return {
+          list: values,
+          from: CodeMirror.Pos(cursor.line, start),
+          to: CodeMirror.Pos(cursor.line, end)
+        }
+      } else {
+        let padding = (
+          inv_prefix.length > 0 && !inv_prefix.charAt(0).match(/[\s(]/) ?
+          ' ' : '');
+        return {
+          list: search_keys.map(x => padding + x + '='),
+          from: CodeMirror.Pos(cursor.line, end),
+          to: CodeMirror.Pos(cursor.line, end)
+        }
+      }
+    }
+  });
 }
 
 // Copyright 2017 Isaac Evavold
