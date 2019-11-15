@@ -376,10 +376,14 @@ function addCodeHintHelper(name) {
           } else {
             values = values.map(x => '=' + x);
           }
-          return {
-            list: values,
-            from: CodeMirror.Pos(cursor.line, end),
-            to: CodeMirror.Pos(cursor.line, end)
+          suffix = line.substring(end);
+          // Dont overwrite existing
+          if (!suffix.match(/^(\s*(".*?"|'.*?')|\w+)/)) {
+            return {
+              list: values,
+              from: CodeMirror.Pos(cursor.line, end),
+              to: CodeMirror.Pos(cursor.line, end)
+            }
           }
         } else if (match = inv_prefix.match(/^(["'])?\s*=/)) {
           // curr_unit is a value
