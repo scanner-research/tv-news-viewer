@@ -9,8 +9,7 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
       </td>
     </tr>
 
-    <tr><td colspan="2"><hr></td></tr>
-    <tr>
+    <tr class="face-div">
       <td type="key-col">
         the screen has a face that:
       </td>
@@ -20,7 +19,7 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
         </span>
       </td>
     </tr>
-    <tr>
+    <tr class="face-div">
       <td type="key-col">
         is a person
       </td>
@@ -33,7 +32,7 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
         </span>
       </td>
     </tr>
-    <tr>
+    <tr class="face-div">
       <td type="key-col">
         has tag
       </td>
@@ -53,7 +52,7 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
         </span>
       </td>
     </tr>
-    <tr>
+    <tr class="face-div">
       <td type="key-col">
         there are
       </td>
@@ -65,8 +64,7 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
       </td>
     </tr>
 
-    <tr><td colspan="2"><hr></td></tr>
-    <tr>
+    <tr class="text-div">
       <td type="key-col">
         the transcript contains
       </td>
@@ -77,7 +75,7 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
                rows="1"></textarea>
       </td>
     </tr>
-    <tr>
+    <tr class="text-div">
       <td type="key-col">
       </td>
       <td type="value-col">
@@ -90,8 +88,7 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
       </td>
     </tr>
 
-    <tr><td colspan="2"><hr></td></tr>
-    <tr>
+    <tr class="video-div">
       <td type="key-col">the channel is</td>
       <td type="value-col">
         <select class="chosen-select chosen-basic-select"
@@ -103,7 +100,7 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
         </select>
       </td>
     </tr>
-    <tr>
+    <tr class="video-div">
       <td type="key-col">the show is</td>
       <td type="value-col">
         <select class="chosen-select chosen-basic-select"
@@ -113,20 +110,19 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
       </td>
     </tr>
 
-    <tr><td colspan="2"><hr></td></tr>
-    <tr>
+    <tr class="time-div">
       <td type="key-col">the hour of day is between</td>
       <td type="value-col"><input type="text" class="form-control no-enter-submit"
           name="{{ search_keys.hour }}" value="" placeholder="0-23"> (in Eastern Time)
       </td>
     </tr>
-    <tr>
+    <tr class="time-div">
       <td type="key-col">the day of week is</td>
       <td type="value-col"><input type="text" class="form-control no-enter-submit"
           name="{{ search_keys.day_of_week }}" value="" placeholder="mon-sun"></td>
     </tr>
 
-    <tr disabled="true">
+    <tr disabled>
       <td type="key-col">*normalize the query</td>
       <td type="value-col">
         <select class="chosen-select" name="normalize" data-width="fit">
@@ -135,7 +131,6 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
         </select>
       </td>
     </tr>
-    <tr><td colspan="2"><hr></td></tr>
     <tr>
       <td type="key-col">
         Optionally, give this line a name

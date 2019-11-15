@@ -5,8 +5,8 @@ function generateCodeMirrorParser(options) {
   let ReadState = {notStarted: 1, inProgress: 2, done: 3};
   let ValidKeys = Object.values(SEARCH_KEY);
 
-  let keyword_regex = new RegExp(KEYWORDS.join('|'), 'i');
-  let space_keyword_regex = new RegExp(`\\s+(?:${KEYWORDS.join('|')})`, 'i');
+  let keyword_regex = new RegExp('^(' + KEYWORDS.join('|') + ')', 'i');
+  let space_keyword_regex = new RegExp(`^\\s+(?:${KEYWORDS.join('|')})`, 'i');
 
   function fail(stream) {
     if (!stream.skipTo('\n')) {
@@ -59,9 +59,9 @@ function generateCodeMirrorParser(options) {
     if (options.check_values) {
       switch (key) {
         case SEARCH_KEY.channel:
-          return value.match(CHANNEL_REGEX) ? 'string' : 'error';
+          return value.match(CHANNEL_REGEX) ? 'video' : 'error';
         case SEARCH_KEY.show:
-          return findInArrayCaseInsensitive(ALL_SHOWS, value) ? 'string' : 'error';
+          return findInArrayCaseInsensitive(ALL_SHOWS, value) ? 'video' : 'error';
         case SEARCH_KEY.hour: {
           let m = value.match(HOUR_REGEX);
           if (m) {
@@ -75,7 +75,7 @@ function generateCodeMirrorParser(options) {
                 return 'error';
               }
             }
-            return 'string';
+            return 'time';
           } else {
             return 'error';
           }
@@ -93,7 +93,7 @@ function generateCodeMirrorParser(options) {
                 return 'error';
               }
             }
-            return 'string';
+            return 'time';
           } else {
             return 'error';
           }
@@ -103,25 +103,46 @@ function generateCodeMirrorParser(options) {
           value.split(/\s*(?:AND|,)\s*/i).forEach(t => {
             err |= !findInArrayCaseInsensitive(ALL_TAGS, t);
           })
-          return err ? 'error' : 'tag';
+          return err ? 'error' : 'face';
         case SEARCH_KEY.face_name:
-          return findInArrayCaseInsensitive(ALL_PEOPLE, value) ? 'name' : 'error';
+          return findInArrayCaseInsensitive(ALL_PEOPLE, value) ? 'face' : 'error';
         case SEARCH_KEY.face_count:
+          return value.match(/\d+/) ? 'face' : 'error';
         case SEARCH_KEY.text_window:
-          return value.match(/\d+/) ? 'number' : 'error';
+          return value.match(/\d+/) ? 'text' : 'error';
         case SEARCH_KEY.text:
-          return 'string';
+          return 'text';
       }
     }
     return 'string';
+  }
+
+  function getKeyStyle(key) {
+    switch (key) {
+      case SEARCH_KEY.face_tag:
+      case SEARCH_KEY.face_name:
+      case SEARCH_KEY.face_count:
+        return 'face-key';
+      case SEARCH_KEY.text:
+      case SEARCH_KEY.text_window:
+        return 'text-key';
+      case SEARCH_KEY.channel:
+      case SEARCH_KEY.show:
+        return 'video-key';
+      case SEARCH_KEY.day_of_week:
+      case SEARCH_KEY.hour:
+        return 'time-key';
+      default:
+        return 'key';
+    }
   }
 
   return function() {
     function getStartState() {
       return {
         prefix: ReadState.notStarted, alias: ReadState.notStarted,
-        match_next: null, paren_depth: 0, curr_key: null,
-        ready_for_key: true
+        match_next: null, match_next_style: null, paren_depth: 0,
+        curr_key: null, ready_for_key: true, ready_for_keyword: false
       };
     };
     return {
@@ -134,8 +155,10 @@ function generateCodeMirrorParser(options) {
         // Silently consume next
         if (state.match_next) {
           let pattern = state.match_next;
+          let style = state.match_next_style;
           state.match_next = null;
-          return stream.match(pattern) ? null : fail(stream);
+          state.match_next_style = null;
+          return stream.match(pattern) ? style : fail(stream);
         }
 
         // Prefix state
@@ -172,6 +195,7 @@ function generateCodeMirrorParser(options) {
         if (state.curr_key) {
           let key = state.curr_key;
           state.curr_key = null;
+          state.ready_for_keyword = true;
           return readKey(stream, key);
         }
 
@@ -183,10 +207,12 @@ function generateCodeMirrorParser(options) {
             state.prefix = ReadState.done;
             state.paren_depth += 1;
             state.ready_for_key = true;
+            state.ready_for_keyword = false;
             return null;
           } else if (stream.eat(')')) {
             state.prefix = ReadState.done;
             state.ready_for_key = true;
+            state.ready_for_keyword = true;
             state.paren_depth -= 1;
             if (state.paren_depth < 0) {
               fail(stream);
@@ -194,8 +220,12 @@ function generateCodeMirrorParser(options) {
               return null;
             }
           } else if (stream.match(keyword_regex)) {
+            if (!state.ready_for_keyword) {
+              return fail(stream);
+            }
             state.prefix = ReadState.done;
             state.ready_for_key = true;
+            state.ready_for_keyword = false;
             return 'keyword';
           } else {
             var token;
@@ -203,20 +233,25 @@ function generateCodeMirrorParser(options) {
               if (!state.ready_for_key) {
                 return fail(stream);
               }
-              let key = token[1];
+              let key = token[1].toLowerCase();
+              let style = getKeyStyle(key);
               stream.backUp(token[2].length);
               state.prefix = ReadState.done;
               state.match_next = /\s*=\s*/;
+              state.match_next_style = style;
               state.curr_key = key;
               state.ready_for_key = false;
+              state.ready_for_keyword = false;
               if (options.check_values) {
                 if (ValidKeys.indexOf(key) < 0) {
                   return 'error';
                 }
               }
-              return 'key';
+              return style;
             } else if (options.allow_free_tokens && stream.match(/[^\s]+/)) {
               state.prefix = ReadState.done;
+              state.ready_for_key = false;
+              state.ready_for_keyword = true;
               return null;
             } else {
               return fail(stream);
@@ -251,6 +286,11 @@ function addCodeHintHelper(name) {
   let search_keys = Object.values(SEARCH_KEY).filter(x => x != SEARCH_KEY.video);
   let search_keys_regex = new RegExp('^(' + search_keys.join('|') + ')$', 'i');
 
+  let hours = [];
+  for (var i = 0; i < 24; i++) {
+    hours.push(`${i}`);
+  }
+
   function getValuesForKey(key, prefix) {
     var values = [];
     switch (key) {
@@ -270,7 +310,7 @@ function addCodeHintHelper(name) {
         values = DAYS_OF_WEEK;
         break;
       case SEARCH_KEY.hour:
-        values = Array(24).keys();
+        values = hours;
         break;
       default:
         break;
@@ -305,11 +345,12 @@ function addCodeHintHelper(name) {
     var match;
     if (curr_unit) {
       if (curr_unit.match(keywords_regex)) {
-        // curr_unit is AND, OR, etc
-        return {
-          list: search_keys.map(x => ` ${x}=`),
-          from: CodeMirror.Pos(cursor.line, end),
-          to: CodeMirror.Pos(cursor.line, end)
+        if (suffix.length == 0 || !suffix.match(/^[\w\s]*["']/)) {
+          return {
+            list: search_keys.map(x => ` ${x}=`),
+            from: CodeMirror.Pos(cursor.line, end),
+            to: CodeMirror.Pos(cursor.line, end)
+          }
         }
       } else {
         if (match = suffix.match(suffix_regex)) {
@@ -360,17 +401,26 @@ function addCodeHintHelper(name) {
           }
         } else {
           let token_regex = new RegExp('^' + curr_unit);
-          var values = search_keys.filter(x => x.match(token_regex));
-          if (values.length == 0) {
-            values = search_keys;
-          }
-          if (suffix.length > 0 && !suffix.match(/^\s*=/)) {
-            values = values.map(x => x + '=');
-          }
-          return {
-            list: values,
-            from: CodeMirror.Pos(cursor.line, start),
-            to: CodeMirror.Pos(cursor.line, end)
+          if (match = inv_prefix.match(/^(\s*)[)"']/)) {
+            let padding = match[1] ? '' : ' ';
+            return {
+              list: ['AND', 'OR'].map(x => padding + x),
+              from: CodeMirror.Pos(cursor.line, end),
+              to: CodeMirror.Pos(cursor.line, end)
+            }
+          } else {
+            var values = search_keys.filter(x => x.match(token_regex));
+            if (values.length == 0) {
+              values = search_keys;
+            }
+            if (suffix.length > 0 && !suffix.match(/^\s*=/)) {
+              values = values.map(x => x + '=');
+            }
+            return {
+              list: values,
+              from: CodeMirror.Pos(cursor.line, start),
+              to: CodeMirror.Pos(cursor.line, end)
+            }
           }
         }
       }
@@ -395,13 +445,15 @@ function addCodeHintHelper(name) {
           to: CodeMirror.Pos(cursor.line, end)
         }
       } else {
-        let padding = (
-          inv_prefix.length > 0 && !inv_prefix.charAt(0).match(/[\s(]/) ?
-          ' ' : '');
-        return {
-          list: search_keys.map(x => padding + x + '='),
-          from: CodeMirror.Pos(cursor.line, end),
-          to: CodeMirror.Pos(cursor.line, end)
+        if (suffix.length == 0 || !suffix.match(/^[\w\s]*["']/)) {
+          let padding = (
+            inv_prefix.length > 0 && !inv_prefix.charAt(0).match(/[\s(]/) ?
+            ' ' : '');
+          return {
+            list: search_keys.map(x => padding + x + '='),
+            from: CodeMirror.Pos(cursor.line, end),
+            to: CodeMirror.Pos(cursor.line, end)
+          }
         }
       }
     }

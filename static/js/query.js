@@ -47,6 +47,12 @@ AndList
   / a:NodeOrKeyValue Blank "${QUERY_KEYWORDS.or}"i Blank b:AndList {
 	  throw new Error('Using AND and OR ambiguously. Perhaps add some ()s.');
   }
+  / a:NodeOrKeyValue Blank "${QUERY_KEYWORDS.or}"i Blank {
+    throw new Error('Expecting input after OR');
+  }
+  / a:NodeOrKeyValue Blank "${QUERY_KEYWORDS.and}"i Blank {
+    throw new Error('Expecting input after AND');
+  }
   / a:NodeOrKeyValue { return [a]; }
 
 OrList
@@ -55,6 +61,12 @@ OrList
   }
   / a:NodeOrKeyValue Blank "${QUERY_KEYWORDS.and}"i Blank b:OrList {
     throw new Error('Using AND and OR ambiguously. Perhaps add some ()s.');
+  }
+  / a:NodeOrKeyValue Blank "${QUERY_KEYWORDS.or}"i Blank {
+    throw new Error('Expecting input after OR');
+  }
+  / a:NodeOrKeyValue Blank "${QUERY_KEYWORDS.and}"i Blank {
+    throw new Error('Expecting input after AND');
   }
   / a:NodeOrKeyValue { return [a]; }
 

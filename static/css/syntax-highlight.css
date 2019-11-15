@@ -1,27 +1,87 @@
 .cm-s-tvnews span.cm-keyword {
-  color: purple;
+  color: grey;
   font-weight: bold;
 }
 .cm-s-tvnews span.cm-alias {
   font-weight: bold;
-  margin-left: 1px;
-  margin-right: 1px;
+  padding-left: 1px;
+  padding-right: 1px;
 }
 .cm-s-tvnews span.cm-key {
-  color: brown;
-  font-style: italic;
-  margin-left: 1px;
-  margin-right: 1px;
-}
-.cm-s-tvnews span.cm-number, span.cm-string, span.cm-name, span.cm-tag {
   color: grey;
-  margin-left: 1px;
-  margin-right: 1px;
+  font-style: italic;
+  padding-left: 1px;
+  padding-right: 1px;
 }
+
+.cm-s-tvnews span.cm-face-key{
+  background-color: #d9ffb5;
+  color: grey;
+  font-style: italic;
+  padding-left: 1px;
+  padding-right: 1px;
+}
+.cm-s-tvnews span.cm-text-key {
+  background-color: #f4c9ff;
+  color: grey;
+  font-style: italic;
+  padding-left: 1px;
+  padding-right: 1px;
+}
+.cm-s-tvnews span.cm-video-key {
+  background-color: #ffe3b5;
+  color: grey;
+  font-style: italic;
+  padding-left: 1px;
+  padding-right: 1px;
+}
+.cm-s-tvnews span.cm-time-key {
+  background-color: #ccfff1;
+  color: grey;
+  font-style: italic;
+  padding-left: 1px;
+  padding-right: 1px;
+}
+
+.cm-s-tvnews span.cm-number {
+  color: black;
+  padding-left: 1px;
+  padding-right: 1px;
+}
+.cm-s-tvnews span.cm-string {
+  color: black;
+  padding-left: 1px;
+  padding-right: 1px;
+}
+.cm-s-tvnews span.cm-text {
+  background-color: #f4c9ff;
+  color: black;
+  padding-left: 1px;
+  padding-right: 1px;
+}
+.cm-s-tvnews span.cm-face {
+  background-color: #d9ffb5;
+  color: black;
+  padding-left: 1px;
+  padding-right: 1px;
+}
+.cm-s-tvnews span.cm-video {
+  background-color: #ffe3b5;
+  color: black;
+  padding-left: 1px;
+  padding-right: 1px;
+}
+.cm-s-tvnews span.cm-time {
+  background-color: #ccfff1;
+  color: black;
+  padding-left: 1px;
+  padding-right: 1px;
+}
+
 .cm-s-tvnews span.cm-error {
   text-decoration-line: underline;
   text-decoration-style: wavy;
   text-decoration-color: red;
-  margin-left: 1px;
-  margin-right: 1px;
+  padding-left: 1px;
+  padding-right: 1px;
 }

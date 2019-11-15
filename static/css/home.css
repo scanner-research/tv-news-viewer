@@ -183,8 +183,10 @@
 }
 .query-builder table {
   width: 100%;
-  border-collapse: separate;
   border-spacing: 2px;
+}
+.query-builder td, tr {
+  padding: 5px;
 }
 .query-builder input {
   text-align: center;
@@ -208,12 +210,24 @@
 .query-builder td[type=info-header] {
   text-align: center;
   padding-top: 0px;
-  padding-bottom: 5px;
+  padding-bottom: 0px;
   font-style: italic;
   color: gray;
 }
-.query-builder tr[disabled="true"] {
+.query-builder tr[disabled] {
   display: none;
+}
+.query-builder .text-div {
+  background-color: #f4c9ff;
+}
+.query-builder .face-div {
+  background-color: #d9ffb5;
+}
+.query-builder .video-div {
+  background-color: #ffe3b5;
+}
+.query-builder .time-div {
+  background-color: #ccfff1;
 }
 .query-builder input {
   text-align: left;
