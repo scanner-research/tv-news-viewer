@@ -38,6 +38,12 @@ Node
   / a:NodeOrKeyValue Blank "${QUERY_KEYWORDS.or}"i Blank b:OrList {
   	return ['or', [a].concat(b)];
   }
+  / a:NodeOrKeyValue Blank "${QUERY_KEYWORDS.and}"i Blank {
+    throw new Error('Expecting input after AND');
+  }
+  / a:NodeOrKeyValue Blank "${QUERY_KEYWORDS.or}"i Blank {
+    throw new Error('Expecting input after OR');
+  }
   / a:NodeOrKeyValue { return a; }
 
 AndList
@@ -76,9 +82,6 @@ NodeOrKeyValue
 
 KeyValue
   = k:TokenNoSpace Blank "=" Blank v:Printable { return [k, v]; }
-  / k:Printable {
-    throw new Error('"' + k + '" is not a valid filter');
-  }
 
 TokenNoSpace
   = s:[a-zA-Z0-9.]+ { return s.join(''); }

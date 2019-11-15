@@ -530,7 +530,7 @@ function addRow(query) {
   });
   setCodeEditorValue(editor, text);
   CODE_EDITORS[color] = editor;
-
+  
   let tbody = $('#searchTable > tbody');
   tbody.append(new_row);
 
