@@ -556,9 +556,12 @@ function onCodeUpdate() {
       console.log(e);
       err = true;
     }
-    $(`#searchTable tr[data-color="${data_color}"]`).find('.code-editor').css(
-      'background-color', err ? '#fee7e2' : ''
-    );
+    let editor_div = $(`#searchTable tr[data-color="${data_color}"]`).find('.code-editor');
+    if (err) {
+      editor_div.attr('invalid', '');
+    } else {
+      editor_div.removeAttr('invalid');
+    }
   });
 }
 

@@ -72,6 +72,9 @@
 #searchTable .code-editor[disable] {
   background-color: rgba(0, 0, 0, 0.15);
 }
+#searchTable .code-editor[invalid] {
+  background-color: rgba(255, 0, 0, 0.15);
+}
 #searchTable .code-editor .CodeMirror{
   height: auto !important;
   background: none;

@@ -223,6 +223,19 @@ function validateKeyValue(key, value, no_err) {
   return [key, value];
 }
 
+function filterDuplicateKeyValues(query) {
+  let result = [];
+  let seen = new Set();
+  query.forEach(kv => {
+    let s = JSON.stringify(kv);
+    if (!seen.has(s)) {
+      seen.add(s);
+      result.push(kv);
+    }
+  });
+  return result;
+}
+
 function validateQuery(query, no_err) {
   if (query == null) {
     return null;
@@ -232,8 +245,9 @@ function validateQuery(query, no_err) {
     case 'and':
     case 'or':
       // Flatten one layer of nesting
-      return [k, v.map(
-        x => _.flatMap(validateQuery(x, no_err), c => c[0] == k ? c : [c]))];
+      return [k, filterDuplicateKeyValues(
+        v.map(x => _.flatMap(validateQuery(x, no_err), c => c[0] == k ? c : [c]))
+      )];
     default:
       return validateKeyValue(k, v, no_err);
   }
