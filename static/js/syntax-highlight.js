@@ -425,9 +425,17 @@ function addCodeHintHelper(name) {
     console.log(3, curr_unit);
     // Find the extent of the current value string
     if (match = inv_prefix.match(/^(.*?)(["'=])/)) {
-      let quote_char = match[2] == '=' ? null : match[2];
-      start -= match[1].length;
-      inv_prefix = reverseString(line.substring(0, start));
+      var quote_char = match[2] == '=' ? null : match[2];
+      if (quote_char && inv_prefix.split(quote_char).length % 2 == 0) {
+        // Dilate until quote
+        start -= match[1].length;
+      } else {
+        quote_char = null;
+        if (match = inv_prefix.match(new RegExp(`^(.*?)\\w*([=()$]|${inv_keywords_regex_str})`))) {
+          // Do not dilate past keywords or special characters
+          start -= match[1].length;
+        }
+      }
       if (quote_char) {
         match = suffix.match(new RegExp(`^(.*?)(?:\\w+=|${quote_char})`));
       } else {
@@ -466,13 +474,27 @@ function addCodeHintHelper(name) {
           (match = curr_unit.match(should_propose_key_regex))) {
         // Propose a new key filter
         let padding = match[1] ? '' : ' ';
-        let values = search_keys.map(x => `${padding}${x}= `);
+        let values = search_keys.map(x => `${padding}${x}=`);
         return {
           list: values,
           from: CodeMirror.Pos(cursor.line, end),
           to: CodeMirror.Pos(cursor.line, end)
         }
-      } else if (match = inv_prefix.match(/^(\s*)[)"']/)) {
+      }
+
+      let curr_unit_re = new RegExp('^' + $.trim(curr_unit));
+      let candidate_keys = search_keys.filter(x => x.match(curr_unit_re));
+      if (candidate_keys.length > 0) {
+        match = curr_unit.match(/(\s*).*?(\s*)/);
+        return {
+          list: candidate_keys,
+          from: CodeMirror.Pos(
+            cursor.line, end - curr_unit.length + match[1].length),
+          to: CodeMirror.Pos(cursor.line, end - match[2].length)
+        }
+      }
+
+      if (match = inv_prefix.match(/^(\s*)[)"']/)) {
         // Propose a new conjunction
         let padding = match[1] ? '' : ' ';
         return {
