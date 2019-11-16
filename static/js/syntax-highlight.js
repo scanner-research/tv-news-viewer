@@ -466,8 +466,9 @@ function addCodeHintHelper(name) {
           (match = curr_unit.match(should_propose_key_regex))) {
         // Propose a new key filter
         let padding = match[1] ? '' : ' ';
+        let values = search_keys.map(x => `${padding}${x}= `);
         return {
-          list: search_keys.map(x => `${padding}${x}= `),
+          list: values,
           from: CodeMirror.Pos(cursor.line, end),
           to: CodeMirror.Pos(cursor.line, end)
         }
@@ -475,7 +476,7 @@ function addCodeHintHelper(name) {
         // Propose a new conjunction
         let padding = match[1] ? '' : ' ';
         return {
-          list: ['AND', 'OR'].map(x => padding + x),
+          list: ['AND ', 'OR '].map(x => padding + x),
           from: CodeMirror.Pos(cursor.line, end),
           to: CodeMirror.Pos(cursor.line, end)
         }

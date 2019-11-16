@@ -32,11 +32,11 @@ SingleQuery
   / "" { return null; }
 
 Node
-  = a:NodeOrKeyValue Blank "${QUERY_KEYWORDS.and}"i Blank b:AndList {
-  	return ['and', [a].concat(b)];
+  = a:NodeOrKeyValue Blank "${QUERY_KEYWORDS.and}"i Blank b:ConjList {
+    return ['op', [a, 'and'].concat(b)];
   }
-  / a:NodeOrKeyValue Blank "${QUERY_KEYWORDS.or}"i Blank b:OrList {
-  	return ['or', [a].concat(b)];
+  / a:NodeOrKeyValue Blank "${QUERY_KEYWORDS.or}"i Blank b:ConjList {
+  	return ['op', [a, 'or'].concat(b)];
   }
   / a:NodeOrKeyValue Blank "${QUERY_KEYWORDS.and}"i Blank {
     throw new Error('Expecting input after AND');
@@ -46,33 +46,18 @@ Node
   }
   / a:NodeOrKeyValue { return a; }
 
-AndList
-  = a:NodeOrKeyValue Blank "${QUERY_KEYWORDS.and}"i Blank b:AndList {
-	  return [a].concat(b);
+ConjList
+  = a:NodeOrKeyValue Blank "${QUERY_KEYWORDS.and}"i Blank b:ConjList {
+	  return [a, 'and'].concat(b);
   }
-  / a:NodeOrKeyValue Blank "${QUERY_KEYWORDS.or}"i Blank b:AndList {
-	  throw new Error('Using AND and OR ambiguously. Perhaps add some ()s.');
-  }
-  / a:NodeOrKeyValue Blank "${QUERY_KEYWORDS.or}"i Blank {
-    throw new Error('Expecting input after OR');
+  / a:NodeOrKeyValue Blank "${QUERY_KEYWORDS.or}"i Blank b:ConjList {
+	  return [a, 'or'].concat(b);
   }
   / a:NodeOrKeyValue Blank "${QUERY_KEYWORDS.and}"i Blank {
     throw new Error('Expecting input after AND');
   }
-  / a:NodeOrKeyValue { return [a]; }
-
-OrList
-  = a:NodeOrKeyValue Blank "${QUERY_KEYWORDS.or}"i Blank b:OrList {
-	  return [a].concat(b);
-  }
-  / a:NodeOrKeyValue Blank "${QUERY_KEYWORDS.and}"i Blank b:OrList {
-    throw new Error('Using AND and OR ambiguously. Perhaps add some ()s.');
-  }
   / a:NodeOrKeyValue Blank "${QUERY_KEYWORDS.or}"i Blank {
     throw new Error('Expecting input after OR');
-  }
-  / a:NodeOrKeyValue Blank "${QUERY_KEYWORDS.and}"i Blank {
-    throw new Error('Expecting input after AND');
   }
   / a:NodeOrKeyValue { return [a]; }
 
@@ -223,31 +208,62 @@ function validateKeyValue(key, value, no_err) {
   return [key, value];
 }
 
-function filterDuplicateKeyValues(query) {
+function optimizeKeyValues(op, query) {
   let result = [];
   let seen = new Set();
-  query.forEach(kv => {
-    let s = JSON.stringify(kv);
-    if (!seen.has(s)) {
-      seen.add(s);
-      result.push(kv);
+  while (query.length > 0) {
+    let kv = query.pop();
+    if (kv[0] == op) {
+      // Unnest ANDs and ORs
+      kv[1].forEach(child => query.push(child));
+    } else {
+      let s = JSON.stringify(kv);
+      if (!seen.has(s)) {
+        seen.add(s);
+        result.push(kv);
+      }
     }
-  });
-  return result;
+  }
+  return result.length == 1 ? result[0] : [op, result];
 }
 
-function validateQuery(query, no_err) {
+function validateTree(query, no_err) {
   if (query == null) {
     return null;
   }
   let [k, v] = query;
   switch (k) {
-    case 'and':
-    case 'or':
-      // Flatten one layer of nesting
-      return [k, filterDuplicateKeyValues(
-        v.map(x => _.flatMap(validateQuery(x, no_err), c => c[0] == k ? c : [c]))
-      )];
+    case 'op': {
+      if (v.length < 3) {
+        console.log(v);
+        throw Error('Bug... operator has fewer than 3 children');
+      }
+      let or_list = [];
+      var and_list = [];
+      v.forEach(x => {
+        if (x == 'and') {
+          // do nothing
+        } else if (x == 'or') {
+          if (and_list.length == 1) {
+            or_list.push(and_list[0]);
+          } else {
+            or_list.push(optimizeKeyValues('and', and_list));
+            and_list = [];
+          }
+        } else {
+          and_list.push(validateTree(x, no_err));
+        }
+      });
+      if (and_list.length == 0) {
+        throw Error('Bug... error parsing operator');
+      }
+      if (and_list.length == 1) {
+        or_list.push(and_list[0]);
+      } else {
+        or_list.push(optimizeKeyValues('and', and_list));
+      }
+      return or_list.length == 1 ? or_list[0] : optimizeKeyValues('or', or_list);
+    }
     default:
       return validateKeyValue(k, v, no_err);
   }
@@ -282,16 +298,16 @@ class SearchableQuery {
     }
     if (p.has_normalize) {
       this.has_norm = true;
-      this.norm_query = validateQuery(p.normalize, no_err);
+      this.norm_query = validateTree(p.normalize, no_err);
     }
     if (p.has_subtract) {
       this.has_sub = true;
-      this.sub_query = validateQuery(p.subtract, no_err);
+      this.sub_query = validateTree(p.subtract, no_err);
     }
     if (p.alias) {
       this.alias = p.alias;
     }
-    this.main_query = validateQuery(p.main, no_err);
+    this.main_query = validateTree(p.main, no_err);
   }
 
   search(chart_options, onSuccess, onError) {
