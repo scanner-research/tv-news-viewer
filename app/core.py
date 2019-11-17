@@ -966,7 +966,7 @@ def build_app(
             'data/transcripts.html', params=SearchParam,
             search_keys=SearchKey)
 
-    @app.route('/static/js/defaults.js')
+    @app.route('/generated/js/defaults.js')
     def get_defaults_js() -> Response:
         start_date = max(min(
             v.date for v in video_data_context.video_dict.values()), min_date)
@@ -990,7 +990,7 @@ def build_app(
         resp.headers['Content-type'] = 'text/javascript'
         return resp
 
-    @app.route('/static/js/values.js')
+    @app.route('/generated/js/values.js')
     def get_values_js() -> Response:
         resp = make_response(render_template(
             'js/values.js', shows=all_shows, people=[x.name for x in people],
