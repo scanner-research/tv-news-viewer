@@ -18,6 +18,13 @@ const DEFAULT_TEXT_WINDOW = '{{ default_text_window }}';
 
 const QUERY_PREFIX = '';
 
+const RESERVED_KEYWORDS = {
+  and: 'AND',
+  or: 'OR',
+  normalize: 'NORMALIZE',
+  subtract: 'SUBTRACT'
+};
+
 const SEARCH_KEY = {
   {% for kv in search_keys %}{{ kv.0 }}: '{{ kv.1 }}', {% endfor %}
 };
@@ -25,6 +32,10 @@ const SEARCH_KEY = {
 const SEARCH_PARAM = {
   {% for kv in search_params %}{{ kv.0 }}: '{{ kv.1 }}', {% endfor %}
 };
+
+const VIDEO_ENDPOINT = {% if video_endpoint is not none %}'{{ video_endpoint }}'{% else %}null{% endif %};
+const ARCHIVE_VIDEO_ENDPOINT = {% if archive_video_endpoint is not none %}'{{ archive_video_endpoint }}'{% else %}null{% endif %};
+const FRAMESERVER_ENDPOINT = {% if frameserver_endpoint is not none %}'{{ frameserver_endpoint }}'{% else %}null{% endif %};
 
 var SERVE_FROM_INTERNET_ARCHIVE = true;
 

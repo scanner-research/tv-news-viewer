@@ -10,9 +10,11 @@ const ALL_PERSON_TAGS = [
   {% for tag in person_tags %}"{{ tag }}",{% endfor %}
 ];
 
-const ALL_TAGS = [
+const ALL_GLOBAL_TAGS = [
   {% for tag in global_face_tags %}"{{ tag }}",{% endfor %}
-].concat(ALL_PERSON_TAGS);
+];
+
+const ALL_TAGS = ALL_GLOBAL_TAGS.concat(ALL_PERSON_TAGS);
 
 const CHANNELS = ['CNN', 'FOX', 'MSNBC'];
 const CHANNEL_REGEX = /CNN|FOX(?:NEWS)?|MSNBC/i;

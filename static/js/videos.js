@@ -1,6 +1,8 @@
 const PAGINATE = true;
 const VIDEOS_PER_PAGE = 5;
-var USE_ARCHIVE = true;
+var SERVE_FROM_INTERNET_ARCHIVE = true;
+
+/* State variables */
 var PARAMS = null;
 var QUERY = null;
 var CURR_PAGE = null;
@@ -100,24 +102,23 @@ function displayVideos(page_i) {
               timeline_height_expanded: 100
             }
           }
-          if (USE_ARCHIVE) {
-            vgrid_settings.video_endpoint = '{{ archive_video_endpoint }}';
+          if (SERVE_FROM_INTERNET_ARCHIVE) {
+            vgrid_settings.video_endpoint = ARCHIVE_VIDEO_ENDPOINT;
             vgrid_settings.show_timeline_controls = false;
           } else {
-            {% if video_endpoint is not none %}
-            vgrid_settings.video_endpoint = '{{ video_endpoint }}';
-            vgrid_settings.show_timeline_controls = true;
-            {% endif %}
-
-            {% if frameserver_endpoint is not none %}
-            // FIXME: this reveals the frameserver
-            vgrid_settings.frameserver_endpoint = '{{ frameserver_endpoint }}';
-            vgrid_settings.use_frameserver = true;
-            {% endif %}
+            if (VIDEO_ENDPOINT) {
+              vgrid_settings.video_endpoint = VIDEO_ENDPOINT;
+              vgrid_settings.show_timeline_controls = true;
+            }
+            if (FRAMESERVER_ENDPOINT) {
+              vgrid_settings.frameserver_endpoint = FRAMESERVER_ENDPOINT;
+              vgrid_settings.use_frameserver = true;
+            }
           }
           highlight_phrases = getPhrasesToHighlight(query);
           renderVGrid(json_data, caption_data, face_data, vgrid_settings,
-                      highlight_phrases, USE_ARCHIVE, `videos-${page_i}`);
+                      highlight_phrases, SERVE_FROM_INTERNET_ARCHIVE,
+                      `videos-${page_i}`);
         } catch (e) {
           alert('Failed to load videos.');
           throw e;
@@ -139,7 +140,9 @@ function convertHex(hex, a){
 }
 
 function loadVideos(params, serve_from_internet_archive) {
-  USE_ARCHIVE = serve_from_internet_archive;
+  // normally chart.js makes this check, this saves an auth check
+  SERVE_FROM_INTERNET_ARCHIVE = serve_from_internet_archive;
+
   PARAMS = params;
   QUERY = new SearchableQuery(PARAMS.query, false);
   CURR_PAGE = 0;

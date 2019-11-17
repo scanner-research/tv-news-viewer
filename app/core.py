@@ -979,13 +979,14 @@ def build_app(
             default_agg_by=default_aggregate_by,
             default_text_window=default_text_window,
             video_endpoint=video_endpoint,
+            frameserver_endpoint=frameserver_endpoint,
+            archive_video_endpoint=archive_video_endpoint,
             search_params=[
                 (k, v) for k, v in SearchParam.__dict__.items()
                 if not k.startswith('__')],
             search_keys=[
                 (k, v) for k, v in SearchKey.__dict__.items()
-                if not k.startswith('__')]
-        ))
+                if not k.startswith('__')]))
         resp.headers['Content-type'] = 'text/javascript'
         return resp
 
@@ -997,27 +998,6 @@ def build_app(
             person_tags=video_data_context.all_person_tags.tags))
         resp.headers['Content-type'] = 'text/javascript'
         return resp
-
-    @app.route('/static/js/home.js')
-    def get_home_js() -> Response:
-        start_date = max(min(
-            v.date for v in video_data_context.video_dict.values()), min_date)
-        end_date = min(max(
-            v.date for v in video_data_context.video_dict.values()), max_date)
-        resp = make_response(render_template(
-            'js/home.js', search_keys=SearchKey, params=SearchParam,
-            global_face_tags=list(sorted(GLOBAL_TAGS))
-        ))
-        resp.headers['Content-type'] = 'text/javascript'
-        return resp
-
-    @app.route('/static/js/videos.js')
-    def get_videos_js() -> Response:
-        return render_template(
-            'js/videos.js', search_keys=SearchKey, params=SearchParam,
-            video_endpoint=video_endpoint,
-            frameserver_endpoint=frameserver_endpoint,
-            archive_video_endpoint=archive_video_endpoint)
 
     def _search_and(
         children: Iterable[Any], context: SearchContext

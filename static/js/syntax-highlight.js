@@ -1,12 +1,13 @@
-const KEYWORDS = ['AND', 'OR', 'NORMALIZE', 'SUBTRACT']
+const DEBUG_AUTOCOMPLETE = false;
 
 function generateCodeMirrorParser(options) {
 
   let ReadState = {notStarted: 1, inProgress: 2, done: 3};
   let ValidKeys = Object.values(SEARCH_KEY);
 
-  let keyword_regex = new RegExp('^(' + KEYWORDS.join('|') + ')', 'i');
-  let space_keyword_regex = new RegExp(`^\\s+(?:${KEYWORDS.join('|')})`, 'i');
+  let keywords = Object.values(RESERVED_KEYWORDS);
+  let keyword_regex = new RegExp('^(' + keywords.join('|') + ')', 'i');
+  let space_keyword_regex = new RegExp(`^\\s+(?:${keywords.join('|')})`, 'i');
 
   function fail(stream) {
     if (!stream.skipTo('\n')) {
@@ -275,7 +276,7 @@ function addParsingMode(name, options) {
 function addCodeHintHelper(name) {
   let token_chars_regex = /[\w\-|&$]/;
 
-  let keywords_regex_str = KEYWORDS.join('|');
+  let keywords_regex_str = Object.values(RESERVED_KEYWORDS).join('|');
   let keywords_regex = new RegExp('^(' + keywords_regex_str + ')$', 'i');
   let inv_keywords_regex_str = reverseString(keywords_regex_str);
 
@@ -360,7 +361,9 @@ function addCodeHintHelper(name) {
       return null;
     }
 
-    console.log(0, curr_unit);
+    if (DEBUG_AUTOCOMPLETE) {
+      console.log(0, curr_unit);
+    }
     if (curr_unit.match(keywords_regex)) {
       return $.trim(suffix).length > 0 ? null : {
         list: search_keys.map(x => ` ${x}=`),
@@ -368,7 +371,9 @@ function addCodeHintHelper(name) {
         to: CodeMirror.Pos(cursor.line, end)
       };
     }
-    console.log(1, curr_unit);
+    if (DEBUG_AUTOCOMPLETE) {
+      console.log(1, curr_unit);
+    }
 
     // Extend current unit
     if (match = suffix.match(unit_suffix_regex)) {
@@ -385,7 +390,9 @@ function addCodeHintHelper(name) {
     suffix = line.substring(end);
     inv_prefix = reverseString(line.substring(0, start));
 
-    console.log(2, curr_unit);
+    if (DEBUG_AUTOCOMPLETE) {
+      console.log(2, curr_unit);
+    }
     if ($.trim(curr_unit).match(search_keys_regex)) {
       // cursor is in a key
       let key = curr_unit;
@@ -422,7 +429,9 @@ function addCodeHintHelper(name) {
       }
     }
 
-    console.log(3, curr_unit);
+    if (DEBUG_AUTOCOMPLETE) {
+      console.log(3, curr_unit);
+    }
     // Find the extent of the current value string
     if (match = inv_prefix.match(/^(.*?)(["'=])/)) {
       var quote_char = match[2] == '=' ? null : match[2];
@@ -450,7 +459,9 @@ function addCodeHintHelper(name) {
     suffix = line.substring(end);
     inv_prefix = reverseString(line.substring(0, start));
 
-    console.log(4, curr_unit);
+    if (DEBUG_AUTOCOMPLETE) {
+      console.log(4, curr_unit);
+    }
     if (match = inv_prefix.match(/^(["'])?\s*=/)) {
       // cursor is in a value
       let key = reverseString(inv_prefix.match(/\s*=\s*(\w+)/)[1]);

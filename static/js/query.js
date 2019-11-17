@@ -1,11 +1,3 @@
-const QUERY_KEYWORDS = {
-  and: 'AND',
-  or: 'OR',
-  normalize: 'NORMALIZE',
-  subtract: 'SUBTRACT',
-  all: 'all'
-}
-
 const QUERY_GRAMMAR = `
 Start
   = Blank "[" Blank a:Alias Blank "]" Blank b:Query Blank {
@@ -18,10 +10,10 @@ Alias
   = a:[^\\]]+ { return a.join(''); }
 
 Query
-  = a:SingleQuery Blank "${QUERY_KEYWORDS.normalize}"i Blank b:SingleQuery {
+  = a:SingleQuery Blank "${RESERVED_KEYWORDS.normalize}"i Blank b:SingleQuery {
     return {main: a, normalize: b, has_normalize: true};
   }
-  / a:SingleQuery Blank "${QUERY_KEYWORDS.subtract}"i Blank b:SingleQuery {
+  / a:SingleQuery Blank "${RESERVED_KEYWORDS.subtract}"i Blank b:SingleQuery {
     return {main: a, subtract: b, has_subtract: true};
   }
   / a:SingleQuery { return {main: a}; }
@@ -32,31 +24,31 @@ SingleQuery
   / "" { return null; }
 
 Node
-  = a:NodeOrKeyValue Blank "${QUERY_KEYWORDS.and}"i Blank b:ConjList {
+  = a:NodeOrKeyValue Blank "${RESERVED_KEYWORDS.and}"i Blank b:ConjList {
     return ['op', [a, 'and'].concat(b)];
   }
-  / a:NodeOrKeyValue Blank "${QUERY_KEYWORDS.or}"i Blank b:ConjList {
+  / a:NodeOrKeyValue Blank "${RESERVED_KEYWORDS.or}"i Blank b:ConjList {
   	return ['op', [a, 'or'].concat(b)];
   }
-  / a:NodeOrKeyValue Blank "${QUERY_KEYWORDS.and}"i Blank {
+  / a:NodeOrKeyValue Blank "${RESERVED_KEYWORDS.and}"i Blank {
     throw new Error('Expecting input after AND');
   }
-  / a:NodeOrKeyValue Blank "${QUERY_KEYWORDS.or}"i Blank {
+  / a:NodeOrKeyValue Blank "${RESERVED_KEYWORDS.or}"i Blank {
     throw new Error('Expecting input after OR');
   }
   / a:NodeOrKeyValue { return a; }
 
 ConjList
-  = a:NodeOrKeyValue Blank "${QUERY_KEYWORDS.and}"i Blank b:ConjList {
+  = a:NodeOrKeyValue Blank "${RESERVED_KEYWORDS.and}"i Blank b:ConjList {
 	  return [a, 'and'].concat(b);
   }
-  / a:NodeOrKeyValue Blank "${QUERY_KEYWORDS.or}"i Blank b:ConjList {
+  / a:NodeOrKeyValue Blank "${RESERVED_KEYWORDS.or}"i Blank b:ConjList {
 	  return [a, 'or'].concat(b);
   }
-  / a:NodeOrKeyValue Blank "${QUERY_KEYWORDS.and}"i Blank {
+  / a:NodeOrKeyValue Blank "${RESERVED_KEYWORDS.and}"i Blank {
     throw new Error('Expecting input after AND');
   }
-  / a:NodeOrKeyValue Blank "${QUERY_KEYWORDS.or}"i Blank {
+  / a:NodeOrKeyValue Blank "${RESERVED_KEYWORDS.or}"i Blank {
     throw new Error('Expecting input after OR');
   }
   / a:NodeOrKeyValue { return [a]; }
@@ -85,7 +77,7 @@ PrintableNoDelim
   = a:[^ \t)]+ { return a.join(''); }
 
 ReservedWords
-  = "${QUERY_KEYWORDS.normalize}"i / "${QUERY_KEYWORDS.subtract}"i / "${QUERY_KEYWORDS.and}"i / "${QUERY_KEYWORDS.or}"i
+  = "${RESERVED_KEYWORDS.normalize}"i / "${RESERVED_KEYWORDS.subtract}"i / "${RESERVED_KEYWORDS.and}"i / "${RESERVED_KEYWORDS.or}"i
 
 Blank
   = [ \t]*
