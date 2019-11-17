@@ -80,11 +80,6 @@ class PersonIntervals(NamedTuple):
     isetmap: MmapIntervalSetMapping
 
 
-class LoginCredentials(NamedTuple):
-    username: str
-    password_hash: bytes
-
-
 class Tag(NamedTuple):
     name: str
     source: str

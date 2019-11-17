@@ -8,8 +8,7 @@ from typing import Optional
 from datetime import datetime
 
 from app.core import build_app
-from app.types import LoginCredentials, Ternary
-from app.hash import sha256
+from app.types import Ternary
 
 
 DEFAULT_VIDEO_ENDPOINT = 'https://storage.cloud.google.com/esper'
@@ -40,7 +39,6 @@ def main(
     app = build_app(
         data_dir, index_dir, video_endpoint, frameserver_endpoint,
         ARCHIVE_VIDEO_ENDPOINT,
-        [LoginCredentials('admin', sha256('password'))],
         min_date=datetime(2010, 1, 1),
         max_date=datetime(2019, 7, 31),
         min_person_screen_time=600,

@@ -14,7 +14,6 @@ from enum import Enum
 from flask import (
     Flask, Response, jsonify, request, render_template, send_file,
     make_response)
-from flask_httpauth import HTTPBasicAuth                # type: ignore
 from typing import (
     Any, Dict, List, Set, Tuple, Optional, Iterable, Generator, NamedTuple)
 
@@ -34,7 +33,6 @@ from .parsing import *
 from .sum import *
 from .load import (
     get_video_name, load_app_data, VideoDataContext, CaptionDataContext)
-from .hash import sha256
 
 
 FILE_DIR = os.path.dirname(os.path.realpath(__file__))
@@ -810,7 +808,6 @@ def build_app(
     video_endpoint: Optional[str],
     frameserver_endpoint: Optional[str],
     archive_video_endpoint: Optional[str],
-    authorized_users: Optional[List[LoginCredentials]],
     min_date: datetime,
     max_date: datetime,
     min_person_screen_time: int,
@@ -834,19 +831,6 @@ def build_app(
         m = int(s / 60)
         s -= m * 60
         return '{}d {}h {}m {}s'.format(d, h, m, int(s))
-
-    if authorized_users:
-        auth = HTTPBasicAuth()
-
-        @auth.verify_password
-        def verify_password(username: str, password: str) -> bool:
-            for l in authorized_users:
-                if username == l.username:
-                    return sha256(password) == l.password_hash
-            return False
-
-    else:
-        auth = None
 
     caption_data_context, video_data_context = \
         load_app_data(index_dir, data_dir)
@@ -884,15 +868,9 @@ def build_app(
     def _root() -> Response:
         return render_template('home.html', uptime=_get_uptime())
 
-    if auth:
-        @app.route('/')
-        @auth.login_required
-        def root() -> Response:
-            return _root()
-    else:
-        @app.route('/')
-        def root() -> Response:
-            return _root()
+    @app.route('/')
+    def root() -> Response:
+        return _root()
 
     @app.route('/embed')
     def embed() -> Response:

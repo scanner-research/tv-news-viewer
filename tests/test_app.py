@@ -31,7 +31,6 @@ def client():
         config.get('video_endpoint'),
         config.get('frameserver_endpoint'),
         config.get('archive_video_endpoint'),
-        authorized_users=None,
         min_date=datetime(2010, 1, 1),
         max_date=datetime(2018, 4, 1),
         min_person_screen_time=600,
