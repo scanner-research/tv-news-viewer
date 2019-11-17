@@ -161,14 +161,14 @@
   <iframe width="100%" height="0" id="menVsWomen"></iframe>
   <p>
     We can also make queries about people who have been identified in the videos.
-    For example, if we were to compare the screen time of Donald Trump with
+    For example, if we were to compare the screen time of Bernie Sanders with
     that of Hillary Clinton. This will also require use of the
     <code>{{ search_keys.face_name }}</code> filter.
     However, since we are now interested in frames that contain a person, we use
-    <code>{{ search_keys.face_name }}="Donald Trump"</code>
+    <code>{{ search_keys.face_name }}="Bernie Sanders"</code>
     and <code>{{ search_keys.face_name }}="Hillary Clinton"</code>, respectively.
 
-    <div class="code-block" id="trumpVsClintonCode"></div>
+    <div class="code-block" id="clintonVsSandersCode"></div>
   </p>
 
   <p>
@@ -179,7 +179,7 @@
     If you entered the queries above, you should see a chart similar to the
     one below.
   </p>
-  <iframe width="100%" height="0" id="trumpVsClinton"></iframe>
+  <iframe width="100%" height="0" id="clintonVsSanders"></iframe>
 
   <p>
     To see the list of people who are searchable, click
@@ -258,21 +258,21 @@
     <div class="code-block" id="menAndCNNCode"></div>
 
     Likewise, we can combine a query on identities with text. For example,
-    to find the screen time of Donald Trump when the phrase
-    <code>"BORDER WALL"</code> appears in the transcript, we can
+    to find the screen time of Bernie Sanders when the phrase
+    <code>"WALL STREET"</code> appears in the transcript, we can
     write the following query.
 
-    <div class="code-block" id="trumpAndWallCode"></div>
+    <div class="code-block" id="sandersAndWallStreetCode"></div>
 
-    A further refinement of the query is to find when Donald Trump is on screen
-    within 30 seconds of <code>"BORDER WALL"</code> being said.
+    A further refinement of the query is to find when Bernie Sanders is on screen
+    within 30 seconds of <code>"WALL STREET"</code> being said.
 
-    <div class="code-block" id="trumpAndWallWindowCode"></div>
+    <div class="code-block" id="sandersAndWallStreetWindowCode"></div>
 
-    Similarly, the tool can compute screen time where two people (e.g., Donald Trump and
-    Hillary Clinton) are shown on screen together.
+    Similarly, the tool can compute screen time where two people
+    (e.g., Bernie Sanders and Hillary Clinton) are shown on screen together.
 
-    <div class="code-block" id="trumpAndClintonCode"></div>
+    <div class="code-block" id="clintonAndSandersCode"></div>
 
     Please read the
     <a href="/detailed" target="_blank">detailed documentation</a> page
@@ -301,12 +301,12 @@
     setIframeSource('#menVsWomen', men_women_queries, 600, 300);
     setCodeArea('#menVsWomenCode', men_women_queries);
 
-    let trump_clinton_queries = [
+    let clinton_sanders_queries = [
       '{{ search_keys.face_name }}=hillary clinton',
-      '{{ search_keys.face_name }}=donald trump'
+      '{{ search_keys.face_name }}=bernie sanders'
     ];
-    setIframeSource('#trumpVsClinton', trump_clinton_queries, 600, 300);
-    setCodeArea('#trumpVsClintonCode', trump_clinton_queries);
+    setIframeSource('#clintonVsSanders', clinton_sanders_queries, 600, 300);
+    setCodeArea('#clintonVsSandersCode', clinton_sanders_queries);
 
     let united_nations_queries = ['{{ search_keys.text }}="UNITED NATIONS"'];
     setIframeSource('#unitedNations', united_nations_queries, 600, 300);
@@ -321,14 +321,14 @@
     setCodeArea('#menAndCNNCode', [
       '{{ search_keys.face_tag }}="male" AND {{ search_keys.channel }}=CNN'
     ]);
-    setCodeArea('#trumpAndWallCode', [
-      '{{ search_keys.face_name }}="donald trump" AND {{ search_keys.text }}="BORDER WALL"'
+    setCodeArea('#sandersAndWallStreetCode', [
+      '{{ search_keys.face_name }}="bernie sanders" AND {{ search_keys.text }}="WALL STREET"'
     ]);
-    setCodeArea('#trumpAndWallWindowCode', [
-      '{{ search_keys.face_name }}="donald trump" AND {{ search_keys.text }}="BORDER WALL" AND {{ search_keys.text_window }}=30'
+    setCodeArea('#sandersAndWallStreetWindowCode', [
+      '{{ search_keys.face_name }}="bernie sanders" AND {{ search_keys.text }}="WALL STREET" AND {{ search_keys.text_window }}=30'
     ]);
-    setCodeArea('#trumpAndClintonCode', [
-      '{{ search_keys.face_name }}="donald trump" AND {{ search_keys.face_name }}="hillary clinton"'
+    setCodeArea('#clintonAndSandersCode', [
+      '{{ search_keys.face_name }}="bernie sanders" AND {{ search_keys.face_name }}="hillary clinton"'
     ]);
   </script>
 </div>
