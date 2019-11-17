@@ -797,8 +797,8 @@ function initialize() {
     if (params.get('blank') == 1) {
       addRow({text: ''});
     } else {
-      addRow({text: 'name="barack obama"'});
-      addRow({text: 'name="donald trump"'});
+      addRow({text: 'name="hillary clinton"'});
+      addRow({text: 'name="bernie sanders"'});
       search();
     }
   }
