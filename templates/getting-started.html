@@ -268,11 +268,6 @@
     within 30 seconds of <code>"BORDER WALL"</code> being said.
 
     <div class="code-block" id="trumpAndWallWindowCode"></div>
-    <script type="text/javascript">
-      setCodeArea('#trumpAndWallWindowCode', [
-        '{{ search_keys.face_name }}="donald trump" AND {{ search_keys.text }}="BORDER WALL" AND {{ search_keys.text_window }}=30'
-      ]);
-    </script>
 
     Similarly, the tool can compute screen time where two people (e.g., Donald Trump and
     Hillary Clinton) are shown on screen together.
@@ -328,6 +323,9 @@
     ]);
     setCodeArea('#trumpAndWallCode', [
       '{{ search_keys.face_name }}="donald trump" AND {{ search_keys.text }}="BORDER WALL"'
+    ]);
+    setCodeArea('#trumpAndWallWindowCode', [
+      '{{ search_keys.face_name }}="donald trump" AND {{ search_keys.text }}="BORDER WALL" AND {{ search_keys.text_window }}=30'
     ]);
     setCodeArea('#trumpAndClintonCode', [
       '{{ search_keys.face_name }}="donald trump" AND {{ search_keys.face_name }}="hillary clinton"'
