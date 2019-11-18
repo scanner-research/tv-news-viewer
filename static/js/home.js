@@ -148,12 +148,18 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
 var CACHED_QUERY_BUILDER = null;
 
 function fromDatepickerStr(s) {
-  let d = new Date(Date.parse(s)).toISOString().substring(0, 10);
+  let m = s.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+  if (!m) {
+    throw Error(`Invalid date: ${s}. Please use MM/DD/YYYY format.`);
+  }
+  let d = new Date(
+    Date.UTC(parseInt(m[3]), parseInt(m[1]) - 1, parseInt(m[2]))
+  ).toISOString().substring(0, 10);
   if (d > DEFAULT_END_DATE) {
     throw Error(`Date is out of range: ${d} > ${DEFAULT_END_DATE}`);
   }
   if (d < DEFAULT_START_DATE) {
-    throw Error(`Date is out of range: ${d} > ${DEFAULT_START_DATE}`);
+    throw Error(`Date is out of range: ${d} < ${DEFAULT_START_DATE}`);
   }
   return d;
 }

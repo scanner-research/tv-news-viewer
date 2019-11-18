@@ -135,29 +135,29 @@ class Chart {
       new Date(this.options.start_date).getUTCFullYear()
     );
 
+    function getRoundedValue(value, frac_digits) {
+      let exp_threshold = 1. / Math.pow(10, frac_digits);
+      return (value >= exp_threshold ?
+        value.toLocaleString(undefined, {maximumFractionDigits: frac_digits})
+        : value.toExponential(frac_digits));
+    }
+
     // Helper to compute values
-    let raw_precision = 2;
-    let exp_threshold = 0.001;
-    function getPointValue(result, video_data, t) {
+    function getPointValue(result, video_data, t, frac_digits) {
       var value = video_data.reduce((acc, x) => acc + x[1], 0);
-      var value_str;
       if (result.normalize) {
         var denom = _.get(result.normalize, t, null);
         if (denom) { // TODO: what if this is NaN
           value /= denom;
         }
-        value_str = (value >= exp_threshold ?
-          value.toLocaleString(undefined, {maximumFractionDigits: 5}) : value.toExponential(2));
       } else {
         // Unit remains the same
         if (result.subtract) {
           value -= _.get(result.subtract, t, 0.);
         }
         value = secondsToMinutes(value);
-        let frac_digits = value > 30 ? 0 : 2;
-        value_str = value.toLocaleString(undefined, {maximumFractionDigits: frac_digits});
       }
-      return {value: value, text: value_str};
+      return value;
     }
 
     // Data for lines
@@ -178,9 +178,9 @@ class Chart {
           this.options.end_date, []);
         return Object.entries(values).map(
           ([t, v]) => {
-            let x = getPointValue(result, v, t);
+            let value = getPointValue(result, v, t);
             return {
-              time: t, color: color, value: x.value, value_str: x.text,
+              time: t, color: color, value: value,
               size: v.length > 0 ? 30 : 0
             };
           }
@@ -343,12 +343,17 @@ class Chart {
               let t = new Date(item.datum.datum.time).toISOString().split('T')[0];
               let t_str = moment(t).format(moment_date_format);
               tooltip.find('.tooltip-time').text(t_str);
-              this_chart.search_results.forEach(
+              let values = this_chart.search_results.map(
                 ([color, result]) => {
                   let video_data = _.get(result.main, t, []);
-                  let x = getPointValue(result, video_data, t);
-                  tooltip.find(`.tooltip-data[color="${color}"]`).text(x.text);
+                  return [color,  getPointValue(result, video_data, t)];
                 }
+              );
+              let min_value = _.min(values.map(x => x[1]));
+              values.forEach(
+                ([color, value]) =>
+                  tooltip.find(`.tooltip-data[color="${color}"]`).text(
+                    getRoundedValue(value, min_value < 15 ? 3 : 0))
               );
 
               let chart_div = $(div_id);
