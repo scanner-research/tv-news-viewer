@@ -138,7 +138,10 @@ class Chart {
     function getRoundedValue(value, frac_digits) {
       let exp_threshold = 1. / Math.pow(10, frac_digits);
       return (value >= exp_threshold ?
-        value.toLocaleString(undefined, {maximumFractionDigits: frac_digits})
+        value.toLocaleString(undefined, {
+          maximumFractionDigits: frac_digits,
+          minimumFractionDigits: frac_digits
+        })
         : value.toExponential(frac_digits));
     }
 
@@ -349,11 +352,14 @@ class Chart {
                   return [color,  getPointValue(result, video_data, t)];
                 }
               );
-              let min_value = _.min(values.map(x => x[1]));
+              let values_only = values.map(x => x[1]);
+              let min_value = _.min(values_only);
+              let max_value = _.max(values_only);
+              let num_digits = min_value < 15 ? (max_value < 1 || min_value < 0.1 ? 3 : 1) : 0;
               values.forEach(
                 ([color, value]) =>
                   tooltip.find(`.tooltip-data[color="${color}"]`).text(
-                    getRoundedValue(value, min_value < 15 ? 3 : 0))
+                    getRoundedValue(value, num_digits))
               );
 
               let chart_div = $(div_id);
