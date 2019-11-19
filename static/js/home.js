@@ -815,13 +815,15 @@ function initialize() {
   $('#searchButton').click(search);
   $('#resetButton').click(function() {
     if (window.confirm('Warning! This will clear all of your current queries.')) {
+      // Remove all rows except one
       $('tr[name="query"]').each(function() {
         if ($(this).index() > 0) {
           removeRow($(this));
-        } else {
-          $(this).find('input[name="query"]').val('');
         }
       });
+
+      // Reset the last code editor
+      Object.values(CODE_EDITORS).forEach(e => e.setValue(''));
 
       // Reset to defaults
       $('#aggregateBy').val(DEFAULT_AGGREGATE_BY).trigger("chosen:updated");
