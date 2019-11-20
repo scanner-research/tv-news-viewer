@@ -440,7 +440,7 @@ function addCodeHintHelper(name) {
         start -= match[1].length;
       } else {
         quote_char = null;
-        if (match = inv_prefix.match(new RegExp(`^(.*?)\\w*([=()$]|${inv_keywords_regex_str})`))) {
+        if (match = inv_prefix.match(new RegExp(`^(.*?)\\w*([=()$]|${inv_keywords_regex_str})`, 'i'))) {
           // Do not dilate past keywords or special characters
           start -= match[1].length;
         }
