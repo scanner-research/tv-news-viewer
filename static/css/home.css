@@ -116,6 +116,9 @@
   display: none;
   word-break: break-all;
 }
+#embedArea .copy-a {
+  cursor: copy;
+}
 
 #vgridArea {
   border-style: solid;

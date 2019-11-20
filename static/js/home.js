@@ -659,18 +659,27 @@ function displaySearchResults(
       document.execCommand("copy");
       document.body.removeChild(dummy);
       alert('Copied link to clipboard!');
+      return false;
     };
 
-    setEmbedUrl = () => {
+    setEmbedArea = () => {
       let x = $('#embedArea textarea[name="embed"]');
       x.val(`<iframe src="${embed_url}"></iframe>`);
       x.toggle();
+      return false;
     };
 
-    $('#embedArea p[name="text"]').html(
-      `<a href="#" onclick="setCopyUrl(); return false;">Copy</a> url,
-       <a href="#" onclick="setEmbedUrl(); return false;">embed</a> chart, or
-       <a href="${getDownloadUrl(search_results)}" download="data.csv" type="text/json">download</a> the data.`
+    $('#embedArea p[name="text"]').empty().append(
+      $('<a>').addClass('copy-a').attr('href', '#').click(setCopyUrl).text('Copy'),
+      ' url, ',
+      $('<a>').addClass('embed-a').attr('href', '#').click(setEmbedArea).text('embed'),
+      ' chart, or ',
+      $('<a>').addClass('download-a').attr({
+        href: getDownloadUrl(search_results),
+        download: 'data.csv',
+        type: 'text/csv',
+      }).text('download'),
+      ' the data.'
     );
     if (push_state && !minimalMode) {
       window.history.pushState(null, '', chart_path);

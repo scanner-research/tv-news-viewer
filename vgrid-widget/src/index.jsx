@@ -111,7 +111,7 @@ function loadJsonData(json_data, caption_data, face_data, highlight_phrases) {
 
     interval_blocks.push({
       video_id: video_id,
-      title: get_video_title(video_json.metadata),
+      title: getVideoTitle(video_json.metadata),
       interval_sets: [{
         name: 'results',
         interval_set: new IntervalSet(
@@ -159,11 +159,19 @@ function format_time(s) {
   return ret;
 }
 
-function get_video_title(video) {
+function getVideoTitle(video) {
   let [y, m, d] = video.date.split('-').map(x => Number.parseInt(x));
   let show = video.show.length > 0 ? video.show : '&lt;unnamed&gt;';
-  return `<span title="${video.name}">${video.channel}, ${show} on ${m}/${d}/${y}</span>`
+  return $('<span>').attr('title', video.name).text(`${video.channel}, ${show} on ${m}/${d}/${y}`).prop('outerHTML');
 }
+
+function getArchiveLogo(video, start, end) {
+  let url = `https://archive.org/details/${video.name}/start/${Math.floor(start)}/end/${Math.floor(end)}`;
+  return $('<span>').addClass('archive-logo').append(
+    $('<a>').attr({href: url, target: '_blank', title: 'View at the Internet Archive!'}).append(
+      $('<img>').attr('src', '/static/img/archive.svg'))
+  ).prop('outerHTML');
+};
 
 function loadJsonDataForInternetArchive(json_data, caption_data, face_data,
                                         highlight_phrases) {
@@ -254,7 +262,7 @@ function loadJsonDataForInternetArchive(json_data, caption_data, face_data,
 
     interval_blocks.push({
       video_id: video_id,
-      title: `${get_video_title(video_json.metadata)} (from ${format_time(block_start)} to ${format_time(block_end)})`,
+      title: `${getVideoTitle(video_json.metadata)} (from ${format_time(block_start)} to ${format_time(block_end)}) ${getArchiveLogo(video_json.metadata, block_start, block_end)}`,
       interval_sets: [{
         name: 'results',
         interval_set: new IntervalSet(
