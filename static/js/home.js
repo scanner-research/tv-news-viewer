@@ -376,7 +376,6 @@ function closeQueryBuilder(search_table_row) {
 
 function toggleQueryBuilder() {
   let search_table_row = $(this).closest('tr');
-  let query_input = search_table_row.find('input[name="query"]');
   if (search_table_row.find('.query-builder').length > 0) {
     closeQueryBuilder(search_table_row);
   } else {

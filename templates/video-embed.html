@@ -2,6 +2,8 @@
 
 {% block head %}
   {{ super() }}
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pegjs/0.9.0/peg.min.js" integrity="sha256-ETWi3bkH0XCqDYQKJ1ut+gf+oO31m2+NRBMZ25TntQ0=" crossorigin="anonymous"></script>
+
   <link rel="stylesheet" href="{{ url_for('static', filename='vgrid/index.css') }}" />
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
   <link rel="stylesheet" href="{{ url_for('static', filename='css/video-embed.css') }}" />
