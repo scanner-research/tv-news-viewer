@@ -536,7 +536,9 @@ function addRow(query) {
   editor.on('cursorActivity', (cm) => {
     if (!cm.state.completeActive) {
       // Only show hint if the query builder is closed
-      let tmp = Object.entries(CODE_EDITORS).filter(([c, e]) => e == editor);
+      let tmp = Object.entries(CODE_EDITORS).filter(
+        ([c, e]) => e == editor && e.hasFocus()
+      );
       if (tmp.length > 0) {
         let data_color = tmp[0][0];
         let search_table_row = $(`#searchTable tr[data-color="${data_color}"]`);

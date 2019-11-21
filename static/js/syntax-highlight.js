@@ -522,6 +522,7 @@ function addCodeHintHelper(name) {
           };
         }
       } else {
+        // If the previous unit is a keyword
         if (inv_prefix.match(new RegExp(`^(?:${inv_keywords_regex_str})`))) {
           return {
             list: search_keys.map(x => x + '='),
@@ -534,8 +535,13 @@ function addCodeHintHelper(name) {
       if (match = inv_prefix.match(/^(\s*)[)"']/)) {
         // Propose a new conjunction
         let padding = match[1] ? '' : ' ';
+        let keywords = ['AND', 'OR'];
+        if (!line.match(/NORMALIZE|SUBTRACT/i)) {
+          keywords.push('NORMALIZE');
+          keywords.push('SUBTRACT');
+        }
         return {
-          list: ['AND', 'OR', 'NORMALIZE'].map(x => padding + x + ' '),
+          list: keywords.map(x => padding + x + ' '),
           from: CodeMirror.Pos(cursor.line, start),
           to: CodeMirror.Pos(cursor.line, end)
         };
