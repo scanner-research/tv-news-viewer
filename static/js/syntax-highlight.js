@@ -100,13 +100,12 @@ function generateCodeMirrorParser(options) {
           }
         }
         case SEARCH_KEY.face_tag:
-          var err = false;
-          value.split(/\s*(?:AND|,)\s*/i).forEach(t => {
-            err |= !findInArrayCaseInsensitive(ALL_TAGS, t);
-          })
+          var err = value.split(/\s*(?:AND|,)\s*/i).some(
+            t => !ALL_TAGS_LOWER_CASE_SET.has(t.toLowerCase())
+          );
           return err ? 'error' : 'face';
         case SEARCH_KEY.face_name:
-          return findInArrayCaseInsensitive(ALL_PEOPLE, value) ? 'face' : 'error';
+          return ALL_PEOPLE_LOWER_CASE_SET.has(value.toLowerCase()) ? 'face' : 'error';
         case SEARCH_KEY.face_count:
           return value.match(/\d+/) ? 'face' : 'error';
         case SEARCH_KEY.text_window:
@@ -326,10 +325,7 @@ function addCodeHintHelper(name) {
     }
     if (prefix) {
       let prefix_regex = new RegExp('^' + prefix, 'i');
-      let partial_matches = values.filter(x => x.match(prefix_regex));
-      if (partial_matches.length > 0) {
-        values = partial_matches;
-      }
+      values = values.filter(x => x.match(prefix_regex))
     }
     return values;
   }

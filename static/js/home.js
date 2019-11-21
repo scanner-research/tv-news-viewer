@@ -529,7 +529,8 @@ function addRow(query) {
     autoCloseBrackets: true, matchBrackets: true,
     lineWrapping: true, noNewlines: true, scrollbarStyle: null,
     placeholder: 'enter search here (all the data, if blank)',
-    hintOptions: {hint: CodeMirror.hint.tvnews, completeSingle: false}
+    hintOptions: {hint: CodeMirror.hint.tvnews, completeSingle: false},
+    extraKeys: {Enter: search}
   });
   setCodeEditorValue(editor, text);
   editor.on('cursorActivity', (cm) => {

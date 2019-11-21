@@ -53,9 +53,9 @@ function alertAndThrow(msg) {
 }
 
 function findInArrayCaseInsensitive(arr, v) {
-  let v_up = v.toUpperCase();
+  let v_regex = new RegExp('^' + v + '$', 'i');
   for (var i = 0; i < arr.length; i++) {
-    if (arr[i].toUpperCase() == v_up) {
+    if (arr[i].match(v_regex)) {
       return arr[i];
     }
   }

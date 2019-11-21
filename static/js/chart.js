@@ -142,7 +142,7 @@ class Chart {
           maximumFractionDigits: frac_digits,
           minimumFractionDigits: frac_digits
         })
-        : value.toExponential(frac_digits));
+        : value.toExponential(Math.max(frac_digits, 3)));
     }
 
     // Helper to compute values

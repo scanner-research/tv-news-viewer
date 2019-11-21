@@ -136,6 +136,9 @@ function validateKeyValue(key, value, no_err) {
       break;
     }
     case SEARCH_KEY.face_name: {
+      if (!ALL_PEOPLE_LOWER_CASE_SET.has(value.toLowerCase())) {
+        throw getKVError();
+      }
       let name = findInArrayCaseInsensitive(ALL_PEOPLE, value);
       if (name) {
         value = name;
@@ -146,11 +149,11 @@ function validateKeyValue(key, value, no_err) {
     }
     case SEARCH_KEY.face_tag: {
       value = value.split(FACE_TAG_SPLIT_RE).map(t => {
-        let tt = findInArrayCaseInsensitive(ALL_TAGS, $.trim(t));
-        if (!tt) {
-          throw new QueryParseError(`Unknown ${key}: ${t}`)
+        let tt = $.trim(t);
+        if (!ALL_TAGS_LOWER_CASE_SET.has(tt.toLowerCase())) {
+          throw new QueryParseError(`Unknown ${key}: ${t}`);
         }
-        return tt;
+        return findInArrayCaseInsensitive(ALL_TAGS, tt);
       }).join(',');
       break;
     }
