@@ -137,7 +137,7 @@ class Chart {
 
     function getRoundedValue(value, frac_digits) {
       let exp_threshold = 1. / Math.pow(10, frac_digits);
-      return (value >= exp_threshold ?
+      return (value >= exp_threshold && Math.abs(value) <= 1e-12 ?
         value.toLocaleString(undefined, {
           maximumFractionDigits: frac_digits,
           minimumFractionDigits: frac_digits

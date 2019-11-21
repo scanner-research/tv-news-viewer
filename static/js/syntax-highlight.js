@@ -285,6 +285,8 @@ function addCodeHintHelper(name) {
   let unit_inv_prefix_regex_2 = new RegExp(`^(.*?)[="')($]`);
 
   let search_keys = Object.values(SEARCH_KEY).filter(x => x != SEARCH_KEY.video);
+  search_keys.sort();
+
   let searck_keys_regex_str = search_keys.join('|');
   let search_keys_regex = new RegExp('^(' + searck_keys_regex_str + ')$', 'i');
 
@@ -296,6 +298,8 @@ function addCodeHintHelper(name) {
     hours.push(`${i}`);
   }
 
+  let all_shows = ALL_SHOWS.filter(x => x.length > 0);
+
   function getValuesForKey(key, prefix) {
     var values = [];
     switch (key) {
@@ -303,7 +307,7 @@ function addCodeHintHelper(name) {
         values = CHANNELS;
         break;
       case SEARCH_KEY.show:
-        values = ALL_SHOWS;
+        values = all_shows;
         break;
       case SEARCH_KEY.face_name:
         values = ALL_PEOPLE;
@@ -327,7 +331,7 @@ function addCodeHintHelper(name) {
         values = partial_matches;
       }
     }
-    return values.filter(x => x.length > 0);
+    return values;
   }
 
   CodeMirror.registerHelper('hint', name, function(editor) {
@@ -341,7 +345,7 @@ function addCodeHintHelper(name) {
         list: search_keys.map(x => `${x}=`),
         from: CodeMirror.Pos(cursor.line, end),
         to: CodeMirror.Pos(cursor.line, end)
-      }
+      };
     }
 
     // Find the extent of the current token that we are in
@@ -411,21 +415,21 @@ function addCodeHintHelper(name) {
           list: values,
           from: CodeMirror.Pos(cursor.line, end),
           to: CodeMirror.Pos(cursor.line, end + match[0].length)
-        }
+        };
       } else if (match = suffix.match(unquoted_value_suffix_regex)) {
         // Overwrite existing unquoted value
         return {
           list: values,
           from: CodeMirror.Pos(cursor.line, end),
           to: CodeMirror.Pos(cursor.line, end + match[1].length)
-        }
+        };
       } else {
         // No existing value
         return {
           list: values,
           from: CodeMirror.Pos(cursor.line, end),
           to: CodeMirror.Pos(cursor.line, end)
-        }
+        };
       }
     }
 
@@ -439,8 +443,7 @@ function addCodeHintHelper(name) {
         // Dilate until quote
         start -= match[1].length;
       } else {
-        quote_char = null;
-        if (match = inv_prefix.match(new RegExp(`^(.*?)\\w*([=()$]|${inv_keywords_regex_str})`, 'i'))) {
+        if (match = inv_prefix.match(new RegExp(`^(.*?)\\w*(['"=()$]|${inv_keywords_regex_str})`, 'i'))) {
           // Do not dilate past keywords or special characters
           start -= match[1].length;
         }
@@ -464,12 +467,28 @@ function addCodeHintHelper(name) {
     }
     if (match = inv_prefix.match(/^(["'])?\s*=/)) {
       // cursor is in a value
+      let prefix_quote_char = match[1];
       let key = reverseString(inv_prefix.match(/\s*=\s*(\w+)/)[1]);
       var values = [];
       if (key.match(search_keys_regex)) {
-        values = getValuesForKey(key, curr_unit).map(v => `"${v}"`);
+        // Strip quotes from curr unit
+        curr_unit = $.trim(curr_unit);
+        if (match = curr_unit.match(/^(?:"(.*)"|'(.*)')$/)) {
+          if (match[1]) {
+            curr_unit = match[1];
+          } else if (match[2]) {
+            curr_unit = match[2];
+          } else {
+            return null;
+          }
+        }
+        values = getValuesForKey(key, curr_unit);
+        if (values.length == 1 && values[0] == curr_unit) {
+          return null;
+        }
+        values = values.map(v => `"${v}"`);
       }
-      if (match[1]) {
+      if (prefix_quote_char) {
         start--;
       }
       if (suffix.match(/^["']/)) {
@@ -479,7 +498,7 @@ function addCodeHintHelper(name) {
         list: values,
         from: CodeMirror.Pos(cursor.line, start),
         to: CodeMirror.Pos(cursor.line, end)
-      }
+      };
     } else {
       if ($.trim(suffix).length == 0 &&
           (match = curr_unit.match(should_propose_key_regex))) {
@@ -490,18 +509,29 @@ function addCodeHintHelper(name) {
           list: values,
           from: CodeMirror.Pos(cursor.line, end),
           to: CodeMirror.Pos(cursor.line, end)
-        }
+        };
       }
 
-      let curr_unit_re = new RegExp('^' + $.trim(curr_unit));
-      let candidate_keys = search_keys.filter(x => x.match(curr_unit_re));
-      if (candidate_keys.length > 0) {
-        match = curr_unit.match(/(\s*).*?(\s*)/);
-        return {
-          list: candidate_keys,
-          from: CodeMirror.Pos(
-            cursor.line, end - curr_unit.length + match[1].length),
-          to: CodeMirror.Pos(cursor.line, end - match[2].length)
+      let curr_unit_trim = $.trim(curr_unit);
+      if (curr_unit_trim.length > 0) {
+        let curr_unit_re = new RegExp('^' + curr_unit_trim);
+        let candidate_keys = search_keys.filter(x => x.match(curr_unit_re));
+        if (candidate_keys.length > 0) {
+          match = curr_unit.match(/(\s*).*?(\s*)/);
+          return {
+            list: candidate_keys.map(x => x + '='),
+            from: CodeMirror.Pos(
+              cursor.line, end - curr_unit.length + match[1].length),
+            to: CodeMirror.Pos(cursor.line, end - match[2].length)
+          };
+        }
+      } else {
+        if (inv_prefix.match(new RegExp(`^(?:${inv_keywords_regex_str})`))) {
+          return {
+            list: search_keys.map(x => x + '='),
+            from: CodeMirror.Pos(cursor.line, end),
+            to: CodeMirror.Pos(cursor.line, end)
+          };
         }
       }
 
@@ -509,10 +539,10 @@ function addCodeHintHelper(name) {
         // Propose a new conjunction
         let padding = match[1] ? '' : ' ';
         return {
-          list: ['AND ', 'OR '].map(x => padding + x),
-          from: CodeMirror.Pos(cursor.line, end),
+          list: ['AND', 'OR', 'NORMALIZE'].map(x => padding + x + ' '),
+          from: CodeMirror.Pos(cursor.line, start),
           to: CodeMirror.Pos(cursor.line, end)
-        }
+        };
       }
     }
   });
