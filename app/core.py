@@ -952,8 +952,8 @@ def build_app(
     @app.route('/data/videos')
     def get_data_videos() -> Response:
         return render_template(
-            'data/videos.html', n_samples=N_VIDEO_SAMPLES,
-            n_total=len(video_data_context.video_dict))
+            'data/videos.html', n_samples='{:,}'.format(N_VIDEO_SAMPLES),
+            n_total='{:,}'.format(len(video_data_context.video_dict)))
 
     @app.route('/data/videos.json')
     def get_data_videos_json() -> Response:

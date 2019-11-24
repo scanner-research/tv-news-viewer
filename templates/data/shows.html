@@ -40,7 +40,8 @@
         columns: [
           null,
           {render: x => x.length > 0 ? x : '&lt;unnamed&gt;' },
-          {width: '25%', className: 'text-right'},
+          {render: x => formatNumber(x, 1),
+           width: '25%', className: 'text-right'},
         ],
         language: {
           info: 'Showing _START_ to _END_ of _TOTAL_ shows',

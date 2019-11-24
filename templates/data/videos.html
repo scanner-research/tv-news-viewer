@@ -7,22 +7,35 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.10.19/js/dataTables.bootstrap4.min.js" integrity="sha256-hJ44ymhBmRPJKIaKRf3DSX5uiFEZ9xB/qx8cNbJvIMU=" crossorigin="anonymous"></script>
 
 <link rel="stylesheet" href="{{ url_for('static', filename='css/table.css') }}" />
+<script src="/generated/js/defaults.js" /></script>
 <script src="{{ url_for('static', filename='js/table.js') }}" /></script>
 {% endblock %}
 
 {% block content %}
 <div class="container">
   <h1>
-    The videos
+    The videos: a decade of cable TV news
   </h1>
 
   <p>
-    The following is a random sample of {{ n_samples }} videos from our data
-    set of {{ n_total }} videos. The video names can be used to correlate
-    our data with their source at the
+    There are currently {{ n_total }} videos indexed by this website.
+    These videos are provided by the
     <a target="_blank" href="https://archive.org/">Internet Archive</a>.
-    The timestamp embedded in the video name is in the UTC timezone,
-    whereas we use Eastern Time for all queries.
+    The videos account for
+    near 24/7 news coverage from three networks: CNN, FOX News, and MSNBC.
+    For more details, please refer to the
+    <a href="/getting-started">getting started</a> and
+    <a href="/methodology">methodology</a> pages.
+  </p>
+
+  <p>
+    The following is a sample of {{ n_samples }} videos from the data
+    set. The video name is a unique identifier from the Internet Archive,
+    and it encodes the channel, air date and time
+    (in year-month-day_hour-minute-second format)
+    and the name of the show. The timestamp embedded in the video name is in
+    the UTC timezone; we convert this to Eastern Time for all queries.
+    Click the <span id="archiveLogo"></span> logo to view the source video.
   </p>
 
   <table class="table table-hover table-striped table-bordered table-sm">
@@ -35,12 +48,14 @@
   </table>
 
   <script>
+    $('#archiveLogo').replaceWith(renderArchiveLink(''));
     $(document).ready(function() {
       $('.table').DataTable({
         pageLength: 25,
         columns: [
-          null,
-          {width: '20%', className: 'text-right'},
+          {render: x => renderArchiveLink(x) + ' ' + x},
+          {width: '20%', className: 'text-right',
+           render: x => formatNumber(x, 1)},
         ],
         language: {
           info: 'Showing _START_ to _END_ of _TOTAL_ videos',

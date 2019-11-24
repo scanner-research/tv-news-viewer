@@ -9,3 +9,7 @@
 .dataTables_filter input {
   width: 80% !important;
 }
+.archive-logo img {
+  height: 1.25rem;
+  vertical-align: top;
+}

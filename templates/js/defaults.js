@@ -44,7 +44,6 @@ const ARCHIVE_VIDEO_ENDPOINT = 'https://archive.org/download';
 const CLIENT_IS_CHROME = (
   !!window.chrome && (!!window.chrome.webstore || !!window.chrome.runtime)
 );
-const CLIENT_IS_MAC = navigator.platform.indexOf('Mac') > -1;
 
 var SERVE_FROM_INTERNET_ARCHIVE = true;
 

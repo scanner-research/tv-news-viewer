@@ -16,11 +16,18 @@ function renderLongDataValue(x) {
   }
 }
 
+function formatNumber(x, frac_digits) {
+  return x.toLocaleString(undefined, {
+    maximumFractionDigits: frac_digits,
+    minimumFractionDigits: frac_digits
+  });
+}
+
 function renderArchiveLink(video_name) {
-  let url = ARCHIVE_ENDPOINT + '/' + video_name;
+  let url = `${ARCHIVE_ENDPOINT}/${video_name}`;
   return $('<span>').addClass('archive-logo').append(
     $('<a>').attr({
       href: url, target: '_blank', title: 'View at the Internet Archive!'
     }).append($('<img>').attr('src', '/static/img/archive.svg'))
-  );
+  ).prop('outerHTML');
 }

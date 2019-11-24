@@ -79,6 +79,7 @@
   {% endif %}
 
   <script>
+    const CLIENT_IS_MAC = navigator.platform.indexOf('Mac') > -1;
     $('#ctrl-key').html(CLIENT_IS_MAC ? 'Cmd-&#8984;' : 'Ctrl');
   </script>
 </body>
