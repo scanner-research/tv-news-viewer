@@ -1,3 +1,5 @@
+/* Constant definitions */
+
 const DATA_VERSION_ID = {% if data_version is not none %}"{{ data_version }}"{% else %}null{% endif %};
 
 const SERVER_HOST = '{{ host }}';
@@ -34,8 +36,15 @@ const SEARCH_PARAM = {
 };
 
 const VIDEO_ENDPOINT = {% if video_endpoint is not none %}'{{ video_endpoint }}'{% else %}null{% endif %};
-const ARCHIVE_VIDEO_ENDPOINT = {% if archive_video_endpoint is not none %}'{{ archive_video_endpoint }}'{% else %}null{% endif %};
 const FRAMESERVER_ENDPOINT = {% if frameserver_endpoint is not none %}'{{ frameserver_endpoint }}'{% else %}null{% endif %};
+
+const ARCHIVE_ENDPOINT = 'https://archive.org/details';
+const ARCHIVE_VIDEO_ENDPOINT = 'https://archive.org/download';
+
+const CLIENT_IS_CHROME = (
+  !!window.chrome && (!!window.chrome.webstore || !!window.chrome.runtime)
+);
+const CLIENT_IS_MAC = navigator.platform.indexOf('Mac') > -1;
 
 var SERVE_FROM_INTERNET_ARCHIVE = true;
 

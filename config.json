@@ -2,6 +2,5 @@
   "data_dir": "data",
   "index_dir": "index",
   "video_endpoint": null,
-  "frameserver_endpoint": null,
-  "archive_video_endpoint": "https://archive.org/download"
+  "frameserver_endpoint": null
 }

@@ -116,9 +116,18 @@ function displayVideos(page_i) {
             }
           }
           highlight_phrases = getPhrasesToHighlight(query);
-          renderVGrid(json_data, caption_data, face_data, vgrid_settings,
-                      highlight_phrases, SERVE_FROM_INTERNET_ARCHIVE,
-                      `videos-${page_i}`);
+          renderVGrid(
+            `videos-${page_i}`,
+            json_data, caption_data, face_data, vgrid_settings,
+            SERVE_FROM_INTERNET_ARCHIVE, {
+              highlight_phrases: highlight_phrases,
+              video_source_link: {
+                url: ARCHIVE_ENDPOINT,
+                img_url: '/static/img/archive.svg',
+                title: 'View at the Internet Archive!'
+              }
+            }
+          );
         } catch (e) {
           alert('Failed to load videos.');
           throw e;

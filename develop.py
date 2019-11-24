@@ -12,7 +12,6 @@ from app.types import Ternary
 
 
 DEFAULT_VIDEO_ENDPOINT = 'https://storage.cloud.google.com/esper'
-ARCHIVE_VIDEO_ENDPOINT = 'https://archive.org/download'
 
 
 def get_args() -> argparse.Namespace:
@@ -38,7 +37,6 @@ def main(
     """Run a debugging server"""
     app = build_app(
         data_dir, index_dir, video_endpoint, frameserver_endpoint,
-        ARCHIVE_VIDEO_ENDPOINT,
         min_date=datetime(2010, 1, 1),
         max_date=datetime(2019, 7, 31),
         min_person_screen_time=600,

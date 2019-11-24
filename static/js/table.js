@@ -15,3 +15,12 @@ function renderLongDataValue(x) {
     return x;
   }
 }
+
+function renderArchiveLink(video_name) {
+  let url = ARCHIVE_ENDPOINT + '/' + video_name;
+  return $('<span>').addClass('archive-logo').append(
+    $('<a>').attr({
+      href: url, target: '_blank', title: 'View at the Internet Archive!'
+    }).append($('<img>').attr('src', '/static/img/archive.svg'))
+  );
+}

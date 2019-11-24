@@ -169,12 +169,20 @@
   width: 100%;
   height: 100%;
 }
-#dataVersionWarning {
+
+#warningArea {
   display: none;
+}
+#warningArea .warning {
   background-color: #ffff80;
-  border-radius: 5px;
+  border-radius: 10px;
+  border-style: solid;
+  border-color: black;
+  border-width: 2px;
   margin-top: 0.5rem;
   margin-bottom: 0.5rem;
+  padding: 5px;
+  text-align: center;
   font-weight: bold;
 }
 

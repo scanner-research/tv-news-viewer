@@ -14,30 +14,31 @@ const FACE_FADE_PARAMS = {amount: 0.75};
 const INTERNET_ARCHIVE_MAX_CLIP_LEN = 180;
 const INTERNET_ARCHIVE_PAD_START = 30;
 
-function getHighlightIndexes(captions, highlight_phrases) {
-  let highlight_phrase_arr = Array.from(highlight_phrases);
-  let max_highlight_len = 1 + Math.max(
-    ...(highlight_phrase_arr.map(p => p.split(' ').length))
-  );
-
+function getHighlightIndexes(captions, extra_options) {
   let highlight_idxs = new Set();
-  for (var i = 0; i < captions.length; i++) {
-    var prefix = '';
-    for (var j = i; j < Math.min(captions.length, i + max_highlight_len); j++) {
-      prefix += $.trim(captions[j][2]).replace(/[!\.\?;:(),]/i, '').toLowerCase();
-      if (highlight_phrases.has(prefix)) {
-        for (var k = i; k <= j; k++) {
-          highlight_idxs.add(k);
+  if (extra_options.highlight_phrases) {
+    let highlight_phrase_arr = Array.from(extra_options.highlight_phrases);
+    let max_highlight_len = 1 + Math.max(
+      ...(highlight_phrase_arr.map(p => p.split(' ').length))
+    );
+    for (var i = 0; i < captions.length; i++) {
+      var prefix = '';
+      for (var j = i; j < Math.min(captions.length, i + max_highlight_len); j++) {
+        prefix += $.trim(captions[j][2]).replace(/[!\.\?;:(),]/i, '').toLowerCase();
+        if (highlight_phrases.has(prefix)) {
+          for (var k = i; k <= j; k++) {
+            highlight_idxs.add(k);
+          }
         }
-      }
-      prefix += ' ';
+        prefix += ' ';
 
-      // early termination
-      var matches_prefix = false;
-      highlight_phrase_arr.forEach(p => {
-        matches_prefix |= p.startsWith(prefix);
-      });
-      if (!matches_prefix) break;
+        // early termination
+        var matches_prefix = false;
+        highlight_phrase_arr.forEach(p => {
+          matches_prefix |= p.startsWith(prefix);
+        });
+        if (!matches_prefix) break;
+      }
     }
   }
   return highlight_idxs;
@@ -49,7 +50,24 @@ function flattenCaption(caption) {
   return text.split(' ').map(token => [start, end, token]);
 }
 
-function loadJsonData(json_data, caption_data, face_data, highlight_phrases) {
+function getVideoTitle(video) {
+  let [y, m, d] = video.date.split('-').map(x => Number.parseInt(x));
+  let show = video.show.length > 0 ? video.show : '&lt;unnamed&gt;';
+  return $('<span>').attr('title', video.name).text(`${video.channel}, ${show} on ${m}/${d}/${y}`).prop('outerHTML');
+}
+
+function getSourceLink(source_options, video, start, end) {
+  var url = `${source_options.url}/${video.name}`;
+  if (start !== undefined && end !== undefined) {
+    url += `/start/${Math.floor(start)}/end/${Math.floor(end)}`;
+  }
+  return $('<span>').addClass('archive-logo').append(
+    $('<a>').attr({href: url, target: '_blank', title: source_options.title}).append(
+      $('<img>').attr('src', source_options.img_url))
+  ).prop('outerHTML');
+};
+
+function loadJsonData(json_data, caption_data, face_data, extra_options) {
   let videos = [];
   let interval_blocks = [];
 
@@ -75,7 +93,7 @@ function loadJsonData(json_data, caption_data, face_data, highlight_phrases) {
     );
 
     let captions = _.get(caption_data, video_id, []).flatMap(flattenCaption);
-    let highlight_idxs = getHighlightIndexes(captions, highlight_phrases);
+    let highlight_idxs = getHighlightIndexes(captions, extra_options);
     let caption_intervals = captions.map(
       (caption, i) => {
         let [start, end, text] = caption;
@@ -109,9 +127,14 @@ function loadJsonData(json_data, caption_data, face_data, highlight_phrases) {
       );
     };
 
+    let video_title_parts = [getVideoTitle(video_json.metadata)];
+    if (extra_options.video_source_link) {
+      video_title_parts.push(
+        getSourceLink(extra_options.video_source_link, video_json.metadata));
+    }
     interval_blocks.push({
       video_id: video_id,
-      title: getVideoTitle(video_json.metadata),
+      title: video_title_parts.join(' '),
       interval_sets: [{
         name: 'results',
         interval_set: new IntervalSet(
@@ -159,22 +182,8 @@ function format_time(s) {
   return ret;
 }
 
-function getVideoTitle(video) {
-  let [y, m, d] = video.date.split('-').map(x => Number.parseInt(x));
-  let show = video.show.length > 0 ? video.show : '&lt;unnamed&gt;';
-  return $('<span>').attr('title', video.name).text(`${video.channel}, ${show} on ${m}/${d}/${y}`).prop('outerHTML');
-}
-
-function getArchiveLogo(video, start, end) {
-  let url = `https://archive.org/details/${video.name}/start/${Math.floor(start)}/end/${Math.floor(end)}`;
-  return $('<span>').addClass('archive-logo').append(
-    $('<a>').attr({href: url, target: '_blank', title: 'View at the Internet Archive!'}).append(
-      $('<img>').attr('src', '/static/img/archive.svg'))
-  ).prop('outerHTML');
-};
-
 function loadJsonDataForInternetArchive(json_data, caption_data, face_data,
-                                        highlight_phrases) {
+                                        extra_options) {
   let videos = [];
   let interval_blocks = [];
 
@@ -222,7 +231,7 @@ function loadJsonDataForInternetArchive(json_data, caption_data, face_data,
     let captions = _.get(caption_data, video_id, []).filter(
       filterIntervals
     ).flatMap(flattenCaption);
-    let highlight_idxs = getHighlightIndexes(captions, highlight_phrases);
+    let highlight_idxs = getHighlightIndexes(captions, extra_options);
     let caption_intervals = captions.map(
       (caption, i) => {
         let [start, end, text] = caption;
@@ -260,9 +269,18 @@ function loadJsonDataForInternetArchive(json_data, caption_data, face_data,
       );
     };
 
+    let video_title_parts = [
+      getVideoTitle(video_json.metadata),
+      `(from ${format_time(block_start)} to ${format_time(block_end)})`
+    ];
+    if (extra_options.video_source_link) {
+      video_title_parts.push(
+        getSourceLink(extra_options.video_source_link, video_json.metadata,
+                      block_start, block_end));
+    }
     interval_blocks.push({
       video_id: video_id,
-      title: `${getVideoTitle(video_json.metadata)} (from ${format_time(block_start)} to ${format_time(block_end)}) ${getArchiveLogo(video_json.metadata, block_start, block_end)}`,
+      title: video_title_parts.join(' '),
       interval_sets: [{
         name: 'results',
         interval_set: new IntervalSet(
@@ -295,14 +313,20 @@ function loadJsonDataForInternetArchive(json_data, caption_data, face_data,
   return [database, interval_blocks];
 }
 
-function renderVGrid(json_data, caption_data, face_data, settings, highlight_words,
-                     serve_from_internet_archive, container) {
-  let [database, interval_blocks] = serve_from_internet_archive ?
-    loadJsonDataForInternetArchive(json_data, caption_data, face_data, highlight_words) :
-    loadJsonData(json_data, caption_data, face_data, highlight_words);
+function renderVGrid(
+  container, json_data, caption_data, face_data, vgrid_settings,
+  use_archive, extra_options
+) {
+  if (extra_options == undefined) {
+    extra_options = {};
+  }
+  let [database, interval_blocks] = use_archive ?
+    loadJsonDataForInternetArchive(
+      json_data, caption_data, face_data, extra_options
+    ) : loadJsonData(json_data, caption_data, face_data, extra_options);
   ReactDOM.render(
     <VGrid interval_blocks={interval_blocks} database={database}
-           settings={settings} />,
+           settings={vgrid_settings} />,
     document.getElementById(container));
 }
 

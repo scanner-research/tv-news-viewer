@@ -39,7 +39,8 @@ FILE_DIR = os.path.dirname(os.path.realpath(__file__))
 TEMPLATE_DIR = os.path.join(FILE_DIR, '..', 'templates')
 STATIC_DIR = os.path.join(FILE_DIR, '..', 'static')
 
-MAX_VIDEO_SEARCH_IDS = 25
+N_VIDEO_SAMPLES = 1000
+MAX_VIDEO_SEARCH_IDS = 10
 
 
 class SearchResultType(Enum):
@@ -807,7 +808,6 @@ def build_app(
     index_dir: str,
     video_endpoint: Optional[str],
     frameserver_endpoint: Optional[str],
-    archive_video_endpoint: Optional[str],
     min_date: datetime,
     max_date: datetime,
     min_person_screen_time: int,
@@ -951,13 +951,16 @@ def build_app(
 
     @app.route('/data/videos')
     def get_data_videos() -> Response:
-        return render_template('data/videos.html')
+        return render_template(
+            'data/videos.html', n_samples=N_VIDEO_SAMPLES,
+            n_total=len(video_data_context.video_dict))
 
     @app.route('/data/videos.json')
     def get_data_videos_json() -> Response:
+        samples = random.sample(
+            list(video_data_context.video_dict.values()), N_VIDEO_SAMPLES)
         return jsonify({'data': [
-            (v.name, round(v.num_frames / v.fps / 60, 1))
-            for v in video_data_context.video_dict.values()
+            (v.name, round(v.num_frames / v.fps / 60)) for v in samples
         ]})
 
     @app.route('/data/transcripts')
@@ -980,7 +983,6 @@ def build_app(
             default_text_window=default_text_window,
             video_endpoint=video_endpoint,
             frameserver_endpoint=frameserver_endpoint,
-            archive_video_endpoint=archive_video_endpoint,
             search_params=[
                 (k, v) for k, v in SearchParam.__dict__.items()
                 if not k.startswith('__')],

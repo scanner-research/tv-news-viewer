@@ -13,12 +13,13 @@
 {% block content %}
 <div class="container">
   <h1>
-    List of videos
+    The videos
   </h1>
 
   <p>
-    This page contains a list of videos that are currently in our system.
-    The video names can be used to correlate our data with their source at the
+    The following is a random sample of {{ n_samples }} videos from our data
+    set of {{ n_total }} videos. The video names can be used to correlate
+    our data with their source at the
     <a target="_blank" href="https://archive.org/">Internet Archive</a>.
     The timestamp embedded in the video name is in the UTC timezone,
     whereas we use Eastern Time for all queries.
@@ -35,7 +36,16 @@
 
   <script>
     $(document).ready(function() {
-      $('.table').DataTable({pageLength: 25, ajax: '/data/videos.json'});
+      $('.table').DataTable({
+        pageLength: 25,
+        columns: [
+          null,
+          {width: '20%', className: 'text-right'},
+        ],
+        language: {
+          info: 'Showing _START_ to _END_ of _TOTAL_ videos',
+        },
+        ajax: '/data/videos.json'});
     });
   </script>
 </div>

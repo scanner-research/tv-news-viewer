@@ -778,8 +778,10 @@ function addHighlight(trigger, targets) {
   });
 }
 
-function setDataVersionWarning(version_id) {
-  $('#dataVersionWarning').text(`Warning! The data version has changed from ${version_id} to ${DATA_VERSION_ID}. Remove "dataVersion=${encodeURIComponent(version_id)}" from the shared link/URL to disable this message.`).show();
+function addWarning(message) {
+  $('#warningArea').append(
+    $('<div>').addClass('warning').text(message)
+  ).show();
 }
 
 function initialize() {
@@ -793,9 +795,12 @@ function initialize() {
   if (params.get('dataVersion')) {
     let version_id = decodeURIComponent(params.get('dataVersion'));
     if (DATA_VERSION_ID != version_id) {
-      console.log(`data version mismatch ${DATA_VERSION_ID} != ${version_id}`);
-      setDataVersionWarning(version_id);
+      addWarning(`The data version has changed from ${version_id} to ${DATA_VERSION_ID}. Remove "dataVersion=${encodeURIComponent(version_id)}" from the shared link/URL to disable this warning.`);
     }
+  }
+
+  if (!CLIENT_IS_CHROME) {
+    addWarning('You are viewing this page from a web browser other than Google Chrome. Video playback when clicking the chart may not work.');
   }
 
   if (params.get('data')) {
