@@ -113,7 +113,6 @@ def _load_face_intervals(data_dir: str) -> FaceIntervals:
     return face_intervals
 
 
-AWS_NAME_PREFIX = 'aws '
 MIN_NAME_TOKEN_LEN = 3
 
 
@@ -125,8 +124,6 @@ def _load_person_intervals(
         return path.splitext(path.splitext(fname)[0])[0]
 
     def check_person_name_in_lexicon(name: str) -> bool:
-        if name.startswith(AWS_NAME_PREFIX):
-            name = name[len(AWS_NAME_PREFIX):].strip()
         tokens = [t for t in name.split(' ') if len(t) > MIN_NAME_TOKEN_LEN]
         if len(tokens) == 0:
             return False
@@ -198,9 +195,6 @@ def sanitize_tag(tag: str) -> str:
 def _load_person_metadata(
     data_dir: str, all_people: Set[str]
 ) -> AllPersonTags:
-    # FIXME: remove AWS options
-    has_aws = any(p.startswith(AWS_NAME_PREFIX) for p in all_people)
-
     with open(path.join(data_dir, 'people.wikidata.json')) as f:
         person_to_tags = {}
         for name, tags in json.load(f).items():
@@ -213,10 +207,6 @@ def _load_person_metadata(
                 ):
                     filtered_tags.append(Tag(tag, tag_source))
             name_lower = name.lower()
-
-            # FIXME: remove AWS options
-            if has_aws:
-                name_lower = AWS_NAME_PREFIX + name_lower
 
             if name_lower in all_people:
                 person_to_tags[name_lower] = filtered_tags
