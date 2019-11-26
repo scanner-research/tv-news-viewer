@@ -338,9 +338,11 @@ class Chart {
 
           $(div_id).on('mouseleave', function() {
             tooltip.hide();
+            $('.chart-link').hide();
           });
 
           view.addEventListener('mouseover', function(event, item) {
+            let chart_link = $('.chart-link');
             if (item && item.datum) {
               let t = new Date(item.datum.datum.time).toISOString().split('T')[0];
               let t_str = moment(t).format(moment_date_format);
@@ -372,8 +374,10 @@ class Chart {
               tooltip.css('left', tooltip_x);
               tooltip.css('top', tooltip_y);
               tooltip.show();
+              chart_link.show();
             } else {
               tooltip.hide();
+              chart_link.hide();
             }
           });
         }
@@ -386,9 +390,13 @@ class Chart {
               showVideos(t, video_div);
             });
           } else if (options.href) {
-            view.addEventListener('click', function(event, item) {
-              window.open(options.href, '_blank');
-            });
+            let open_href = () => window.open(options.href, '_blank');
+            view.addEventListener('click', open_href);
+            $(div_id).append(
+              $('<div>').addClass('chart-link').text(
+                'Click anywhere to edit!'
+              ).click(open_href)
+            );
           }
         }
       }
