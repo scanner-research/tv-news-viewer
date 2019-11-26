@@ -229,8 +229,8 @@ def _load_tag_intervals(data_dir: str) -> Dict[str, MmapIntervalListMapping]:
 
 
 def load_caption_data(index_dir: str) -> CaptionDataContext:
-    documents = Documents.load(path.join(index_dir, 'docs.list'))
-    lexicon = Lexicon.load(path.join(index_dir, 'words.lex'),
+    documents = Documents.load(path.join(index_dir, 'documents.txt'))
+    lexicon = Lexicon.load(path.join(index_dir, 'lexicon.txt'),
                            lazy_lemmas=False)
     index = CaptionIndex(path.join(index_dir, 'index.bin'),
                          lexicon, documents)
