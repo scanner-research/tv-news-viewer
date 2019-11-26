@@ -1,8 +1,12 @@
+"""
+Classes for accumulating results
+"""
+
 from abc import abstractmethod
 from datetime import datetime
 from typing import Tuple, Dict, List
 
-from .types import AggregateFn, Number, JsonObject
+from .types_backend import AggregateFn, Number, JsonObject
 from .parsing import format_date
 
 
@@ -39,7 +43,7 @@ class DetailedDateAccumulator(DateAccumulator):
         return self._values
 
 
-class SimpleDateAcumulator(DateAccumulator):
+class SimpleDateAccumulator(DateAccumulator):
 
     def __init__(self, aggregate_fn: AggregateFn):
         self._values: Dict[str, Number] = {}

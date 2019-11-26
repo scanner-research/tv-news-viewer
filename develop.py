@@ -5,45 +5,60 @@ Run a development server
 
 import argparse
 from typing import Optional
-from datetime import datetime
-
-from app.core import build_app
-from app.types import Ternary
 
 
 DEFAULT_VIDEO_ENDPOINT = 'https://storage.cloud.google.com/esper'
+DEFAULT_INDEX_PATH = 'index'
+DEFAULT_PORT = 8080
 
 
 def get_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
-    parser.add_argument('-p', '--port', default=8080,
-                        help='Server port. Default: 8080')
+    parser.add_argument('-p', '--port', default=DEFAULT_PORT,
+                        help='Server port. Default: {}'.format(DEFAULT_PORT))
     parser.add_argument('--data', dest='data_dir', default='data',
                         help='Directory of video metadata. Default: data')
-    parser.add_argument('--index', dest='index_dir', default='index',
-                        help='Directory of caption index. Default: index')
+    parser.add_argument('--index', dest='index_dir',
+                        default=DEFAULT_INDEX_PATH,
+                        help='Directory of caption index. Default: {}'.format(
+                              DEFAULT_INDEX_PATH))
     parser.add_argument('--frameserver', dest='frameserver_endpoint', type=str,
                         help='Frameserver URL and path')
     parser.add_argument('--videos', dest='video_endpoint', type=str,
                         default=DEFAULT_VIDEO_ENDPOINT,
                         help='Video server URL and path')
+    parser.add_argument('--html-only', dest='html_only', action='store_true',
+                        help='Run the server with only html template pages')
     return parser.parse_args()
 
 
 def main(
     port: int, data_dir: str, index_dir: str, video_endpoint: str,
-    frameserver_endpoint: Optional[str],
+    frameserver_endpoint: Optional[str], html_only: bool
 ) -> None:
     """Run a debugging server"""
-    app = build_app(
-        data_dir, index_dir, video_endpoint, frameserver_endpoint,
-        min_date=datetime(2010, 1, 1),
-        max_date=datetime(2019, 7, 31),
-        min_person_screen_time=600,
-        default_aggregate_by='month',
-        default_text_window=0,
-        default_is_commercial=Ternary.false,
-        data_version='dev')
+    if not html_only:
+        from datetime import datetime
+        from app.core import build_app
+        from app.types_frontend import Ternary
+
+        app = build_app(
+            data_dir, index_dir, video_endpoint, frameserver_endpoint,
+            min_date=datetime(2010, 1, 1),
+            max_date=datetime(2019, 7, 31),
+            min_person_screen_time=600,
+            default_aggregate_by='month',
+            default_text_window=0,
+            default_is_commercial=Ternary.false,
+            data_version='dev')
+    else:
+        from flask import Flask
+        from app.route_html import add_html_routes
+
+        app = Flask(__name__, template_folder='templates',
+                    static_folder='static')
+        add_html_routes(app, 0, 0, 0)
+
     app.run(port=port, debug=True)
 
 

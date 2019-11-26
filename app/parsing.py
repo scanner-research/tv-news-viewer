@@ -4,7 +4,7 @@ from datetime import datetime
 from pytz import timezone
 from typing import Optional, Set, Tuple, NamedTuple, List
 
-from .types import JsonObject
+from .types_backend import JsonObject
 from .error import InvalidUsage
 
 
@@ -80,10 +80,10 @@ def parse_day_of_week_set(s: str) -> Set[int]:
     return result
 
 
-class PersonTags(NamedTuple):
+class ParsedTags(NamedTuple):
     tags: Set[str]
     join_op: str
 
 
-def parse_tags(s: str) -> PersonTags:
-    return PersonTags(tags={t.strip() for t in s.split(',')}, join_op='AND')
+def parse_tags(s: str) -> ParsedTags:
+    return ParsedTags(tags={t.strip() for t in s.split(',')}, join_op='AND')

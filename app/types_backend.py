@@ -1,48 +1,13 @@
+"""
+Data types used by the backend server.
+"""
+
 from datetime import datetime
 from enum import Enum
 from typing import Callable, Dict, List, Set, Tuple, NamedTuple, Union
 
-from rs_intervalset import MmapIntervalSetMapping, MmapIntervalListMapping  # type: ignore
-
-
-class Aggregate(Enum):
-    day = 'day'
-    week = 'week'
-    month = 'month'
-    year = 'year'
-
-
-class Ternary(Enum):
-    true = 'true'
-    false = 'false'
-    both = 'both'
-
-
-class SearchKey:
-    video = 'video'
-    channel = 'channel'
-    show = 'show'
-    hour = 'hour'
-    day_of_week = 'dayofweek'
-
-    face_name = 'name'
-    face_tag = 'tag'
-    face_count = 'facecount'
-
-    text = 'text'
-    text_window = 'textwindow'
-
-
-class SearchParam:
-    aggregate = 'aggregate'
-    start_date = 'start_date'
-    end_date = 'end_date'
-    detailed = 'detailed'
-
-    is_commercial = 'is_commercial'
-
-    query = 'query'
-    video_ids = 'ids'
+from rs_intervalset import (
+    MmapIntervalSetMapping, MmapIntervalListMapping)  # type: ignore
 
 
 class Video(NamedTuple):

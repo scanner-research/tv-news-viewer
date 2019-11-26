@@ -27,19 +27,24 @@ from rs_intervalset.wrapper import (                    # type: ignore
     MmapISetSubsetMapping, MmapISetIntersectionMapping)
 from rs_intervalset.wrapper import _deoverlap as deoverlap_intervals
 
-from .types import *
+from .types_frontend import *
+from .types_backend import *
 from .error import *
-from .parsing import *
-from .sum import *
+from .parsing import (
+    parse_date, format_date, parse_hour_set, parse_day_of_week_set,
+    ParsedTags, parse_tags)
+from .sum import DetailedDateAccumulator, SimpleDateAccumulator
 from .load import (
     get_video_name, load_app_data, VideoDataContext, CaptionDataContext)
+from .route_html import add_html_routes
+from .route_data_json import add_data_json_routes
 
 
 FILE_DIR = os.path.dirname(os.path.realpath(__file__))
 TEMPLATE_DIR = os.path.join(FILE_DIR, '..', 'templates')
 STATIC_DIR = os.path.join(FILE_DIR, '..', 'static')
 
-N_VIDEO_SAMPLES = 1000
+NUM_VIDEO_SAMPLES = 1000
 MAX_VIDEO_SEARCH_IDS = 10
 
 
@@ -496,7 +501,7 @@ def join_intervals_with_commercials(
 GLOBAL_TAGS = {'all', 'male', 'female', 'host', 'nonhost'}
 
 
-def get_global_tags(tag: PersonTags) -> Set[str]:
+def get_global_tags(tag: ParsedTags) -> Set[str]:
     return {t for t in tag.tags if t in GLOBAL_TAGS}
 
 
@@ -816,34 +821,16 @@ def build_app(
     default_is_commercial: Ternary,
     data_version: Optional[str]
 ) -> Flask:
-    server_start_time = time.time()
 
     def _get_is_commercial() -> Ternary:
         value = request.args.get(SearchParam.is_commercial, None, type=str)
         return Ternary[value] if value else default_is_commercial
 
-    def _get_uptime() -> str:
-        s = time.time() - server_start_time
-        d = int(s / 86400)
-        s -= d * 86400
-        h = int(s / 3600)
-        s -= h * 3600
-        m = int(s / 60)
-        s -= m * 60
-        return '{}d {}h {}m {}s'.format(d, h, m, int(s))
-
     caption_data_context, video_data_context = \
-        load_app_data(index_dir, data_dir)
+        load_app_data(index_dir, data_dir, min_person_screen_time)
 
     app = Flask(__name__, template_folder=TEMPLATE_DIR,
                 static_folder=STATIC_DIR)
-
-    @app.template_filter('quoted')
-    def quoted(s: str) -> Optional[str]:
-        l = re.findall('\'([^\']*)\'', str(s))
-        if l:
-            return l[0]
-        return None
 
     document_by_name: Dict[str, Documents.Document] = {
         d.name: d for d in caption_data_context.documents
@@ -865,109 +852,13 @@ def build_app(
         response.status_code = 404
         return response
 
-    def _root() -> Response:
-        return render_template('home.html', uptime=_get_uptime())
+    add_html_routes(
+        app, num_total_videos=len(video_data_context.video_dict),
+        num_video_samples=NUM_VIDEO_SAMPLES,
+        default_text_window=default_text_window)
 
-    @app.route('/')
-    def root() -> Response:
-        return _root()
-
-    @app.route('/embed')
-    def embed() -> Response:
-        return render_template('embed.html')
-
-    @app.route('/video-embed')
-    def show_videos() -> Response:
-        return render_template('video-embed.html')
-
-    @app.route('/getting-started')
-    def get_getting_started() -> Response:
-        return render_template('getting-started.html', search_keys=SearchKey)
-
-    @app.route('/detailed')
-    def get_detailed() -> Response:
-        return render_template(
-            'detailed.html', search_keys=SearchKey,
-            default_text_window=default_text_window)
-
-    @app.route('/methodology')
-    def get_methodology() -> Response:
-        return render_template('methodology.html')
-
-    @app.route('/about-us')
-    def get_about_us() -> Response:
-        return render_template('about-us.html')
-
-    # List of people to expose
-    Person = namedtuple('person', ['name', 'screen_time', 'tags'])
-    people = list(filter(
-        lambda x: x.screen_time * 60 > min_person_screen_time, [
-            Person(
-                intervals.name, round(intervals.isetmap.sum() / 60000),
-                video_data_context.all_person_tags.name_to_tags(name)
-            )
-            for name, intervals in
-            video_data_context.all_person_intervals.items()
-        ]))
-    people.sort(key=lambda x: x.name)
-
-    @app.route('/data/people')
-    def get_data_people() -> Response:
-        return render_template('data/people.html', search_keys=SearchKey)
-
-    @app.route('/data/people.json')
-    def get_data_people_json() -> Response:
-        return jsonify({'data': [
-            (p.name, p.screen_time,
-             ', '.join(sorted({t.name for t in p.tags})))
-            for p in people
-        ]})
-
-    @app.route('/data/tags')
-    def get_data_tags() -> Response:
-        return render_template('data/tags.html', search_keys=SearchKey)
-
-    @app.route('/data/tags.json')
-    def get_data_tags_json() -> Response:
-        return jsonify({'data': [
-            (t.name, t.source, len(p), ', '.join(p))
-            for t, p in video_data_context.all_person_tags.tag_dict.items()
-        ]})
-
-    @app.route('/data/shows')
-    def get_data_shows() -> Response:
-        return render_template('data/shows.html', search_keys=SearchKey)
-
-    @app.route('/data/shows.json')
-    def get_data_shows_json() -> Response:
-        tmp = defaultdict(float)
-        for v in video_data_context.video_dict.values():
-            tmp[(v.channel, v.show)] += v.num_frames / v.fps
-        channel_and_show = [
-            (channel, show, round(seconds / 3600, 1))
-            for (channel, show), seconds in tmp.items()]
-        channel_and_show.sort()
-        return jsonify({'data': channel_and_show})
-
-    @app.route('/data/videos')
-    def get_data_videos() -> Response:
-        return render_template(
-            'data/videos.html', n_samples='{:,}'.format(N_VIDEO_SAMPLES),
-            n_total='{:,}'.format(len(video_data_context.video_dict)))
-
-    @app.route('/data/videos.json')
-    def get_data_videos_json() -> Response:
-        samples = random.sample(
-            list(video_data_context.video_dict.values()), N_VIDEO_SAMPLES)
-        return jsonify({'data': [
-            (v.name, round(v.num_frames / v.fps / 60)) for v in samples
-        ]})
-
-    @app.route('/data/transcripts')
-    def get_data_transcripts() -> Response:
-        return render_template(
-            'data/transcripts.html', params=SearchParam,
-            search_keys=SearchKey)
+    add_data_json_routes(app, video_data_context,
+                         num_video_samples=NUM_VIDEO_SAMPLES)
 
     @app.route('/generated/js/defaults.js')
     def get_defaults_js() -> Response:
@@ -995,7 +886,8 @@ def build_app(
     @app.route('/generated/js/values.js')
     def get_values_js() -> Response:
         resp = make_response(render_template(
-            'js/values.js', shows=all_shows, people=[x.name for x in people],
+            'js/values.js', shows=all_shows,
+            people=list(video_data_context.all_person_intervals.keys()),
             global_face_tags=list(sorted(GLOBAL_TAGS)),
             person_tags=video_data_context.all_person_tags.tags))
         resp.headers['Content-type'] = 'text/javascript'
@@ -1355,7 +1247,7 @@ def build_app(
             DetailedDateAccumulator(aggregate_fn)
             if request.args.get(
                 SearchParam.detailed, 'true', type=str
-            ) == 'true' else SimpleDateAcumulator(aggregate_fn))
+            ) == 'true' else SimpleDateAccumulator(aggregate_fn))
 
         query_str = request.args.get(SearchParam.query, type=str)
         if query_str:

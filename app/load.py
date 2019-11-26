@@ -1,3 +1,7 @@
+"""
+Module for loading the data.
+"""
+
 import math
 import re
 import os
@@ -14,7 +18,7 @@ from rs_intervalset import (                                # type: ignore
     MmapIntervalSetMapping, MmapIntervalListMapping)
 from rs_intervalset.wrapper import MmapIListToISetMapping   # type: ignore
 
-from .types import (
+from .types_backend import (
     Video, FaceIntervals, PersonIntervals, Tag, AllPersonTags,
     AllPersonIntervals)
 from .parsing import load_json, parse_date_from_video_name
@@ -117,7 +121,8 @@ MIN_NAME_TOKEN_LEN = 3
 
 
 def _load_person_intervals(
-    data_dir: str, caption_data: CaptionDataContext
+    data_dir: str, caption_data: CaptionDataContext,
+    min_person_screen_time: int
 ) -> Dict[str, PersonIntervals]:
 
     def parse_person_file_prefix(fname: str) -> str:
@@ -144,7 +149,7 @@ def _load_person_intervals(
     skipped_count = 0
     skipped_time = 0.
     skipped_counter = Counter()
-    all_person_intervals = {}
+    all_person_intervals = []
     for person_file_prefix in person_file_prefixes:
         person_name = re.sub(r'[^\w :]', r'', person_file_prefix)
         person_name_lower = person_name.lower()
@@ -160,9 +165,13 @@ def _load_person_intervals(
                 if os.path.isfile(person_iset_path) else
                 MmapIListToISetMapping(person_ilist_map, 0, 0, 3000, 100))
 
-            if not check_person_name_in_lexicon(person_name_lower):
+            person_time = person_isetmap.sum() / 60000
+            should_skip = False
+            if (
+                not check_person_name_in_lexicon(person_name_lower)
+                or person_time < min_person_screen_time / 60
+            ):
                 skipped_count += 1
-                person_time = person_isetmap.sum() / 60000
                 skipped_time += person_time
                 skipped_counter[person_name_lower] = person_time
                 continue
@@ -170,7 +179,7 @@ def _load_person_intervals(
             person_intervals = PersonIntervals(
                 name=person_name, ilistmap=person_ilist_map,
                 isetmap=person_isetmap)
-            all_person_intervals[person_name_lower] = person_intervals
+            all_person_intervals.append((person_name_lower, person_intervals))
         except Exception as e:
             print('Unable to load: {} - {}'.format(person_name, e))
             skipped_count += 1
@@ -181,7 +190,9 @@ def _load_person_intervals(
         print('  Skipped people with largest time:')
         for k, v in skipped_counter.most_common(25):
             print('    {}: {}m'.format(k, int(v)))
-    return all_person_intervals
+
+    all_person_intervals.sort()
+    return OrderedDict(all_person_intervals)
 
 
 def sanitize_tag(tag: str) -> str:
@@ -238,7 +249,7 @@ def load_caption_data(index_dir: str) -> CaptionDataContext:
 
 
 def load_app_data(
-    index_dir: str, data_dir: str
+    index_dir: str, data_dir: str, min_person_screen_time: int
 ) -> Tuple[CaptionDataContext, VideoDataContext]:
     print('Loading caption index: please wait...')
     caption_data = load_caption_data(index_dir)
@@ -262,7 +273,8 @@ def load_app_data(
 
     print('Loading face intervals: please wait...')
     face_intervals = _load_face_intervals(data_dir)
-    all_person_intervals = _load_person_intervals(data_dir, caption_data)
+    all_person_intervals = _load_person_intervals(
+        data_dir, caption_data, min_person_screen_time)
 
     print('Loading metadata tags: please wait...')
     all_person_tags = _load_person_metadata(
