@@ -6,19 +6,23 @@
     Searching the transcripts
   </h1>
   <p>
-    For most of the videos in the data set, we have access to the transcripts.
-    These have been time aligned at word granularity to the audio. You can
-    search for video using transcripts with the
-    <code>{{ search_keys.text }}="..."</code> predicate. For example,
+    Most of the videos in the dataset feature text transcripts. Transcripts are  
+    time aligned to the audio track at word granularity. You can
+    search for video segments where the transcript indicates a word is spoken with the predicate:
+    <code>{{ search_keys.text }}="..."</code>. For example,
     <code>{{ search_keys.text }}="United Kingdom"</code> will find all
-    times where the phrase "United Kingdom" is spoken. In its basic usage,
+    segments in the video collection where the phrase "United Kingdom" is spoken.
+    In its basic usage,
     the <code>{{ search_keys.text }}</code> filter accepts
-    individual words and phrases, where a phrase is defined as an n-gram
-    where all the words must appear in a sequence.
+    individual words and phrases, where a phrase is defined as an <a href="https://en.wikipedia.org/wiki/N-gram" target="_blank">n-gram</a>
+    where all the words must appear in a sequence.  When performing queries with transcript-based filters, users should keep in
+    mind that all queries compute the amount of screen time matching the query.  For a transcript query, this is the 
+    screen time during which the word is being spoken.  Transcript queries do not return a count of the numbber of times a word appears
+    in video transcripts.
   </p>
 
   <p>
-    This page describes some additional features of the transcript query
+    This page describes additional features of the transcript query
     language.
   </p>
 
@@ -31,7 +35,8 @@
     as the EU or E.U. in the transcripts. When this is the case, use the "|"
     character to delimit multiple words and phrases. For example,
     <code>{{ search_keys.text}}="European Union | EU | E.U."</code>
-    will search for any of the three. This can be repeated for an arbitrary
+    will search for video segments where any of these three n-grams appear in the transcript.
+    This can be repeated for an arbitrary
     number of words and phrases.
   </p>
 
@@ -39,25 +44,28 @@
     Inflections of words
   </h3>
   <p>
-    A topic can have words with many inflected forms. The simplest case is
+    Words can be used in many inflected forms. The simplest case is
     when words are singular or plural. To search for all inflected forms of
     a word without specifying them manually, surround the word with
     <code>[...]</code> brackets. For example,
     <code>{{ search_keys.text}}="[truck]"</code> will find instances of
-    truck, trucks, and trucking. If multiple words are surrounded by
-    <code>[...]</code>, then inflections will be found for any of the words.
+    "truck", "trucks", and "trucking". If multiple words are surrounded by
+    <code>[...]</code>, then inflections will be found for any of the words in the brackets.
   </p>
 
   <h3>
-    Windowing around mentions
+    Time windows around mentions
   </h3>
   <p>
     By default, <code>{{ search_keys.text}}</code> will precisely find
-    the intervals of time where a word or phrase is spoken. This means that
-    each mention will count for the few hundred milliseconds when the phrase
-    is uttered. For analyzing topic coverage, set the
-    <code>{{ search_keys.text_window }}</code> to a larger value to dilate
-    a window around each mention of the phrases. For example,
+    the intervals of time during which a word or phrase is spoken. This means that
+    each mention will likely contribute only a small fraction of a second of screen time to a query result. 
+    Sometimes it is useful for a transcript query to match a wider region of time around the utterance
+    of a word, for example if an query seeks examples where a person is on-screen within a specific amount of time
+    of a word being stated.  The 
+    <code>{{ search_keys.text_window }}</code> parameter defines how much a time of time is dilated around a
+    transcript match. (By default, its value is 0.) 
+    For example,
     <code>{{ search_keys.text }}="immigration" AND {{ search_keys.text_window }}=30</code>
     will find video intervals starting and ending 30 seconds before and after
     each mention of the word immigration.
