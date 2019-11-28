@@ -52,6 +52,7 @@ class CaptionDataContext(NamedTuple):
     index: CaptionIndex
     documents: Documents
     lexicon: Lexicon
+    document_by_name: Dict[str, Documents.Document]
 
 
 def _load_videos(data_dir: str) -> Dict[str, Video]:
@@ -245,7 +246,8 @@ def load_caption_data(index_dir: str) -> CaptionDataContext:
                            lazy_lemmas=False)
     index = CaptionIndex(path.join(index_dir, 'index.bin'),
                          lexicon, documents)
-    return CaptionDataContext(index, documents, lexicon)
+    return CaptionDataContext(
+        index, documents, lexicon, {d.name: d for d in documents})
 
 
 def load_app_data(
