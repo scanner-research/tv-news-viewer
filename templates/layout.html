@@ -36,19 +36,11 @@
           <li class="nav-item {% if self | quoted == 'getting-started.html' %}active{% endif %}">
             <a class="nav-link" href="/getting-started">Getting Started</a>
           </li>
-          <li class="nav-item dropdown">
-            <a class="nav-link" href="#" id="navbarDropdown"
-               role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-              The Data
-            </a>
-            <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-              <a class="dropdown-item" href="/data/videos">The videos</a>
-              <a class="dropdown-item" href="/data/shows">The shows</a>
-              <a class="dropdown-item" href="/data/transcripts">The transcripts</a>
-              <a class="dropdown-item" href="/data/people">The people</a>
-              <a class="dropdown-item" href="/data/tags">The tags</a>
-            </div>
+
+          <li class="nav-item {% if self | quoted == 'dataset.html' %}active{% endif %}">
+            <a class="nav-link" href="/data">The Data</a>
           </li>
+
           <li class="nav-item {% if self | quoted == 'detailed.html' %}active{% endif %}">
             <a class="nav-link" href="/detailed">Documentation</a>
           </li>

@@ -53,6 +53,10 @@ def add_html_routes(
     def get_methodology() -> Response:
         return render_template('methodology.html')
 
+    @app.route('/data')
+    def get_dataset() -> Response:
+        return render_template('dataset.html')
+    
     @app.route('/about-us')
     def get_about_us() -> Response:
         return render_template('about-us.html')
