@@ -207,7 +207,8 @@ def sanitize_tag(tag: str) -> str:
 def _load_person_metadata(
     data_dir: str, all_people: Set[str]
 ) -> AllPersonTags:
-    with open(path.join(data_dir, 'people.wikidata.json')) as f:
+    person_metadata_path = path.join(data_dir, 'people.metadata.json')
+    with open(person_metadata_path) as f:
         person_to_tags = {}
         for name, tags in json.load(f).items():
             filtered_tags = []
