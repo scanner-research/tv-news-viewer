@@ -60,7 +60,11 @@
         language: {
           info: 'Showing _START_ to _END_ of _TOTAL_ videos',
         },
-        ajax: '/data/videos.json'});
+        ajax: {
+          url: '/data/videos.json',
+          timeout: 60000
+        }
+      });
     });
   </script>
 </div>

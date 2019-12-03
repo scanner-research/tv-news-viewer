@@ -108,7 +108,10 @@
         language: {
           info: 'Showing _START_ to _END_ of _TOTAL_ tags',
         },
-        ajax: '/data/tags.json'
+        ajax: {
+          url: '/data/tags.json',
+          timeout: 60000
+        }
       });
     });
   </script>

@@ -57,7 +57,10 @@
         language: {
           info: 'Showing _START_ to _END_ of _TOTAL_ people',
         },
-        ajax: '/data/people.json'
+        ajax: {
+          url: '/data/people.json',
+          timeout: 60000
+        }
       });
     });
   </script>
