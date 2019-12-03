@@ -1,5 +1,7 @@
 .long-data-value {
   display: none;
+}
+.toggle-data {
   padding-left: 10px;
 }
 .dataTables_filter label {

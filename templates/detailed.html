@@ -28,7 +28,7 @@
 <div class="container">
   <h3>How do I write queries?</h3>
   <p>All queries compute the screen time of video segments in the dataset that match the query predicate. Screen time queries are broken in to several parts. A basic
-    query consists of filters separated by "AND"s. 
+    query consists of filters separated by "AND"s.
     <div class="code-block" id="andSyntax"></div>
     For example, the following query computes the screen time of Hillary Clinton on CNN:
     <div class="code-block" id="andExample"></div>
@@ -103,7 +103,7 @@
       <tr>
         <td rowspan="4">{{ search_keys.hour }}</td>
         <td>description</td>
-        <td>ranges (inclusive) of hours in 24h format, in US eastern time. (UTC-5:00 in standard time and UTC-4:00 during daylight saving time). 
+        <td>ranges (inclusive) of hours in 24h format, in US eastern time. (UTC-5:00 in standard time and UTC-4:00 during daylight saving time).
 </td>
       </tr>
       <tr>
@@ -321,6 +321,7 @@
 
     setCodeArea('#andSyntax', ['filter1="..." AND filter2="..." AND ... ']);
     setCodeArea('#andExample', ['{{ search_keys.face_name }}="Hillary Clinton" AND {{ search_keys.channel }}=CNN']);
+    setCodeArea('#allDataExample', ['']);
     setCodeArea('#orSyntax', ['filter1="..." OR filter2="..." OR ... ']);
     setCodeArea('#orExample', ['{{ search_keys.channel }}="CNN" OR {{ search_keys.channel }}=MSNBC']);
     setCodeArea('#parenSyntax', ['(filter1="..." AND filter2="...") OR filter3="..."']);
