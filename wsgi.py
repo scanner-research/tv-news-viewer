@@ -9,7 +9,7 @@ Example use:
 import json
 from datetime import datetime
 from app.core import build_app
-from app.types import Ternary
+from app.types_frontend import Ternary
 
 CONFIG_FILE = 'config.json'
 
