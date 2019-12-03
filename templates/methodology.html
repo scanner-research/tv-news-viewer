@@ -4,7 +4,7 @@
 <div class="container">
   <h1>Methodology</h1>
   <p>
-    This page documents the methodology used for extracting metadata from the cable TV news video dataset made available for analysis on this web site.
+    This page documents the methodology used for extracting metadata from the cable TV news video dataset.
   </p>
   <hr>
 </div>
@@ -12,30 +12,26 @@
 <div class="container">
   <h3>The Dataset</h3>
   <p>
-The cable TV news dataset available for analysis of the Stanford Cable TV News Analyzer (referred to as “the dataset” in the remainder of this document) was obtained from the Internet Archive’s <a href="https://archive.org/details/tv">TV News Archive</a>. The dataset includes near 24-7 recordings of CNN, FOX, and MSNBC between January 1, 2010 and July 23, 2019.  In total, the dataset consists of over 250,000 hours of video and includes both TV news programming and commercial segments.  
+The cable TV news dataset available for analysis of the Stanford Cable TV News Analyzer (referred to as “the dataset” in the remainder of this document) was obtained from the Internet Archive’s <a href="https://archive.org/details/tv">TV News Archive</a>. The dataset currently includes near 24-7 recordings of CNN, FOX, and MSNBC between January 1, 2010 and July 23, 2019. In total, the dataset consists of over 230,000 hours of video and includes both TV news programming and commercial segments.  
 </p>
 <p>
-The Internet Archive's data is organized as a collection of videos, with each video corresponding to one airing of a news program (e.g., most videos are approximately one hour in length). Per-video metadata includes the name of the news program, the date/time it aired, and the channel on which it aired. Video frame resolutions range from 640x360 to 858x480.  All videos include audio. 95.4% of the videos have accompanying closed caption transcripts. However, transcripts are not present during most commercial segments.
+The data we obtained from The Internet Archive is organized as a collection of videos, with each video corresponding to one airing of a news program (e.g., most videos are approximately one hour in length). Per-video metadata includes the name of the news program, the date/time it aired, and the channel on which it aired. Video frames range in resolution from 640x360 to 858x480.  All videos include audio. 95.4% of the video files have accompanying closed caption transcripts. However, transcripts are not present during most commercial segments.
 </p>
 <p>
-  For more information about the process used by the Internet Archive to record the TV News Archive, please consult the <a href="https://archive.org/">Internet Archive</a> directly.
+  Please consult <a href="https://archive.org/">The Internet Archive</a> directly for more information about the process used by the Internet Archive to record the dataset.
 </p>
 
 <hr>
 <h3>Face Detection</h3>
 
-<p>We detected faces in video frames using the <a href="https://kpzhang93.github.io/MTCNN_face_detection_alignment/index.html">MTCNN</a> [1,2] face detector.  Due to the high cost of performing face detection on all frames in the dataset, we performed face detection on a subset of frames that were uniformly sampled from the video every three seconds.
+<p>We detected faces in video frames using the <a href="https://kpzhang93.github.io/MTCNN_face_detection_alignment/index.html">MTCNN</a> [1,2] face detector.  Due to the high cost of performing face detection on all frames in the dataset, we performed face detection only on a subset of frames uniformly sampled every three seconds in a video.
 </p>
 
 <p>
-Executing face detection on a frame every three seconds yielded 306 million face detections across the dataset. Each face location is represented by an axis-aligned bounding box within its containing frame.  
-To reminder users that face detection is not occurring on all frames, 
-when playing video the Stanford Cable TV News Analyzer renders face bounding boxes in the frame in which a detection occurred, then fades out the box over the next three seconds.
+This process yielded 306 million face detections across the dataset. Each face location is represented by an axis-aligned bounding box within its containing frame.  
+To remind users that face detection is not occurring on all frames, 
+the Stanford Cable TV News Analyzer's video player renders face bounding boxes in the frame in which a detection occurred, then fades out the box over the next three seconds.
 </p>
-
-<p>
-  <i>Validation: </i> TODO
-</p> 
 
 <p>
   For each detected face, we compute the following per-face “tags” and descriptors:
@@ -46,7 +42,7 @@ when playing video the Stanford Cable TV News Analyzer renders face bounding box
 <h3>Face Descriptors</h3>
 
 <p>
-We compute the 128-element <a href="https://github.com/davidsandberg/facenet">FaceNet</a> descriptor [3,4,5] from the pixels contained inside a face’s bounding box. 
+We compute the 128-element <a href="https://github.com/davidsandberg/facenet">FaceNet</a> descriptor [3,4] from the pixels contained inside a face’s bounding box. 
 </p>
 
 <hr>
@@ -62,18 +58,18 @@ We compute the 128-element <a href="https://github.com/davidsandberg/facenet">Fa
 </p>
 
 <p>
-  <i>Accuracy Validation:</i> The classifier’s agreement with human annotators on a test set of 1,066 faces 
+<b>Validation:</b> The classifier's agreement with human annotators on a test set of 1,066 faces 
 selected at random from the dataset is given by the confusion matrix below. In this test set, 735 of these faces were assessed by human annotator to be male presenting. 331 were assessed by humans to be female.
 </p>
 
-<p><i>TODO: add face gender confusion matrix</i></p>
+<p style="text-align: center"><img src="{{ url_for('static', filename='img/validation/gender_confusion.png') }}" height="300"/></p>
 
 <hr>
 
 <h3>Face Identity Tags</h3>
 
 <p>
-  We use the <a href="https://docs.aws.amazon.com/rekognition/latest/dg/celebrities.html">Amazon Rekognition’s Celebrity Recognition API</a> to attempt to identify all detected faces. The Celebrity Recognition API returns an identity prediction for 45.2% of the faces in the dataset.  The Celebrity Recognition API provides an identity estimate only when its identification confidence score is greater than 0.5. We use all predictions above this 0.5 threshold, and do no additional thresholding.  Identities in the dataset result from queries to the Celebrity Recognition API performed in September 2019.
+  We use <a href="https://docs.aws.amazon.com/rekognition/latest/dg/celebrities.html">Amazon Rekognition's Celebrity Recognition API</a> to attempt to identify all detected faces. The Celebrity Recognition API returns an identity prediction for 45.2% of the faces in the dataset.  The Celebrity Recognition API provides an identity estimate only when its identification confidence score is greater than 0.5. We use all predictions above this 0.5 threshold, and do no additional thresholding.  Identities in the dataset result from Celebrity Recognition API queries performed in September 2019.
 </p>
 
 <p>
@@ -85,11 +81,11 @@ To increase the percentage of faces with identity tags, we tag faces that were n
 <h3>Additional Face Tags</h3>
 
 <p>
-  For each face tagged with an identity, we download all person-tags associated with this identity from <a href="https://wiki.dbpedia.org/">DBpedia</a> [6] using its public <a href="https://wiki.dbpedia.org/public-sparql-endpoint">SPARQL API</a>.  A full description of the per-face tags available in the Stanford Cable TV News Analyzer is available on the <a href="/data/tags">tag information page</a>.  Tags listed with source of “DBpedia” were directly downloaded from DBpedia.  
+  For each face tagged with an identity, we download all person-tags associated with this identity from <a href="https://wiki.dbpedia.org/">DBpedia</a> [5] using its public <a href="https://wiki.dbpedia.org/public-sparql-endpoint">SPARQL API</a>.  A full description of the per-face tags available in the Stanford Cable TV News Analyzer is available on the <a href="/data/tags">tag information page</a>.  Tags listed with source of "DBpedia" on that page were directly downloaded from DBpedia.  
 </p>
 
 <p>
-We also augment tags downloaded from DBpedia with additional “derived” tags computed from DBpedia tags.  For example, the derived tag “african_american” is formed from the union of DBpedia tags featuring the prefix “african_american”: e.g., “african_american_academics”, “african_american_mayors”.  
+We also augment tags downloaded from DBpedia with additional "derived" tags computed from DBpedia tags.  For example, the derived tag "african_american" is formed from the union of DBpedia tags featuring the prefix "african_american": e.g., "african_american_academics", "african_american_mayors".  
 </p>
 
 <hr>
@@ -105,7 +101,7 @@ We detect commercial segments using a proprietary commercial detection algorithm
 </p>
 
 <p>
-<i>Validation:</i> We hand annotated all commercial segments in a 20-hour dataset. (6.3 hours of this time fell within commercial segments.)  On this test set, the commercial detector achieves a precision of 93.0% and a recall of 96.8%.  Precision and recall were computed on a per-frame basis, they are not computes in terms of commercial instances. In other words, the precision is the faction of frames in the test set that the classifier correctly classified as commercials divided by the total number of frames the classifier estimated were part of a commercial segment.) 
+<b>Validation:</b> We hand annotated all commercial segments in a 20-hour dataset. (6.3 hours of this time fell within commercial segments.)  On this test set, the commercial detector achieves a precision of 93.0% and a recall of 96.8%.  Precision and recall were computed on a per-frame basis (not in terms of commercial instances). Specifically, the precision of commercial detection is computed as the faction of frames in the test set that the classifier correctly classified as commercials divided by the total number of frames the classifier estimated were part of a commercial segment.) 
 </p>
 
 <hr>
@@ -113,26 +109,22 @@ We detect commercial segments using a proprietary commercial detection algorithm
 <h3>Transcript Time Alignment</h3>
 
 <p>
-We use the <a href="https://lowerquality.com/gentle/">Gentle word aligner</a> to perform sub-second alignment of words in a video's closed-caption transcript to the video’s audio track.  (The source transcripts are only coarsely aligned to the video.)  To perform alignment, we partition the video's audio track into one-second chunks and use Gentle to search for word-level alignment with transcript text within +/- 10 seconds of this audio segment.
+We use the <a href="https://lowerquality.com/gentle/">Gentle word aligner</a> to perform sub-second alignment of words in a video's closed-caption transcript to the video's audio track.  (The source transcripts are only coarsely aligned to the video.)  To perform alignment, we partition the video's audio track into one-second chunks and use Gentle to search for word-level alignment with transcript text within +/- 10 seconds of this audio segment.
 </p>
-
-<p>
-  <i>Validation: </i> TODO
-</p> 
 
 <hr>
 
 <h3>Screen Time Estimates</h3>
 
 <p>
-The Stanford Cable TV News Analyzer supports queries that tabulate the screen time of faces that appear in the video, and the screen time spanning utterences of words in the video transcripts.  
+The result of a query performed using the Stanford Cable TV News Analyzer is an estimate of screen time of video segments matching the query.  Below we describe how we estimate screen time for face-based and transcript-text-based predicates.
 </p>
 
 <p>Since face detection is performed on frames spaced by three seconds in a video, the Stanford Cable TV News Analyzer tabulates face screen time at a granularity of three seconds.  For example, a face detection of Anderson Cooper in a single video frame contributes three seconds to the estimate of Mr. Cooper's screen time in the video.   
 </p>
 
 <p>
-By tabulating the screen time of transcript words (as opposed to counts of the number of occurrences of these words) the Stanford Cable TV News Analyzer supports queries that describe video segments defined by both face-based and transcript-based predicates.  The site tabulates the screen time of transcript query results using the duration of words determined via transcript time alignment. For example, an utterance of the word “politics” that begins at 10:35.10 in a video and ends at 10:35.90 contributes 0.8 seconds to the estimate of the word's screen time in the video.  Since the Stanford Cable TV News Analyzer tabulates the screen time of transcript words matching a query, the screen time estimate for a longer word (e.g., "Mississippi") will likely be greater than that of a shorter word (e.g., "Iraq") even if the two words are spoken the same number of times.
+The Stanford Cable TV News Analyzer tabulates the screen time of transcript words (as opposed to counts of the number of occurrences of these words) to support queries that select video segments using a composition of face-based and transcript-based predicates.  The site tabulates the screen time of transcript-text queriesusing the duration of words determined via transcript time alignment. For example, an utterance of the word "politics" that begins at 10:35.10 in a video and ends at 10:35.90 contributes 0.8 seconds to the estimate of the word's total screen time in the video.  Since the Stanford Cable TV News Analyzer tabulates the screen time of transcript words matching a query, the screen time estimate for a longer word (e.g., "Mississippi") will likely be greater than that of a shorter word (e.g., "Iraq") even if the two words are spoken the same number of times.
 </p>
 
 <hr>
@@ -140,7 +132,7 @@ By tabulating the screen time of transcript words (as opposed to counts of the n
 <h3>References</h3>
 
 <p>
-  [1] <a href="https://kpzhang93.github.io/MTCNN_face_detection_alignment/index.html">https://kpzhang93.github.io/MTCNN_face_detection_alignment/index.html</a>
+  [1] MTCNN Source Page (<a href="https://kpzhang93.github.io/MTCNN_face_detection_alignment/index.html">https://kpzhang93.github.io/MTCNN_face_detection_alignment/index.html</a>)
 </p>
 
 <p>
@@ -148,7 +140,7 @@ By tabulating the screen time of transcript words (as opposed to counts of the n
 </p>
 
 <p>
-  [3] <a href="https://github.com/davidsandberg/facenet">https://github.com/davidsandberg/facenet</a>
+  [3] FaceNet TensorFlow Implementation (<a href="https://github.com/davidsandberg/facenet">https://github.com/davidsandberg/facenet</a>)
 </p>
 
 <p>
@@ -158,11 +150,7 @@ URL: <a href="http://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=7298682&is
 </p>
 
 <p>
-  [5] Facenet model. <a href="https://drive.google.com/file/d/0B5MzpY9kBtDVZ2RpVDYwWmxoSUk">https://drive.google.com/file/d/0B5MzpY9kBtDVZ2RpVDYwWmxoSUk</a>
-</p>
-
-<p>
-[6] Sören Auer, Christian Bizer, Georgi Kobilarov, Jens Lehmann, Richard Cyganiak, and Zachary Ives. 2007. DBpedia: a nucleus for a web of open data. In Proceedings of the 6th international The semantic web and 2nd Asian conference on Asian semantic web conference (ISWC'07/ASWC'07), Karl Aberer, Philippe Cudré-Mauroux, Key-Sun Choi, Natasha Noy, Dean Allemang, Kyung-Il Lee, Lyndon Nixon, Jennifer Golbeck, Peter Mika, Diana Maynard, Riichiro Mizoguchi, and Guus Schreiber (Eds.). Springer-Verlag, Berlin, Heidelberg, 722-735.
+[5] Sören Auer, Christian Bizer, Georgi Kobilarov, Jens Lehmann, Richard Cyganiak, and Zachary Ives. 2007. DBpedia: a nucleus for a web of open data. In Proceedings of the 6th international The semantic web and 2nd Asian conference on Asian semantic web conference (ISWC'07/ASWC'07).
 </p>
 
 </div>

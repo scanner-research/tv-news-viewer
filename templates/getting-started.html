@@ -18,8 +18,7 @@
 <div class="container">
   <h1>Getting Started</h1>
   <p>
-    This page is intended as a getting started guide to using this tool to
-    explore the cable TV news data set.
+    The Stanford Cable TV News Analyzer allows you to write queries that count the screen time of people and transcript phrases in nearly a decade of American cable TV news (nearly 24/7 programming from Fox News, CNN, and MSNBC since January 1, 2010). This page provides a brief introduction using the site to write these queries.  
   </p>
   <hr>
 </div>
@@ -32,8 +31,8 @@
     coverage of the latest election cycle, emerging scandals involving
     high-profile individuals, social unrest and calls for reform to events
     unfolding across the globe, the latest victors in sports, and new trends in
-    health and fashion. These programs can influence public opinions and
-    perceptions of events in the world or reflect pervasive social biases.
+    health and fashion. These programs can influence public opinion and
+    the perceptions of world events or reflect pervasive social biases.
   </p>
 
   <p>
@@ -46,23 +45,20 @@
   </p>
 
   <p>
-    Advances in AI provide a new lens for annotating and analyzing large video
-    data sets such as nearly a decade of cable TV news. We use these new
-    models and techniques to automatically annotate the video data set with
+    We have used modern AI techniques to automatically annotate nearly a decade of American Cable TV news programming with
     information such as the location of faces in the frame, the gender of each
     face, and the associated identity if the person is a "celebrity" or
     public figure. See the <a href="/methodology">methodology</a> page for
     a technical explanation of our methods and their limitations.
-    This purpose of this tool is to enable interactive queries on the data set,
-    with AI annotations, to answer high-level questions about the news.
+    The Stanford Cable TV News Analyzer enables interactive queries on the data set,
+    which we hope will provide new insight into the contents of cable TV news.
   </p>
 
-  <h3>Basics: Searching with this tool</h3>
+  <hr>
+
+  <h3>The basics: Writing screen-time queries</h3>
   <p>
-    This application allows you to count the screen time of search queries
-    over nearly a decade of American cable TV news (CNN, FOX, and MSNBC).
-    On the homepage, at the top, you should see a search
-    row and controls.
+    The Stanford Cable TV News Analyzer allows you to write queries that video segments from the dataset and compute the screen time of these segments. At the top of the home page, you should see a search row and controls: 
 
     <a href="/" target="_blank">
       <img src="{{ url_for('static', filename='img/ui.png') }}" style="width: 100%;"
@@ -72,7 +68,7 @@
 
   <p>
     Each search query is a set of search filters. If no filters are given,
-    then all of the video is counted. The search box can be edited directly
+    then all of the video in the data is counted. The search box can be edited directly
     or using the dropdown search editor (click the &#x1F50D; button).
     Press the "Search the news!" button to show the amount of screen time
     over time.
@@ -117,8 +113,10 @@
   <p>
     Filtering on other basic metadata such as the show follows a similar
     pattern. For a full list of options, read the
-    <a href="/detailed" target="_blank">detailed documentation</a> page.
+    <a href="/detailed" target="_blank">advanced query documentation</a> page.
   </p>
+
+  <hr>
 
   <h3>People in the news: Who is on screen?</h3>
   <p>
@@ -194,6 +192,8 @@
     the face is a live appearance, a video, or still image.
   </p>
 
+  <hr>
+
   <h3>Searching for topics: Using the transcripts</h3>
   <p>
     Words and phrases in the transcripts can be indicative of the topic being
@@ -248,6 +248,8 @@
     This can be useful for defining a topic query.
   </p>
 
+  <hr>
+
   <h3>Putting it all together</h3>
   <p>
     So far, we have seen a number of simple queries. However, more complex
@@ -275,11 +277,10 @@
     <div class="code-block" id="clintonAndSandersCode"></div>
 
     Please read the
-    <a href="/detailed" target="_blank">detailed documentation</a> page
+    <a href="/detailed" target="_blank">advanced query documentation</a> page
     to understand the query syntax, the available query options, and advanced
-    features such as normalization. Many of these queries can also be
+    features such as query normalization. Many of these queries can also be
     constructed using the dropdown search editor.
-    Click <a href='/'>here</a> to return to the homepage.
   </p>
 
   <script type="text/javascript">

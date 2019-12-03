@@ -1,6 +1,16 @@
+body {
+  font-family: 'Source Sans Pro', Helvetica, sans-serif;
+  font-style: normal;
+}
+
+h1, h2, h3 { 
+  font-weight: bold;
+}
+
 code {
   color: black;
 }
+
 .container {
   padding: 10px;
 }

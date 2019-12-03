@@ -17,40 +17,37 @@
 
 {% block content %}
 <div class="container">
-  <h1>Detailed Documentation</h1>
+  <h1>Advanced Query Documentation</h1>
   <p>
-    This page documents the features of the tool and the full query language.
-    Please read the <a href="/getting-started">getting started</a> guide first
-    if you have not done so already.
+    This page documents the full query language supported by the the Stanford Cable TV News Analyzer.
+    Prior to reading this documentation, we recommend that users first read the <a href="/getting-started">getting started</a> guide.
   </p>
   <hr>
 </div>
 
 <div class="container">
   <h3>How do I write queries?</h3>
-  <p>
-    Screen time queries are broken in to several parts. A basic
-    query has the form
+  <p>All queries compute the screen time of video segments in the dataset that match the query predicate. Screen time queries are broken in to several parts. A basic
+    query consists of filters separated by "AND"s. 
     <div class="code-block" id="andSyntax"></div>
-    consisting of the data being counted ("screen time") and filters, separated
-    by "AND"s. For example, we can write the query for Hillary Clinton's screen
-    time on CNN as the following:
+    For example, the following query computes the screen time of Hillary Clinton on CNN:
     <div class="code-block" id="andExample"></div>
-
+    If no filter is specified, all data is selected for the screen time computation, so the result is a count of all video in the dataset.
+    <div class="code-block" id="allDataExample"></div>
     Likewise, "OR" is also supported.
     <div class="code-block" id="orSyntax"></div>
-    To express the amount of screen time on CNN or MSNBC, we write:
+    The following query counts the total video time on CNN or MSNBC.
     <div class="code-block" id="orExample"></div>
 
-    You can combine "AND" and "OR" using parentheses in order to construct more
-    complex queries. If no parentheses are specified, then AND precedes OR.
+    Queries can combine "AND" and "OR" using parentheses in order to construct more
+    complex queries. If no parentheses are specified, AND precedes OR.
     <div class="code-block" id="parenSyntax"></div>
-    Putting the examples above together, we can express the amount of screen
-    time that Hillary Clinton received on CNN or MSNBC as the following:
+    Putting the examples above together, the following query computes the screen
+    time that Hillary Clinton on CNN or MSNBC:
     <div class="code-block" id="parenExample"></div>
   </p>
 
-  <h3>What filters does the tool support?</h3>
+  <h3>What types of filters does the tool support?</h3>
   <table class="table table-striped table-bordered table-sm">
     <tbody>
       <tr>
@@ -292,23 +289,17 @@
 
   <hr>
 
-  <h3>How do I normalize my queries?</h3>
+  <h3>Can I present queries as normalized quantities?</h3>
   <p>
-    So far, all of the queries have returned raw counts. In order to express
-    queries such as the proportion of screen time where there is a man or woman
-    on screen, we need to introduce a NORMALIZE operator.
-    This used in the following way:
+    Instead of computing screen time estimates in absolute time units (e.g., in minutes or hours), it can be useful to present query results as a proportion of the screen time of another query.  The query language supports normalization of one screen time count by another using NORMALIZE:
 
     <div class="code-block" id="normSyntax"></div>
 
-    Succintly put, NORMALIZE allows you to normalize one query by another query.
-    For instance, to express the proportion of the data set that is CNN, we can
-    write:
+    For example, the following query computes the fraction of the overall dataset that is from CNN:
 
     <div class="code-block" id="normExampleCode"></div>
 
-    Likewise, to express the proportion of time when a man is on screen on CNN,
-    we can write:
+  The following query computes the fraction of time on CNN that a man's face is on screen:
 
     <iframe width="100%" height="0" id="normExample"></iframe>
   </p>
@@ -320,7 +311,7 @@
 
     <div class="code-block" id="subSyntax"></div>
 
-    For example, the net screen time of two individuals can be computed as follows:
+    For example, the follow query plots how much more screen time Hillary Clinton received than Bernie Sanders:
     <div class="code-block" id="subExampleCode"></div>
     <iframe width="100%" height="0" id="subExample"></iframe>
   </p>
