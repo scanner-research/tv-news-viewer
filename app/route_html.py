@@ -84,3 +84,11 @@ def add_html_routes(
         return render_template(
             'data/transcripts.html', params=SearchParam,
             search_keys=SearchKey)
+
+    #NOTE(kayvonf): I'm adding misc/ routes here to add pages to the site,
+    # although they may not be linked in for others to see
+    
+    @app.route('/misc/gender')
+    def get_misc_gender() -> Response:
+        return render_template('misc/gender.html')
+    

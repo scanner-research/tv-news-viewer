@@ -1,0 +1,88 @@
+{% extends "layout.html" %}
+
+{% block head %}
+{{ super() }}
+<style>
+.graph_embed {
+  border: 0px;
+  width:  800px;
+  height: 400px;
+}
+
+.graph_embed_div {
+  text-align: center;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+  <h1>Case Study: Understanding Representation by Gender</h1>
+
+  <p>
+    In a recent conversation, we were asked if the Stanford Cable TV News Analyzer could help answer a number of questions about gender representation on CNN.  Specifically:
+  </p>
+    <ul>
+      <li>What is the ratio of screen time given to men vs. women on CNN?</li>
+      <li>Are the ratios notable different when considering only show hosts? (or only non-hosts?)</li>
+      <li>Does the male to female ratio change considerably over time?</li>
+      <li>Does the male to female ratio on CNN differ significantly from that of other channels?</li>
+    </ul>
+
+<p>
+This page documents the process of using the Stanford Cable TV News Analyzer to answer these questions.  As we go, we also highlight key features (and key pitfalls) encountered while writing queries and interpreting their results.
+</p>
+
+<hr>
+
+<h3>Step 1: A Simple Plot of Screen Time</h3>
+  
+<p>
+  To get started, I created the following graph. The blue line plots the <b>total screen time</b> (in minutes per month) where a man's face is on screen on CNN. The orange line plots the total time a women's face is on screen on CNN.  Clearly, men receive more screen time than women.
+</p>
+
+<div class="graph_embed_div">
+<iframe class="graph_embed" src="https://esper-tv.stanford.edu/embed?dataVersion=v1&width=700&height=325&data=%7B%22options%22%3A%7B%22start_date%22%3A%222010-01-01%22%2C%22end_date%22%3A%222019-07-23%22%2C%22aggregate%22%3A%22month%22%7D%2C%22queries%22%3A%5B%7B%22color%22%3A%22%234E79A7%22%2C%22text%22%3A%22%5BMen%5D%20tag%3D%5C%22male%5C%22%20and%20channel%3D%5C%22cnn%5C%22%22%7D%2C%7B%22color%22%3A%22%23F28E2B%22%2C%22text%22%3A%22%5BWomen%5D%20tag%3D%5C%22female%5C%22%20and%20channel%3D%5C%22cnn%5C%22%22%7D%5D%7D"></iframe>
+</div>
+
+<p>In interpreting these results, we call attention to two important details:</p>
+
+<ul>
+  <li>The Stanford Cable TV analyzer only supports queries that count screen time. <b>Queries DO NOT count the number of people on screen.</b>  Specifically, the result of a query is the total screen time of all video segments that pass the query's filters.  For example, if a video contains two men and one women on screen for one minute, then this video contributes one minute of screen time to both the men's and women's counts in the graph above.</li>
+
+  <li>The graph above plots the screen time of <b>all detected faces in the dataset</b> that pass the specified gender filter.  These faces may be the faces of show hosts, guests, faces in the crowd in B-roll footage, or even faces that appear in information graphics.  As we demonstrate later in this article, additional query filters must be added to limit the faces counted (e.g., to only faces of show hosts).</li> 
+</ul>
+
+<h3>Step 2: Converting to Fractions of Total Video Time</h3>
+
+<p>Since it can be more intuitive to think in terms of fractions of total screen time (as opposed to absolute screen time), I use the normalization functionality of analyzer queries to plot the screen time of men and women as <b>a fraction of the total amount of CNN video footage</b>. Looking at the graph below, you can see that since 2010 about 60% of the time on CNN there was at least one man on screen.  About 30% of the time on CNN there was at least one woman on screen.
+</p>  
+
+<div class="graph_embed_div">
+<iframe class="graph_embed" src="https://esper-tv.stanford.edu/embed?dataVersion=v1&width=700&height=325&data=%7B%22options%22%3A%7B%22start_date%22%3A%222010-01-01%22%2C%22end_date%22%3A%222019-07-23%22%2C%22aggregate%22%3A%22month%22%7D%2C%22queries%22%3A%5B%7B%22color%22%3A%22%234E79A7%22%2C%22text%22%3A%22%5BMen%5D%20tag%3D%5C%22male%5C%22%20and%20channel%3D%5C%22cnn%5C%22%20normalize%20channel%3D%5C%22cnn%5C%22%22%7D%2C%7B%22color%22%3A%22%23F28E2B%22%2C%22text%22%3A%22%5BWomen%5D%20tag%3D%5C%22female%5C%22%20and%20channel%3D%5C%22cnn%5C%22%20normalize%20channel%3D%5C%22cnn%5C%22%22%7D%5D%7D"></iframe>
+</div>
+
+<p>
+Also note that both lines in the above graph are trending upward over time.  This is because the total fraction of screen time where people are on screen has increased on CNN from about 75% to 83% over the last decade, which you can see below.
+</p>
+
+<div class="graph_embed_div">
+<iframe class="graph_embed" src="https://esper-tv.stanford.edu/embed?dataVersion=v1&width=700&height=325&data=%7B%22options%22%3A%7B%22start_date%22%3A%222010-01-01%22%2C%22end_date%22%3A%222019-07-23%22%2C%22aggregate%22%3A%22month%22%7D%2C%22queries%22%3A%5B%7B%22color%22%3A%22%234E79A7%22%2C%22text%22%3A%22tag%3D%5C%22all%5C%22%20and%20channel%3Dcnn%20normalize%20channel%3D%5C%22CNN%5C%22%22%7D%5D%7D"></iframe>
+</div>
+
+<p>
+However, in my gender analysis I am not interested in times when no person was on screen. Instead, I want to know: at times when there is a person on screen, what fraction of time is there a man (or a woman) on screen.
+After changing this normalization, you can see that <b>when a person on screen on CNN, about 80% of the time there will be a man on screen.</b>  Only about 40% of the time there is a woman. 
+<p>
+ 
+ <p>
+  <b>These percentages don't add up to 100% since the graph is a plot of relative screen time, not relative number of people. Both a man and a woman can be on screen at the same time --- these moments in time contribute to both counts.</b>
+</p>
+
+
+<div class="graph_embed_div">
+<iframe class="graph_embed" src="https://esper-tv.stanford.edu/embed?dataVersion=v1&width=700&height=325&data=%7B%22options%22%3A%7B%22start_date%22%3A%222010-01-01%22%2C%22end_date%22%3A%222019-07-23%22%2C%22aggregate%22%3A%22month%22%7D%2C%22queries%22%3A%5B%7B%22color%22%3A%22%234E79A7%22%2C%22text%22%3A%22%5BMen%5D%20tag%3D%5C%22male%5C%22%20and%20channel%3D%5C%22cnn%5C%22%20normalize%20tag%3D%5C%22all%5C%22%20and%20channel%3D%5C%22cnn%5C%22%22%7D%2C%7B%22color%22%3A%22%23F28E2B%22%2C%22text%22%3A%22%5BWomen%5D%20tag%3D%5C%22female%5C%22%20and%20channel%3D%5C%22cnn%5C%22%20normalize%20tag%3D%5C%22all%5C%22%20and%20channel%3D%5C%22cnn%5C%22%22%7D%5D%7D"></iframe>
+</div>
+
+</div>
+{% endblock %}

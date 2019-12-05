@@ -15,7 +15,7 @@
 The cable TV news dataset available for analysis of the Stanford Cable TV News Analyzer (referred to as “the dataset” in the remainder of this document) was obtained from the Internet Archive’s <a href="https://archive.org/details/tv">TV News Archive</a>. The dataset currently includes near 24-7 recordings of CNN, FOX, and MSNBC between January 1, 2010 and July 23, 2019. In total, the dataset consists of over 230,000 hours of video and includes both TV news programming and commercial segments.  
 </p>
 <p>
-The data we obtained from The Internet Archive is organized as a collection of videos, with each video corresponding to one airing of a news program (e.g., most videos are approximately one hour in length). Per-video metadata includes the name of the news program, the date/time it aired, and the channel on which it aired. Video frames range in resolution from 640x360 to 858x480.  All videos include audio. 95.4% of the video files have accompanying closed caption transcripts. However, transcripts are not present during most commercial segments.
+The data we obtained from The Internet Archive is organized as a collection of videos, with each video corresponding to one airing of a news program (e.g., most videos are approximately one hour in length). Per-video metadata includes the name of the news program, the date/time it aired, and the channel on which it aired. Video frames range in resolution from 640x360 to 858x480.  All videos include audio. 95.4% of the video files have accompanying closed caption transcripts. However, transcripts are not present during most commercial segments.  A full listing of videos is available on our <a href="/data">dataset page</a>.
 </p>
 <p>
   Please consult <a href="https://archive.org/">The Internet Archive</a> directly for more information about the process used by the Internet Archive to record the dataset.
@@ -69,7 +69,7 @@ selected at random from the dataset is given by the confusion matrix below. In t
 <h3>Face Identity Tags</h3>
 
 <p>
-  We use <a href="https://docs.aws.amazon.com/rekognition/latest/dg/celebrities.html">Amazon Rekognition's Celebrity Recognition API</a> to attempt to identify all detected faces. The Celebrity Recognition API returns an identity prediction for 45.2% of the faces in the dataset.  The Celebrity Recognition API provides an identity estimate only when its identification confidence score is greater than 0.5. We use all predictions above this 0.5 threshold, and do no additional thresholding.  Identities in the dataset result from Celebrity Recognition API queries performed in September 2019.
+  We use the <a href="https://docs.aws.amazon.com/rekognition/latest/dg/celebrities.html">Amazon Rekognition Celebrity Recognition API</a> to identify all detected faces. The Celebrity Recognition API returns an identity prediction for 45.2% of the faces in the dataset.  The Celebrity Recognition API provides an identity estimate only when its identification confidence score is greater than 0.5. We use all predictions above this 0.5 threshold, and do no additional thresholding.  Identities in the dataset result from Celebrity Recognition API queries performed in September 2019.
 </p>
 
 <p>
@@ -101,7 +101,7 @@ We detect commercial segments using a proprietary commercial detection algorithm
 </p>
 
 <p>
-<b>Validation:</b> We hand annotated all commercial segments in a 20-hour dataset. (6.3 hours of this time fell within commercial segments.)  On this test set, the commercial detector achieves a precision of 93.0% and a recall of 96.8%.  Precision and recall were computed on a per-frame basis (not in terms of commercial instances). Specifically, the precision of commercial detection is computed as the faction of frames in the test set that the classifier correctly classified as commercials divided by the total number of frames the classifier estimated were part of a commercial segment.) 
+<b>Validation:</b> We performed human annotation of the location of commercial segments in a 20-hour sampling of the dataset. (6.3 hours of this time fell within commercial segments.)  On this test set, the commercial detector achieves a precision of 93.0% and a recall of 96.8%.  Precision and recall are computed based on per-frame commercial detector results. Specifically, the precision of commercial detection is computed as the faction of frames that the classifier correctly classified as commercials divided by the total number of frames the classifier estimated were part of a commercial segment.
 </p>
 
 <hr>
