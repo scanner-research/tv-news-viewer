@@ -19,7 +19,7 @@ String.prototype.replaceAll = function(search, replacement) {
 
 const EPSILON = 1e-4;
 
-function weighted_shuffle(data) {
+function weightedShuffle(data) {
   let result = [];
   while (data.length > 0) {
     let total = data.reduce((acc, x) => acc + x[1], 0.);
@@ -86,23 +86,32 @@ function getVegaDateFormat(agg) {
   }
 };
 
-function getMomentDateFormat(agg) {
+function getDateFormatFunction(agg) {
+  var date_format;
   if (agg == 'year') {
-    return 'YYYY';
+    date_format = 'YYYY';
   } else if (agg == 'month') {
-    return 'MMM YYYY';
+    date_format = 'MMM YYYY';
   } else {
-    return 'll';
+    date_format = 'll';
   }
+  return t => {
+    var date_str = moment(t).format(date_format);
+    if (agg == 'week') {
+      date_str = '(Week of) ' + date_str;
+    }
+    return date_str;
+  };
 };
 
 function getStartDate(agg, date_str) {
   let date = new Date(date_str);
   if (agg == 'year') {
     date.setUTCDate(1);
-    date.setUTCMonth(0);
+    date.setUTCMonth(date.getUTCMonth() - 1);
   } else if (agg == 'month') {
     date.setUTCDate(1);
+    date.setUTCMonth(date.getUTCMonth() - 1);
   } else if (agg == 'week') {
     date.setUTCDate(date.getUTCDate() - 6); // Not quite beautiful
   } else if (agg == 'day') {
@@ -253,6 +262,7 @@ class Chart {
               selection: {not: 'hover'}, value: 'transparent'
             }
           },
+          opacity: {value: 0.5}
         }
       });
     }
@@ -280,11 +290,11 @@ class Chart {
       layer: vega_layers
     };
 
-    let moment_date_format = getMomentDateFormat(this.options.aggregate);
+    let formatDate = getDateFormatFunction(this.options.aggregate);
     let this_chart = this;
     function showVideos(t, video_div) {
       let video_div_selector = $(video_div).empty();
-      let date_str = moment(t).format(moment_date_format);
+      let date_str = formatDate(t);
       let content_str = SERVE_FROM_INTERNET_ARCHIVE ? 'clips (up to 3 minutes)' : 'videos';
       video_div_selector.append(
         $('<h5 />').append(`Showing ${content_str} from <b>${date_str}</b>.`),
@@ -293,7 +303,7 @@ class Chart {
 
       let count = this_chart.options.count;
       this_chart.search_results.forEach(([color, result]) => {
-        let shuffled_results = weighted_shuffle(
+        let shuffled_results = weightedShuffle(
           [..._.get(result.main, t, [])]
         );
         let video_ids = shuffled_results.map(x => x[0]);
@@ -344,7 +354,7 @@ class Chart {
             let chart_link = $('.chart-link');
             if (item && item.datum) {
               let t = new Date(item.datum.datum.time).toISOString().split('T')[0];
-              let t_str = moment(t).format(moment_date_format);
+              let t_str = formatDate(t);
               tooltip.find('.tooltip-time').text(t_str);
               let values = this_chart.search_results.map(
                 ([color, result]) => {

@@ -15,17 +15,6 @@ function renderText(lines) {
     }
   }
 
-  $('#options').append(
-    'Showing results from ',
-    $('<b>').text(
-      new Date(data.options.start_date).toLocaleDateString(undefined, {timeZone: 'UTC'})),
-    ' to ',
-    $('<b>').text(
-      new Date(data.options.end_date).toLocaleDateString(undefined, {timeZone: 'UTC'})),
-    ' aggregated by ',
-    $('<b>').text(data.options.aggregate)
-  );
-
   // TODO: XSS attack here
   $('#legend').append(lines.map(line => {
     var entry;
