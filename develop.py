@@ -8,7 +8,7 @@ from pytz import timezone
 from typing import Optional
 
 
-DEFAULT_VIDEO_ENDPOINT = 'https://storage.cloud.google.com/esper'
+DEFAULT_VIDEO_ENDPOINT = 'https://storage.cloud.google.com/esper/tvnews/videos'
 DEFAULT_INDEX_PATH = 'index'
 DEFAULT_PORT = 8080
 

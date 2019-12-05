@@ -48,10 +48,11 @@ const CLIENT_IS_CHROME = (
 var SERVE_FROM_INTERNET_ARCHIVE = {% if default_serve_from_archive %}true{% else %}false{% endif %};
 
 function testVideoAuth() {
-  {% if video_endpoint is not none %}
+  {% if default_serve_from_archive or video_endpoint is not none %}
+  // FIXME: this is hacky
   let img = new Image();
   img.onload = () => { SERVE_FROM_INTERNET_ARCHIVE = false; };
-  img.src = '{{ video_endpoint }}/do_not_delete.jpg';
+  img.src = 'https://storage.cloud.google.com/esper/do_not_delete.jpg';
   {% endif %}
 }
 
