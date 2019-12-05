@@ -56,7 +56,7 @@ def add_html_routes(
     @app.route('/data')
     def get_dataset() -> Response:
         return render_template('dataset.html')
-    
+
     @app.route('/about-us')
     def get_about_us() -> Response:
         return render_template('about-us.html')
@@ -87,8 +87,7 @@ def add_html_routes(
 
     #NOTE(kayvonf): I'm adding misc/ routes here to add pages to the site,
     # although they may not be linked in for others to see
-    
+
     @app.route('/misc/gender')
     def get_misc_gender() -> Response:
         return render_template('misc/gender.html')
-    
