@@ -4,6 +4,8 @@ const DATA_VERSION_ID = {% if data_version is not none %}"{{ data_version }}"{% 
 
 const SERVER_HOST = '{{ host }}';
 
+const DEFAULT_QUERIES = ['name="hillary clinton"', 'name="bernie sanders"'];
+
 const DEFAULT_COLORS = [
   '#4E79A7', '#F28E2B', '#E15759', '#76B7B2', '#59A14F',
   '#EDC948', '#B07AA1', '#FF9DA7', '#9C755F', '#BAB0AC'

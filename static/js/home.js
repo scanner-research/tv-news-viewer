@@ -784,6 +784,15 @@ function addWarning(message) {
   ).show();
 }
 
+function isValidQuery(s) {
+  try {
+    new SearchableQuery(s, false);
+  } catch (e) {
+    return false;
+  }
+  return true;
+}
+
 function initialize() {
   addParsingMode('tvnews', {no_prefix: true, check_values: true});
   addCodeHintHelper('tvnews');
@@ -815,17 +824,14 @@ function initialize() {
     }
   } else {
     initChartOptions();
-    if (params.get('blank') == 1) {
-      addRow({text: ''});
+    if (params.get('blank') != 1 && DEFAULT_QUERIES.every(isValidQuery)) {
+      DEFAULT_QUERIES.forEach(x => addRow({text: x}));
     } else {
-      addRow({text: 'name="hillary clinton"'});
-      addRow({text: 'name="bernie sanders"'});
-      try {
-        search();
-      } catch (e) {
-        console.log('Unable to load default queries:', e);
-      }
+      addRow({text: ''});
     }
+    try {
+      search();
+    } catch (e) {};
   }
 
   // setInterval(() => {Object.values(CODE_EDITORS).forEach(e => e.refresh())}, 250);
