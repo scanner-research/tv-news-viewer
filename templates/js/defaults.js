@@ -45,7 +45,7 @@ const CLIENT_IS_CHROME = (
   !!window.chrome && (!!window.chrome.webstore || !!window.chrome.runtime)
 );
 
-var SERVE_FROM_INTERNET_ARCHIVE = true;
+var SERVE_FROM_INTERNET_ARCHIVE = {% if default_serve_from_archive %}true{% else %}false{% endif %};
 
 function testVideoAuth() {
   {% if video_endpoint is not none %}

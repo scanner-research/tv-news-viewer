@@ -10,6 +10,7 @@ import unidecode
 from os import path
 from collections import Counter, OrderedDict
 from pathlib import Path
+from pytz import timezone
 from typing import NamedTuple, Dict, Set, Tuple
 
 from captions import CaptionIndex, Documents, Lexicon       # type: ignore
@@ -55,7 +56,7 @@ class CaptionDataContext(NamedTuple):
     document_by_name: Dict[str, Documents.Document]
 
 
-def _load_videos(data_dir: str) -> Dict[str, Video]:
+def _load_videos(data_dir: str, tz: timezone) -> Dict[str, Video]:
     videos = OrderedDict()
     video_path = path.join(data_dir, 'videos.json')
     for v in sorted(load_json(video_path), key=lambda x: x[0]):
@@ -79,7 +80,7 @@ def _load_videos(data_dir: str) -> Dict[str, Video]:
         assert isinstance(height, int)
 
         video_name = get_video_name(name)
-        date, minute = parse_date_from_video_name(video_name)
+        date, minute = parse_date_from_video_name(video_name, tz)
         assert date is not None
         dayofweek = date.isoweekday()  # Mon == 1, Sun == 7
         videos[name] = Video(
@@ -252,13 +253,13 @@ def load_caption_data(index_dir: str) -> CaptionDataContext:
 
 
 def load_app_data(
-    index_dir: str, data_dir: str, min_person_screen_time: int
+    index_dir: str, data_dir: str, tz: timezone, min_person_screen_time: int
 ) -> Tuple[CaptionDataContext, VideoDataContext]:
     print('Loading caption index: please wait...')
     caption_data = load_caption_data(index_dir)
 
     print('Loading video data: please wait...')
-    videos = _load_videos(data_dir)
+    videos = _load_videos(data_dir, tz)
 
     caption_data = caption_data._replace(
         documents=Documents([
