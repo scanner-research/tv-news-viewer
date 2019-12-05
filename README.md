@@ -5,11 +5,16 @@
 1. Install Rust (see https://rustup.rs/)
 2. Clone submodules: `git submodule init && git submodule update`
 3. Run `./install_deps.sh` to install the submodules
-4. Install python dependencies: `pip3 install -r requirements.txt`
-5. Copy/symlink the indexed captions
-6. Copy/symlink the data directory
-7. Run `./derive_data.py` to generate derived data
-8. Run `./develop.py` to start a development server or edit `config.json` to
+4. `cd vgrid-widget` and run `./install.sh`.
+  - This will require `npm` and other javascript dependencies
+    (`npm install --save react react-dom mobx mobx-react`).
+    Install them as needed.
+  - Once this succeeds, `cd ..` to return to the top level.
+5. Install python dependencies: `pip3 install -r requirements.txt`
+6. Copy/symlink the indexed captions as `index`
+7. Copy/symlink the data directory as `data`
+8. Run `./derive_data.py` to generate derived data
+9. Run `./develop.py` to start a development server or edit `config.json` to
    serve using wsgi.
 
 #### Running tests
