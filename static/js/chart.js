@@ -97,9 +97,6 @@ function getMomentDateFormat(agg) {
 };
 
 function getStartDate(agg, date_str) {
-  if (agg == 'day') {
-    return date_str;
-  }
   let date = new Date(date_str);
   if (agg == 'year') {
     date.setUTCDate(1);
@@ -108,6 +105,8 @@ function getStartDate(agg, date_str) {
     date.setUTCDate(1);
   } else if (agg == 'week') {
     date.setUTCDate(date.getUTCDate() - 6); // Not quite beautiful
+  } else if (agg == 'day') {
+    date.setUTCDate(date.getUTCDate() - 1);
   } else {
     throw Error(`Unknown unit: ${unit}`);
   }
