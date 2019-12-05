@@ -50,3 +50,8 @@ code {
   color: red;
   display: none;
 }
+
+#loadingText {
+  text-align: center;
+  font-size: 18px;
+}

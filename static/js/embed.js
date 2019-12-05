@@ -72,6 +72,8 @@ function onDone() {
   if (!hide_legend) {
     renderText(lines);
   }
+
+  $('#loadingText').hide();
 };
 
 Promise.all(lines.map(line => {
