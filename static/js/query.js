@@ -243,8 +243,8 @@ function validateTree(query, no_err) {
             or_list.push(and_list[0]);
           } else {
             or_list.push(optimizeKeyValues('and', and_list));
-            and_list = [];
           }
+          and_list = [];
         } else {
           and_list.push(validateTree(x, no_err));
         }

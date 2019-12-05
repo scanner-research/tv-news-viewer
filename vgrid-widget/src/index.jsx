@@ -82,7 +82,7 @@ function loadJsonData(json_data, caption_data, face_data, extra_options) {
       height: video_json.metadata.height,
       fps: video_json.metadata.fps,
       num_frames: video_json.metadata.num_frames,
-      path: `tvnews/videos/${video_name}.mp4`
+      path: `${video_name}.mp4`
     });
 
     let empty_interval = new Interval(

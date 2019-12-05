@@ -820,7 +820,11 @@ function initialize() {
     } else {
       addRow({text: 'name="hillary clinton"'});
       addRow({text: 'name="bernie sanders"'});
-      search();
+      try {
+        search();
+      } catch (e) {
+        console.log('Unable to load default queries:', e);
+      }
     }
   }
 

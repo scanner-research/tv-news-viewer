@@ -262,7 +262,7 @@ def main(datadir: str) -> None:
             os.path.join(outdir, 'people'))
         derive_tag_ilists(
             workers, os.path.join(datadir, 'people'),
-            os.path.join(datadir, 'people.wikidata.json'),
+            os.path.join(datadir, 'people.metadata.json'),
             os.path.join(outdir, 'tags'))
 
         workers.apply_async(

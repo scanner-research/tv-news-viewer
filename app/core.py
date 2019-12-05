@@ -8,6 +8,7 @@ import re
 from flask import (
     Flask, Response, jsonify, request, render_template,
     make_response)
+from pytz import timezone
 from typing import List, Optional, Iterable
 
 from captions import Documents                           # type: ignore
@@ -66,15 +67,17 @@ def build_app(
     frameserver_endpoint: Optional[str],
     min_date: datetime,
     max_date: datetime,
+    tz: timezone,
     min_person_screen_time: int,
     default_aggregate_by: str,
     default_text_window: int,
     default_is_commercial: Ternary,
+    default_serve_from_archive: bool,
     data_version: Optional[str]
 ) -> Flask:
 
     caption_data_context, video_data_context = \
-        load_app_data(index_dir, data_dir, min_person_screen_time)
+        load_app_data(index_dir, data_dir, tz, min_person_screen_time)
 
     app = Flask(__name__, template_folder=TEMPLATE_DIR,
                 static_folder=STATIC_DIR)
@@ -119,6 +122,7 @@ def build_app(
             default_text_window=default_text_window,
             video_endpoint=video_endpoint,
             frameserver_endpoint=frameserver_endpoint,
+            default_serve_from_archive=default_serve_from_archive,
             search_params=[
                 (k, v) for k, v in SearchParam.__dict__.items()
                 if not k.startswith('__')],

@@ -4,10 +4,11 @@ Run a development server
 """
 
 import argparse
+from pytz import timezone
 from typing import Optional
 
 
-DEFAULT_VIDEO_ENDPOINT = 'https://storage.cloud.google.com/esper'
+DEFAULT_VIDEO_ENDPOINT = 'https://storage.cloud.google.com/esper/tvnews/videos'
 DEFAULT_INDEX_PATH = 'index'
 DEFAULT_PORT = 8080
 
@@ -46,10 +47,12 @@ def main(
             data_dir, index_dir, video_endpoint, frameserver_endpoint,
             min_date=datetime(2010, 1, 1),
             max_date=datetime(2019, 7, 31),
+            tz=timezone('US/Eastern'),
             min_person_screen_time=600,
             default_aggregate_by='month',
             default_text_window=0,
             default_is_commercial=Ternary.false,
+            default_serve_from_archive=True,
             data_version='dev')
     else:
         from flask import Flask

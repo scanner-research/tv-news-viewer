@@ -22,14 +22,13 @@ def format_date(d: datetime) -> str:
 
 
 UTC = timezone('UTC')
-ET = timezone('US/Eastern')
 DATE_FORMAT = '%Y-%m-%d'
 
 
-def parse_date_from_video_name(p, tz=ET) -> Tuple[datetime, int]:
+def parse_date_from_video_name(p: str, tz: timezone) -> Tuple[datetime, int]:
     channel, ymd, hms = p.split('_', 3)[:3]
     timestamp = datetime.strptime(ymd + hms, '%Y%m%d%H%M%S')
-    timestamp_et = timestamp.replace(tzinfo=UTC).astimezone(tz=ET)
+    timestamp_et = timestamp.replace(tzinfo=UTC).astimezone(tz=tz)
     assert timestamp.hour != timestamp_et.hour
     return (parse_date(timestamp_et.strftime(DATE_FORMAT)),
             timestamp_et.hour * 60 + timestamp_et.minute)
