@@ -261,10 +261,12 @@ def load_app_data(
     print('Loading video data: please wait...')
     videos = _load_videos(data_dir, tz)
 
+    matched_documents = Documents([
+        d._replace(name=get_video_name(d.name))
+        for d in caption_data.documents])
     caption_data = caption_data._replace(
-        documents=Documents([
-            d._replace(name=get_video_name(d.name))
-            for d in caption_data.documents])
+        documents=matched_documents,
+        document_by_name={d.name: d for d in matched_documents}
     )
     n_videos_with_captions = sum(1 for d in caption_data.documents
                                  if d.name in videos)
