@@ -1,22 +1,24 @@
+const CHART_H_SLACK = 200;
+const CHART_MIN_WIDTH = 300;
 let params = (new URL(document.location)).searchParams;
 let hide_legend = params.get('hideLegend') == 1;
 let data_str = params.get('data');
 let data = JSON.parse(data_str);
-let width = params.get('width');
-let height = params.get('height');
 
-function renderText(lines) {
+function checkDataVersion() {
+  let chart_info_div = $('#chartInfo');
   if (params.get('dataVersion')) {
     let version_id = decodeURIComponent(params.get('dataVersion'));
     if (DATA_VERSION_ID != version_id) {
-      $('#warning').append(
+      chart_info_div.append(
         $('<span>').html(`<b>Warning:</b> the requested data version has changed from <b>${version_id}</b> to <b>${DATA_VERSION_ID}</b>. The following chart may have changed.`)
       ).show();
     }
   }
+}
 
-  // TODO: XSS attack here
-  $('#legend').append(lines.map(line => {
+function renderChartInfo(lines) {
+  let legend = $('<div>').append(lines.map(line => {
     var entry;
     if (line.query.alias) {
       entry = [
@@ -35,6 +37,7 @@ function renderText(lines) {
       $('<span>').addClass('legend-text').append(entry)
     );
   }));
+  $('#chartInfo').append(legend);
 }
 
 let lines = data.queries.map(raw_query => {
@@ -52,16 +55,20 @@ $('#search').prop('disabled', true);
 
 let search_results = [];
 function onDone() {
+  checkDataVersion();
+  if (!hide_legend) {
+    renderChartInfo(lines);
+  }
+
+  let width = $(document).width();
+  let height = $(document).height() - $('#chartInfo').height() - 20;
   new Chart(
-    data.options, search_results, {width: width, height: height}
+    data.options, search_results,
+    {width: Math.max(width - CHART_H_SLACK, CHART_MIN_WIDTH), height: height}
   ).load('#chart', {
     show_tooltip: true,
     href: `//${SERVER_HOST}/?data=` + encodeURIComponent(data_str)
   });
-  if (!hide_legend) {
-    renderText(lines);
-  }
-
   $('#loadingText').hide();
 };
 

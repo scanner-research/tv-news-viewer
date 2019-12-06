@@ -46,12 +46,15 @@
 code {
   color: black;
 }
-#warning {
+.warning-span {
   color: red;
   display: none;
 }
 
 #loadingText {
-  text-align: center;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%,-50%);
   font-size: 18px;
 }

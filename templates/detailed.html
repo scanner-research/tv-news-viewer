@@ -301,7 +301,7 @@
 
   The following query computes the fraction of time on CNN that a man's face is on screen:
 
-    <iframe width="100%" height="0" id="normExample"></iframe>
+    <iframe width="100%" height="400" id="normExample"></iframe>
   </p>
 
   <hr>
@@ -313,7 +313,7 @@
 
     For example, the follow query plots how much more screen time Hillary Clinton received than Bernie Sanders:
     <div class="code-block" id="subExampleCode"></div>
-    <iframe width="100%" height="0" id="subExample"></iframe>
+    <iframe width="100%" height="400" id="subExample"></iframe>
   </p>
 
   <script type="text/javascript">
@@ -331,14 +331,14 @@
     let norm_cnn_queries = [
       '{{ search_keys.face_tag }}=male AND {{ search_keys.channel }}=CNN NORMALIZE {{ search_keys.channel }}=CNN'
     ];
-    setIframeSource('#normExample', norm_cnn_queries, 600, 300);
+    setIframeSource('#normExample', norm_cnn_queries);
     setCodeArea('#normExampleCode', norm_cnn_queries);
 
     setCodeArea('#subSyntax', ['query1 SUBTRACT query2']);
     let subtract_queries = [
       '{{ search_keys.face_name }}=hillary clinton SUBTRACT {{ search_keys.face_name }}=bernie sanders'
     ];
-    setIframeSource('#subExample', subtract_queries, 600, 300);
+    setIframeSource('#subExample', subtract_queries);
     setCodeArea('#subExampleCode', subtract_queries);
   </script>
 </div>
