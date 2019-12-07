@@ -18,7 +18,11 @@
 <div class="container">
   <h1>Getting Started</h1>
   <p>
-    The Stanford Cable TV News Analyzer allows you to write queries that count the screen time of people and transcript phrases in nearly a decade of American cable TV news (nearly 24/7 programming from Fox News, CNN, and MSNBC since January 1, 2010). This page provides a brief introduction using the site to write these queries.  
+    The Stanford Cable TV News Analyzer allows you to write queries that count
+    the screen time of people and transcript phrases in nearly a decade of
+    American cable TV news (nearly 24/7 programming from Fox News, CNN, and
+    MSNBC since January 1, 2010). This page provides a brief introduction using
+    the site to write these queries.
   </p>
   <hr>
 </div>
@@ -45,20 +49,25 @@
   </p>
 
   <p>
-    We have used modern AI techniques to automatically annotate nearly a decade of American Cable TV news programming with
-    information such as the location of faces in the frame, the gender of each
-    face, and the associated identity if the person is a "celebrity" or
-    public figure. See the <a href="/methodology">methodology</a> page for
-    a technical explanation of our methods and their limitations.
-    The Stanford Cable TV News Analyzer enables interactive queries on the data set,
-    which we hope will provide new insight into the contents of cable TV news.
+
+    We have used modern AI techniques to automatically annotate nearly a decade
+    of American Cable TV news programming with information such as the location
+    of faces in the frame, the gender of each face, and the associated identity
+    if the person is a "celebrity" or public figure. See the
+    <a href="/methodology">methodology</a> page for a technical explanation of our
+    methods and their limitations. The Stanford Cable TV News Analyzer enables
+    interactive queries on the data set, which we hope will provide new insight
+    into the contents of cable TV news.
+
   </p>
 
   <hr>
 
   <h3>The basics: Writing screen-time queries</h3>
   <p>
-    The Stanford Cable TV News Analyzer allows you to write queries that video segments from the dataset and compute the screen time of these segments. At the top of the home page, you should see a search row and controls: 
+    The Stanford Cable TV News Analyzer allows you to write queries that video
+    segments from the dataset and compute the screen time of these segments. At
+    the top of the home page, you should see a search row and controls:
 
     <a href="/" target="_blank">
       <img src="{{ url_for('static', filename='img/ui.png') }}" style="width: 100%;"
@@ -85,7 +94,7 @@
     While the amount of data is mostly constant across time,
     there are periods of time with more or less data available.
   </p>
-  <iframe width="100%" height="0" id="allData"></iframe>
+  <iframe width="100%" height="400" id="allData"></iframe>
 
   <p>
     The previous chart includes all of the data from all three channels
@@ -109,7 +118,7 @@
     now generate a chart that looks similar to this (hover over the graph for more detail,
     and click to open the graph full-screen in the analyzer):
   </p>
-  <iframe width="100%" height="0" id="dataByChannel"></iframe>
+  <iframe width="100%" height="400" id="dataByChannel"></iframe>
   <p>
     Filtering on other basic metadata such as the show follows a similar
     pattern. For a full list of options, read the
@@ -156,7 +165,7 @@
     and female faces is trending upwards, but also that male screen time is
     roughly double that of female screen time.
   </p>
-  <iframe width="100%" height="0" id="menVsWomen"></iframe>
+  <iframe width="100%" height="400" id="menVsWomen"></iframe>
   <p>
     We can also make queries about people who have been identified in the videos.
     For example, if we were to compare the screen time of Bernie Sanders with
@@ -177,7 +186,7 @@
     If you entered the queries above, you should see a chart similar to the
     one below.
   </p>
-  <iframe width="100%" height="0" id="clintonVsSanders"></iframe>
+  <iframe width="100%" height="400" id="clintonVsSanders"></iframe>
 
   <p>
     To see the list of people who are searchable, click
@@ -219,7 +228,7 @@
     following:
   </p>
 
-  <iframe width="100%" height="0" id="unitedNations"></iframe>
+  <iframe width="100%" height="400" id="unitedNations"></iframe>
 
   <p>
     Notice that, by default, the tool finds only the exact moments when words
@@ -239,7 +248,7 @@
     text matches are found in a screen time window, then the screen time is
     counted only once. This is useful when specifying more complex queries
     across multiple terms.
-    <iframe width="100%" height="0" id="unitedNationsWindow"></iframe>
+    <iframe width="100%" height="400" id="unitedNationsWindow"></iframe>
   </p>
 
   <p>
@@ -285,38 +294,38 @@
 
   <script type="text/javascript">
     initialize();
-    setIframeSource('#allData', [''], 600, 300);
+    setIframeSource('#allData', ['']);
 
     let channel_queries = [
       '{{ search_keys.channel }}=CNN',
       '{{ search_keys.channel }}=FOX',
       '{{ search_keys.channel }}=MSNBC'
     ];
-    setIframeSource('#dataByChannel', channel_queries, 600, 300);
+    setIframeSource('#dataByChannel', channel_queries);
     setCodeArea('#channelCode', channel_queries);
 
     let men_women_queries = [
       '{{ search_keys.face_tag }}=male',
       '{{ search_keys.face_tag }}=female'
     ];
-    setIframeSource('#menVsWomen', men_women_queries, 600, 300);
+    setIframeSource('#menVsWomen', men_women_queries);
     setCodeArea('#menVsWomenCode', men_women_queries);
 
     let clinton_sanders_queries = [
       '{{ search_keys.face_name }}=hillary clinton',
       '{{ search_keys.face_name }}=bernie sanders'
     ];
-    setIframeSource('#clintonVsSanders', clinton_sanders_queries, 600, 300);
+    setIframeSource('#clintonVsSanders', clinton_sanders_queries);
     setCodeArea('#clintonVsSandersCode', clinton_sanders_queries);
 
     let united_nations_queries = ['{{ search_keys.text }}="UNITED NATIONS"'];
-    setIframeSource('#unitedNations', united_nations_queries, 600, 300);
+    setIframeSource('#unitedNations', united_nations_queries);
     setCodeArea('#unitedNationsCode', united_nations_queries);
 
     let united_nations_window_queries = [
       '{{ search_keys.text }}="UNITED NATIONS" AND {{ search_keys.text_window }}=30'
     ];
-    setIframeSource('#unitedNationsWindow', united_nations_window_queries, 600, 300);
+    setIframeSource('#unitedNationsWindow', united_nations_window_queries);
     setCodeArea('#unitedNationsWindowCode', united_nations_window_queries);
 
     setCodeArea('#menAndCNNCode', [

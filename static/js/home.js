@@ -592,7 +592,7 @@ function getEmbedUrl(data) {
   if (DATA_VERSION_ID) {
     prefix += 'dataVersion=' + encodeURIComponent(DATA_VERSION_ID) + '&';
   }
-  return prefix + `width=${DEFAULT_CHART_DIMS.width}&height=${DEFAULT_CHART_DIMS.height}&data=${data}`;
+  return prefix + `data=${data}`;
 }
 
 function getChartPath(data) {
