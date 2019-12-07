@@ -2,35 +2,35 @@
 
 {% block content %}
 <div class="container">
-  <h1>Methodology</h1>
+  <h1>Labeling Methodology</h1>
   <p>
-    This page documents the methodology used for extracting metadata from the cable TV news video dataset.
+    This page documents the methodology used for extracting metadata from the <a href="/data">cable TV news video dataset</a>.  
+
+<ul>
+  <li><a href="#face_detection">Face Detection</a>
+    <ul>
+      <li><a href="#face_descriptors">Face Descriptors</a></li>  
+      <li><a href="#face_gender">Face Gender Tags</a></li>
+      <li><a href="#face_identity">Face Identities</a></li>
+      <li><a href="#face_misctags">Additional Face Tags</a></li>
+    </ul>
+  </li>  
+  <li><a href="#commercials">Commercial Segment Detection</a></li>
+  <li><a href="#time_alignment">Transcript Time Alignment</a></li>
+</ul>
+
   </p>
   <hr>
-</div>
 
-<div class="container">
-  <h3>The Dataset</h3>
-  <p>
-The cable TV news dataset available for analysis of the Stanford Cable TV News Analyzer (referred to as “the dataset” in the remainder of this document) was obtained from the Internet Archive’s <a href="https://archive.org/details/tv">TV News Archive</a>. The dataset currently includes near 24-7 recordings of CNN, FOX, and MSNBC between January 1, 2010 and July 23, 2019. In total, the dataset consists of over 230,000 hours of video and includes both TV news programming and commercial segments.  
-</p>
-<p>
-The data we obtained from The Internet Archive is organized as a collection of videos, with each video corresponding to one airing of a news program (e.g., most videos are approximately one hour in length). Per-video metadata includes the name of the news program, the date/time it aired, and the channel on which it aired. Video frames range in resolution from 640x360 to 858x480.  All videos include audio. 95.4% of the video files have accompanying closed caption transcripts. However, transcripts are not present during most commercial segments.  A full listing of videos is available on our <a href="/data">dataset page</a>.
-</p>
-<p>
-  Please consult <a href="https://archive.org/">The Internet Archive</a> directly for more information about the process used by the Internet Archive to record the dataset.
-</p>
+<h2><a id="face_detection"></a>Face Detection</h2>
 
-<hr>
-<h3>Face Detection</h3>
 
-<p>We detected faces in video frames using the <a href="https://kpzhang93.github.io/MTCNN_face_detection_alignment/index.html">MTCNN</a> [1,2] face detector.  Due to the high cost of performing face detection on all frames in the dataset, we performed face detection only on a subset of frames uniformly sampled every three seconds in a video.
+<p>We detected faces in video frames using the <a href="https://kpzhang93.github.io/MTCNN_face_detection_alignment/index.html">MTCNN</a> [1,2] face detector.  Due to the high cost of performing face detection on all frames in the dataset, we performed face detection on a subset of frames uniformly sampled every three seconds in a video.  This process yielded a total of 306 million face detections. 
+Since face detection is performed on frames spaced by three seconds in a video, the Stanford Cable TV News Analyzer tabulates face screen time at a granularity of three seconds.  For example, a face detection of Anderson Cooper in a single video frame contributes three seconds to the estimate of Mr. Cooper's screen time in the video.   
 </p>
 
 <p>
-This process yielded 306 million face detections across the dataset. Each face location is represented by an axis-aligned bounding box within its containing frame.  
-To remind users that face detection is not occurring on all frames, 
-the Stanford Cable TV News Analyzer's video player renders face bounding boxes in the frame in which a detection occurred, then fades out the box over the next three seconds.
+The location of each detected face is represented by an axis-aligned bounding box. To remind users that face detection is not occurring on all frames, the Stanford Cable TV News Analyzer's video player renders face bounding boxes in the frame in which a detection occurred, then fades out the box over the next three seconds.
 </p>
 
 <p>
@@ -39,7 +39,7 @@ the Stanford Cable TV News Analyzer's video player renders face bounding boxes i
 
 <hr>
 
-<h3>Face Descriptors</h3>
+<h3><a id="face_descriptors"></a>Face Descriptors</h3>
 
 <p>
 We compute the 128-element <a href="https://github.com/davidsandberg/facenet">FaceNet</a> descriptor [3,4] from the pixels contained inside a face’s bounding box. 
@@ -47,14 +47,14 @@ We compute the 128-element <a href="https://github.com/davidsandberg/facenet">Fa
 
 <hr>
 
-<h3>Face Gender Tags</h3>
+<h3><a id="face_gender"></a>Face Gender Tags</h3>
 
 <p>
-  We tag all faces with an estimate of their presented binary gender (male/female) using a binary classifier that operates on a face’s FaceNet descriptor as input.  We acknowledge that treating an individual’s gender as a binary quantity as well as assessing gender solely from an individual’s appearance is a grossly simplified treatment of a complex topic.  However, we believe that this simple model still provides useful insights into the presentation of cable TV news, and for this reason we chose to include it in the dataset.
+  We tag all faces with an estimate of their presented binary gender (male/female) using a binary classifier that operates on a face’s FaceNet descriptor as input.  We note that treating individual’s gender as a binary quantity, as well as assessing gender solely from an individual’s appearance, is a grossly simplified treatment of a complex topic.  However, we believe that binary classification can still provide useful insights into the presentation of cable TV news.
   </p>
 
 <p>
-  Members of our research team manually annotated the presented binary gender of 12,669 faces selected at random from the dataset.  Each face was annotated by a single human annotator. (No additional consensus protocol was used.)  We used these ground-truth annotations to train a binary classifier based on the precomputed FaceNet descriptors. Our implementation is a k-NN classifier with classification results determined by majority vote with k=7.
+  We manually annotated the presented binary gender of 12,669 faces selected at random from the dataset.  Each face was annotated by a single human annotator. (No additional consensus protocol was used.)  We used these ground-truth annotations to train a binary classifier based on the precomputed FaceNet descriptors. Our implementation is a k-NN classifier with classification results determined by majority vote with k=7.
 </p>
 
 <p>
@@ -66,10 +66,10 @@ selected at random from the dataset is given by the confusion matrix below. In t
 
 <hr>
 
-<h3>Face Identity Tags</h3>
+<h3><a id="face_identity"></a>Face Identity Tags</h3>
 
 <p>
-  We use the <a href="https://docs.aws.amazon.com/rekognition/latest/dg/celebrities.html">Amazon Rekognition Celebrity Recognition API</a> to identify all detected faces. The Celebrity Recognition API returns an identity prediction for 45.2% of the faces in the dataset.  The Celebrity Recognition API provides an identity estimate only when its identification confidence score is greater than 0.5. We use all predictions above this 0.5 threshold, and do no additional thresholding.  Identities in the dataset result from Celebrity Recognition API queries performed in September 2019.
+  We use the <a href="https://docs.aws.amazon.com/rekognition/latest/dg/celebrities.html">Amazon Rekognition Celebrity Recognition API</a> to identify the detected faces. The API provides an identity estimate only when its identification confidence score is greater than 0.5. We use all predictions above this 0.5 threshold, and do no additional thresholding.  As a result of this process, the API returns an identity prediction for 45.2% of the faces in the dataset.  Identities in the dataset result from Celebrity Recognition API queries performed in September 2019. Amazon does not disclose the full list of individuals that can be recognized by this service.  
 </p>
 
 <p>
@@ -78,7 +78,7 @@ To increase the percentage of faces with identity tags, we tag faces that were n
 
 <hr>
 
-<h3>Additional Face Tags</h3>
+<h3><a id="face_misctags"></a>Additional Face Tags</h3>
 
 <p>
   For each face tagged with an identity, we download all person-tags associated with this identity from <a href="https://wiki.dbpedia.org/">DBpedia</a> [5] using its public <a href="https://wiki.dbpedia.org/public-sparql-endpoint">SPARQL API</a>.  A full description of the per-face tags available in the Stanford Cable TV News Analyzer is available on the <a href="/data/tags">tag information page</a>.  Tags listed with source of "DBpedia" on that page were directly downloaded from DBpedia.  
@@ -90,10 +90,12 @@ We also augment tags downloaded from DBpedia with additional "derived" tags comp
 
 <hr>
 
-<h3>Commercial Segment Detection</h3>
+<h2><a id="commercials"></a>Commercial Segment Detection</h2>
 
 <p>
-We detect commercial segments using a proprietary commercial detection algorithm that uses heuristics based on visual information (the presence of black frames at the start/end of commercials) and transcript text features (word casing).  We authored the algorithm in <a href="https://github.com/scanner-research/rekall">Rekall</a>, an API for complex event detection in video. 
+We detect commercial segments using an algorithm that scans videos for sequences of black frames (which typically indicate the start and end of commercials) and for video segments where transcript text that is either missing or lower case. (We observed that these transcript features are indicative of commercials in most videos in our dataset.)  Source code for this algorithm is available at:
+<a href="https://github.com/scanner-research/esper-tv/blob/master/app/esper/commercial_detection_rekall.py">https://github.com/scanner-research/esper-tv/blob/master/app/esper/commercial_detection_rekall.py</a>.
+The algorithm is written using <a href="https://github.com/scanner-research/rekall">Rekall</a>, an API for complex event detection in video. 
 </p>
 
 <p>
@@ -106,30 +108,20 @@ We detect commercial segments using a proprietary commercial detection algorithm
 
 <hr>
 
-<h3>Transcript Time Alignment</h3>
+<h2><a id="time_alignment"></a>Transcript Time Alignment</h2>
 
 <p>
 We use the <a href="https://lowerquality.com/gentle/">Gentle word aligner</a> to perform sub-second alignment of words in a video's closed-caption transcript to the video's audio track.  (The source transcripts are only coarsely aligned to the video.)  To perform alignment, we partition the video's audio track into one-second chunks and use Gentle to search for word-level alignment with transcript text within +/- 10 seconds of this audio segment.
 </p>
 
-<hr>
-
-<h3>Screen Time Estimates</h3>
-
 <p>
-The result of a query performed using the Stanford Cable TV News Analyzer is an estimate of screen time of video segments matching the query.  Below we describe how we estimate screen time for face-based and transcript-text-based predicates.
+The Stanford Cable TV News Analyzer tabulates the screen time of transcript-text queries using the duration of words determined via transcript time alignment. For example, an utterance of the word "politics" that begins at 10:35.10 in a video and ends at 10:35.90 contributes 0.8 seconds to the estimate of the word's total screen time in the video.  Since the Stanford Cable TV News Analyzer tabulates the screen time of transcript words matching a query, the screen time estimate for a longer word (e.g., "Mississippi") will likely be greater than that of a shorter word (e.g., "Iraq") even if the two words are spoken the same number of times.
 </p>
 
-<p>Since face detection is performed on frames spaced by three seconds in a video, the Stanford Cable TV News Analyzer tabulates face screen time at a granularity of three seconds.  For example, a face detection of Anderson Cooper in a single video frame contributes three seconds to the estimate of Mr. Cooper's screen time in the video.   
-</p>
-
-<p>
-The Stanford Cable TV News Analyzer tabulates the screen time of transcript words (as opposed to counts of the number of occurrences of these words) to support queries that select video segments using a composition of face-based and transcript-based predicates.  The site tabulates the screen time of transcript-text queriesusing the duration of words determined via transcript time alignment. For example, an utterance of the word "politics" that begins at 10:35.10 in a video and ends at 10:35.90 contributes 0.8 seconds to the estimate of the word's total screen time in the video.  Since the Stanford Cable TV News Analyzer tabulates the screen time of transcript words matching a query, the screen time estimate for a longer word (e.g., "Mississippi") will likely be greater than that of a shorter word (e.g., "Iraq") even if the two words are spoken the same number of times.
-</p>
 
 <hr>
 
-<h3>References</h3>
+<h2>References</h2>
 
 <p>
   [1] MTCNN Source Page (<a href="https://kpzhang93.github.io/MTCNN_face_detection_alignment/index.html">https://kpzhang93.github.io/MTCNN_face_detection_alignment/index.html</a>)
