@@ -1,4 +1,4 @@
-const CHART_H_SLACK = 200;
+const CHART_H_SLACK = 50;
 const CHART_MIN_WIDTH = 300;
 let params = (new URL(document.location)).searchParams;
 let hide_legend = params.get('hideLegend') == 1;
