@@ -23,8 +23,6 @@ def get_args() -> argparse.Namespace:
                         default=DEFAULT_INDEX_PATH,
                         help='Directory of caption index. Default: {}'.format(
                               DEFAULT_INDEX_PATH))
-    parser.add_argument('--frameserver', dest='frameserver_endpoint', type=str,
-                        help='Frameserver URL and path')
     parser.add_argument('--videos', dest='video_endpoint', type=str,
                         default=DEFAULT_VIDEO_ENDPOINT,
                         help='Video server URL and path')
@@ -35,7 +33,7 @@ def get_args() -> argparse.Namespace:
 
 def main(
     port: int, data_dir: str, index_dir: str, video_endpoint: str,
-    frameserver_endpoint: Optional[str], html_only: bool
+    html_only: bool
 ) -> None:
     """Run a debugging server"""
     if not html_only:
@@ -44,7 +42,7 @@ def main(
         from app.types_frontend import Ternary
 
         app = build_app(
-            data_dir, index_dir, video_endpoint, frameserver_endpoint,
+            data_dir, index_dir, video_endpoint,
             min_date=datetime(2010, 1, 1),
             max_date=datetime(2019, 7, 31),
             tz=timezone('US/Eastern'),

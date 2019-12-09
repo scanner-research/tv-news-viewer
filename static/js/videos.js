@@ -110,10 +110,6 @@ function displayVideos(page_i) {
               vgrid_settings.video_endpoint = VIDEO_ENDPOINT;
               vgrid_settings.show_timeline_controls = true;
             }
-            if (FRAMESERVER_ENDPOINT) {
-              vgrid_settings.frameserver_endpoint = FRAMESERVER_ENDPOINT;
-              vgrid_settings.use_frameserver = true;
-            }
           }
           highlight_phrases = getPhrasesToHighlight(query);
           renderVGrid(

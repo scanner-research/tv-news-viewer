@@ -38,7 +38,6 @@ const SEARCH_PARAM = {
 };
 
 const VIDEO_ENDPOINT = {% if video_endpoint is not none %}'{{ video_endpoint }}'{% else %}null{% endif %};
-const FRAMESERVER_ENDPOINT = {% if frameserver_endpoint is not none %}'{{ frameserver_endpoint }}'{% else %}null{% endif %};
 
 const ARCHIVE_ENDPOINT = 'https://archive.org/details';
 const ARCHIVE_VIDEO_ENDPOINT = 'https://archive.org/download';
