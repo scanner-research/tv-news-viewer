@@ -1,5 +1,6 @@
 {
   "data_dir": "data",
   "index_dir": "index",
-  "video_endpoint": null
+  "video_endpoint": null,
+  "video_auth_endpoint": null
 }

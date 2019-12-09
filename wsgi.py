@@ -20,7 +20,9 @@ with open(CONFIG_FILE) as f:
 options = config.get('options', {})
 
 app = build_app(
-    config['data_dir'], config['index_dir'], config.get('video_endpoint'),
+    config['data_dir'], config['index_dir'],
+    config.get('video_endpoint'),
+    config.get('video_auth_endpoint'),
     min_date=datetime(*options.get('min_date', [2010, 1, 1])),
     max_date=datetime(*options.get('max_date', [2019, 7, 31])),
     tz=timezone(options.get('timezone', 'US/Eastern')),

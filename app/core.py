@@ -64,6 +64,7 @@ def build_app(
     data_dir: str,
     index_dir: str,
     video_endpoint: Optional[str],
+    video_auth_endpoint: Optional[str],
     min_date: datetime,
     max_date: datetime,
     tz: timezone,
@@ -120,6 +121,7 @@ def build_app(
             default_agg_by=default_aggregate_by,
             default_text_window=default_text_window,
             video_endpoint=video_endpoint,
+            video_auth_endpoint=video_auth_endpoint,
             default_serve_from_archive=default_serve_from_archive,
             search_params=[
                 (k, v) for k, v in SearchParam.__dict__.items()
