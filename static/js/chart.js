@@ -343,6 +343,10 @@ class Chart {
                 $('<span>').addClass('tooltip-data').attr('color', color))
             )
           );
+          // Hack to prevent tooltip from stealing focus
+          tooltip.hover(function() {
+            tooltip.hide();
+          });
           $(div_id).append(tooltip);
 
           $(div_id).on('mouseleave', function() {
