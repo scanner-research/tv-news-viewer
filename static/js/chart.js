@@ -40,6 +40,31 @@ function weightedShuffle(data) {
   return result;
 }
 
+
+function getNumTimeBins(unit, start, end) {
+  var increment;
+  if (unit == 'day') {
+    increment = d => d.setUTCDate(d.getUTCDate() + 1);
+  } else if (unit == 'week') {
+    increment = d => d.setUTCDate(d.getUTCDate() + 7);
+  } else if (unit == 'month') {
+    increment = d => d.setUTCMonth(d.getUTCMonth() + 1);
+  } else if (unit == 'year') {
+    increment = d => d.setUTCFullYear(d.getUTCFullYear() + 1);
+  } else {
+    throw Error(`Unknown unit: ${unit}`);
+  }
+  let end_t = new Date(end);
+  var curr_t = new Date(start);
+  var i = 0;
+  while (curr_t <= end_t) {
+    increment(curr_t);
+    i++;
+  }
+  return i;
+}
+
+
 function fillZeros(data, unit, start, end, default_value) {
   let all_ts = new Set(Object.keys(data));
   Object.keys(data).forEach(t_curr_str => {
@@ -55,8 +80,8 @@ function fillZeros(data, unit, start, end, default_value) {
       t_prev.setUTCMonth(t_prev.getUTCMonth() - 1);
       t_next.setUTCMonth(t_next.getUTCMonth() + 1);
     } else if (unit == 'year') {
-      t_prev.setUTCMonth(t_prev.getUTCFullYear() - 1);
-      t_next.setUTCMonth(t_next.getUTCFullYear() + 1);
+      t_prev.setUTCFullYear(t_prev.getUTCFullYear() - 1);
+      t_next.setUTCFullYear(t_next.getUTCFullYear() + 1);
     } else {
       throw Error(`Unknown unit: ${unit}`);
     }
@@ -84,7 +109,7 @@ function getVegaDateFormat(agg) {
   } else {
     return '%b %d, %Y';
   }
-};
+}
 
 function getDateFormatFunction(agg) {
   var date_format;
@@ -102,7 +127,7 @@ function getDateFormatFunction(agg) {
     }
     return date_str;
   };
-};
+}
 
 function getStartDate(agg, date_str) {
   let date = new Date(date_str);
@@ -128,7 +153,34 @@ function getEndDate(date_str) {
   return date.toISOString().split('T')[0];
 }
 
-let secondsToMinutes = x => x / 60;
+function secondsToMinutes(x) {
+  return x / 60;
+}
+
+function getPointValue(result, video_data, t) {
+  var value = video_data.reduce((acc, x) => acc + x[1], 0);
+  if (result.normalize) {
+    var denom = _.get(result.normalize, t, null);
+    if (denom) { // TODO: what if this is NaN
+      value /= denom;
+    }
+  } else {
+    if (result.subtract) {
+      value -= _.get(result.subtract, t, 0.);
+    }
+    value = secondsToMinutes(value);
+  }
+  return value;
+}
+
+function getRoundedValue(value, frac_digits) {
+  let exp_threshold = 1. / Math.pow(10, frac_digits);
+  return (value >= exp_threshold || Math.abs(value) <= 1e-12 ?
+    value.toLocaleString(undefined, {
+      maximumFractionDigits: frac_digits,
+      minimumFractionDigits: frac_digits
+    }) : value.toExponential(Math.max(frac_digits, 2)));
+}
 
 class Chart {
   constructor(chart_options, search_results, dimenisons) {
@@ -142,33 +194,6 @@ class Chart {
       new Date(this.options.end_date).getUTCFullYear() -
       new Date(this.options.start_date).getUTCFullYear()
     );
-
-    function getRoundedValue(value, frac_digits) {
-      let exp_threshold = 1. / Math.pow(10, frac_digits);
-      return (value >= exp_threshold || Math.abs(value) <= 1e-12 ?
-        value.toLocaleString(undefined, {
-          maximumFractionDigits: frac_digits,
-          minimumFractionDigits: frac_digits
-        }) : value.toExponential(Math.max(frac_digits, 2)));
-    }
-
-    // Helper to compute values
-    function getPointValue(result, video_data, t, frac_digits) {
-      var value = video_data.reduce((acc, x) => acc + x[1], 0);
-      if (result.normalize) {
-        var denom = _.get(result.normalize, t, null);
-        if (denom) { // TODO: what if this is NaN
-          value /= denom;
-        }
-      } else {
-        // Unit remains the same
-        if (result.subtract) {
-          value -= _.get(result.subtract, t, 0.);
-        }
-        value = secondsToMinutes(value);
-      }
-      return value;
-    }
 
     // Data for lines
     let line_data = this.search_results.flatMap(
@@ -198,11 +223,9 @@ class Chart {
       }
     );
 
-    // Data for tooltips
-    let all_times_set = new Set(line_data.map(x => x.time));
-    let tooltip_data = Array.from(all_times_set).map(t => {return {time: t};});
-
     // X axis settings
+    let all_times_set = new Set(line_data.map(x => x.time));
+    let x_axis_data = Array.from(all_times_set).map(t => {return {time: t};});
     let x_tick_count = Math.min(24, all_times_set.size);
     let x_start_date = getStartDate(
       this.options.aggregate, this.options.start_date);
@@ -250,6 +273,41 @@ class Chart {
       }
     }];
 
+    if (options.show_mean) {
+      // Compute mean for each value
+      let num_time_bins = getNumTimeBins(
+        this.options.aggregate, this.options.start_date, this.options.end_date);
+      let mean_data = Object.entries(
+        line_data.reduce((acc, x) => {
+          if (acc.hasOwnProperty(x.color)) {
+            acc[x.color] += x.value;
+          } else {
+            acc[x.color] = x.value;
+          }
+          return acc;
+        }, {})
+      ).map(([color, total]) => {
+        let value = total / num_time_bins;
+        let num_digits = value > 15 ? 0 : 2;
+        return {
+          color: color, value: value, time: this.options.start_date,
+          value_str: `avg=${getRoundedValue(value, num_digits)}`
+        };
+      });
+      vega_layers.push({
+        data: {values: mean_data},
+        mark: {
+          type: 'text', align: 'right', dx: -15
+        },
+        encoding: {
+          x: {field: 'time', type: 'temporal', timeUnit: 'utcyearmonthdate', title: null},
+          y: {field: 'value', type: 'quantitative', title: null},
+          text: {field: 'value_str', type: 'nominal'},
+          color: {field: 'color', type: 'nominal', scale: null}
+        }
+      });
+    }
+
     if (options.show_tooltip) {
       vega_layers.push({
         mark: 'rule',
@@ -272,7 +330,7 @@ class Chart {
       width: this.dimensions.width,
       height: this.dimensions.height,
       autosize: {type: 'fit', resize: true, contains: 'padding'},
-      data: {values: tooltip_data},
+      data: {values: x_axis_data},
       encoding: {
         x: {
           timeUnit: 'utcyearmonthdate', field: 'time', type: 'temporal',
@@ -297,8 +355,8 @@ class Chart {
       let date_str = formatDate(t);
       let content_str = SERVE_FROM_INTERNET_ARCHIVE ? 'clips (up to 3 minutes)' : 'videos';
       video_div_selector.append(
-        $('<h5 />').append(`Showing ${content_str} from <b>${date_str}</b>.`),
-        $('<p />').append(VGRID_INSTRUCTIONS)
+        $('<h5>').append(`Showing ${content_str} from <b>${date_str}</b>.`),
+        $('<p>').append(VGRID_INSTRUCTIONS)
       );
 
       let count = this_chart.options.count;
@@ -314,8 +372,8 @@ class Chart {
 
         video_div_selector.append(
           '<hr>',
-          $('<iframe class="vgrid-iframe" src="/video-embed" width="100%" frameBorder="0">').attr(
-            'color', color
+          $('<iframe>').addClass('vgrid-iframe').attr(
+            {color: color, src: '/video-embed'}
           ).on('load', function() {
             let iframe = $(this)[0];
             iframe.contentWindow.loadVideos(params, SERVE_FROM_INTERNET_ARCHIVE);

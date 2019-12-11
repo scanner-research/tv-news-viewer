@@ -33,3 +33,7 @@
   margin-right: 5px;
   float: right;
 }
+.vgrid-iframe {
+  width: 100%;
+  border: none;
+}

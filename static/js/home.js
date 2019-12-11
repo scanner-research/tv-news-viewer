@@ -645,7 +645,7 @@ function displaySearchResults(
     width: $("#chartArea").width(), height: chartHeight
   }).load('#chart', {
     video_div: '#vgridArea', show_tooltip: !minimalMode,
-    vega_actions: minimalMode
+    show_mean: true, vega_actions: minimalMode
   });
 
   if (search_results.length == lines.length) {
