@@ -33,7 +33,7 @@
 <div class="container">
   <h1>Getting Started</h1>
   <p>
-The Stanford Cable TV Analyzer enables you to write queries that count the amount of time where certain people appear on screen or when certain words are spoken on <a href="/data">cable TV news</a>.  In this tutorial we'll go over the basics of how to use the tool to write basic queries.   
+The Stanford Cable TV Analyzer enables you to write queries that compute the amount of time certain people appear on screen or  words are spoken on <a href="/data">cable TV news</a>.  In this tutorial we'll go over the basics of how to use the tool to write basic queries.   
   </p>
 
 <p>
@@ -42,10 +42,10 @@ The Stanford Cable TV Analyzer enables you to write queries that count the amoun
 
   <hr>
 
-  <h3>Counting the Screen Time of Individuals</h3>
+  <h3>Computing the Screen Time of Individuals</h3>
 
   <p>
-    Writing a query involves specifying filters that determine what video segments contribute to a screen time count.  One of the most important filters is the <b>name</b> filter, which selects video segments where a specific individual, say Hillary Clinton, appears on screen.  The graph below shows the results of a single query that counts the time Hillary Clinton's face was on screen in every month since January 2010. This count includes data from all three channels: CNN, Fox News, and MSNBC. One obvious feature of the graph is the spike in coverage during the 2016 U.S. presidential election.
+    Writing a query involves specifying filters that determine what video segments contribute to a screen time estimate.  One of the most important filters is the <b>name</b> filter, which selects video segments where a specific individual, say Hillary Clinton, appears on screen.  The graph below shows the results of a single query that computes the time Hillary Clinton's face was on screen in every month since January 2010. This total includes data from all three channels: CNN, Fox News, and MSNBC. One obvious feature of the graph is the spike in coverage during the 2016 U.S. presidential election.
   </p>
   <p>
     The <a href="/data/people">people</a> page provides the full list of names that can be used in a <b>name</b> filter. 
@@ -55,10 +55,10 @@ The Stanford Cable TV Analyzer enables you to write queries that count the amoun
   <iframe class="graph_embed" src="https://esper-tv.stanford.edu/embed?dataVersion=v1&data=%7B%22options%22%3A%7B%22start_date%22%3A%222010-01-01%22%2C%22end_date%22%3A%222019-07-23%22%2C%22aggregate%22%3A%22month%22%7D%2C%22queries%22%3A%5B%7B%22color%22%3A%22%234E79A7%22%2C%22text%22%3A%22name%3D%5C%22Hillary%20Clinton%5C%22%22%7D%5D%7D"></iframe>
 </div>
 
-<h3>Comparing Screen Time Counts</h3>
+<h3>Comparing Screen Times</h3>
 
 <p>
-  Many questions about cable TV news content require direct comparison of screen time counts.  To add new lines to the graph, use the + button to add more query boxes. The following graph compares the screen time of Hillary Clinton (blue) to that of Bernie Sanders (orange).
+  Many questions about cable TV news content require direct comparison of screen time estimates.  To add new lines to the graph, use the + button to add more query boxes. The following graph compares the screen time of Hillary Clinton (blue) to that of Bernie Sanders (orange).
 </p>
 
 <div class="graph_embed_div">
@@ -91,7 +91,7 @@ The Stanford Cable TV Analyzer enables you to write queries that count the amoun
 <h3>Composite Queries (AND's and OR's)</h3>
 
 <p>
-  To allow more precise control over what may be counted, queries may contain multiple filters connected by AND's and OR's.  For example, the graph below extends our previous Hillary Clinton vs. Bernie Sanders graph with a third line (red) that plots the amount of time that both Mrs. Clinton AND Mr. Sanders are on screen.
+  To allow more precise control over what video segments are included in a screen time computation, queries may contain multiple filters connected by AND's and OR's.  For example, the graph below extends our previous Hillary Clinton vs. Bernie Sanders graph with a third line (red) that plots the amount of time that both Mrs. Clinton AND Mr. Sanders are on screen.
 </p>
 
 <div class="graph_embed_div">
@@ -99,7 +99,7 @@ The Stanford Cable TV Analyzer enables you to write queries that count the amoun
 </div>
 
 <p>
-  A common use of multiple filters is limit screen time counts certain channels, news programs, or specific times of day or days of the week.  For example, in the graph below we compare the screen time of Bernie Sanders between 6-10pm (US Eastern time) on CNN, Fox News, and MSNBC.  (Mr. Sanders receives the most screen time during this time period on MSNBC.)
+  A common use of multiple filters is limit screen time computations to certain channels, news programs, or specific times of day or days of the week.  For example, in the graph below we compare the screen time of Bernie Sanders between 6-10pm (US Eastern time) on CNN, Fox News, and MSNBC.  (Mr. Sanders receives the most screen time during this time period on MSNBC.)
 </p>
 
 <div class="graph_embed_div">
@@ -109,7 +109,7 @@ The Stanford Cable TV Analyzer enables you to write queries that count the amoun
 <h3>Transcript Filters</h3>
 
 <p>
-  Queries may also filter video content based on the text contents of video transcripts.  For example, if you were interested in how much certain foreign countries are discussed on the news, you could use <b>text</b> filters to compare counts produced by searching the video transcripts for country names.  For example:
+  Queries may also filter video content based on the text contents of video transcripts.  For example, if you were interested in how much certain foreign countries are discussed on the news, you could use <b>text</b> filters to compare the amount of time country names are mentioned in the transcript.  For example:
 </p>
 
 <div class="graph_embed_div">
@@ -125,11 +125,11 @@ The Stanford Cable TV Analyzer enables you to write queries that count the amoun
 </p>
 
 <p>
-  It is important to notice that although <b>text</b> filters were used, the graph above plots measurements of time.  <b>It is does not plot counts of the number of times a phrase is found in the transcript.</b> All queries run by the Stanford Cable TV Analyzer, regardless of the filters used, count the time spanned by video segments that match the specified filters. When interpreting results of queries that contain <b>text</b> filters, users should be mindful that longer text phrases will likely contribute more time per instance than shorter phrases.
+  It is important to notice that although <b>text</b> filters were used, the graph above plots measurements of time.  <b>It does not count the number of times a phrase is found in the transcript.</b> All queries run by the Stanford Cable TV Analyzer, regardless of the filters used, compute the time spanned by video segments that match the specified filters. When interpreting results of queries that contain <b>text</b> filters, users should be mindful that longer text phrases will likely contribute more time per instance than shorter phrases.
 </p>
 
 <p>
-  Since <b>text</b> filters (like all other filters) are used to select video segments, they can be combined with all other filters in queries.  Combining <b>text</b> and face filters (e.g, <b>name</b> or <b>tag</b>) can yield interesting queries. For example, the following graph counts the time Hillary Clinton is on screen AND the word "email" is spoken. This occurs far more often on Fox News than CNN or MSNBC.
+  Since <b>text</b> filters (like all other filters) are used to select video segments, they can be combined with all other filters in queries.  Combining <b>text</b> and face filters (e.g, <b>name</b> or <b>tag</b>) can yield interesting queries. For example, the following graph computes the time Hillary Clinton is on screen AND the word "email" is spoken. This occurs far more often on Fox News than CNN or MSNBC.
 </p>
 
 <div class="graph_embed_div">
@@ -137,7 +137,7 @@ The Stanford Cable TV Analyzer enables you to write queries that count the amoun
 </div>
 
 <p>
-  Notice that although the graph above plots counts of time where Mrs. Clinton is on screen AND the word "email" is spoken, the word may not have been spoken by Mrs. Clinton. It is possible the speaker is another person on screen or even an off-screen voice. At this time the Stanford Cable TV Analyzer does not provide the ability to directly filter video by who is speaking.
+  Notice that although the graph above plots the amount of time where Mrs. Clinton is on screen AND the word "email" is spoken, the word may not have been spoken by Mrs. Clinton. It is possible the speaker is another person on screen or even an off-screen voice. At this time the Stanford Cable TV Analyzer does not provide the ability to directly filter video by who is speaking.
 </p>
 
 
@@ -148,14 +148,14 @@ The Stanford Cable TV Analyzer enables you to write queries that count the amoun
 </p>
 
 <p>
-  The query system has additional features not discussed in this tutorial, such the ability to normalize query results as fractions of other quantities (instead of directly reporting counts of time).  Please see the <a href="/detailed">advanced queries page</a> for documentation of more advanced query features. Also take a look at the <a href="/data">dataset page</a> to learn about the faces and tags available for queries.
+  The query system has additional features not discussed in this tutorial, such the ability to normalize query results as fractions of other quantities (instead of directly reporting an amount of time).  Please see the <a href="/detailed">advanced queries page</a> for documentation of more advanced query features. Also take a look at the <a href="/data">dataset page</a> to learn about the faces and tags available for queries.
 </p>
 
 <!--
 <h3>More Query Examples</h3>
 
 <p>
-  If no filters are specified, then all videos match the query and the result is a count of all video data in the dataset.
+  If no filters are specified, then all videos match the query and the result is the total time of all video data in the dataset.
 </p>
 
 <div class="graph_embed_div">
