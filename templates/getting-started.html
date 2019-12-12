@@ -23,6 +23,10 @@
   text-align: center;
 }
 
+.example_img {
+   border: 1px solid #d0d0d0;
+   box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.2);
+}
 
 </style>
 
@@ -33,22 +37,24 @@
 <div class="container">
   <h1>Getting Started</h1>
   <p>
-The Stanford Cable TV Analyzer enables you to write queries that compute the amount of time certain people appear on screen or  words are spoken on <a href="/data">cable TV news</a>.  In this tutorial we'll go over the basics of how to use the tool to write basic queries.   
+The Stanford Cable TV Analyzer enables you to write queries that compute the amount of time people appear and words are heard in <a href="/data">cable TV news</a>.  In this tutorial we'll go over the basics of how to use the tool to write simple queries.   
   </p>
 
+<!--
 <p>
   We describe the process of creating queries by directly typing them into the Stanford Cable TV Analyzer's query box.  Some users may prefer using the graphical query builder that is accessible to left of the query box via the 🔍 button.
 </p>
+-->
 
   <hr>
 
   <h3>Computing the Screen Time of Individuals</h3>
 
   <p>
-    Writing a query involves specifying filters that determine what video segments contribute to a screen time estimate.  One of the most important filters is the <b>name</b> filter, which selects video segments where a specific individual, say Hillary Clinton, appears on screen.  The graph below shows the results of a single query that computes the time Hillary Clinton's face was on screen in every month since January 2010. This total includes data from all three channels: CNN, Fox News, and MSNBC. One obvious feature of the graph is the spike in coverage during the 2016 U.S. presidential election.
+    Writing a query involves specifying filters that determine what video segments contribute to a screen time estimate.  One of the most important filters is the <b>name</b> filter, which selects video segments where a specific individual appears on screen.  For example, below we've written a query that computes the amount of time Hillary Clinton's face appeared on screen in every month since January 2010. This total includes data from all three channels: CNN, Fox News, and MSNBC. One obvious feature of the graph is the spike in coverage during the 2016 U.S. presidential election.
   </p>
   <p>
-    The <a href="/data/people">people</a> page provides the full list of names that can be used in a <b>name</b> filter. 
+    The <a href="/data/people">people</a> page provides the full list of names that can be used in a <b>name</b> filter. We encourage you to change the name used in the query to see screen time plots for other individuals.
   </p>
 
 <div class="graph_embed_div">
@@ -58,7 +64,7 @@ The Stanford Cable TV Analyzer enables you to write queries that compute the amo
 <h3>Comparing Screen Times</h3>
 
 <p>
-  Many questions about cable TV news content require direct comparison of screen time estimates.  To add new lines to the graph, use the + button to add more query boxes. The following graph compares the screen time of Hillary Clinton (blue) to that of Bernie Sanders (orange).
+  Many questions about cable TV news content require direct comparison of screen time computations.  To add new lines to the graph, use the + button to add more query boxes. The following graph compares the screen time of Hillary Clinton (blue) to that of Bernie Sanders (orange).
 </p>
 
 <div class="graph_embed_div">
@@ -69,12 +75,8 @@ The Stanford Cable TV Analyzer enables you to write queries that compute the amo
 <h3>Filtering by Face Tags</h3>
 
 <p>
-  In addition to filtering by a person's name, it is possible to filter by other tags associated with faces in the dataset.  For example, each face detected in our dataset is automatically tagged with a prediction of the individual's binary gender. In the graph below, I used the <b>face tag</b> filter compare the total time a man's face is on screen (blue) with that of woman's faces (orange).
+  In addition to filtering by a person's name, it is possible to filter by other tags associated with faces that appear in the dataset.  For example, each face detected in our dataset is automatically tagged with a prediction of the individual's binary gender. In the graph below, I used the <b>tag</b> filter to compare the total time men's faces are on screen (blue) with that of women (orange).
 </p>
-
-  <p>
-    The <a href="/data/tags">tags</a> page contains the full list of tags that can be used in a <b>face tag</b> filter.
-  </p>
 
 <div class="graph_embed_div">
 <iframe class="graph_embed" src="https://esper-tv.stanford.edu/embed?dataVersion=v1&data=%7B%22options%22%3A%7B%22start_date%22%3A%222010-01-01%22%2C%22end_date%22%3A%222019-07-23%22%2C%22aggregate%22%3A%22month%22%7D%2C%22queries%22%3A%5B%7B%22color%22%3A%22%234E79A7%22%2C%22text%22%3A%22tag%3D%5C%22male%5C%22%22%7D%2C%7B%22color%22%3A%22%23F28E2B%22%2C%22text%22%3A%22tag%3D%5C%22female%5C%22%22%7D%5D%7D"></iframe>
@@ -87,6 +89,11 @@ The Stanford Cable TV Analyzer enables you to write queries that compute the amo
 <div class="graph_embed_div">
 <iframe class="graph_embed" src="https://esper-tv.stanford.edu/embed?dataVersion=v1&data=%7B%22options%22%3A%7B%22start_date%22%3A%222010-01-01%22%2C%22end_date%22%3A%222019-07-23%22%2C%22aggregate%22%3A%22month%22%7D%2C%22queries%22%3A%5B%7B%22color%22%3A%22%234E79A7%22%2C%22text%22%3A%22tag%3D%5C%22male%20and%20host%5C%22%22%7D%2C%7B%22color%22%3A%22%23F28E2B%22%2C%22text%22%3A%22tag%3D%5C%22female%20and%20host%5C%22%22%7D%5D%7D"></iframe></div>
 
+  <p>
+    The <a href="/data/tags">tags</a> page contains the full list of tags that can be used in a face <b>tag</b> filter.  You'll see tags like "musician", "politician", "journalist" and we encourage you to play around with the tool plotting the screen time of people associated with different tags.
+  </p>
+   <p> As you write queries it is important to be mindful that these tags are <b>not exhaustive</b>. For example, not every politician that appears on the news is correctly identified in the dataset.  Only in special cases (e.g., gender) can we assign tags to faces whose identity is unknown.  Therefore, a query with the filter "tag=politician" computes the screen time of all faces in the dataset that have been identified as politicians.  The true screen time of people on the news who are politicians is certainly higher.  Details about how Stanford Cable TV News Analyzer attributes tags to on screen faces is provided on our <a href="/methodology">methodology page.</a>
+  </p>
 
 <h3>Composite Queries (AND's and OR's)</h3>
 
@@ -99,7 +106,7 @@ The Stanford Cable TV Analyzer enables you to write queries that compute the amo
 </div>
 
 <p>
-  A common use of multiple filters is limit screen time computations to certain channels, news programs, or specific times of day or days of the week.  For example, in the graph below we compare the screen time of Bernie Sanders between 6-10pm (US Eastern time) on CNN, Fox News, and MSNBC.  (Mr. Sanders receives the most screen time during this time period on MSNBC.)
+  A common use of multiple filters is limit screen time computations to certain channels, news programs, or specific times of day or days of the week.  For example, in the graph below we compare the screen time of Bernie Sanders between 6-10pm (US Eastern time) on CNN, with that of Fox News and MSNBC.  (Mr. Sanders receives the most screen time during this time period on MSNBC.)
 </p>
 
 <div class="graph_embed_div">
@@ -137,18 +144,31 @@ The Stanford Cable TV Analyzer enables you to write queries that compute the amo
 </div>
 
 <p>
-  Notice that although the graph above plots the amount of time where Mrs. Clinton is on screen AND the word "email" is spoken, the word may not have been spoken by Mrs. Clinton. It is possible the speaker is another person on screen or even an off-screen voice. At this time the Stanford Cable TV Analyzer does not provide the ability to directly filter video by who is speaking.
+  Although the graph above computes the amount of time where Mrs. Clinton is on screen AND the word "email" is spoken, the word was not necessarily spoken by Mrs. Clinton. It is possible the speaker was another person on screen or even an off-screen voice. At this time the Stanford Cable TV Analyzer does not provide the ability to directly filter video by who is speaking.
 </p>
 
-
-<h3>You're set! Now write some queries...</h3>
+<h3>Viewing Video Clips</h3>
 
 <p>
-  You've now seen a few basic examples of writing screen time queries.  We now invite you to try your own! We're excited to see what analyzes are possible.
+  In many situations it is useful to view examples of video clips that pass a queries filters.  For example, you might wish to inspect video clips to get of sense of whether automated face identification is robustly recognizing the person specified in the query. Another common task is to view selected clips when debugging a more complex query to ensure the query is selecting the types of videos intended.  When viewing a graph on the main Cable TV News Analyzer site, click on the graph to display a random selection of video clips that matched query's filters at that point in time.  You can further investigate these results by playing the video clips as well as viewing their transcripts.  
+</p>
+<p>
+  A sampling of results from our earlier query <b>name="Hillary Clinton"</b> are given below.  These thumbnails serve as a good reminder that a person can appear on screen in many different ways: as a guest on a show, in B-roll footage, or as a static image used as part of an infographic.
 </p>
 
+<p style="text-align: center;">
+  <img class="example_img" src="{{ url_for('static', filename='img/tutorials/video_thumbs_clinton.jpg') }}" width="900" height="343" />
+</p>
+
+<hr>
+
+<h3>You're set! Now try writing queries of your own...</h3>
+
 <p>
-  The query system has additional features not discussed in this tutorial, such the ability to normalize query results as fractions of other quantities (instead of directly reporting an amount of time).  Please see the <a href="/detailed">advanced queries page</a> for documentation of more advanced query features. Also take a look at the <a href="/data">dataset page</a> to learn about the faces and tags available for queries.
+  You've now seen a few basic examples of writing screen time queries.  We now invite you to try creating more of your own! We're excited to see what analyzes are possible.
+</p>
+
+<p>To learn more about more advanced query features not discussed in this tutorial, please take a look at the <a href="/detailed">advanced queries page</a>. You may also want to browse the <a href="/data">dataset page</a> to learn about what people and tags available for use in queries.
 </p>
 
 <!--
