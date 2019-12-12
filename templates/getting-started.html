@@ -11,6 +11,21 @@
   <script src="/generated/js/values.js" /></script>
   <script src="{{ url_for('static', filename='js/syntax-highlight.js') }}" /></script>
   <script src="{{ url_for('static', filename='js/instructions.js') }}" /></script>
+
+<style>
+.graph_embed {
+  border: 0px;
+  width:  900px;
+  height: 400px;
+}
+
+.graph_embed_div {
+  text-align: center;
+}
+
+
+</style>
+
 {% endblock %}
 
 
@@ -18,279 +33,147 @@
 <div class="container">
   <h1>Getting Started</h1>
   <p>
-    The Stanford Cable TV News Analyzer allows you to write queries that count
-    the screen time of people and transcript phrases in nearly a decade of
-    American cable TV news (nearly 24/7 programming from Fox News, CNN, and
-    MSNBC since January 1, 2010). This page provides a brief introduction using
-    the site to write these queries.
+The Stanford Cable TV Analyzer allows you to write queries that count the amount of time where certain people appear on screen or when certain words are spoken on cable TV news.  In this tutorial we'll go over the basics of how to use the tool to write basic queries against the <a href="/data">dataset</a>.   
   </p>
 
   <hr>
 
-  <h3>Background</h3>
-  <p>
-    24/7 news coverage is a staple of cable TV programming in the United States.
-    Coverage consists of a broad range of topics, ranging from political
-    coverage of the latest election cycle, emerging scandals involving
-    high-profile individuals, social unrest and calls for reform to events
-    unfolding across the globe, the latest victors in sports, and new trends in
-    health and fashion. These programs can influence public opinion and
-    the perceptions of world events or reflect pervasive social biases.
-  </p>
+  <h3>Counting the Screen Time of Individuals</h3>
 
   <p>
-    In an age of big data analytics, <i>how do we ask questions about the
-    content in the news media? How do we ask questions about topics being
-    discuss or the people discussing them when media is measured in days, weeks
-    or months --- more than is feasible for any individual to rewatch?</i> For
-    instance, <i>what is the ratio of men to women show on screen when the topic
-    is harassment, economics, or terrorism?</i>
+    Queries contain a set of filters that specify what segments of video you wish to count.  For example, if you are interested in counting the time a specific individual appears on screen, you can specify a <b>name</b> filter.  The graph below plots the total time of all segments where Hillary Clinton's face is on screen in every month since Jan 2010. (This count includes data from all three channels: CNN, Fox News, and MSNBC). One obvious feature of the graph is the spike in coverage during the 2016 U.S. presidential election.
   </p>
+  <p>
+    The <a href="/data/people">people</a> page contains the full list of names that can be used in a <b>name</b> filter. The <a href="/methodology">methodology</a> page documents the process of detecting and identifying faces in the dataset.
+  </p>
+
+<div class="graph_embed_div">
+  <iframe class="graph_embed" src="https://esper-tv.stanford.edu/embed?dataVersion=v1&data=%7B%22options%22%3A%7B%22start_date%22%3A%222010-01-01%22%2C%22end_date%22%3A%222019-07-23%22%2C%22aggregate%22%3A%22month%22%7D%2C%22queries%22%3A%5B%7B%22color%22%3A%22%234E79A7%22%2C%22text%22%3A%22name%3D%5C%22Hillary%20Clinton%5C%22%22%7D%5D%7D"></iframe>
+</div>
+
+<h3>Comparing Screen Time Counts</h3>
+
+<p>
+  Many questions about cable TV news content require direct comparison of screen time counts.  To add new lines to the graph, use the + button to add more query boxes. The following graph compares the screen time of Hillary Clinton (blue) to that of Bernie Sanders (orange). 
+</p>
+
+<div class="graph_embed_div">
+<iframe class="graph_embed" src="https://esper-tv.stanford.edu/embed?dataVersion=v1&data=%7B%22options%22%3A%7B%22start_date%22%3A%222010-01-01%22%2C%22end_date%22%3A%222019-07-23%22%2C%22aggregate%22%3A%22month%22%7D%2C%22queries%22%3A%5B%7B%22color%22%3A%22%234E79A7%22%2C%22text%22%3A%22name%3D%5C%22Hillary%20Clinton%5C%22%22%7D%2C%7B%22color%22%3A%22%23F28E2B%22%2C%22text%22%3A%22name%3D%5C%22Bernie%20Sanders%5C%22%22%7D%5D%7D"></iframe>
+</div>
+
+
+<h3>Filtering by Face Tags</h3>
+
+<p>
+  In addition to filtering by a person's name, it is possible to filter by other tags associated with faces in the dataset.  For example, each face detected in our dataset is automatically tagged with a prediction of the individual's binary gender. In the graph below, I used the <b>face tag</b> filter compare the total time a man's face is on screen (blue) with that of woman's faces (orange).
+</p>
 
   <p>
-
-    We have used modern AI techniques to automatically annotate nearly a decade
-    of American Cable TV news programming with information such as the location
-    of faces in the frame, the gender of each face, and the associated identity
-    if the person is a "celebrity" or public figure. See the
-    <a href="/methodology">methodology</a> page for a technical explanation of our
-    methods and their limitations. The Stanford Cable TV News Analyzer enables
-    interactive queries on the data set, which we hope will provide new insight
-    into the contents of cable TV news.
-
+    The <a href="/data/tags">tags</a> page contains the full list of tags that can be used in a <b>face tag</b> filter. 
   </p>
 
-  <hr>
+<div class="graph_embed_div">
+<iframe class="graph_embed" src="https://esper-tv.stanford.edu/embed?dataVersion=v1&data=%7B%22options%22%3A%7B%22start_date%22%3A%222010-01-01%22%2C%22end_date%22%3A%222019-07-23%22%2C%22aggregate%22%3A%22month%22%7D%2C%22queries%22%3A%5B%7B%22color%22%3A%22%234E79A7%22%2C%22text%22%3A%22tag%3D%5C%22male%5C%22%22%7D%2C%7B%22color%22%3A%22%23F28E2B%22%2C%22text%22%3A%22tag%3D%5C%22female%5C%22%22%7D%5D%7D"></iframe>
+</div>
 
-  <h3>The basics: Writing screen-time queries</h3>
-  <p>
-    The Stanford Cable TV News Analyzer allows you to write queries that video
-    segments from the dataset and compute the screen time of these segments. At
-    the top of the home page, you should see a search row and controls:
+<p>
+  A query can specify multiple tags that a face must match.  For example, adding the "host" tag to the face tag filter from the prior graph yields this graph that compares the screen time of <b>male show hosts</b> with that of <b>female show hosts</b>.
+</p>
 
-    <a href="/" target="_blank">
-      <img src="{{ url_for('static', filename='img/ui.png') }}" style="width: 100%;"
-           title="This is a screenshot. Click to pop out an editor.">
-    </a>
-  </p>
+<div class="graph_embed_div">
+<iframe class="graph_embed" src="https://esper-tv.stanford.edu/embed?dataVersion=v1&data=%7B%22options%22%3A%7B%22start_date%22%3A%222010-01-01%22%2C%22end_date%22%3A%222019-07-23%22%2C%22aggregate%22%3A%22month%22%7D%2C%22queries%22%3A%5B%7B%22color%22%3A%22%234E79A7%22%2C%22text%22%3A%22tag%3D%5C%22male%20and%20host%5C%22%22%7D%2C%7B%22color%22%3A%22%23F28E2B%22%2C%22text%22%3A%22tag%3D%5C%22female%20and%20host%5C%22%22%7D%5D%7D"></iframe></div>
 
-  <p>
-    Each search query is a set of search filters. If no filters are given,
-    then all of the video in the data is counted. The search box can be edited directly
-    or using the dropdown search editor (click the &#x1F50D; button).
-    Press the "Search the news!" button to show the amount of screen time
-    over time.
-  </p>
 
-  <p>
-    <button type="button" class="btn btn-primary try-it-btn" title="Opens a new page">Try it yourself!</button>
-  </p>
+<h3>Composite Queries (AND's and OR's)</h3>
 
-  <p>
-    For example, if you press search with no query added (the default),
-    a chart similar to the following should appear; this shows the total amount
-    of video in the data set from 2010 onwards, aggregated by month.
-    While the amount of data is mostly constant across time,
-    there are periods of time with more or less data available.
-  </p>
-  <iframe width="100%" height="400" id="allData"></iframe>
+<p>
+  To allow more precise control over what may be counted, queries may contain multiple filters connected by AND's and OR's.  For example, the graph below extends our previous Hillary Clinton vs. Bernie Sanders graph with a third line (red) that plots the amount of time that both Mrs. Clinton AND Mr. Sanders are on screen.   
+</p>
 
-  <p>
-    The previous chart includes all of the data from all three channels
-    (CNN, FOX and MSNBC) in a single line. We can perform a comparison of
-    the number of hours of video by charting each channel separately.
-    To do this, use the + button to add two more rows and to write
-    <code>{{ search_keys.channel }}=CNN</code>,
-    <code>{{ search_keys.channel }}=FOX</code>,
-    and <code>{{ search_keys.channel }}=MSNBC</code>
-    into the search boxes, one per row so that the queries read:
+<div class="graph_embed_div">
+<iframe class="graph_embed" src="https://esper-tv.stanford.edu/embed?dataVersion=v1&data=%7B%22options%22%3A%7B%22start_date%22%3A%222010-01-01%22%2C%22end_date%22%3A%222019-07-23%22%2C%22aggregate%22%3A%22month%22%7D%2C%22queries%22%3A%5B%7B%22color%22%3A%22%234E79A7%22%2C%22text%22%3A%22name%3D%5C%22Hillary%20Clinton%5C%22%22%7D%2C%7B%22color%22%3A%22%23F28E2B%22%2C%22text%22%3A%22name%3D%5C%22Bernie%20Sanders%5C%22%22%7D%2C%7B%22color%22%3A%22%23E15759%22%2C%22text%22%3A%22name%3D%5C%22Hillary%20Clinton%5C%22%20and%20name%3D%5C%22Bernie%20Sanders%5C%22%22%7D%5D%7D"></iframe>
+</div>
 
-    <div class="code-block" id="channelCode"></div>
-  </p>
+<p>
+  A common use of multiple filters is limit screen time counts certain channels, news programs, or specific times of day or days of the week.  For example, in the graph below we compare the screen time of Bernie Sanders between 6-10pm (US Eastern time) on CNN, Fox News, and MSNBC.  (Mr. Sanders receives the most screen time during this time period on MSNBC.)
+</p>
 
-  <p>
-    <button type="button" class="btn btn-primary try-it-btn" title="Opens a new page">Try it yourself!</button>
-  </p>
+<div class="graph_embed_div">
+<iframe class="graph_embed" src="https://esper-tv.stanford.edu/embed?dataVersion=v1&data=%7B%22options%22%3A%7B%22start_date%22%3A%222010-01-01%22%2C%22end_date%22%3A%222019-07-23%22%2C%22aggregate%22%3A%22month%22%7D%2C%22queries%22%3A%5B%7B%22color%22%3A%22%2376B7B2%22%2C%22text%22%3A%22name%3D%5C%22bernie%20sanders%5C%22%20and%20channel%3D%5C%22cnn%5C%22%20and%20hour%3D%5C%2218-22%5C%22%22%7D%2C%7B%22color%22%3A%22%23E15759%22%2C%22text%22%3A%22name%3D%5C%22bernie%20sanders%5C%22%20and%20channel%3D%5C%22fox%5C%22%20and%20hour%3D%5C%2218-22%5C%22%22%7D%2C%7B%22color%22%3A%22%23B07AA1%22%2C%22text%22%3A%22name%3D%5C%22bernie%20sanders%5C%22%20and%20channel%3D%5C%22msnbc%5C%22%20and%20hour%3D%5C%2218-22%5C%22%22%7D%5D%7D"></iframe>
+</div>
 
-  <p>
-    If you set the queries up correctly, hitting the search button will
-    now generate a chart that looks similar to this (hover over the graph for more detail,
-    and click to open the graph full-screen in the analyzer):
-  </p>
-  <iframe width="100%" height="400" id="dataByChannel"></iframe>
-  <p>
-    Filtering on other basic metadata such as the show follows a similar
-    pattern. For a full list of options, read the
-    <a href="/detailed" target="_blank">advanced query documentation</a> page.
-  </p>
+<h3>Transcript Filters</h3>
 
-  <hr>
+<p>
+  Queries may also filter video content based on the text contents of video transcripts.  For example, if you were interested in how much certain foreign countries are discussed on the news, you could use <b>text</b> filters to compare counts produced by searching the video transcripts for country names.  For example:   
+</p>
 
-  <h3>People in the news: Who is on screen?</h3>
-  <p>
-    People find themselves in the news for a variety of reasons. Anchors
-    and journalists present the news; commentators may be invited on to
-    espouse their opinions; or the person may be at the center of a story
-    unfolding. Just as varied as the people and reasons for appearing
-    are possible questions one might ask about these people.
+<div class="graph_embed_div">
+<iframe class="graph_embed" src="https://esper-tv.stanford.edu/embed?dataVersion=v1&data=%7B%22options%22%3A%7B%22start_date%22%3A%222010-01-01%22%2C%22end_date%22%3A%222019-07-23%22%2C%22aggregate%22%3A%22month%22%7D%2C%22queries%22%3A%5B%7B%22color%22%3A%22%23F28E2B%22%2C%22text%22%3A%22text%3D%5C%22France%5C%22%22%7D%2C%7B%22color%22%3A%22%234E79A7%22%2C%22text%22%3A%22text%3D%5C%22United%20Kingdom%5C%22%22%7D%2C%7B%22color%22%3A%22%23E15759%22%2C%22text%22%3A%22text%3D%5C%22China%5C%22%22%7D%2C%7B%22color%22%3A%22%23FF9DA7%22%2C%22text%22%3A%22text%3D%5C%22Russia%5C%22%22%7D%2C%7B%22color%22%3A%22%23BAB0AC%22%2C%22text%22%3A%22text%3D%5C%22North%20Korea%5C%22%22%7D%5D%7D"></iframe>
+</div>
 
-    <i>For instance, what is the gender balance of the people in the news?
-    Do these patterns hold when different topics are discussed,
-    on different shows, or at different times in the day?</i>
-  </p>
+<p>
+<b></b>
+</p>
 
-  <p>
-    To answer these sorts of questions, this tool supports queries about
-    on screen faces, their genders and their identities, for a subset of faces
-    that have been identified.
-    For example, we can compute the total screen time of men and women in the
-    data set. This can be done using the <code>{{ search_keys.face_tag }}</code>
-    filter predicate. In this case, we want to filter on gender, so the filters
-    will be <code>{{ search_keys.face_tag }}="male"</code> and
-    <code>{{ search_keys.face_tag }}"=female"</code> for frames that contain a face
-    with a man and woman, respectively. Both of these queries can also be
-    made by selecting the gender tag in the dropdown search editor.
+<p>
+  The <a href="/detailed">advanced documentation</a> page describes additional features of <b>text</b> filters, such the ability to specify of lists of words in a filter (e.g., topic lexicons) or perform searches that match inflections of a word.
+</p> 
 
-    <div class="code-block" id="menVsWomenCode"></div>
-  </p>
+<p>
+  It is important to notice that although <b>text</b> filters were used, the graph above plots measurements of time.  <b>It is does not plot counts of the number of times a phrase is found in the transcript.</b> All queries run by the Stanford Cable TV Analyzer, regardless of the filters used, count the time spanned by video segments that match the specified filters. When interpreting results of queries that contain <b>text</b> filters, users should be mindful that longer text phrases will likely contribute more time per instance than shorter phrases.
+</p>
 
-  <p>
-    <button type="button" class="btn btn-primary try-it-btn" title="Opens a new page">Try it yourself!</button>
-  </p>
+<p>
+  Since <b>text</b> filters (like all other filters) are used to select video segments, they can be combined with all other filters in queries.  Combining <b>text</b> and face filters (e.g, <b>name</b> or <b>tag</b>) can yield interesting queries. For example, the following graph counts the time Hillary Clinton is on screen AND the word "email" is spoken. This occurs far more often on Fox News than CNN or MSNBC.
+</p>
 
-  <p>
-    If you entered the queries above, you should see a chart similar to the
-    one below. Notice that the screen time of both male
-    and female faces is trending upwards, but also that male screen time is
-    roughly double that of female screen time.
-  </p>
-  <iframe width="100%" height="400" id="menVsWomen"></iframe>
-  <p>
-    We can also make queries about people who have been identified in the videos.
-    For example, if we were to compare the screen time of Bernie Sanders with
-    that of Hillary Clinton. This will also require use of the
-    <code>{{ search_keys.face_name }}</code> filter.
-    However, since we are now interested in frames that contain a person, we use
-    <code>{{ search_keys.face_name }}="Bernie Sanders"</code>
-    and <code>{{ search_keys.face_name }}="Hillary Clinton"</code>, respectively.
+<div class="graph_embed_div">
+<iframe class="graph_embed" src="https://esper-tv.stanford.edu/embed?dataVersion=v1&data=%7B%22options%22%3A%7B%22start_date%22%3A%222010-01-01%22%2C%22end_date%22%3A%222019-07-23%22%2C%22aggregate%22%3A%22month%22%7D%2C%22queries%22%3A%5B%7B%22color%22%3A%22%2376B7B2%22%2C%22text%22%3A%22name%3D%5C%22Hillary%20Clinton%5C%22%20and%20text%3D%5C%22email%5C%22%20and%20channel%3D%5C%22cnn%5C%22%22%7D%2C%7B%22color%22%3A%22%23E15759%22%2C%22text%22%3A%22name%3D%5C%22Hillary%20Clinton%5C%22%20and%20text%3D%5C%22email%5C%22%20and%20channel%3D%5C%22fox%5C%22%22%7D%2C%7B%22color%22%3A%22%23B07AA1%22%2C%22text%22%3A%22name%3D%5C%22Hillary%20Clinton%5C%22%20and%20text%3D%5C%22email%5C%22%20and%20channel%3D%5C%22msnbc%5C%22%22%7D%5D%7D"></iframe>
+</div>
 
-    <div class="code-block" id="clintonVsSandersCode"></div>
-  </p>
+<p>
+  Notice that although the graph above plots counts of time where Mrs. Clinton is on screen AND the word "email" is spoken, the word may not have been spoken by Mrs. Clinton. It is possible the speaker is another person on screen or even an off-screen voice. At this time the Stanford Cable TV Analyzer does not provide the ability to directly filter video by who is speaking.
+</p>
 
-  <p>
-    <button type="button" class="btn btn-primary try-it-btn" title="Opens a new page">Try it yourself!</button>
-  </p>
 
-  <p>
-    If you entered the queries above, you should see a chart similar to the
-    one below.
-  </p>
-  <iframe width="100%" height="400" id="clintonVsSanders"></iframe>
+<h3>The Query Builder</h3>
 
-  <p>
-    To see the list of people who are searchable, click
-    <a href="/data/people" target="_blank">here</a>
-    or use the dropdown search editor.
-  </p>
+<p>
+  In this tutorial we described the process of creating queries by directly typing them into the Stanford Cable TV Analyzer's query box.  Some users may prefer using the graphical query builder that is accessible to left of the query box via the 🔍 button.
+</p>
 
-  <p>
-    It is important to note that the results include instances where
-    a face is visible on screen for any reason. We currently do not
-    differentiate whether the face is the subject or background, or whether
-    the face is a live appearance, a video, or still image.
-  </p>
+<h3>You're set! Now write some queries...</h3>
 
-  <hr>
+<p>
+  You've now seen a few basic examples of writing screen time queries.  We now invite you to try your own! We're excited to see what analyzes are possible.
+</p>
 
-  <h3>Searching for topics: Using the transcripts</h3>
-  <p>
-    Words and phrases in the transcripts can be indicative of the topic being
-    discussed. Likewise, careful choice of words and phrases can also reflect
-    biases in presentation and content.
-  </p>
+<p>
+  The query system has additional features not discussed in this tutorial, such the ability to normalize query results as fractions of other quantities (instead of directly reporting counts of time).  Please see the <a href="/detailed">advanced queries page</a> for documentation of more advanced query features. Also take a look at the <a href="/data">dataset page</a> to learn about the faces and tags available for queries. 
+</p>
 
-  <p>
-    This tool can search the transcripts for the intervals where
-    words are being said. For instance,
-    <code>{{ search_keys.text }}="UNITED NATIONS"</code> finds all times when
-    the phrase <code>"UNITED NATIONS"</code> appears in the transcripts.
+<!--
+<h3>More Query Examples</h3>
 
-    <div class="code-block" id="unitedNationsCode"></div>
-  </p>
+<p>
+  If no filters are specified, then all videos match the query and the result is a count of all video data in the dataset. 
+</p>
 
-  <p>
-    <button type="button" class="btn btn-primary try-it-btn" title="Opens a new page">Try it yourself!</button>
-  </p>
+<div class="graph_embed_div">
+<iframe class="graph_embed" src="https://esper-tv.stanford.edu/embed?dataVersion=v1&data=%7B%22options%22%3A%7B%22start_date%22%3A%222010-01-01%22%2C%22end_date%22%3A%222019-07-23%22%2C%22aggregate%22%3A%22month%22%7D%2C%22queries%22%3A%5B%7B%22color%22%3A%22%234E79A7%22%2C%22text%22%3A%22%22%7D%5D%7D"></iframe>
+</div>
 
-  <p>
-    If you entered the query above, you should see a chart similar to the
-    following:
-  </p>
+<p>
+  By only using a channel filter, we can compare the total amount of video in the dataset coming from each channel.
+</p>
 
-  <iframe width="100%" height="400" id="unitedNations"></iframe>
+<div class="graph_embed_div">
+<iframe class="graph_embed" src="https://esper-tv.stanford.edu/embed?dataVersion=v1&data=%7B%22options%22%3A%7B%22start_date%22%3A%222010-01-01%22%2C%22end_date%22%3A%222019-07-23%22%2C%22aggregate%22%3A%22month%22%7D%2C%22queries%22%3A%5B%7B%22color%22%3A%22%2376B7B2%22%2C%22text%22%3A%22channel%3D%5C%22cnn%5C%22%22%7D%2C%7B%22color%22%3A%22%23E15759%22%2C%22text%22%3A%22channel%3D%5C%22fox%5C%22%22%7D%2C%7B%22color%22%3A%22%23B07AA1%22%2C%22text%22%3A%22channel%3D%5C%22msnbc%5C%22%22%7D%5D%7D"></iframe>
+</div>
+-->
 
-  <p>
-    Notice that, by default, the tool finds only the exact moments when words
-    are said. If for instance, we are interested in a window of 30 seconds
-    around all times when the <code>"UNITED NATIONS"</code> appears, then
-    we need the following.
-
-    <div class="code-block" id="unitedNationsWindowCode"></div>
-  </p>
-
-  <p>
-    <button type="button" class="btn btn-primary try-it-btn" title="Opens a new page">Try it yourself!</button>
-  </p>
-
-  <p>
-    The chart has the same pattern, but has been scaled. When multiple
-    text matches are found in a screen time window, then the screen time is
-    counted only once. This is useful when specifying more complex queries
-    across multiple terms.
-    <iframe width="100%" height="400" id="unitedNationsWindow"></iframe>
-  </p>
-
-  <p>
-    Multiple phrases can be specified using "|" as a separator. For
-    example, <code>{{ search_keys.text }}="UNITED NATIONS | UN | U.N."</code>.
-    This can be useful for defining a topic query.
-  </p>
-
-  <hr>
-
-  <h3>Putting it all together</h3>
-  <p>
-    So far, we have seen a number of simple queries. However, more complex
-    queries can be expressed with a combination of filters. A query that counts
-    the screen time of men, can be extended to count the screen time of
-    men on a single channel:
-
-    <div class="code-block" id="menAndCNNCode"></div>
-
-    Likewise, we can combine a query on identities with text. For example,
-    to find the screen time of Bernie Sanders when the phrase
-    <code>"WALL STREET"</code> appears in the transcript, we can
-    write the following query.
-
-    <div class="code-block" id="sandersAndWallStreetCode"></div>
-
-    A further refinement of the query is to find when Bernie Sanders is on screen
-    within 30 seconds of <code>"WALL STREET"</code> being said.
-
-    <div class="code-block" id="sandersAndWallStreetWindowCode"></div>
-
-    Similarly, the tool can compute screen time where two people
-    (e.g., Bernie Sanders and Hillary Clinton) are shown on screen together.
-
-    <div class="code-block" id="clintonAndSandersCode"></div>
-
-    Please read the
-    <a href="/detailed" target="_blank">advanced query documentation</a> page
-    to understand the query syntax, the available query options, and advanced
-    features such as query normalization. Many of these queries can also be
-    constructed using the dropdown search editor.
-  </p>
-
+<!--
   <script type="text/javascript">
     initialize();
     setIframeSource('#allData', ['']);
@@ -340,5 +223,6 @@
       '{{ search_keys.face_name }}="bernie sanders" AND {{ search_keys.face_name }}="hillary clinton"'
     ]);
   </script>
+-->
 </div>
 {% endblock %}
