@@ -804,9 +804,9 @@ function initialize() {
     }
   }
 
-  if (!CLIENT_IS_CHROME) {
-    addWarning('You are viewing this page from a web browser other than Google Chrome. Video playback when clicking the chart may not work.');
-  }
+  // if (!CLIENT_IS_CHROME) {
+  //   addWarning('You are viewing this page from a web browser other than Google Chrome. Video playback when clicking the chart may not work.');
+  // }
 
   var loaded = false;
   if (params.get('data')) {
@@ -833,7 +833,7 @@ function initialize() {
       search();
     } catch (e) {};
   }
-  
+
   $(".chosen-select").chosen({width: 'auto'});
   $('#searchTable .add-row-btn').click(() => {addRow();});
   $('#searchButton').click(search);
