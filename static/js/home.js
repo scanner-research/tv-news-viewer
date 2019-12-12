@@ -833,9 +833,7 @@ function initialize() {
       search();
     } catch (e) {};
   }
-
-  // setInterval(() => {Object.values(CODE_EDITORS).forEach(e => e.refresh())}, 250);
-
+  
   $(".chosen-select").chosen({width: 'auto'});
   $('#searchTable .add-row-btn').click(() => {addRow();});
   $('#searchButton').click(search);
