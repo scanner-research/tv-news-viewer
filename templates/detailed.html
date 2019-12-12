@@ -20,14 +20,14 @@
   <h1>Advanced Query Documentation</h1>
   <p>
     This page documents the full query language supported by the the Stanford Cable TV News Analyzer.
-    Prior to reading this documentation, we recommend that users first read the <a href="/getting-started">getting started</a> guide.
+    Prior to reading this documentation, we recommend that that you read the <a href="/getting-started">getting started</a> tutorial.
   </p>
 
   <hr>
 
-  <h3>How do I write queries?</h3>
-  <p>All queries compute the screen time of video segments in the dataset that match the query predicate. Screen time queries are broken in to several parts. A basic
-    query consists of filters separated by "AND"s.
+  <h2>How do I write queries?</h2>
+  <p>
+    All queries compute the total time of video segments in the dataset that match the query's filters. Screen time queries are broken in to several parts. A basicquery consists of filters separated by "AND"s.
     <div class="code-block" id="andSyntax"></div>
     For example, the following query computes the screen time of Hillary Clinton on CNN:
     <div class="code-block" id="andExample"></div>
@@ -40,20 +40,15 @@
     complex queries. If no parentheses are specified, AND precedes OR.
     <div class="code-block" id="parenSyntax"></div>
     Putting the examples above together, the following query computes the screen
-    time that Hillary Clinton on CNN or MSNBC:
+    time of Hillary Clinton on CNN or MSNBC:
     <div class="code-block" id="parenExample"></div>
   </p>
 
   <hr>
 
-  <h3>What types of filters does the tool support?</h3>
+  <h2>What types of filters are supported in queries?</h2>
+  <h3>Filters on Entire Videos</h3>
   <table class="table table-striped table-bordered table-sm">
-    <tbody>
-      <tr>
-        <th colspan="3">Supported filter options and their usage</th>
-      </tr>
-    </tbody>
-
     <tbody>
       <tr>
         <td rowspan="4">{{ search_keys.channel }}</td>
@@ -102,8 +97,8 @@
       <tr>
         <td rowspan="4">{{ search_keys.hour }}</td>
         <td>description</td>
-        <td>ranges (inclusive) of hours in 24h format, in US eastern time. (UTC-5:00 in standard time and UTC-4:00 during daylight saving time).
-</td>
+        <td>Range (inclusive) of hours in 24h format, in US eastern time. (UTC-5:00 in standard time and UTC-4:00 during daylight saving time).      
+        </td>
       </tr>
       <tr>
         <td>values</td>
@@ -152,7 +147,96 @@
         </td>
       </tr>
     </tbody>
+    </table>
+    <h3>Filters on Detected Faces</h3>
+    <table class="table table-striped table-bordered table-sm">
+    <tbody>
+      <tr>
+        <td rowspan="4">
+          {{ search_keys.face_name }}<br>
+        </td>
+        <td>description</td>
+        <td>
+          face of the person with the specified name is on screen
+        </td>
+      </tr>
+      <tr>
+        <td>values</td>
+        <td>
+          <i>name</i> <a href="/data/people" target="_blank">(list of people)</a>
+        </td>
+      </tr>
+      <tr>
+        <td>default</td>
+        <td>n/a</td>
+      </tr>
+      <tr>
+        <td>example</td>
+        <td>
+          <code>
+            {{ search_keys.face_name }}="Barack Obama"
+          </code>
+        </td>
+      </tr>
+    </tbody>
 
+    <tbody>
+      <tr>
+        <td rowspan="4">
+          {{ search_keys.face_tag }}<br>
+        </td>
+        <td>description</td>
+        <td>
+          face with the tag(s) is on screen.
+          Multiple tags can be specified with commas.
+        </td>
+      </tr>
+      <tr>
+        <td>values</td>
+        <td>
+          (fe)male, (non)host,
+          <i>tag on person</i> <a href="/data/tags" target="_blank">(list of tags)</a>
+        </td>
+      </tr>
+      <tr>
+        <td>default</td>
+        <td>n/a</td>
+      </tr>
+      <tr>
+        <td>example</td>
+        <td>
+          <code>
+            {{ search_keys.face_tag }}="male" <br>
+            {{ search_keys.face_tag }}="male,host" <br>
+            {{ search_keys.face_tag }}="male AND host" <br>
+            {{ search_keys.face_tag }}="journalist"
+          </code>
+        </td>
+      </tr>
+    </tbody>
+
+    <tbody>
+      <tr>
+        <td rowspan="4">{{ search_keys.face_count }}</td>
+        <td>description</td>
+        <td>number of faces on screeen.</td>
+      </tr>
+      <tr>
+        <td>values</td>
+        <td>1 or more</td>
+      </tr>
+      <tr>
+        <td>default</td>
+        <td>n/a</td>
+      </tr>
+      <tr>
+        <td>example</td>
+        <td><code>{{ search_keys.face_count }}=2</code></td>
+      </tr>
+    </tbody>
+    </table>
+    <h3>Filters on Transcripts</h3>
+      <table class="table table-striped table-bordered table-sm">
     <tbody>
       <tr>
         <td rowspan="4">{{ search_keys.text }}</td>
@@ -200,90 +284,6 @@
       </tr>
     </tbody>
 
-    <tbody>
-      <tr>
-        <td rowspan="4">
-          {{ search_keys.face_name }}<br>
-        </td>
-        <td>description</td>
-        <td>
-          constrain results to when the person specified is on screen.
-        </td>
-      </tr>
-      <tr>
-        <td>values</td>
-        <td>
-          <i>name</i> <a href="/data/people" target="_blank">(list of people)</a>
-        </td>
-      </tr>
-      <tr>
-        <td>default</td>
-        <td>n/a</td>
-      </tr>
-      <tr>
-        <td>example</td>
-        <td>
-          <code>
-            {{ search_keys.face_name }}="Barack Obama"
-          </code>
-        </td>
-      </tr>
-    </tbody>
-
-    <tbody>
-      <tr>
-        <td rowspan="4">
-          {{ search_keys.face_tag }}<br>
-        </td>
-        <td>description</td>
-        <td>
-          constrain results to when a face with the tag(s) is on screen.
-          Multiple tags can be specified with commas.
-        </td>
-      </tr>
-      <tr>
-        <td>values</td>
-        <td>
-          (fe)male, (non)host,
-          <i>tag on person</i> <a href="/data/tags" target="_blank">(list of tags)</a>
-        </td>
-      </tr>
-      <tr>
-        <td>default</td>
-        <td>n/a</td>
-      </tr>
-      <tr>
-        <td>example</td>
-        <td>
-          <code>
-            {{ search_keys.face_tag }}="male" <br>
-            {{ search_keys.face_tag }}="male,host" <br>
-            {{ search_keys.face_tag }}="male AND host" <br>
-            {{ search_keys.face_tag }}="journalist"
-          </code>
-        </td>
-      </tr>
-    </tbody>
-
-    <tbody>
-      <tr>
-        <td rowspan="4">{{ search_keys.face_count }}</td>
-        <td>description</td>
-        <td>number of faces on screeen.</td>
-      </tr>
-      <tr>
-        <td>values</td>
-        <td>1 or more</td>
-      </tr>
-      <tr>
-        <td>default</td>
-        <td>n/a</td>
-      </tr>
-      <tr>
-        <td>example</td>
-        <td><code>{{ search_keys.face_count }}=2</code></td>
-      </tr>
-    </tbody>
   </table>
 
   <hr>
@@ -294,7 +294,7 @@
     Instead of computing screen time estimates in absolute time units (e.g., in
     minutes or hours), it can be useful to present query results as a proportion
     of the screen time of another query.  The query language supports
-    normalization of one screen time count by another using NORMALIZE:
+    normalization of one query's computed time by another using NORMALIZE:
 
     <div class="code-block" id="normSyntax"></div>
 
@@ -310,17 +310,13 @@
   </p>
 
   <hr>
-  <h3>Can I add and subtract queries?</h3>
+  <h3>Can I add and subtract query results?</h3>
   <p>
-
-    We support addition and subtraction in a limited manner, between two
-    queries.
-
-    Subtraction can be expressed as:
+    The query systems supports addition and subtraction of the times computed by two queries. Subtraction can be expressed as:
 
     <div class="code-block" id="subSyntax"></div>
 
-    For example, the follow query plots how much more screen time Hillary
+    For example, the following query plots how much more screen time Hillary
     Clinton received than Bernie Sanders:
 
     <div class="code-block" id="subExampleCode"></div>
@@ -330,8 +326,7 @@
 
     <div class="code-block" id="addSyntax"></div>
 
-    This is discouraged however since addition can lead to double couting.
-    To combine multiple queries without double counting, use the "OR" keyword.
+    Users should be mindful of the differs between "OR'ing" two query filters and adding the times computed using two queries.  For example, <b>name="Bernie Sanders" OR name="Bernie Sanders"</b> selects the same video segments, and therefore results in the same screen time computation as <b>name="Bernie Sanders"</b>.  However, <b>name="Bernie Sanders" + name="Bernie Sanders"</b> yields a plot showing double the value of Mr. Sanders' computed screen time.
   </p>
 
   <script type="text/javascript">
