@@ -36,15 +36,19 @@
 The Stanford Cable TV Analyzer enables you to write queries that count the amount of time where certain people appear on screen or when certain words are spoken on <a href="/data">cable TV news</a>.  In this tutorial we'll go over the basics of how to use the tool to write basic queries.   
   </p>
 
+<p>
+  We describe the process of creating queries by directly typing them into the Stanford Cable TV Analyzer's query box.  Some users may prefer using the graphical query builder that is accessible to left of the query box via the 🔍 button.
+</p>
+
   <hr>
 
   <h3>Counting the Screen Time of Individuals</h3>
 
   <p>
-    Queries contain a set of filters that specify what segments of video you wish to count.  For example, if you are interested in counting the time a specific individual appears on screen, you can specify a <b>name</b> filter.  The graph below plots the total time of all segments where Hillary Clinton's face is on screen in every month since Jan 2010. (This count includes data from all three channels: CNN, Fox News, and MSNBC). One obvious feature of the graph is the spike in coverage during the 2016 U.S. presidential election.
+    Writing a query involves specifying filters that determine what video segments contribute to a screen time count.  One of the most important filters is the <b>name</b> filter, which selects video segments where a specific individual, say Hillary Clinton, appears on screen.  The graph below shows the results of a single query that counts the time Hillary Clinton's face was on screen in every month since January 2010. This count includes data from all three channels: CNN, Fox News, and MSNBC. One obvious feature of the graph is the spike in coverage during the 2016 U.S. presidential election.
   </p>
   <p>
-    The <a href="/data/people">people</a> page contains the full list of names that can be used in a <b>name</b> filter. The <a href="/methodology">methodology</a> page documents the process of detecting and identifying faces in the dataset.
+    The <a href="/data/people">people</a> page provides the full list of names that can be used in a <b>name</b> filter. 
   </p>
 
 <div class="graph_embed_div">
@@ -136,12 +140,6 @@ The Stanford Cable TV Analyzer enables you to write queries that count the amoun
   Notice that although the graph above plots counts of time where Mrs. Clinton is on screen AND the word "email" is spoken, the word may not have been spoken by Mrs. Clinton. It is possible the speaker is another person on screen or even an off-screen voice. At this time the Stanford Cable TV Analyzer does not provide the ability to directly filter video by who is speaking.
 </p>
 
-
-<h3>The Query Builder</h3>
-
-<p>
-  In this tutorial we described the process of creating queries by directly typing them into the Stanford Cable TV Analyzer's query box.  Some users may prefer using the graphical query builder that is accessible to left of the query box via the 🔍 button.
-</p>
 
 <h3>You're set! Now write some queries...</h3>
 
