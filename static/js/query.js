@@ -13,6 +13,9 @@ Query
   = a:SingleQuery Blank "${RESERVED_KEYWORDS.normalize}"i Blank b:SingleQuery {
     return {main: a, normalize: b, has_normalize: true};
   }
+  / a:SingleQuery Blank "${RESERVED_KEYWORDS.add}"i Blank b:SingleQuery {
+    return {main: a, add: b, has_add: true};
+  }
   / a:SingleQuery Blank "${RESERVED_KEYWORDS.subtract}"i Blank b:SingleQuery {
     return {main: a, subtract: b, has_subtract: true};
   }
@@ -77,7 +80,7 @@ PrintableNoDelim
   = a:[^ \t)]+ { return a.join(''); }
 
 ReservedWords
-  = "${RESERVED_KEYWORDS.normalize}"i / "${RESERVED_KEYWORDS.subtract}"i / "${RESERVED_KEYWORDS.and}"i / "${RESERVED_KEYWORDS.or}"i
+  = "${RESERVED_KEYWORDS.normalize}"i / "${RESERVED_KEYWORDS.add}"i / "${RESERVED_KEYWORDS.subtract}"i / "${RESERVED_KEYWORDS.and}"i / "${RESERVED_KEYWORDS.or}"i
 
 Blank
   = [ \t]*
@@ -275,6 +278,8 @@ class SearchableQuery {
     this.query = s;
     this.has_norm = false;
     this.norm_query = null;
+    this.has_add = false;
+    this.add_query = null;
     this.has_sub = false;
     this.sub_query = null;
     this.main_query = null;
@@ -290,6 +295,10 @@ class SearchableQuery {
       }
     } else {
       p = QUERY_PARSER.parse(s);
+    }
+    if (p.has_add) {
+      this.has_add = true;
+      this.add_query = validateTree(p.add, no_err);
     }
     if (p.has_normalize) {
       this.has_norm = true;
@@ -326,6 +335,16 @@ class SearchableQuery {
       }).then(resp => result.main = resp)
     ];
 
+    var to_add = null;
+    if (this.has_add) {
+      promises.push(
+        $.ajax({
+          url: '/search', type: 'get', data: getParams(this.add_query, true),
+          error: onError
+        }).then(resp => to_add = resp)
+      );
+    }
+
     if (this.has_norm) {
       promises.push(
         $.ajax({
@@ -347,7 +366,18 @@ class SearchableQuery {
     let query_str = this.query;
     let query_alias = this.alias;
     return Promise.all(promises).then(
-      () => onSuccess(new SearchResult(query_str, query_alias, result))
+      () => {
+        if (to_add) {
+          Object.entries(to_add).forEach(([t, v]) => {
+            if (result.main.hasOwnProperty(t)) {
+              result.main[t] = result.main[t].concat(v);
+            } else {
+              result.main[t] = v;
+            }
+          });
+        }
+        return onSuccess(new SearchResult(query_str, query_alias, result));
+      }
     ).catch(function() {
       Console.log('Uh oh. Something went wrong.');
     });
@@ -357,7 +387,11 @@ class SearchableQuery {
     let args = {};
     args[SEARCH_PARAM.video_ids] = JSON.stringify(video_ids);
     if (this.main_query) {
-      args.query = JSON.stringify(this.main_query);
+      var query_tree = this.main_query;
+      if (this.add_query) {
+        query_tree = ['or', [query_tree, this.add_query]];
+      }
+      args.query = JSON.stringify(query_tree);
     }
     return $.ajax({
       url: '/search-videos', type: 'get', data: getSortedQueryString(args)

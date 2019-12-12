@@ -26,6 +26,7 @@ const RESERVED_KEYWORDS = {
   and: 'AND',
   or: 'OR',
   normalize: 'NORMALIZE',
+  add: 'ADD',
   subtract: 'SUBTRACT'
 };
 

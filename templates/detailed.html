@@ -290,15 +290,21 @@
 
   <h3>Can I present queries as normalized quantities?</h3>
   <p>
-    Instead of computing screen time estimates in absolute time units (e.g., in minutes or hours), it can be useful to present query results as a proportion of the screen time of another query.  The query language supports normalization of one screen time count by another using NORMALIZE:
+
+    Instead of computing screen time estimates in absolute time units (e.g., in
+    minutes or hours), it can be useful to present query results as a proportion
+    of the screen time of another query.  The query language supports
+    normalization of one screen time count by another using NORMALIZE:
 
     <div class="code-block" id="normSyntax"></div>
 
-    For example, the following query computes the fraction of the overall dataset that is from CNN:
+    For example, the following query computes the fraction of the overall
+    dataset that is from CNN:
 
     <div class="code-block" id="normExampleCode"></div>
 
-  The following query computes the fraction of time on CNN that a man's face is on screen:
+    The following query computes the fraction of time on CNN that a man's face
+    is on screen:
 
     <iframe width="100%" height="400" id="normExample"></iframe>
   </p>
@@ -306,13 +312,26 @@
   <hr>
   <h3>Can I add and subtract queries?</h3>
   <p>
-    Addition is not supported. Subtraction can be expressed as:
+
+    We support addition and subtraction in a limited manner, between two
+    queries.
+
+    Subtraction can be expressed as:
 
     <div class="code-block" id="subSyntax"></div>
 
-    For example, the follow query plots how much more screen time Hillary Clinton received than Bernie Sanders:
+    For example, the follow query plots how much more screen time Hillary
+    Clinton received than Bernie Sanders:
+
     <div class="code-block" id="subExampleCode"></div>
     <iframe width="100%" height="400" id="subExample"></iframe>
+
+    Addition can be expressed as:
+
+    <div class="code-block" id="addSyntax"></div>
+
+    This is discouraged however since addition can lead to double couting.
+    To combine multiple queries without double counting, use the "OR" keyword.
   </p>
 
   <script type="text/javascript">
@@ -339,6 +358,8 @@
     ];
     setIframeSource('#subExample', subtract_queries);
     setCodeArea('#subExampleCode', subtract_queries);
+
+    setCodeArea('#addSyntax', ['query1 ADD query2']);
   </script>
 </div>
 {% endblock %}

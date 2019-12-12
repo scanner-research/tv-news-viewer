@@ -613,17 +613,13 @@ function getDownloadUrl(search_results) {
       Object.keys(result.subtract).forEach(x => times.add(x));
     }
     var query_text = $.trim(result.query);
-    if (!result.normalize && !result.subtract &&
-        query_text.endsWith('WHERE')) {
-      query_text += ' (i.e. all the videos)';
-    }
     let unit = result.normalize ? 'ratio' : 'seconds';
     return Array.from(times).map(t => {
       var value = _.get(result.main, t, []).reduce((acc, x) => acc + x[1], 0);
       if (result.normalize) {
         value /=  _.get(result.normalize, t, 0);
       } else if (result.subtract) {
-        value /=  _.get(result.subtract, t, 0);
+        value -=  _.get(result.subtract, t, 0);
       }
       return [query_text, t, value.toFixed(3).replace(/\.0+$/, ''), unit];
     });

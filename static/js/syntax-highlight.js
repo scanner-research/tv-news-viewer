@@ -536,8 +536,9 @@ function addCodeHintHelper(name) {
         // Propose a new conjunction
         let padding = match[1] ? '' : ' ';
         let keywords = ['AND', 'OR'];
-        if (!line.match(/NORMALIZE|SUBTRACT/i)) {
+        if (!line.match(/NORMALIZE|SUBTRACT|ADD/i)) {
           keywords.push('NORMALIZE');
+          keywords.push('ADD');
           keywords.push('SUBTRACT');
         }
         return {
