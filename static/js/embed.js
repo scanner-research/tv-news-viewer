@@ -3,7 +3,7 @@ const CHART_MIN_WIDTH = 300;
 let params = (new URL(document.location)).searchParams;
 let hide_legend = params.get('hideLegend') == 1;
 let hide_tooltip = params.get('hideTooltip') == 1;
-let hide_mean = params.get('hideMean') == 1;
+let hide_mean = params.get('showMean') != 1;
 let data_str = params.get('data');
 let data = JSON.parse(data_str);
 

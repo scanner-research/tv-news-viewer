@@ -641,7 +641,7 @@ function displaySearchResults(
     width: $("#chartArea").width(), height: chartHeight
   }).load('#chart', {
     video_div: '#vgridArea', show_tooltip: !minimalMode,
-    show_mean: true, vega_actions: minimalMode
+    show_mean: false, vega_actions: minimalMode
   });
 
   if (search_results.length == lines.length) {
@@ -808,17 +808,21 @@ function initialize() {
     addWarning('You are viewing this page from a web browser other than Google Chrome. Video playback when clicking the chart may not work.');
   }
 
+  var loaded = false;
   if (params.get('data')) {
-    let data = JSON.parse(decodeURIComponent(params.get('data')));
     try {
+      let data = JSON.parse(decodeURIComponent(params.get('data')));
       initChartOptions(data.options);
       data.queries.forEach(query => addRow(query));
       search();
+      loaded = true;
     } catch (e) {
-      alert('Invalid data in url. Unable to load.');
+      alert('Invalid data in url. Please make sure you copied it correctly. Loading defaults instead.');
       console.log('Unable to load:', e);
     }
-  } else {
+  }
+
+  if (!loaded) {
     initChartOptions();
     if (params.get('blank') != 1 && DEFAULT_QUERIES.every(isValidQuery)) {
       DEFAULT_QUERIES.forEach(x => addRow({text: x}));
