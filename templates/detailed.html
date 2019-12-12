@@ -25,7 +25,7 @@
 
   <hr>
 
-  <h2>How do I write queries?</h2>
+  <h2>Basic Query Syntax</h2>
   <p>
     All queries compute the total time of video segments in the dataset that match the query's filters. Screen time queries are broken in to several parts. A basicquery consists of filters separated by "AND"s.
     <div class="code-block" id="andSyntax"></div>
@@ -46,8 +46,8 @@
 
   <hr>
 
-  <h2>What types of filters are supported in queries?</h2>
-  <h3>Filters on Entire Videos</h3>
+  <h2>Supported Query Filters</h2>
+  <h4>Filters on Entire Videos</h4>
   <table class="table table-striped table-bordered table-sm">
     <tbody>
       <tr>
@@ -148,7 +148,7 @@
       </tr>
     </tbody>
     </table>
-    <h3>Filters on Detected Faces</h3>
+    <h4>Filters on Detected Faces</h4>
     <table class="table table-striped table-bordered table-sm">
     <tbody>
       <tr>
@@ -163,7 +163,8 @@
       <tr>
         <td>values</td>
         <td>
-          <i>name</i> <a href="/data/people" target="_blank">(list of people)</a>
+          <i>name</i><br />
+          (See the <a href="/data/people" target="_blank">people page</a> for a complete list of people.)
         </td>
       </tr>
       <tr>
@@ -195,7 +196,8 @@
         <td>values</td>
         <td>
           (fe)male, (non)host,
-          <i>tag on person</i> <a href="/data/tags" target="_blank">(list of tags)</a>
+          <i>tag on person</i><br />
+          (See the <a href="/data/tags" target="_blank">tags page</a> for a complete list of tags.)
         </td>
       </tr>
       <tr>
@@ -235,7 +237,7 @@
       </tr>
     </tbody>
     </table>
-    <h3>Filters on Transcripts</h3>
+    <h4>Filters on Transcripts</h4>
       <table class="table table-striped table-bordered table-sm">
     <tbody>
       <tr>
@@ -245,8 +247,8 @@
       </tr>
       <tr>
         <td>values</td>
-        <td>keywords or phrases. Use <code>|</code> for "or".
-            See <a href='/data/transcripts'>here for more details.
+        <td>keywords or phrases. Use <code>|</code> for "or"<br />
+            (See <a href="#text_filter_syntax">Text Filter sSyntax</a> for more details of valid text patterns.)
         </td>
       </tr>
       <tr>
@@ -283,12 +285,60 @@
         <td><code>{{ search_keys.text_window }}={{ default_text_window }}</code></td>
       </tr>
     </tbody>
-
   </table>
+
+<hr>
+
+  <h3><a id="text_filter_syntax"></a>Text Filter Syntax</h3>
+
+ <h4>
+    Listing words and phrases (word A or word B)
+  </h4>
+  <p>
+    Sometimes a topic can be defined with multiple related or synonymous
+    words/phrases. For example, the "European Union" can be also be referred to
+    as the EU or E.U. in the transcripts. When this is the case, use the "|"
+    character to delimit multiple words and phrases. For example,
+    <code>{{ search_keys.text}}="European Union | EU | E.U."</code>
+    will search for video segments where any of these three n-grams appear in the transcript.
+    This can be repeated for an arbitrary
+    number of words and phrases.
+  </p>
+
+  <h4>
+    Inflections of words
+  </h4>
+  <p>
+    Words can be used in many inflected forms. The simplest case is
+    when words are singular or plural. To search for all inflected forms of
+    a word without specifying them manually, surround the word with
+    <code>[...]</code> brackets. For example,
+    <code>{{ search_keys.text}}="[truck]"</code> will find instances of
+    "truck", "trucks", and "trucking". If multiple words are surrounded by
+    <code>[...]</code>, then inflections will be found for any of the words in the brackets.
+  </p>
+
+  <h4>
+    Time windowing around mentions
+  </h4>
+  <p>
+    By default, <code>{{ search_keys.text}}</code> will precisely find
+    the intervals of time during which a word or phrase is spoken. This means that
+    each mention will likely contribute only a small fraction of a second of screen time to a query result. 
+    Sometimes it is useful for a transcript query to match a wider region of time around the utterance
+    of a word, for example if an query seeks examples where a person is on-screen within a specific amount of time
+    of a word being stated.  The 
+    <code>{{ search_keys.text_window }}</code> parameter defines how much a time of time is dilated around a
+    transcript match. (By default, its value is 0.) 
+    For example,
+    <code>{{ search_keys.text }}="immigration" AND {{ search_keys.text_window }}=30</code>
+    will find video intervals starting and ending 30 seconds before and after
+    each mention of the word immigration.
+  </p>
 
   <hr>
 
-  <h3>Can I present queries as normalized quantities?</h3>
+  <h3>Normalizing Query Results</h3>
   <p>
 
     Instead of computing screen time estimates in absolute time units (e.g., in
@@ -310,7 +360,7 @@
   </p>
 
   <hr>
-  <h3>Can I add and subtract query results?</h3>
+  <h3>Adding and Subtracting Query Results</h3>
   <p>
     The query systems supports addition and subtraction of the times computed by two queries. Subtraction can be expressed as:
 
