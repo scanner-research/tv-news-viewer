@@ -811,7 +811,7 @@ function initialize() {
   var loaded = false;
   if (params.get('data')) {
     try {
-      let data = JSON.parse(decodeURIComponent(params.get('data')));
+      let data = JSON.parse(params.get('data'));
       initChartOptions(data.options);
       data.queries.forEach(query => addRow(query));
       search();
