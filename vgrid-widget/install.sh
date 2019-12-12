@@ -2,6 +2,8 @@
 
 set -e
 
+npm install --save react react-dom mobx mobx-react
+
 WIDGET_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 cd $WIDGET_DIR/../deps/vgrid/vgridjs
