@@ -17,23 +17,18 @@
   </h1>
 
   <p>
-    This page contains a list of people who have been identified by the
-    Amazon Rekognition Celebrity detection API and our own identity models.
-    It is important to recognize that the accuracy of these detections is the
-    result of computer vision models and is subject to noise and potential
-    bias in the model and in the videos.
+    This page contains a list of people who have been identified in the cable TV news dataset.
+    These identities were estimated using the   
+Amazon Rekognition Celebrity detection API and our own identity models,
+and their accuracy is subject to noise and biases in these models. <b>This list of recognized individuals is my no means a comprehensive listing of all individuals appearing the dataset.</b> Specifically, names on this list account for
+    approximately 44% of the faces detected in the data set.
   </p>
 
   <p>
-    Names in this list can be used to filter for screen time when faces are
-    on screen using the
-    <code>{{ search_keys.face_name }}="..."</code> predicate.
+    Names in this list can be used in face name filters using the
+    <code>{{ search_keys.face_name }}="..."</code> query predicate.
   </p>
 
-  <p>
-    This list of names accounts for only
-    approximately 44% of the faces in the data set.
-  </p>
 
   <table class="table table-hover table-striped table-bordered table-sm">
     <thead>

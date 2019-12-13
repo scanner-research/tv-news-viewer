@@ -27,7 +27,7 @@
 
   <h2>Basic Query Syntax</h2>
   <p>
-    All queries compute the total time of video segments in the dataset that match the query's filters. Screen time queries are broken in to several parts. A basicquery consists of filters separated by "AND"s.
+    All queries compute the total time of video segments in the dataset that match the query's filters. Screen time queries are broken in to several parts. A basic query consists of filters separated by "AND"s.
     <div class="code-block" id="andSyntax"></div>
     For example, the following query computes the screen time of Hillary Clinton on CNN:
     <div class="code-block" id="andExample"></div>
@@ -47,9 +47,13 @@
   <hr>
 
   <h2>Supported Query Filters</h2>
-  <h4>Filters on Entire Videos</h4>
   <table class="table table-striped table-bordered table-sm">
+    
     <tbody>
+      <tr><td colspan="3"><h4>Filters on Entire Videos</h4></td></tr>
+    </tbody>
+
+    <tbody> 
       <tr>
         <td rowspan="4">{{ search_keys.channel }}</td>
         <td>description</td>
@@ -147,9 +151,11 @@
         </td>
       </tr>
     </tbody>
-    </table>
-    <h4>Filters on Detected Faces</h4>
-    <table class="table table-striped table-bordered table-sm">
+    
+    <tbody>
+      <tr><td colspan="3"><h4>Filters on Detected Faces</h4></td></tr>
+    </tbody>
+
     <tbody>
       <tr>
         <td rowspan="4">
@@ -188,7 +194,7 @@
         </td>
         <td>description</td>
         <td>
-          face with the tag(s) is on screen.
+          face with the specified tag(s) is on screen.
           Multiple tags can be specified with commas.
         </td>
       </tr>
@@ -221,7 +227,7 @@
       <tr>
         <td rowspan="4">{{ search_keys.face_count }}</td>
         <td>description</td>
-        <td>number of faces on screeen.</td>
+        <td>number of faces on screen</td>
       </tr>
       <tr>
         <td>values</td>
@@ -236,19 +242,21 @@
         <td><code>{{ search_keys.face_count }}=2</code></td>
       </tr>
     </tbody>
-    </table>
-    <h4>Filters on Transcripts</h4>
-      <table class="table table-striped table-bordered table-sm">
+
+    <tbody>
+      <tr><td colspan="3"><h4>Filters on Closed Caption Transcripts</h4></td></tr>
+    </tbody>
+
     <tbody>
       <tr>
         <td rowspan="4">{{ search_keys.text }}</td>
         <td>description</td>
-        <td>keywords nearby in the captions</td>
+        <td>segments where the specified text pattern appears in the transcript.</td>
       </tr>
       <tr>
         <td>values</td>
         <td>keywords or phrases. Use <code>|</code> for "or"<br />
-            (See <a href="#text_filter_syntax">Text Filter sSyntax</a> for more details of valid text patterns.)
+            (See <a href="#text_filter_syntax">Text Filter Syntax</a> for more details of valid text patterns.)
         </td>
       </tr>
       <tr>
@@ -268,7 +276,7 @@
       <tr>
         <td rowspan="4">{{ search_keys.text_window }}</td>
         <td>description</td>
-        <td>threshold (in seconds) for windows around keywords</td>
+        <td>Specifies how much to dilate the time interval associated with text filter matches.  By default a text filter selects exactly the video segment when a word or phase is being said.  By increasing the "window" around these matches it is possible to design queries where segments matching one filter need only be within a certain amount of time of a segment matching a text filter.</td>
       </tr>
       <tr>
         <td>values</td>
@@ -282,7 +290,7 @@
       </tr>
       <tr>
         <td>example</td>
-        <td><code>{{ search_keys.text_window }}={{ default_text_window }}</code></td>
+        <td><code>{{ search_keys.text_window }}=2</code> (allows matches within 2 seconds)</td>
       </tr>
     </tbody>
   </table>

@@ -3,73 +3,42 @@
 {% block content %}
 <div class="container">
   <h1>
-    Searching the transcripts
+    Transcripts
   </h1>
   <p>
-    Most of the videos in the dataset feature text transcripts. Transcripts are  
-    time aligned to the audio track at word granularity. You can
-    search for video segments where the transcript indicates a word is spoken with the predicate:
-    <code>{{ search_keys.text }}="..."</code>. For example,
-    <code>{{ search_keys.text }}="United Kingdom"</code> will find all
-    segments in the video collection where the phrase "United Kingdom" is spoken.
-    In its basic usage,
-    the <code>{{ search_keys.text }}</code> filter accepts
-    individual words and phrases, where a phrase is defined as an <a href="https://en.wikipedia.org/wiki/N-gram" target="_blank">n-gram</a>
-    where all the words must appear in a sequence.  When performing queries with transcript-based filters, users should keep in
-    mind that all queries compute the amount of screen time matching the query.  For a transcript query, this is the 
-    screen time during which the word is being spoken.  Transcript queries do not return a count of the number of times a word appears
-    in video transcripts.
-  </p>
+    95.4% of the video files in the dataset have accompanying closed caption transcripts. However, is it common for transcript text to be missing during commercial segments. Transcripts are  
+    time aligned to the video's audio track at word granularity. For example, the following are the results of aligning the phrase "I'M CHRIS CUOMO. WELCOME TO PRIMETIME."  Fine-scale time information enables queries to select video segments exactly when a word is spoken.  
+</p>
+ 
 
-  <p>
-    This page describes additional features of the transcript query
-    language.
-  </p>
+<code>
+<div>00:00:10,730 --> 00:00:10,960</div>
+<div>I'M</div>
 
-  <h3>
-    Listing words and phrases (word A or word B)
-  </h3>
-  <p>
-    Sometimes a topic can be defined with multiple related or synonymous
-    words/phrases. For example, the "European Union" can be also be referred to
-    as the EU or E.U. in the transcripts. When this is the case, use the "|"
-    character to delimit multiple words and phrases. For example,
-    <code>{{ search_keys.text}}="European Union | EU | E.U."</code>
-    will search for video segments where any of these three n-grams appear in the transcript.
-    This can be repeated for an arbitrary
-    number of words and phrases.
-  </p>
+<div>&nbsp;</div>
 
-  <h3>
-    Inflections of words
-  </h3>
-  <p>
-    Words can be used in many inflected forms. The simplest case is
-    when words are singular or plural. To search for all inflected forms of
-    a word without specifying them manually, surround the word with
-    <code>[...]</code> brackets. For example,
-    <code>{{ search_keys.text}}="[truck]"</code> will find instances of
-    "truck", "trucks", and "trucking". If multiple words are surrounded by
-    <code>[...]</code>, then inflections will be found for any of the words in the brackets.
-  </p>
+<div>00:00:10,960 --> 00:00:11,190</div>
+<div>CHRIS</div>
 
-  <h3>
-    Time windowing around mentions
-  </h3>
-  <p>
-    By default, <code>{{ search_keys.text}}</code> will precisely find
-    the intervals of time during which a word or phrase is spoken. This means that
-    each mention will likely contribute only a small fraction of a second of screen time to a query result. 
-    Sometimes it is useful for a transcript query to match a wider region of time around the utterance
-    of a word, for example if an query seeks examples where a person is on-screen within a specific amount of time
-    of a word being stated.  The 
-    <code>{{ search_keys.text_window }}</code> parameter defines how much a time of time is dilated around a
-    transcript match. (By default, its value is 0.) 
-    For example,
-    <code>{{ search_keys.text }}="immigration" AND {{ search_keys.text_window }}=30</code>
-    will find video intervals starting and ending 30 seconds before and after
-    each mention of the word immigration.
-  </p>
+<div>&nbsp;</div>
 
-</div>
+<div>00:00:11,210 --> 00:00:11,280</div>
+<div>CUOMO.</div>
+
+<div>&nbsp;</div>
+
+<div>00:00:11,280 --> 00:00:11,449</div>
+<div>WELCOME</div>
+
+<div>&nbsp;</div>
+
+<div>00:00:11,869 --> 00:00:11,939</div>
+<div>TO</div>
+
+<div>&nbsp;</div>
+
+<div>00:00:11,939 --> 00:00:12,509</div>
+<div>PRIMETIME.</div>
+</code>
+
 {% endblock %}

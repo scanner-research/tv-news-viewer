@@ -13,20 +13,20 @@
 {% block content %}
 <div class="container">
   <h1>
-    The tags
+    The Tags
   </h1>
   <p>
-    This page lists the tags that are available. Tags in this list can be used
-    to filter for screen time of the associated face identities using the
+    This page lists the face tags available in the dataset. Tags in this list can be used
+    in queries using the 
     <code>{{ search_keys.face_tag }}="..."</code> predicate.
   </p>
 
   <h3>
-    Tags (all faces)
+    Tags present for all faces
   </h3>
   <p>
-    The following tags are available on all faces, regardless of whether
-    we have an identity label.
+    The following tags are available for all faces, regardless of whether
+    the identity of the person is known.
   </p>
 
   <table class="table table-hover table-striped table-bordered table-sm">
@@ -61,28 +61,23 @@
   </table>
 
   <h3>
-    Tags (derived from identity)
+    Tags present only for faces with a known identity
   </h3>
   <p>
-    The following tags are obtained from DBpedia using the names of faces that
-    we identified using Amazon Rekognition's celebrity detection API.
-    Filters on tags from this list will only apply to faces for which we have
-    an associated identity (44% of the faces). For example, the filter
-    <code>{{ search_keys.face_tag }}="journalist"</code>
-    incudes the screen time of all faces whose identiies have the journalist
-    tag.
+    Additional tags exist for faces whose identity is known (44% of the faces in the dataset).
   </p>
 
   <p>
-    The source column of the table below shows how tags were obtained. Tags
-    with "dbpedia" as the source are parsed from DBpedia properties. Tags
-    with "derived" are derived from DBpedia properties based on a small
-    number of heuristic parsing rules; for example, a person with the
-    tag "english_people_of_french_descent", will be given the derived
+    In the table below, the tags marked with the source 
+    "dbpedia" are parsed directly from DBpedia properties associated with the individual's name.
+    Tags marked as "derived" are derived from DBpedia properties by merging multiple
+    specific tags into a single, more general tag.
+    For example, a person with the
+    tag "english_people_of_french_descent", will also be given the derived
     tags "english" and "people_of_french_descent". There may be multiple
     rows for a single tag in the table below if the tag is both an original
-    property from DBpedia and a derived one. In this circumstance, searching in
-    the tool considers the union of the derived and dbpedia tags.
+    property from DBpedia and a derived one. Queryings filtering by this tag 
+    considers the union of the derived and dbpedia tags.
   </p>
 
   <table class="table table-hover table-striped table-bordered table-sm data-table">
