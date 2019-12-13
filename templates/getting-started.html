@@ -13,10 +13,28 @@
   <script src="{{ url_for('static', filename='js/instructions.js') }}" /></script>
 
 <style>
-.graph_embed {
+.graph_embed_1line {
   border: 0px;
   width:  900px;
-  height: 400px;
+  height: 425px;
+}
+
+.graph_embed_2line {
+  border: 0px;
+  width:  900px;
+  height: 470px;
+}
+
+.graph_embed_3line {
+  border: 0px;
+  width:  900px;
+  height: 515px;
+}
+
+.graph_embed_5line {
+  border: 0px;
+  width:  900px;
+  height: 600px;
 }
 
 .graph_embed_div {
@@ -53,24 +71,24 @@ The Stanford Cable TV Analyzer enables you to write queries that compute the amo
   <p>
     Writing a query involves specifying filters that determine what video segments contribute to a screen time estimate.  One of the most important filters is the <b>name</b> filter, which selects video segments where a specific individual appears on screen.  For example, below we've written a query that computes the amount of time Hillary Clinton's face appeared on screen in every month since January 2010. This total includes data from all three channels: CNN, Fox News, and MSNBC. One obvious feature of the graph is the spike in coverage during the 2016 U.S. presidential election.
   </p>
-  <p>
-    The <a href="/data/people">people</a> page provides the full list of names that can be used in a <b>name</b> filter. We encourage you to change the name used in the query to see screen time plots for other individuals.
-  </p>
 
 <div class="graph_embed_div">
-  <iframe class="graph_embed" src="https://esper-tv.stanford.edu/embed?dataVersion=v1&data=%7B%22options%22%3A%7B%22start_date%22%3A%222010-01-01%22%2C%22end_date%22%3A%222019-07-23%22%2C%22aggregate%22%3A%22month%22%7D%2C%22queries%22%3A%5B%7B%22color%22%3A%22%234E79A7%22%2C%22text%22%3A%22name%3D%5C%22Hillary%20Clinton%5C%22%22%7D%5D%7D"></iframe>
+  <iframe class="graph_embed_1line" src="https://esper-tv.stanford.edu/embed?edit=1&dataVersion=v1&data=%7B%22options%22%3A%7B%22start_date%22%3A%222010-01-01%22%2C%22end_date%22%3A%222019-07-23%22%2C%22aggregate%22%3A%22month%22%7D%2C%22queries%22%3A%5B%7B%22color%22%3A%22%234E79A7%22%2C%22text%22%3A%22name%3D%5C%22Hillary%20Clinton%5C%22%22%7D%5D%7D"></iframe>
 </div>
+
+  <p>
+    The <a href="/data/people">people</a> page provides the full list of names that can be used in a <b>name</b> filter. We encourage you to change the name used in the query above to see screen time plots for other individuals.
+  </p>
 
 <h3>Comparing Screen Times</h3>
 
 <p>
-  Many questions about cable TV news content require direct comparison of screen time computations.  To add new lines to the graph, use the + button to add more query boxes. The following graph compares the screen time of Hillary Clinton (blue) to that of Bernie Sanders (orange).
+  Many questions about cable TV news content require direct comparison of screen time computations.  To add new lines to the graph, use the + button to add more query boxes. The following graph compares the screen time of Hillary Clinton to that of Bernie Sanders.
 </p>
 
 <div class="graph_embed_div">
-<iframe class="graph_embed" src="https://esper-tv.stanford.edu/embed?dataVersion=v1&data=%7B%22options%22%3A%7B%22start_date%22%3A%222010-01-01%22%2C%22end_date%22%3A%222019-07-23%22%2C%22aggregate%22%3A%22month%22%7D%2C%22queries%22%3A%5B%7B%22color%22%3A%22%234E79A7%22%2C%22text%22%3A%22name%3D%5C%22Hillary%20Clinton%5C%22%22%7D%2C%7B%22color%22%3A%22%23F28E2B%22%2C%22text%22%3A%22name%3D%5C%22Bernie%20Sanders%5C%22%22%7D%5D%7D"></iframe>
+<iframe class="graph_embed_2line" src="https://esper-tv.stanford.edu/embed?edit=1&dataVersion=v1&data=%7B%22options%22%3A%7B%22start_date%22%3A%222010-01-01%22%2C%22end_date%22%3A%222019-07-23%22%2C%22aggregate%22%3A%22month%22%7D%2C%22queries%22%3A%5B%7B%22color%22%3A%22%234E79A7%22%2C%22text%22%3A%22name%3D%5C%22Hillary%20Clinton%5C%22%22%7D%2C%7B%22color%22%3A%22%23F28E2B%22%2C%22text%22%3A%22name%3D%5C%22Bernie%20Sanders%5C%22%22%7D%5D%7D"></iframe>
 </div>
-
 
 <h3>Filtering by Face Tags</h3>
 
@@ -79,7 +97,7 @@ The Stanford Cable TV Analyzer enables you to write queries that compute the amo
 </p>
 
 <div class="graph_embed_div">
-<iframe class="graph_embed" src="https://esper-tv.stanford.edu/embed?dataVersion=v1&data=%7B%22options%22%3A%7B%22start_date%22%3A%222010-01-01%22%2C%22end_date%22%3A%222019-07-23%22%2C%22aggregate%22%3A%22month%22%7D%2C%22queries%22%3A%5B%7B%22color%22%3A%22%234E79A7%22%2C%22text%22%3A%22tag%3D%5C%22male%5C%22%22%7D%2C%7B%22color%22%3A%22%23F28E2B%22%2C%22text%22%3A%22tag%3D%5C%22female%5C%22%22%7D%5D%7D"></iframe>
+<iframe class="graph_embed_2line" src="https://esper-tv.stanford.edu/embed?edit=1&dataVersion=v1&data=%7B%22options%22%3A%7B%22start_date%22%3A%222010-01-01%22%2C%22end_date%22%3A%222019-07-23%22%2C%22aggregate%22%3A%22month%22%7D%2C%22queries%22%3A%5B%7B%22color%22%3A%22%234E79A7%22%2C%22text%22%3A%22tag%3D%5C%22male%5C%22%22%7D%2C%7B%22color%22%3A%22%23F28E2B%22%2C%22text%22%3A%22tag%3D%5C%22female%5C%22%22%7D%5D%7D"></iframe>
 </div>
 
 <p>
@@ -87,7 +105,7 @@ The Stanford Cable TV Analyzer enables you to write queries that compute the amo
 </p>
 
 <div class="graph_embed_div">
-<iframe class="graph_embed" src="https://esper-tv.stanford.edu/embed?dataVersion=v1&data=%7B%22options%22%3A%7B%22start_date%22%3A%222010-01-01%22%2C%22end_date%22%3A%222019-07-23%22%2C%22aggregate%22%3A%22month%22%7D%2C%22queries%22%3A%5B%7B%22color%22%3A%22%234E79A7%22%2C%22text%22%3A%22tag%3D%5C%22male%20and%20host%5C%22%22%7D%2C%7B%22color%22%3A%22%23F28E2B%22%2C%22text%22%3A%22tag%3D%5C%22female%20and%20host%5C%22%22%7D%5D%7D"></iframe></div>
+<iframe class="graph_embed_2line" src="https://esper-tv.stanford.edu/embed?edit=1&dataVersion=v1&data=%7B%22options%22%3A%7B%22start_date%22%3A%222010-01-01%22%2C%22end_date%22%3A%222019-07-23%22%2C%22aggregate%22%3A%22month%22%7D%2C%22queries%22%3A%5B%7B%22color%22%3A%22%234E79A7%22%2C%22text%22%3A%22tag%3D%5C%22male%20and%20host%5C%22%22%7D%2C%7B%22color%22%3A%22%23F28E2B%22%2C%22text%22%3A%22tag%3D%5C%22female%20and%20host%5C%22%22%7D%5D%7D"></iframe></div>
 
   <p>
     The <a href="/data/tags">tags</a> page contains the full list of tags that can be used in a face <b>tag</b> filter.  You'll see tags like "musician", "politician", "journalist" and we encourage you to play around with the tool plotting the screen time of people associated with different tags.
@@ -102,7 +120,7 @@ The Stanford Cable TV Analyzer enables you to write queries that compute the amo
 </p>
 
 <div class="graph_embed_div">
-<iframe class="graph_embed" src="https://esper-tv.stanford.edu/embed?dataVersion=v1&data=%7B%22options%22%3A%7B%22start_date%22%3A%222010-01-01%22%2C%22end_date%22%3A%222019-07-23%22%2C%22aggregate%22%3A%22month%22%7D%2C%22queries%22%3A%5B%7B%22color%22%3A%22%234E79A7%22%2C%22text%22%3A%22name%3D%5C%22Hillary%20Clinton%5C%22%22%7D%2C%7B%22color%22%3A%22%23F28E2B%22%2C%22text%22%3A%22name%3D%5C%22Bernie%20Sanders%5C%22%22%7D%2C%7B%22color%22%3A%22%23E15759%22%2C%22text%22%3A%22name%3D%5C%22Hillary%20Clinton%5C%22%20and%20name%3D%5C%22Bernie%20Sanders%5C%22%22%7D%5D%7D"></iframe>
+<iframe class="graph_embed_3line" src="https://esper-tv.stanford.edu/embed?edit=1&dataVersion=v1&data=%7B%22options%22%3A%7B%22start_date%22%3A%222010-01-01%22%2C%22end_date%22%3A%222019-07-23%22%2C%22aggregate%22%3A%22month%22%7D%2C%22queries%22%3A%5B%7B%22color%22%3A%22%234E79A7%22%2C%22text%22%3A%22name%3D%5C%22Hillary%20Clinton%5C%22%22%7D%2C%7B%22color%22%3A%22%23F28E2B%22%2C%22text%22%3A%22name%3D%5C%22Bernie%20Sanders%5C%22%22%7D%2C%7B%22color%22%3A%22%23E15759%22%2C%22text%22%3A%22name%3D%5C%22Hillary%20Clinton%5C%22%20and%20name%3D%5C%22Bernie%20Sanders%5C%22%22%7D%5D%7D"></iframe>
 </div>
 
 <p>
@@ -110,7 +128,7 @@ The Stanford Cable TV Analyzer enables you to write queries that compute the amo
 </p>
 
 <div class="graph_embed_div">
-<iframe class="graph_embed" src="https://esper-tv.stanford.edu/embed?dataVersion=v1&data=%7B%22options%22%3A%7B%22start_date%22%3A%222010-01-01%22%2C%22end_date%22%3A%222019-07-23%22%2C%22aggregate%22%3A%22month%22%7D%2C%22queries%22%3A%5B%7B%22color%22%3A%22%2376B7B2%22%2C%22text%22%3A%22name%3D%5C%22bernie%20sanders%5C%22%20and%20channel%3D%5C%22cnn%5C%22%20and%20hour%3D%5C%2218-22%5C%22%22%7D%2C%7B%22color%22%3A%22%23E15759%22%2C%22text%22%3A%22name%3D%5C%22bernie%20sanders%5C%22%20and%20channel%3D%5C%22fox%5C%22%20and%20hour%3D%5C%2218-22%5C%22%22%7D%2C%7B%22color%22%3A%22%23B07AA1%22%2C%22text%22%3A%22name%3D%5C%22bernie%20sanders%5C%22%20and%20channel%3D%5C%22msnbc%5C%22%20and%20hour%3D%5C%2218-22%5C%22%22%7D%5D%7D"></iframe>
+<iframe class="graph_embed_3line" src="https://esper-tv.stanford.edu/embed?edit=1&dataVersion=v1&data=%7B%22options%22%3A%7B%22start_date%22%3A%222010-01-01%22%2C%22end_date%22%3A%222019-07-23%22%2C%22aggregate%22%3A%22month%22%7D%2C%22queries%22%3A%5B%7B%22color%22%3A%22%2376B7B2%22%2C%22text%22%3A%22name%3D%5C%22Bernie%20Sanders%5C%22%20and%20channel%3D%5C%22cnn%5C%22%20and%20hour%3D%5C%2218-22%5C%22%22%7D%2C%7B%22color%22%3A%22%23E15759%22%2C%22text%22%3A%22name%3D%5C%22Bernie%20Sanders%5C%22%20and%20channel%3D%5C%22fox%5C%22%20and%20hour%3D%5C%2218-22%5C%22%22%7D%2C%7B%22color%22%3A%22%23B07AA1%22%2C%22text%22%3A%22name%3D%5C%22Bernie%20Sanders%5C%22%20and%20channel%3D%5C%22msnbc%5C%22%20and%20hour%3D%5C%2218-22%5C%22%22%7D%5D%7D"></iframe>
 </div>
 
 <h3>Transcript Filters</h3>
@@ -120,7 +138,7 @@ The Stanford Cable TV Analyzer enables you to write queries that compute the amo
 </p>
 
 <div class="graph_embed_div">
-<iframe class="graph_embed" src="https://esper-tv.stanford.edu/embed?dataVersion=v1&data=%7B%22options%22%3A%7B%22start_date%22%3A%222010-01-01%22%2C%22end_date%22%3A%222019-07-23%22%2C%22aggregate%22%3A%22month%22%7D%2C%22queries%22%3A%5B%7B%22color%22%3A%22%23F28E2B%22%2C%22text%22%3A%22text%3D%5C%22France%5C%22%22%7D%2C%7B%22color%22%3A%22%234E79A7%22%2C%22text%22%3A%22text%3D%5C%22United%20Kingdom%5C%22%22%7D%2C%7B%22color%22%3A%22%23E15759%22%2C%22text%22%3A%22text%3D%5C%22China%5C%22%22%7D%2C%7B%22color%22%3A%22%23FF9DA7%22%2C%22text%22%3A%22text%3D%5C%22Russia%5C%22%22%7D%2C%7B%22color%22%3A%22%23BAB0AC%22%2C%22text%22%3A%22text%3D%5C%22North%20Korea%5C%22%22%7D%5D%7D"></iframe>
+<iframe class="graph_embed_5line" src="https://esper-tv.stanford.edu/embed?edit=1&dataVersion=v1&data=%7B%22options%22%3A%7B%22start_date%22%3A%222010-01-01%22%2C%22end_date%22%3A%222019-07-23%22%2C%22aggregate%22%3A%22month%22%7D%2C%22queries%22%3A%5B%7B%22color%22%3A%22%23F28E2B%22%2C%22text%22%3A%22text%3D%5C%22France%5C%22%22%7D%2C%7B%22color%22%3A%22%234E79A7%22%2C%22text%22%3A%22text%3D%5C%22United%20Kingdom%5C%22%22%7D%2C%7B%22color%22%3A%22%23E15759%22%2C%22text%22%3A%22text%3D%5C%22China%5C%22%22%7D%2C%7B%22color%22%3A%22%23FF9DA7%22%2C%22text%22%3A%22text%3D%5C%22Russia%5C%22%22%7D%2C%7B%22color%22%3A%22%23BAB0AC%22%2C%22text%22%3A%22text%3D%5C%22North%20Korea%5C%22%22%7D%5D%7D"></iframe>
 </div>
 
 <p>
@@ -140,7 +158,7 @@ The Stanford Cable TV Analyzer enables you to write queries that compute the amo
 </p>
 
 <div class="graph_embed_div">
-<iframe class="graph_embed" src="https://esper-tv.stanford.edu/embed?dataVersion=v1&data=%7B%22options%22%3A%7B%22start_date%22%3A%222010-01-01%22%2C%22end_date%22%3A%222019-07-23%22%2C%22aggregate%22%3A%22month%22%7D%2C%22queries%22%3A%5B%7B%22color%22%3A%22%2376B7B2%22%2C%22text%22%3A%22name%3D%5C%22Hillary%20Clinton%5C%22%20and%20text%3D%5C%22email%5C%22%20and%20channel%3D%5C%22cnn%5C%22%22%7D%2C%7B%22color%22%3A%22%23E15759%22%2C%22text%22%3A%22name%3D%5C%22Hillary%20Clinton%5C%22%20and%20text%3D%5C%22email%5C%22%20and%20channel%3D%5C%22fox%5C%22%22%7D%2C%7B%22color%22%3A%22%23B07AA1%22%2C%22text%22%3A%22name%3D%5C%22Hillary%20Clinton%5C%22%20and%20text%3D%5C%22email%5C%22%20and%20channel%3D%5C%22msnbc%5C%22%22%7D%5D%7D"></iframe>
+<iframe class="graph_embed_3line" src="https://esper-tv.stanford.edu/embed?edit=1&dataVersion=v1&data=%7B%22options%22%3A%7B%22start_date%22%3A%222010-01-01%22%2C%22end_date%22%3A%222019-07-23%22%2C%22aggregate%22%3A%22month%22%7D%2C%22queries%22%3A%5B%7B%22color%22%3A%22%2376B7B2%22%2C%22text%22%3A%22name%3D%5C%22Hillary%20Clinton%5C%22%20and%20text%3D%5C%22email%5C%22%20and%20channel%3D%5C%22cnn%5C%22%22%7D%2C%7B%22color%22%3A%22%23E15759%22%2C%22text%22%3A%22name%3D%5C%22Hillary%20Clinton%5C%22%20and%20text%3D%5C%22email%5C%22%20and%20channel%3D%5C%22fox%5C%22%22%7D%2C%7B%22color%22%3A%22%23B07AA1%22%2C%22text%22%3A%22name%3D%5C%22Hillary%20Clinton%5C%22%20and%20text%3D%5C%22email%5C%22%20and%20channel%3D%5C%22msnbc%5C%22%22%7D%5D%7D"></iframe>
 </div>
 
 <p>
@@ -170,6 +188,8 @@ The Stanford Cable TV Analyzer enables you to write queries that compute the amo
 
 <p>To learn more about more advanced query features not discussed in this tutorial, please take a look at the <a href="/detailed">advanced queries page</a>. You may also want to browse the <a href="/data">dataset page</a> to learn about what people and tags available for use in queries.
 </p>
+
+<p>&nbsp;</p>
 
 <!--
 <h3>More Query Examples</h3>
