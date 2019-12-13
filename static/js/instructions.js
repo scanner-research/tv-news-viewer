@@ -17,7 +17,7 @@ function setCodeArea(area, queries) {
   });
 }
 
-function setIframeSource(iframe, queries, chart_options) {
+function setIframeSource(iframe, queries, editable, chart_options) {
   let data = {
     options: chart_options ? chart_options : {
       aggregate: DEFAULT_AGGREGATE_BY,
@@ -30,6 +30,10 @@ function setIframeSource(iframe, queries, chart_options) {
     }))
   };
   let data_str = encodeURIComponent(JSON.stringify(data));
-  let embed_url = `//${SERVER_HOST}/embed?data=${data_str}`;
+  var embed_url = `//${SERVER_HOST}/embed?`;
+  if (editable) {
+    embed_url += 'edit=1&';
+  }
+  embed_url += `data=${data_str}`;
   $(iframe).attr('src', embed_url);
 }

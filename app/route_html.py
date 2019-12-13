@@ -43,10 +43,10 @@ def add_html_routes(
     def get_getting_started() -> Response:
         return render_template('getting-started.html', search_keys=SearchKey)
 
-    @app.route('/detailed')
-    def get_detailed() -> Response:
+    @app.route('/docs')
+    def get_docs() -> Response:
         return render_template(
-            'detailed.html', search_keys=SearchKey,
+            'docs.html', search_keys=SearchKey,
             default_text_window=default_text_window)
 
     @app.route('/methodology')
@@ -57,9 +57,9 @@ def add_html_routes(
     def get_dataset() -> Response:
         return render_template('dataset.html')
 
-    @app.route('/about-us')
-    def get_about_us() -> Response:
-        return render_template('about-us.html')
+    @app.route('/about')
+    def get_about() -> Response:
+        return render_template('about.html')
 
     @app.route('/data/people')
     def get_data_people() -> Response:
