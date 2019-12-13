@@ -3,23 +3,74 @@
 {% block head %}
 {{ super() }}
 
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker.min.css" integrity="sha256-siyOpF/pBWUPgIcQi17TLBkjvNgNQArcmwJB8YvkAgg=" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/chosen/1.8.7/chosen.css" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pegjs/0.9.0/peg.min.js" integrity="sha256-ETWi3bkH0XCqDYQKJ1ut+gf+oO31m2+NRBMZ25TntQ0=" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/vega@5.3.4"></script>
 <script src="https://cdn.jsdelivr.net/npm/vega-lite@3.1.0"></script>
 <script src="https://cdn.jsdelivr.net/npm/vega-embed@4.0.0"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chosen/1.8.7/chosen.jquery.min.js" integrity="sha256-c4gVE6fn+JRKMRvqjoDp+tlG4laudNYrXI1GncbfAYY=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.min.js" integrity="sha256-bqVeqGdJ7h/lYPq6xrPv/YGzMEb6dNxlfiTUHSgRCp8=" crossorigin="anonymous"></script>
 
-<link rel="stylesheet" href="{{ url_for('static', filename='css/embed.css') }}" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.48.4/codemirror.min.css" integrity="sha256-vZ3SaLOjnKO/gGvcUWegySoDU6ff33CS5i9ot8J9Czk=" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.48.4/addon/hint/show-hint.min.css" integrity="sha256-Ng5EdzHS/CC37tR7tE75e4Th9+fBvOB4eYITOkXS22Q=" crossorigin="anonymous" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.48.4/codemirror.min.js" integrity="sha256-dPTL2a+npIonoK5i0Tyes0txCMUWZBf8cfKRfACRotc=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.48.4/addon/display/placeholder.min.js" integrity="sha256-nCk9E4e5fX9GB+yPxdFEXbdrshMwVm6vYymmjf9iSvM=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.48.4/addon/edit/closebrackets.min.js" integrity="sha256-SQxxspooiex44fVMEgTgEyhTBfxFEDx7N77hx2OpeTs=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.48.4/addon/edit/matchbrackets.min.js" integrity="sha256-E6SXqOxC0Z+uAGQmS9gr9Furz8Py05kCgC0XZXg9Hdo=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.48.4/addon/hint/show-hint.min.js" integrity="sha256-P946oK/OkcGC8rs/phAXZRvTADKK0V+x23Jbl0DilgQ=" crossorigin="anonymous"></script>
+
+<link rel="stylesheet" href="{{ url_for('static', filename='css/editor.css') }}" />
 <link rel="stylesheet" href="{{ url_for('static', filename='css/chart.css') }}" />
+<link rel="stylesheet" href="{{ url_for('static', filename='css/syntax-highlight.css') }}" />
+<link rel="stylesheet" href="{{ url_for('static', filename='css/embed.css') }}" />
+
 <script src="/generated/js/defaults.js" /></script>
 <script src="/generated/js/values.js" /></script>
+
+<script src="{{ url_for('static', filename='js/syntax-highlight.js') }}" /></script>
 <script src="{{ url_for('static', filename='js/chart.js') }}" /></script>
 <script src="{{ url_for('static', filename='js/query.js') }}" /></script>
+<script src="{{ url_for('static', filename='js/editor.js') }}" /></script>
 {% endblock %}
 
 {% block header %}{% endblock %}
 
 {% block content %}
-<div class="container" id="chartInfo"></div>
+<div class="chart-info">
+  <form action="javascript:void(0);">
+    <table id="searchTable">
+      <tbody></tbody>
+      <tfoot>
+        <tr name="controls" class="chart-options">
+          <td>
+            <button type="button" title="Add a new row."
+                    class="btn btn-outline-secondary btn-sm add-row-btn">+</button>
+          </td>
+          <td></td>
+          <td class="option-td">
+            between &nbsp;
+            <input type="text" class="datepicker" id="startDate">
+            &nbsp; and &nbsp;
+            <input type="text" class="datepicker" id="endDate">
+            &nbsp; aggregated by &nbsp;
+            <select class="chosen-select" id="aggregateBy" data-width="fit">
+              <option value="year">year</option>
+              <option value="month">month</option>
+              <option value="week">week</option>
+              <option value="day">day</option>
+            </select>
+            . &nbsp;
+            <input type="submit" class="btn btn-secondary btn-sm"
+                   value="Search the news!" id="searchButton">
+            <input type="submit" class="btn btn-secondary btn-sm"
+                   value="Clear queries" id="resetButton">
+          </td>
+        </tr>
+      </tfoot>
+    </table>
+  </form>
+</div>
 <div class="chart-container">
   <div id="chart"></div>
 </div>
