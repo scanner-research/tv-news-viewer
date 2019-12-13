@@ -39,6 +39,13 @@ function reset() {
   clearChart();
 }
 
+function getDataString(chart_options, lines) {
+  return encodeURIComponent(JSON.stringify({
+    options: chart_options,
+    queries: lines.map(l => ({color: l.color, text: l.query.query}))
+  }));
+}
+
 function search() {
   clearChart();
 
@@ -66,11 +73,13 @@ function search() {
   function onDone() {
     $('#loadingText').hide();
     indexed_search_results.sort();
+    let data_str = getDataString(chart_options, lines);
     new Chart(
       chart_options, indexed_search_results.map(([i, v]) => v),
       getChartDimensions()
     ).load('#chart', {
-      show_tooltip: true, show_mean: false
+      show_tooltip: true, show_mean: false,
+      href: `//${SERVER_HOST}/?data=` + data_str
     });
   }
 

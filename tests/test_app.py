@@ -59,9 +59,9 @@ def test_get_pages(client: FlaskClient) -> None:
     _is_ok(client.get('/embed'))
     _is_ok(client.get('/video-embed'))
     _is_ok(client.get('/getting-started'))
-    _is_ok(client.get('/detailed'))
+    _is_ok(client.get('/docs'))
     _is_ok(client.get('/methodology'))
-    _is_ok(client.get('/about-us'))
+    _is_ok(client.get('/about'))
 
     # test non-existent path
     _is_bad(client.get('/badpage'))
