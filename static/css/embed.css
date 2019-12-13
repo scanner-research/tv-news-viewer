@@ -1,11 +1,11 @@
-.container {
-  text-align: center;
-  padding: 2px;
-}
 .chart-container {
   text-align: center;
   margin-left: 10px;
   margin-right: 10px;
+}
+.chart-info {
+  text-align: center;
+  padding: 2px;
 }
 .vega-embed {
   padding-right: 0px;
@@ -48,8 +48,11 @@ code {
   color: red;
   display: none;
 }
-
+#searchTable {
+  display: none;
+}
 #loadingText {
+  display: none;
   position: absolute;
   left: 50%;
   top: 50%;
