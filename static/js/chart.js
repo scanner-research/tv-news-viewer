@@ -465,7 +465,7 @@ class Chart {
             view.addEventListener('click', open_href);
             $(div_id).append(
               $('<div>').addClass('chart-link').text(
-                'Click anywhere to edit!'
+                options.href_message ? options.href_message : 'Click to open!'
               ).click(open_href)
             );
           }

@@ -22,6 +22,24 @@
   display: block;
   width: 100%;
 }
+.chart-link {
+  display: none;
+  position: absolute;
+  right: 60px;
+  top: 20px;
+  padding-top: 2px;
+  padding-bottom: 2px;
+  padding-left: 4px;
+  padding-right: 4px;
+  border-radius: 2px;
+  background-color: #f2f2f2;
+  color: grey;
+  font-size: 8;
+  font-style: italic;
+  opacity: 0.8;
+  cursor: grab;
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.2);
+}
 .tooltip-entry .tooltip-legend {
   display: inline-block;
   margin-right: 5px;
