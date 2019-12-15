@@ -8,8 +8,8 @@
 
   <link rel="stylesheet" href="{{ url_for('static', filename='css/syntax-highlight.css') }}" />
   <link rel="stylesheet" href="{{ url_for('static', filename='css/instructions.css') }}" />
-  <script src="/generated/js/defaults.js" /></script>
   <script src="/generated/js/values.js" /></script>
+  <script src="{{ url_for('static', filename='js/common.js') }}" /></script>
   <script src="{{ url_for('static', filename='js/syntax-highlight.js') }}" /></script>
   <script src="{{ url_for('static', filename='js/instructions.js') }}" /></script>
 {% endblock %}
@@ -48,12 +48,12 @@
 
   <h2>Supported Query Filters</h2>
   <table class="table table-striped table-bordered table-sm">
-    
+
     <tbody>
       <tr><td colspan="3"><h4>Filters on Entire Videos</h4></td></tr>
     </tbody>
 
-    <tbody> 
+    <tbody>
       <tr>
         <td rowspan="4">{{ search_keys.channel }}</td>
         <td>description</td>
@@ -101,7 +101,7 @@
       <tr>
         <td rowspan="4">{{ search_keys.hour }}</td>
         <td>description</td>
-        <td>Range (inclusive) of hours in 24h format, in US eastern time. (UTC-5:00 in standard time and UTC-4:00 during daylight saving time).      
+        <td>Range (inclusive) of hours in 24h format, in US eastern time. (UTC-5:00 in standard time and UTC-4:00 during daylight saving time).
         </td>
       </tr>
       <tr>
@@ -151,7 +151,7 @@
         </td>
       </tr>
     </tbody>
-    
+
     <tbody>
       <tr><td colspan="3"><h4>Filters on Detected Faces</h4></td></tr>
     </tbody>
@@ -332,12 +332,12 @@
   <p>
     By default, <code>{{ search_keys.text}}</code> will precisely find
     the intervals of time during which a word or phrase is spoken. This means that
-    each mention will likely contribute only a small fraction of a second of screen time to a query result. 
+    each mention will likely contribute only a small fraction of a second of screen time to a query result.
     Sometimes it is useful for a transcript query to match a wider region of time around the utterance
     of a word, for example if an query seeks examples where a person is on-screen within a specific amount of time
-    of a word being stated.  The 
+    of a word being stated.  The
     <code>{{ search_keys.text_window }}</code> parameter defines how much a time of time is dilated around a
-    transcript match. (By default, its value is 0.) 
+    transcript match. (By default, its value is 0.)
     For example,
     <code>{{ search_keys.text }}="immigration" AND {{ search_keys.text_window }}=30</code>
     will find video intervals starting and ending 30 seconds before and after

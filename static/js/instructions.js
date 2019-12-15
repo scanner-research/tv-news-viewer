@@ -29,7 +29,7 @@ function setIframeSource(iframe, queries, editable, chart_options) {
       text: x
     }))
   };
-  let data_str = encodeURIComponent(JSON.stringify(data));
+  let data_str = urlSafeBase64Encode(JSON.stringify(data));
   var embed_url = `//${SERVER_HOST}/embed?`;
   if (editable) {
     embed_url += 'edit=1&';

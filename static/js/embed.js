@@ -40,7 +40,7 @@ function reset() {
 }
 
 function getDataString(chart_options, lines) {
-  return encodeURIComponent(JSON.stringify({
+  return urlSafeBase64Encode(JSON.stringify({
     options: chart_options,
     queries: lines.map(l => ({color: l.color, text: l.query.query}))
   }));
@@ -121,7 +121,7 @@ function initializeDynamic(params) {
   var loaded = false;
   if (params.get('data')) {
     try {
-      let data = JSON.parse(params.get('data'));
+      let data = JSON.parse(urlSafeBase64Decode(params.get('data')));
       initChartOptions(data.options);
       data.queries.forEach(query => addRow(query));
       search();

@@ -7,8 +7,10 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='vgrid/index.css') }}" />
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
   <link rel="stylesheet" href="{{ url_for('static', filename='css/video-embed.css') }}" />
-  <script src="/generated/js/defaults.js" /></script>
+
   <script src="/generated/js/values.js" /></script>
+
+  <script src="{{ url_for('static', filename='js/common.js') }}" /></script>
   <script src="{{ url_for('static', filename='js/query.js') }}" /></script>
   <script src="{{ url_for('static', filename='js/videos.js') }}" /></script>
 {% endblock %}

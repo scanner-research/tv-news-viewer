@@ -108,14 +108,17 @@ def build_app(
         default_is_commercial=default_is_commercial,
         default_text_window=default_text_window)
 
-    @app.route('/generated/js/defaults.js')
-    def get_defaults_js() -> Response:
+    @app.route('/generated/js/values.js')
+    def get_values_js() -> Response:
         start_date = max(min(
             v.date for v in video_data_context.video_dict.values()), min_date)
         end_date = min(max(
             v.date for v in video_data_context.video_dict.values()), max_date)
+        all_shows: List[str] = list(sorted({
+            v.show for v in video_data_context.video_dict.values()
+        }))
         resp = make_response(render_template(
-            'js/defaults.js', host=request.host, data_version=data_version,
+            'js/values.js', host=request.host, data_version=data_version,
             start_date=format_date(start_date),
             end_date=format_date(end_date),
             default_agg_by=default_aggregate_by,
@@ -128,17 +131,8 @@ def build_app(
                 if not k.startswith('__')],
             search_keys=[
                 (k, v) for k, v in SearchKey.__dict__.items()
-                if not k.startswith('__')]))
-        resp.headers['Content-type'] = 'text/javascript'
-        return resp
-
-    @app.route('/generated/js/values.js')
-    def get_values_js() -> Response:
-        all_shows: List[str] = list(sorted({
-            v.show for v in video_data_context.video_dict.values()
-        }))
-        resp = make_response(render_template(
-            'js/values.js', shows=all_shows,
+                if not k.startswith('__')],
+            shows=all_shows,
             people=list(video_data_context.all_person_intervals.keys()),
             global_face_tags=list(sorted(GLOBAL_TAGS)),
             person_tags=video_data_context.all_person_tags.tags))
