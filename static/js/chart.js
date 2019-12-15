@@ -132,15 +132,13 @@ function getDateFormatFunction(agg) {
 function getStartDate(agg, date_str) {
   let date = new Date(date_str);
   if (agg == 'year') {
-    date.setUTCDate(1);
-    date.setUTCMonth(date.getUTCMonth() - 1);
+    date.setUTCMonth(0, 1);
   } else if (agg == 'month') {
     date.setUTCDate(1);
-    date.setUTCMonth(date.getUTCMonth() - 1);
   } else if (agg == 'week') {
-    date.setUTCDate(date.getUTCDate() - 6); // Not quite beautiful
+    date.setUTCDate(date.getUTCDate() - date.getDay());
   } else if (agg == 'day') {
-    date.setUTCDate(date.getUTCDate() - 1);
+    // Do nothing
   } else {
     throw Error(`Unknown unit: ${unit}`);
   }
