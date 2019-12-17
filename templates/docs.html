@@ -42,6 +42,9 @@
     Putting the examples above together, the following query computes the screen
     time of Hillary Clinton on CNN or MSNBC:
     <div class="code-block" id="parenExample"></div>
+
+    If the query is left blank, then no filters are applied and all of the
+    data is counted.
   </p>
 
   <hr>
@@ -364,13 +367,16 @@
     The following query computes the fraction of time on CNN that a man's face
     is on screen:
 
-    <iframe width="100%" height="400" id="normExample"></iframe>
+    <div class="graph-embed-div">
+      <iframe id="normExample"></iframe>
+    </div>
   </p>
 
   <hr>
   <h3>Adding and Subtracting Query Results</h3>
   <p>
-    The query systems supports addition and subtraction of the times computed by two queries. Subtraction can be expressed as:
+    The query systems supports addition and subtraction of the times computed by
+    two queries. Subtraction can be expressed as:
 
     <div class="code-block" id="subSyntax"></div>
 
@@ -378,21 +384,29 @@
     Clinton received than Bernie Sanders:
 
     <div class="code-block" id="subExampleCode"></div>
-    <iframe width="100%" height="400" id="subExample"></iframe>
+    <div class="graph-embed-div">
+      <iframe id="subExample"></iframe>
+    </div>
 
     Addition can be expressed as:
 
     <div class="code-block" id="addSyntax"></div>
 
-    Users should be mindful of the differs between "OR'ing" two query filters and adding the times computed using two queries.  For example, <b>name="Bernie Sanders" OR name="Bernie Sanders"</b> selects the same video segments, and therefore results in the same screen time computation as <b>name="Bernie Sanders"</b>.  However, <b>name="Bernie Sanders" + name="Bernie Sanders"</b> yields a plot showing double the value of Mr. Sanders' computed screen time.
+    Users should be mindful of the difference between "OR'ing" two query filters
+    and adding the times computed using two queries.  For example,
+    <b>name="Bernie Sanders" OR name="Bernie Sanders"</b> selects the same video
+    segments, and therefore results in the same screen time computation as
+    <b>name="Bernie Sanders"</b>.  However, <b>name="Bernie Sanders" ADD
+    name="Bernie Sanders"</b> yields a plot showing double the value of Mr.
+    Sanders' computed screen time.
+
   </p>
 
   <script type="text/javascript">
-    initialize();
+    initSynaxHighlighting();
 
     setCodeArea('#andSyntax', ['filter1="..." AND filter2="..." AND ... ']);
     setCodeArea('#andExample', ['{{ search_keys.face_name }}="Hillary Clinton" AND {{ search_keys.channel }}=CNN']);
-    setCodeArea('#allDataExample', ['']);
     setCodeArea('#orSyntax', ['filter1="..." OR filter2="..." OR ... ']);
     setCodeArea('#orExample', ['{{ search_keys.channel }}="CNN" OR {{ search_keys.channel }}=MSNBC']);
     setCodeArea('#parenSyntax', ['(filter1="..." AND filter2="...") OR filter3="..."']);

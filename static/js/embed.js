@@ -174,7 +174,7 @@ function initializeStatic(params) {
   let hide_tooltip = params.get('hideTooltip') == 1;
   let hide_mean = params.get('showMean') != 1;
   let data_str = params.get('data');
-  let data = JSON.parse(data_str);
+  let data = JSON.parse(urlSafeBase64Decode(data_str));
 
   let lines = data.queries.map(raw_query => {
     var parsed;
@@ -200,7 +200,7 @@ function initializeStatic(params) {
       data.options, search_results, getChartDimensions(),
     ).load('#chart', {
       show_tooltip: !hide_tooltip, show_mean: !hide_mean,
-      href: `//${SERVER_HOST}/?data=` + encodeURIComponent(data_str)
+      href: `//${SERVER_HOST}/?data=` + data_str
     });
     $('#loadingText').hide();
   };

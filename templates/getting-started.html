@@ -2,47 +2,14 @@
 
 {% block head %}
 {{ super() }}
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.48.4/codemirror.min.css" integrity="sha256-vZ3SaLOjnKO/gGvcUWegySoDU6ff33CS5i9ot8J9Czk=" crossorigin="anonymous" />
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.48.4/codemirror.min.js" integrity="sha256-dPTL2a+npIonoK5i0Tyes0txCMUWZBf8cfKRfACRotc=" crossorigin="anonymous"></script>
-
-<link rel="stylesheet" href="{{ url_for('static', filename='css/syntax-highlight.css') }}" />
 <link rel="stylesheet" href="{{ url_for('static', filename='css/instructions.css') }}" />
 
 <script src="/generated/js/values.js" /></script>
 
 <script src="{{ url_for('static', filename='js/common.js') }}" /></script>
-<script src="{{ url_for('static', filename='js/syntax-highlight.js') }}" /></script>
 <script src="{{ url_for('static', filename='js/instructions.js') }}" /></script>
 
 <style>
-.graph_embed_1line {
-  border: 0px;
-  width:  900px;
-  height: 425px;
-}
-
-.graph_embed_2line {
-  border: 0px;
-  width:  900px;
-  height: 470px;
-}
-
-.graph_embed_3line {
-  border: 0px;
-  width:  900px;
-  height: 515px;
-}
-
-.graph_embed_5line {
-  border: 0px;
-  width:  900px;
-  height: 600px;
-}
-
-.graph_embed_div {
-  text-align: center;
-}
-
 .example_img {
    border: 1px solid #d0d0d0;
    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.2);
@@ -73,8 +40,8 @@ The Stanford Cable TV Analyzer enables you to write queries that compute the amo
     Writing a query using the Stanford Cable TV Analyzer involves specifying filters that determine what video segments to include in a screen time computation.  One of the most important filters is the <b>name</b> filter, which selects video segments where a specified individual appears on screen.  For example, below is a query that computes the amount of time Hillary Clinton's face appeared on screen in every month since January 2010. One obvious feature of the graph is the spike in coverage during the 2016 U.S. presidential election.
   </p>
 
-<div class="graph_embed_div">
-  <iframe id="clinton" class="graph_embed_1line"></iframe>
+<div class="graph-embed-div">
+  <iframe id="clinton" class="graph-embed-1line"></iframe>
 </div>
 
   <p>
@@ -87,8 +54,8 @@ The Stanford Cable TV Analyzer enables you to write queries that compute the amo
   Many questions about cable TV news content require comparisons between different screen time computations.  To add new lines to the graph, use the + button to add more query boxes. The following graph compares the screen time of Hillary Clinton to that of Bernie Sanders.
 </p>
 
-<div class="graph_embed_div">
-<iframe id="clintonSanders" class="graph_embed_2line"></iframe>
+<div class="graph-embed-div">
+<iframe id="clintonSanders" class="graph-embed-2line"></iframe>
 </div>
 
 <h3>Filtering by Face Tags</h3>
@@ -97,16 +64,16 @@ The Stanford Cable TV Analyzer enables you to write queries that compute the amo
   In addition to filtering by a person's name, it is possible to filter by other tags associated with faces that appear in the dataset.  For example, each face detected in our dataset is automatically tagged with a prediction of the individual's binary gender. In the graph below, I used the <b>tag</b> filter to compare the total time men's faces are on screen with that of women.
 </p>
 
-<div class="graph_embed_div">
-<iframe id="maleFemale" class="graph_embed_2line"></iframe>
+<div class="graph-embed-div">
+<iframe id="maleFemale" class="graph-embed-2line"></iframe>
 </div>
 
 <p>
   A query can specify multiple tags that a face must match.  For example, adding the "host" tag to the face tag filter from the prior graph yields this graph that compares the screen time of <b>male show hosts</b> with that of <b>female show hosts</b>.  Among hosts, the trend toward gender parity appears to have reversed since 2015.
 </p>
 
-<div class="graph_embed_div">
-<iframe id="maleFemaleHost" class="graph_embed_2line"></iframe></div>
+<div class="graph-embed-div">
+<iframe id="maleFemaleHost" class="graph-embed-2line"></iframe></div>
 
   <p>
     The <a href="/data/tags">tags</a> page contains the full list of tags that can be used in a face <b>tag</b> filter.  You'll see tags like "musician", "politician", "journalist" and we encourage you to play around with the query above to plot the screen time of people associated with different tags.
@@ -121,16 +88,16 @@ The Stanford Cable TV Analyzer enables you to write queries that compute the amo
   To allow more precise control over what video segments are included in a screen time computation, queries may contain multiple filters connected by AND's and OR's.  For example, the graph below extends our previous Hillary Clinton vs. Bernie Sanders graph with a third line that plots the amount of time where both Mrs. Clinton AND Mr. Sanders are on screen.
 </p>
 
-<div class="graph_embed_div">
-<iframe id="clintonAndSanders" class="graph_embed_3line"></iframe>
+<div class="graph-embed-div">
+<iframe id="clintonAndSanders" class="graph-embed-3line"></iframe>
 </div>
 
 <p>
   A common use of multiple filters is limit screen time computations to certain channels, news programs, or specific times of day or days of the week.  For example, in the graph below we compare the screen time of Bernie Sanders between 6-10pm (US Eastern time) on CNN, with that of Fox News and MSNBC.  (Mr. Sanders receives the most screen time during this time period on MSNBC.)
 </p>
 
-<div class="graph_embed_div">
-<iframe id="sandersChannelHour" class="graph_embed_3line"></iframe>
+<div class="graph-embed-div">
+<iframe id="sandersChannelHour" class="graph-embed-3line"></iframe>
 </div>
 
 <h3>Transcript Filters</h3>
@@ -139,8 +106,8 @@ The Stanford Cable TV Analyzer enables you to write queries that compute the amo
   Queries may also filter video content based on the text contents of video transcripts.  For example, if you were interested in how much certain foreign countries are discussed on the news, you could use <b>text</b> filters to compare the amount of time country names are mentioned in the transcript.  For example:
 </p>
 
-<div class="graph_embed_div">
-<iframe id="countriesTranscript" class="graph_embed_5line"></iframe>
+<div class="graph-embed-div">
+<iframe id="countriesTranscript" class="graph-embed-5line"></iframe>
 </div>
 
 <p>
@@ -159,8 +126,8 @@ The Stanford Cable TV Analyzer enables you to write queries that compute the amo
   Since <b>text</b> filters (like all other filters) are used to select video segments, they can be combined with all other filters in queries.  Combining <b>text</b> and face filters (e.g, <b>name</b> or <b>tag</b>) can yield interesting queries. For example, the following graph computes the time Hillary Clinton is on screen AND the word "email" is spoken. This occurs far more often on Fox News than CNN or MSNBC.
 </p>
 
-<div class="graph_embed_div">
-<iframe id="clintonEmailTranscript" class="graph_embed_3line"></iframe>
+<div class="graph-embed-div">
+<iframe id="clintonEmailTranscript" class="graph-embed-3line"></iframe>
 </div>
 
 <p>
@@ -194,7 +161,6 @@ The Stanford Cable TV Analyzer enables you to write queries that compute the amo
 <p>&nbsp;</p>
 
 <script type="text/javascript">
-  initialize();
   setIframeSource(
     '#clinton',
     ['{{ search_keys.face_name }}="Hillary Clinton"'],
@@ -256,26 +222,6 @@ The Stanford Cable TV Analyzer enables you to write queries that compute the amo
     true
   );
 </script>
-
-<!--
-<h3>More Query Examples</h3>
-
-<p>
-  If no filters are specified, then all videos match the query and the result is the total time of all video data in the dataset.
-</p>
-
-<div class="graph_embed_div">
-<iframe class="graph_embed" src="https://esper-tv.stanford.edu/embed?dataVersion=v1&data=%7B%22options%22%3A%7B%22start_date%22%3A%222010-01-01%22%2C%22end_date%22%3A%222019-07-23%22%2C%22aggregate%22%3A%22month%22%7D%2C%22queries%22%3A%5B%7B%22color%22%3A%22%234E79A7%22%2C%22text%22%3A%22%22%7D%5D%7D"></iframe>
-</div>
-
-<p>
-  By only using a channel filter, we can compare the total amount of video in the dataset coming from each channel.
-</p>
-
-<div class="graph_embed_div">
-<iframe class="graph_embed" src="https://esper-tv.stanford.edu/embed?dataVersion=v1&data=%7B%22options%22%3A%7B%22start_date%22%3A%222010-01-01%22%2C%22end_date%22%3A%222019-07-23%22%2C%22aggregate%22%3A%22month%22%7D%2C%22queries%22%3A%5B%7B%22color%22%3A%22%2376B7B2%22%2C%22text%22%3A%22channel%3D%5C%22cnn%5C%22%22%7D%2C%7B%22color%22%3A%22%23E15759%22%2C%22text%22%3A%22channel%3D%5C%22fox%5C%22%22%7D%2C%7B%22color%22%3A%22%23B07AA1%22%2C%22text%22%3A%22channel%3D%5C%22msnbc%5C%22%22%7D%5D%7D"></iframe>
-</div>
--->
 
 </div>
 {% endblock %}

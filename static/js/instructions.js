@@ -1,12 +1,8 @@
 const PARSING_MODE = 'tvnews';
 
-function initialize() {
+function initSynaxHighlighting() {
   addParsingMode(PARSING_MODE, {
     allow_free_tokens: true, check_values: true, multi_line: true
-  });
-
-  $('.try-it-btn').click(function() {
-    window.open('/?blank=1', '_blank');
   });
 }
 

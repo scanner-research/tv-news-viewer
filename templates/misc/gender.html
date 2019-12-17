@@ -2,18 +2,14 @@
 
 {% block head %}
 {{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/instructions.css') }}" />
+
+<script src="/generated/js/values.js" /></script>
+
+<script src="{{ url_for('static', filename='js/common.js') }}" /></script>
+<script src="{{ url_for('static', filename='js/instructions.js') }}" /></script>
 
 <style>
-.graph_embed {
-  border: 0px;
-  width:  900px;
-  height: 400px;
-}
-
-.graph_embed_div {
-  text-align: center;
-}
-
 .question {
   font-weight: bold;
   font-style: italic;
@@ -48,11 +44,11 @@ li {
   <h3>Step 1: A simple plot of screen time</h3>
 
   <p>
-    To get started, I created the following graph which compares the screen time of alloted to men and women over the entire non-commercial part of the dataset (considering programming across all channels).  The blue line plots the <b>total screen time</b> (in minutes per month) where a man's face is on screen. The orange line plots the total time a women's face is on screen.  
+    To get started, I created the following graph which compares the screen time of alloted to men and women over the entire non-commercial part of the dataset (considering programming across all channels).  The blue line plots the <b>total screen time</b> (in minutes per month) where a man's face is on screen. The orange line plots the total time a women's face is on screen.
   </p>
 
-  <div class="graph_embed_div">
-<iframe class="graph_embed" src="https://esper-tv.stanford.edu/embed?dataVersion=v1&data=%7B%22options%22%3A%7B%22start_date%22%3A%222010-01-01%22%2C%22end_date%22%3A%222019-07-23%22%2C%22aggregate%22%3A%22month%22%7D%2C%22queries%22%3A%5B%7B%22color%22%3A%22%234E79A7%22%2C%22text%22%3A%22tag%3D%5C%22male%5C%22%22%7D%2C%7B%22color%22%3A%22%23F28E2B%22%2C%22text%22%3A%22tag%3D%5C%22female%5C%22%22%7D%5D%7D"></iframe>
+  <div class="graph-embed-div">
+    <iframe class="graph-embed-2line" id="gender"></iframe>
   </div>
 
   <p>In interpreting these results, it is important to consider two details about how the Stanford Cable TV Analyzer works:</p>
@@ -75,22 +71,22 @@ li {
   <p>
     Notice that the fractions don't add up to 1 since the graph plots fractions of screen time, and not the fraction of total number of people on screen. Both a man and a woman can be on screen at the same time --- these moments in time contribute to both counts. (e.g., If a man was always paired with a woman on screen, then both lines would be 1.)
   </p>
-  
-<div class="graph_embed_div">
-  <iframe class="graph_embed" src="https://esper-tv.stanford.edu/embed?dataVersion=v1&data=%7B%22options%22%3A%7B%22start_date%22%3A%222010-01-01%22%2C%22end_date%22%3A%222019-07-23%22%2C%22aggregate%22%3A%22month%22%7D%2C%22queries%22%3A%5B%7B%22color%22%3A%22%234E79A7%22%2C%22text%22%3A%22tag%3D%5C%22male%5C%22%20normalize%20tag%3D%5C%22all%5C%22%22%7D%2C%7B%22color%22%3A%22%23F28E2B%22%2C%22text%22%3A%22tag%3D%5C%22female%5C%22%20normalize%20tag%3D%5C%22all%5C%22%22%7D%5D%7D"></iframe>
+
+<div class="graph-embed-div">
+  <iframe class="graph-embed-2line" id="genderNorm"></iframe>
 </div>
 
 <h3>Step 3: Male to female ratios</h3>
 
   <p>
-    Finally, I wanted to see the actual ratio of men to women screen time, which I'm plotting below.  (Note the new normalization in the query.) 
-    In 2010 it was about 2.5 times more likely that there was a man on screen than a woman 
+    Finally, I wanted to see the actual ratio of men to women screen time, which I'm plotting below.  (Note the new normalization in the query.)
+    In 2010 it was about 2.5 times more likely that there was a man on screen than a woman
     By 2019, this ratio has dropped under 2. (A ratio of 1 would indicate gender parity.)
   </p>
 
-<div class="graph_embed_div">
-<iframe class="graph_embed" src="https://esper-tv.stanford.edu/embed?dataVersion=v1&data=%7B%22options%22%3A%7B%22start_date%22%3A%222010-01-01%22%2C%22end_date%22%3A%222019-07-23%22%2C%22aggregate%22%3A%22month%22%7D%2C%22queries%22%3A%5B%7B%22color%22%3A%22%2359A14F%22%2C%22text%22%3A%22tag%3D%5C%22male%5C%22%20normalize%20tag%3D%5C%22female%5C%22%22%7D%5D%7D"></iframe>
-</div>
+  <div class="graph-embed-div">
+    <iframe class="graph-embed-1line" id="genderRatio"></iframe>
+  </div>
 
 <h3>Step 4: Does this ratio differ by channel?</h3>
 
@@ -98,28 +94,57 @@ li {
   Breaking down the data by channel shows that this general trend holds for all three cable TV news channels. Of the three, CNN has typically featured the lowest ratio of male to female screen time.
  </p>
 
-<div class="graph_embed_div">
-<iframe class="graph_embed" src="https://esper-tv.stanford.edu/embed?dataVersion=v1&data=%7B%22options%22%3A%7B%22start_date%22%3A%222010-01-01%22%2C%22end_date%22%3A%222019-07-23%22%2C%22aggregate%22%3A%22month%22%7D%2C%22queries%22%3A%5B%7B%22color%22%3A%22%2376B7B2%22%2C%22text%22%3A%22tag%3D%5C%22male%5C%22%20and%20channel%3D%5C%22msnbc%5C%22%20normalize%20channel%3D%5C%22msnbc%5C%22%20and%20tag%3D%5C%22female%5C%22%22%7D%2C%7B%22color%22%3A%22%23E15759%22%2C%22text%22%3A%22tag%3D%5C%22male%5C%22%20and%20channel%3D%5C%22fox%5C%22%20normalize%20channel%3D%5C%22fox%5C%22%20and%20tag%3D%5C%22female%5C%22%22%7D%2C%7B%22color%22%3A%22%23B07AA1%22%2C%22text%22%3A%22tag%3D%5C%22male%5C%22%20and%20channel%3D%5C%22cnn%5C%22%20normalize%20channel%3D%5C%22cnn%5C%22%20and%20tag%3D%5C%22female%5C%22%22%7D%5D%7D"></iframe>
-</div>
+ <div class="graph-embed-div">
+   <iframe class="graph-embed-3line" id="genderRatioChannel"></iframe>
+ </div>
 
 <h3>Step 5: Does the story change if we limit our analysis to hosts?</h3>
 
 <p>
-  So far, my screen time analysis has counted all faces in the dataset. It is also interesting to consider how the gender ratios for <b>show hosts</b> have evolved over time.  The following plot is the ratio of screen time of male hosts vs. that of female hosts.  Interestingly, when considering only host screen time, the steady movement toward parity reverses in 2015.  
+  So far, my screen time analysis has counted all faces in the dataset. It is also interesting to consider how the gender ratios for <b>show hosts</b> have evolved over time.  The following plot is the ratio of screen time of male hosts vs. that of female hosts.  Interestingly, when considering only host screen time, the steady movement toward parity reverses in 2015.
 </p>
 
-<div class="graph_embed_div">
-<iframe class="graph_embed" src="https://esper-tv.stanford.edu/embed?dataVersion=v1&data=%7B%22options%22%3A%7B%22start_date%22%3A%222010-01-01%22%2C%22end_date%22%3A%222019-07-23%22%2C%22aggregate%22%3A%22month%22%7D%2C%22queries%22%3A%5B%7B%22color%22%3A%22%234E79A7%22%2C%22text%22%3A%22tag%3D%5C%22male%2Chost%5C%22%20normalize%20tag%3D%5C%22host%5C%22%22%7D%2C%7B%22color%22%3A%22%23F28E2B%22%2C%22text%22%3A%22tag%3D%5C%22female%2Chost%5C%22%20normalize%20tag%3D%5C%22host%5C%22%22%7D%5D%7D"></iframe>
+<div class="graph-embed-div">
+  <iframe class="graph-embed-2line" id="genderHostNorm"></iframe>
 </div>
 
 <p>
   A breakdown by channel shows that the shift away from parity for show hosts has been most severe on CNN.
 </p>
 
-<div class="graph_embed_div">
-<iframe class="graph_embed" style="height: 500px;" src="https://esper-tv.stanford.edu/embed?dataVersion=v1&data=%7B%22options%22%3A%7B%22start_date%22%3A%222010-01-01%22%2C%22end_date%22%3A%222019-07-23%22%2C%22aggregate%22%3A%22month%22%7D%2C%22queries%22%3A%5B%7B%22color%22%3A%22%2376B7B2%22%2C%22text%22%3A%22tag%3D%5C%22male%2Chost%5C%22%20and%20channel%3D%5C%22msnbc%5C%22%20normalize%20tag%3D%5C%22host%5C%22%20and%20channel%3D%5C%22msnbc%5C%22%22%7D%2C%7B%22color%22%3A%22%23F28E2B%22%2C%22text%22%3A%22tag%3D%5C%22female%2Chost%5C%22%20and%20channel%3D%5C%22msnbc%5C%22%20normalize%20tag%3D%5C%22host%5C%22%20and%20channel%3D%5C%22msnbc%5C%22%22%7D%2C%7B%22color%22%3A%22%23B07AA1%22%2C%22text%22%3A%22tag%3D%5C%22male%2Chost%5C%22%20and%20channel%3D%5C%22fox%5C%22%20normalize%20tag%3D%5C%22host%5C%22%20and%20channel%3D%5C%22fox%5C%22%22%7D%2C%7B%22color%22%3A%22%23BAB0AC%22%2C%22text%22%3A%22tag%3D%5C%22female%2Chost%5C%22%20and%20channel%3D%5C%22fox%5C%22%20normalize%20tag%3D%5C%22host%5C%22%20and%20channel%3D%5C%22fox%5C%22%22%7D%2C%7B%22color%22%3A%22%23E15759%22%2C%22text%22%3A%22tag%3D%5C%22male%2Chost%5C%22%20and%20channel%3D%5C%22cnn%5C%22%20normalize%20tag%3D%5C%22host%5C%22%20and%20channel%3D%5C%22cnn%5C%22%22%7D%2C%7B%22color%22%3A%22%23EDC948%22%2C%22text%22%3A%22tag%3D%5C%22female%2Chost%5C%22%20and%20channel%3D%5C%22cnn%5C%22%20normalize%20tag%3D%5C%22host%5C%22%20and%20channel%3D%5C%22cnn%5C%22%22%7D%5D%7D"></iframe>
+<div class="graph-embed-div">
+  <iframe class="graph-embed-6line" id="genderHostChannelNorm"></iframe>
 </div>
 
+<script>
+  setIframeSource('#gender', ['tag="male"', 'tag="female"'], false);
+  setIframeSource(
+    '#genderNorm',
+    ['tag="male" normalize tag="all"', 'tag="female" normalize tag="all"'],
+    false);
+  setIframeSource(
+    '#genderRatio', ['tag="male" normalize tag="female"'], false);
+  setIframeSource(
+    '#genderRatioChannel', [
+      'tag="male" and channel="msnbc" normalize channel="msnbc" and tag="female"',
+      'tag="male" and channel="fox" normalize channel="fox" and tag="female"',
+      'tag="male" and channel="cnn" normalize channel="cnn" and tag="female"'
+    ], false);
+  setIframeSource(
+    '#genderHostNorm', [
+      'tag="male,host" normalize tag="host"',
+      'tag="female,host" normalize tag="host"'
+    ], false);
+  setIframeSource(
+    '#genderHostChannelNorm', [
+      'tag="male,host" and channel="msnbc" normalize tag="host" and channel="msnbc"',
+      'tag="female,host" and channel="msnbc" normalize tag="host" and channel="msnbc"',
+      'tag="male,host" and channel="fox" normalize tag="host" and channel="fox"',
+      'tag="female,host" and channel="fox" normalize tag="host" and channel="fox"',
+      'tag="male,host" and channel="cnn" normalize tag="host" and channel="cnn"',
+      'tag="female,host" and channel="cnn" normalize tag="host" and channel="cnn"'
+    ], false);
+</script>
 
 </div>
 {% endblock %}

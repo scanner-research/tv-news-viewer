@@ -31,3 +31,33 @@ hr {
   height: auto !important;
   background: none;
 }
+
+.graph-embed-1line {
+  border: 0px;
+  width:  900px;
+  height: 425px;
+}
+.graph-embed-2line {
+  border: 0px;
+  width:  900px;
+  height: 470px;
+}
+.graph-embed-3line {
+  border: 0px;
+  width:  900px;
+  height: 515px;
+}
+
+.graph-embed-5line {
+  border: 0px;
+  width:  900px;
+  height: 600px;
+}
+.graph-embed-6line {
+  border: 0px;
+  width:  900px;
+  height: 685px;
+}
+.graph-embed-div {
+  text-align: center;
+}
