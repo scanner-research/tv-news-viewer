@@ -6,10 +6,6 @@
 #searchTable th {
   text-align: center;
 }
-#searchTable input[name=where] {
-  text-align: left;
-  font-size: 12px;
-}
 #searchTable .input-group, .input-group-prepend, .input-group-text, .form-control {
   height: 30px;
   padding-top: 0px;

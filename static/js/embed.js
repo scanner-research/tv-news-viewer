@@ -17,27 +17,6 @@ function getChartDimensions() {
   return {width: width, height: height};
 }
 
-function clearChart() {
-  $('#chart').empty();
-}
-
-function reset() {
-  // Remove all rows except one
-  $('tr[name="query"]').each(function() {
-    if ($(this).index() > 0) {
-      removeRow($(this));
-    }
-  });
-
-  // Reset the last code editor
-  Object.values(CODE_EDITORS).forEach(e => e.setValue(''));
-
-  // Reset to defaults
-  $('#aggregateBy').val(DEFAULT_AGGREGATE_BY).trigger("chosen:updated");
-  $('#startDate').val(toDatepickerStr(DEFAULT_START_DATE));
-  $('#endDate').val(toDatepickerStr(DEFAULT_END_DATE));
-  clearChart();
-}
 
 function getDataString(chart_options, lines) {
   return urlSafeBase64Encode(JSON.stringify({
@@ -46,17 +25,15 @@ function getDataString(chart_options, lines) {
   }));
 }
 
-function search() {
-  clearChart();
-
+function search(editor) {
   var chart_options;
   try {
-    chart_options = getChartOptions();
+    chart_options = editor.getChartOptions();
   } catch (e) {
     alertAndThrow(e.message);
   }
 
-  let lines = getRawQueries().map(
+  let lines = editor.getRawQueries().map(
     raw_query => {
       var parsed_query;
       try {
@@ -110,21 +87,17 @@ function search() {
 }
 
 function initializeDynamic(params) {
-  ENABLE_QUERY_BUILDER = false;
-
   $('.chart-info').show();
-  $('#searchTable').show();
-
-  addParsingMode('tvnews', {no_prefix: true, check_values: true});
-  addCodeHintHelper('tvnews');
+  $('#editor').show();
+  let editor = new Editor('#editor', false);
 
   var loaded = false;
   if (params.get('data')) {
     try {
       let data = JSON.parse(urlSafeBase64Decode(params.get('data')));
-      initChartOptions(data.options);
-      data.queries.forEach(query => addRow(query));
-      search();
+      editor.initChartOptions(data.options);
+      data.queries.forEach(query => editor.addRow(query));
+      search(editor);
       loaded = true;
     } catch (e) {
       alert('Invalid data in url. Please make sure you copied it correctly. Loading defaults instead.');
@@ -132,17 +105,22 @@ function initializeDynamic(params) {
     }
   }
   if (!loaded) {
-    initChartOptions();
-    addRow({text: ''});
+    editor.initChartOptions();
+    editor.addRow({text: ''});
     try {
-      search();
+      search(editor);
     } catch (e) {};
   }
 
-  $(".chosen-select").chosen({width: 'auto'});
-  $('#searchTable .add-row-btn').click(() => {addRow();});
-  $('#searchButton').click(search);
-  $('#resetButton').click(reset);
+  $('.chosen-select').chosen({width: 'auto'});
+  $('#searchButton').click(() => {
+    $('#chart').empty();
+    search(editor)
+  });
+  $('#resetButton').click(() => {
+    $('#chart').empty();
+    editor.reset();
+  });
 }
 
 function getStaticLegend(lines) {

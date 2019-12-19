@@ -1,9 +1,8 @@
 const DEFAULT_CHART_DIMS = {width: 1000, height: 400};
 
+var EDITOR = null;
+
 function clearChart() {
-  $('.query-builder').each(function() {
-    closeQueryBuilder($(this).closest('tr'));
-  });
   $('#chart').empty();
   let vgrid_selector = $('#vgridArea');
   vgrid_selector.empty();
@@ -126,15 +125,16 @@ function displaySearchResults(
 
 function search(event) {
   clearChart();
+  EDITOR.closeQueryBuilders();
 
   var chart_options;
   try {
-    chart_options = getChartOptions();
+    chart_options = EDITOR.getChartOptions();
   } catch (e) {
     alertAndThrow(e.message);
   }
 
-  let lines = getRawQueries().map(
+  let lines = EDITOR.getRawQueries().map(
     raw_query => {
       var parsed_query;
       try {
@@ -199,36 +199,11 @@ function addWarning(message) {
   ).show();
 }
 
-function isValidQuery(s) {
-  try {
-    new SearchableQuery(s, false);
-  } catch (e) {
-    return false;
-  }
-  return true;
-}
-
 function reset() {
   if (window.confirm('Warning! This will clear all of your current queries.')) {
-    // Remove all rows except one
-    $('tr[name="query"]').each(function() {
-      if ($(this).index() > 0) {
-        removeRow($(this));
-      }
-    });
+    EDITOR.reset();
 
-    // Close all query builders
-    $('.query-builder').each(function() {
-      closeQueryBuilder($(this).closest('tr'));
-    });
-
-    // Reset the last code editor
-    Object.values(CODE_EDITORS).forEach(e => e.setValue(''));
-
-    // Reset to defaults
-    $('#aggregateBy').val(DEFAULT_AGGREGATE_BY).trigger("chosen:updated");
-    $('#startDate').val(toDatepickerStr(DEFAULT_START_DATE));
-    $('#endDate').val(toDatepickerStr(DEFAULT_END_DATE));
+    // Clear the url
     window.history.pushState({}, document.title, '/');
 
     // Reset the chart
@@ -237,11 +212,6 @@ function reset() {
 }
 
 function initialize() {
-  ENABLE_QUERY_BUILDER = true;
-
-  addParsingMode('tvnews', {no_prefix: true, check_values: true});
-  addCodeHintHelper('tvnews');
-
   let params = (new URL(document.location)).searchParams;
   minimalMode = params.get('minimal') == 1;
   chartHeight = params.get('chartHeight') ? parseInt(params.get('chartHeight')) : DEFAULT_CHART_DIMS.height;
@@ -253,12 +223,14 @@ function initialize() {
     }
   }
 
+  EDITOR = new Editor('#editor', true);
+
   var loaded = false;
   if (params.get('data')) {
     try {
       let data = JSON.parse(urlSafeBase64Decode(params.get('data')));
-      initChartOptions(data.options);
-      data.queries.forEach(query => addRow(query));
+      EDITOR.initChartOptions(data.options);
+      data.queries.forEach(query => EDITOR.addRow(query));
       search();
       loaded = true;
     } catch (e) {
@@ -268,19 +240,18 @@ function initialize() {
   }
 
   if (!loaded) {
-    initChartOptions();
+    EDITOR.initChartOptions();
     if (params.get('blank') != 1 && DEFAULT_QUERIES.every(isValidQuery)) {
-      DEFAULT_QUERIES.forEach(x => addRow({text: x}));
+      DEFAULT_QUERIES.forEach(x => EDITOR.addRow({text: x}));
     } else {
-      addRow({text: ''});
+      EDITOR.addRow({text: ''});
     }
     try {
       search();
     } catch (e) {};
   }
 
-  $(".chosen-select").chosen({width: 'auto'});
-  $('#searchTable .add-row-btn').click(() => {addRow();});
+  $('.chosen-select').chosen({width: 'auto'});
   $('#searchButton').click(search);
   $('#resetButton').click(reset);
 
