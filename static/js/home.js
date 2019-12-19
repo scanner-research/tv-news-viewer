@@ -216,7 +216,7 @@ function initialize() {
       let data = JSON.parse(urlSafeBase64Decode(params.get('data')));
       editor.initChartOptions(data.options);
       data.queries.forEach(query => editor.addRow(query));
-      search();
+      search(editor, false);
       loaded = true;
     } catch (e) {
       alert('Invalid data in url. Please make sure you copied it correctly. Loading defaults instead.');
@@ -232,7 +232,7 @@ function initialize() {
       editor.addRow({text: ''});
     }
     try {
-      search();
+      search(editor, false);
     } catch (e) {};
   }
 
