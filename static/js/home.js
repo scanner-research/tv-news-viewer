@@ -1,7 +1,5 @@
 const DEFAULT_CHART_DIMS = {width: 1000, height: 400};
 
-var EDITOR = null;
-
 function clearChart() {
   $('#chart').empty();
   let vgrid_selector = $('#vgridArea');
@@ -123,18 +121,18 @@ function displaySearchResults(
   $('#embedArea').show();
 }
 
-function search(event) {
+function search(editor, push_state) {
   clearChart();
-  EDITOR.closeQueryBuilders();
+  editor.closeQueryBuilders();
 
   var chart_options;
   try {
-    chart_options = EDITOR.getChartOptions();
+    chart_options = editor.getChartOptions();
   } catch (e) {
     alertAndThrow(e.message);
   }
 
-  let lines = EDITOR.getRawQueries().map(
+  let lines = editor.getRawQueries().map(
     raw_query => {
       var parsed_query;
       try {
@@ -153,8 +151,7 @@ function search(event) {
     indexed_search_results.sort();
     displaySearchResults(
       chart_options, lines, indexed_search_results.map(([i, v]) => v),
-      event != undefined
-    );
+      push_state);
   }
 
   Promise.all(lines.map((line, i) => {
@@ -199,18 +196,6 @@ function addWarning(message) {
   ).show();
 }
 
-function reset() {
-  if (window.confirm('Warning! This will clear all of your current queries.')) {
-    EDITOR.reset();
-
-    // Clear the url
-    window.history.pushState({}, document.title, '/');
-
-    // Reset the chart
-    clearChart();
-  }
-}
-
 function initialize() {
   let params = (new URL(document.location)).searchParams;
   minimalMode = params.get('minimal') == 1;
@@ -223,14 +208,14 @@ function initialize() {
     }
   }
 
-  EDITOR = new Editor('#editor', true);
+  let editor = new Editor('#editor', true);
 
   var loaded = false;
   if (params.get('data')) {
     try {
       let data = JSON.parse(urlSafeBase64Decode(params.get('data')));
-      EDITOR.initChartOptions(data.options);
-      data.queries.forEach(query => EDITOR.addRow(query));
+      editor.initChartOptions(data.options);
+      data.queries.forEach(query => editor.addRow(query));
       search();
       loaded = true;
     } catch (e) {
@@ -240,11 +225,11 @@ function initialize() {
   }
 
   if (!loaded) {
-    EDITOR.initChartOptions();
+    editor.initChartOptions();
     if (params.get('blank') != 1 && DEFAULT_QUERIES.every(isValidQuery)) {
-      DEFAULT_QUERIES.forEach(x => EDITOR.addRow({text: x}));
+      DEFAULT_QUERIES.forEach(x => editor.addRow({text: x}));
     } else {
-      EDITOR.addRow({text: ''});
+      editor.addRow({text: ''});
     }
     try {
       search();
@@ -252,8 +237,18 @@ function initialize() {
   }
 
   $('.chosen-select').chosen({width: 'auto'});
-  $('#searchButton').click(search);
-  $('#resetButton').click(reset);
+  $('#searchButton').click(function() {
+    search(editor, event != undefined);
+  });
+  $('#resetButton').click(function() {
+    if (window.confirm('Warning! This will clear all of your current queries.')) {
+      editor.reset();
+      // Clear the url
+      window.history.pushState({}, document.title, '/');
+      // Reset the chart
+      clearChart();
+    }
+  });
 
   addHighlight('#plusMinusHover', ['.remove-row-btn', '.add-row-btn']);
   addHighlight('#dropdownEditorHover', ['.toggle-query-builder-btn']);
