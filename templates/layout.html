@@ -9,12 +9,16 @@
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
 
-<link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,400i,700,700i&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
-<link rel="shortcut icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}" />
+  <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,400i,700,700i&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+  <link rel="shortcut icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}" />
 
   <title>{% block title %}Stanford Cable TV News Analyzer{% endblock %}</title>
   {% endblock %}
+
+  <meta property="og:title" content="Stanford Cable TV News Analyzer" />
+  <meta property="og:description" content="The Stanford Cable TV Analyzer enables you to write queries that compute the amount of time people appear and the amount of time words are heard in cable TV news." />
+  <meta property="og:image" content="{{ url_for('static', filename='img/analyzer.png') }}" />
 </head>
 
 {% block body %}
