@@ -1,5 +1,13 @@
 {% extends "layout.html" %}
 
+{% block meta %}
+  {{ super() }}
+  <meta property="og:title" content="Stanford Cable TV News Analyzer - Getting started" />
+  <meta name="twitter:title" content="Stanford Cable TV News Analyzer - Getting started" />
+  <meta property="og:url" content="https://{{ host }}/getting-started" />
+  <meta name="twitter:url" content="https://{{ host }}/getting-started" />
+{% endblock %}
+
 {% block head %}
 {{ super() }}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/instructions.css') }}" />

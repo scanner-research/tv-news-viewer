@@ -1,5 +1,13 @@
 {% extends "layout.html" %}
 
+{% block meta %}
+  {{ super() }}
+  <meta property="og:title" content="Stanford Cable TV News Analyzer - Documentation" />
+  <meta name="twitter:title" content="Stanford Cable TV News Analyzer - Documentation" />
+  <meta property="og:url" content="https://{{ host }}/docs" />
+  <meta name="twitter:url" content="https://{{ host }}/docs" />
+{% endblock %}
+
 {% block head %}
   {{ super() }}
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.48.4/codemirror.min.css" integrity="sha256-vZ3SaLOjnKO/gGvcUWegySoDU6ff33CS5i9ot8J9Czk=" crossorigin="anonymous" />

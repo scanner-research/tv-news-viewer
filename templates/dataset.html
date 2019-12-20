@@ -1,5 +1,13 @@
 {% extends "layout.html" %}
 
+{% block meta %}
+  {{ super() }}
+  <meta property="og:title" content="Stanford Cable TV News Analyzer - Dataset" />
+  <meta name="twitter:title" content="Stanford Cable TV News Analyzer - Dataset" />
+  <meta property="og:url" content="https://{{ host }}/data" />
+  <meta name="twitter:url" content="https://{{ host }}/data" />
+{% endblock %}
+
 {% block content %}
 <div class="container">
   <h1>The Cable TV News Dataset</h1>
@@ -23,7 +31,7 @@
   includes the name of the news program, the date/time it aired, and the channel
   on which it aired. Video frames range in resolution from 640x360 to 858x480.
   All videos include audio. 95.4% of the video files have accompanying closed
-  caption transcripts. 
+  caption transcripts.
 
   </p>
 

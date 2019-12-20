@@ -1,20 +1,28 @@
 {% extends "layout.html" %}
 
+{% block meta %}
+  {{ super() }}
+  <meta property="og:title" content="Stanford Cable TV News Analyzer - Methodology" />
+  <meta name="twitter:title" content="Stanford Cable TV News Analyzer - Methodology" />
+  <meta property="og:url" content="https://{{ host }}/methodology" />
+  <meta name="twitter:url" content="https://{{ host }}/methodology" />
+{% endblock %}
+
 {% block content %}
 <div class="container">
   <h1>Labeling Methodology</h1>
   <p>
-    This page documents the methodology used for extracting metadata from the <a href="/data">cable TV news video dataset</a>.  
+    This page documents the methodology used for extracting metadata from the <a href="/data">cable TV news video dataset</a>.
 
 <ul>
   <li><a href="#face_detection">Face Detection</a>
     <ul>
-      <li><a href="#face_descriptors">Face Descriptors</a></li>  
+      <li><a href="#face_descriptors">Face Descriptors</a></li>
       <li><a href="#face_gender">Face Gender Tags</a></li>
       <li><a href="#face_identity">Face Identities</a></li>
       <li><a href="#face_misctags">Additional Face Tags</a></li>
     </ul>
-  </li>  
+  </li>
   <li><a href="#commercials">Commercial Segment Detection</a></li>
   <li><a href="#time_alignment">Transcript Time Alignment</a></li>
 </ul>
@@ -25,8 +33,8 @@
 <h2><a id="face_detection"></a>Face Detection</h2>
 
 
-<p>We detected faces in video frames using the <a href="https://kpzhang93.github.io/MTCNN_face_detection_alignment/index.html">MTCNN</a> [1,2] face detector.  Due to the high cost of performing face detection on all frames in the dataset, we performed face detection on a subset of frames uniformly sampled every three seconds in a video.  This process yielded a total of 306 million face detections. 
-Since face detection is performed on frames spaced by three seconds in a video, the Stanford Cable TV News Analyzer tabulates face screen time at a granularity of three seconds.  For example, a face detection of Anderson Cooper in a single video frame contributes three seconds to the estimate of Mr. Cooper's screen time in the video.   
+<p>We detected faces in video frames using the <a href="https://kpzhang93.github.io/MTCNN_face_detection_alignment/index.html">MTCNN</a> [1,2] face detector.  Due to the high cost of performing face detection on all frames in the dataset, we performed face detection on a subset of frames uniformly sampled every three seconds in a video.  This process yielded a total of 306 million face detections.
+Since face detection is performed on frames spaced by three seconds in a video, the Stanford Cable TV News Analyzer tabulates face screen time at a granularity of three seconds.  For example, a face detection of Anderson Cooper in a single video frame contributes three seconds to the estimate of Mr. Cooper's screen time in the video.
 </p>
 
 <p>
@@ -42,7 +50,7 @@ The location of each detected face is represented by an axis-aligned bounding bo
 <h3><a id="face_descriptors"></a>Face Descriptors</h3>
 
 <p>
-We compute the 128-element <a href="https://github.com/davidsandberg/facenet">FaceNet</a> descriptor [3,4] from the pixels contained inside a face’s bounding box. 
+We compute the 128-element <a href="https://github.com/davidsandberg/facenet">FaceNet</a> descriptor [3,4] from the pixels contained inside a face’s bounding box.
 </p>
 
 <hr>
@@ -58,7 +66,7 @@ We compute the 128-element <a href="https://github.com/davidsandberg/facenet">Fa
 </p>
 
 <p>
-<b>Validation:</b> The classifier's agreement with human annotators on a test set of 1,066 faces 
+<b>Validation:</b> The classifier's agreement with human annotators on a test set of 1,066 faces
 selected at random from the dataset is given by the confusion matrix below. In this test set, 735 of these faces were assessed by human annotator to be male presenting. 331 were assessed by humans to be female.
 </p>
 
@@ -69,7 +77,7 @@ selected at random from the dataset is given by the confusion matrix below. In t
 <h3><a id="face_identity"></a>Face Identity Tags</h3>
 
 <p>
-  We use the <a href="https://docs.aws.amazon.com/rekognition/latest/dg/celebrities.html">Amazon Rekognition Celebrity Recognition API</a> to identify the detected faces. The API provides an identity estimate only when its identification confidence score is greater than 0.5. We use all predictions above this 0.5 threshold, and do no additional thresholding.  As a result of this process, the API returns an identity prediction for 45.2% of the faces in the dataset.  Identities in the dataset result from Celebrity Recognition API queries performed in September 2019. Amazon does not disclose the full list of individuals that can be recognized by this service.  
+  We use the <a href="https://docs.aws.amazon.com/rekognition/latest/dg/celebrities.html">Amazon Rekognition Celebrity Recognition API</a> to identify the detected faces. The API provides an identity estimate only when its identification confidence score is greater than 0.5. We use all predictions above this 0.5 threshold, and do no additional thresholding.  As a result of this process, the API returns an identity prediction for 45.2% of the faces in the dataset.  Identities in the dataset result from Celebrity Recognition API queries performed in September 2019. Amazon does not disclose the full list of individuals that can be recognized by this service.
 </p>
 
 <p>
@@ -81,11 +89,11 @@ To increase the percentage of faces with identity tags, we tag faces that were n
 <h3><a id="face_misctags"></a>Additional Face Tags</h3>
 
 <p>
-  For each face tagged with an identity, we download all person-tags associated with this identity from <a href="https://wiki.dbpedia.org/">DBpedia</a> [5] using its public <a href="https://wiki.dbpedia.org/public-sparql-endpoint">SPARQL API</a>.  A full description of the per-face tags available in the Stanford Cable TV News Analyzer is available on the <a href="/data/tags">tag information page</a>.  Tags listed with source of "DBpedia" on that page were directly downloaded from DBpedia.  
+  For each face tagged with an identity, we download all person-tags associated with this identity from <a href="https://wiki.dbpedia.org/">DBpedia</a> [5] using its public <a href="https://wiki.dbpedia.org/public-sparql-endpoint">SPARQL API</a>.  A full description of the per-face tags available in the Stanford Cable TV News Analyzer is available on the <a href="/data/tags">tag information page</a>.  Tags listed with source of "DBpedia" on that page were directly downloaded from DBpedia.
 </p>
 
 <p>
-We also augment tags downloaded from DBpedia with additional "derived" tags computed from DBpedia tags.  For example, the derived tag "african_american" is formed from the union of DBpedia tags featuring the prefix "african_american": e.g., "african_american_academics", "african_american_mayors".  
+We also augment tags downloaded from DBpedia with additional "derived" tags computed from DBpedia tags.  For example, the derived tag "african_american" is formed from the union of DBpedia tags featuring the prefix "african_american": e.g., "african_american_academics", "african_american_mayors".
 </p>
 
 <hr>
@@ -95,11 +103,11 @@ We also augment tags downloaded from DBpedia with additional "derived" tags comp
 <p>
 We detect commercial segments using an algorithm that scans videos for sequences of black frames (which typically indicate the start and end of commercials) and for video segments where transcript text that is either missing or lower case. (We observed that these transcript features are indicative of commercials in most videos in our dataset.)  Source code for this algorithm is available at:
 <a href="https://github.com/scanner-research/esper-tv/blob/master/app/esper/commercial_detection_rekall.py">https://github.com/scanner-research/esper-tv/blob/master/app/esper/commercial_detection_rekall.py</a>.
-The algorithm is written using <a href="https://github.com/scanner-research/rekall">Rekall</a>, an API for complex event detection in video. 
+The algorithm is written using <a href="https://github.com/scanner-research/rekall">Rekall</a>, an API for complex event detection in video.
 </p>
 
 <p>
-  Overall, there are 70,559 hours of detected commercials in the dataset, leaving 182,896 hours of program content.  By default, video segments lying within commercials are excluded from query results in the Stanford Cable TV News Analyzier. 
+  Overall, there are 70,559 hours of detected commercials in the dataset, leaving 182,896 hours of program content.  By default, video segments lying within commercials are excluded from query results in the Stanford Cable TV News Analyzier.
 </p>
 
 <p>
