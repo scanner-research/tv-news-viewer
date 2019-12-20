@@ -1,7 +1,7 @@
 import time
 import re
 from typing import Optional
-from flask import Flask, Response, render_template
+from flask import Flask, Response, render_template, request
 
 from .types_frontend import SearchKey, SearchParam
 
@@ -29,11 +29,12 @@ def add_html_routes(
 
     @app.route('/')
     def root() -> Response:
-        return render_template('home.html', uptime=_get_uptime())
+        return render_template(
+            'home.html', host=request.host, uptime=_get_uptime())
 
     @app.route('/embed')
     def embed() -> Response:
-        return render_template('embed.html')
+        return render_template('embed.html', host=request.host)
 
     @app.route('/video-embed')
     def show_videos() -> Response:
@@ -41,33 +42,38 @@ def add_html_routes(
 
     @app.route('/getting-started')
     def get_getting_started() -> Response:
-        return render_template('getting-started.html', search_keys=SearchKey)
+        return render_template(
+            'getting-started.html', host=request.host, uptime=_get_uptime(),
+            search_keys=SearchKey)
 
     @app.route('/docs')
     def get_docs() -> Response:
         return render_template(
-            'docs.html', search_keys=SearchKey,
-            default_text_window=default_text_window)
+            'docs.html', host=request.host, uptime=_get_uptime(),
+            search_keys=SearchKey, default_text_window=default_text_window)
 
     @app.route('/methodology')
     def get_methodology() -> Response:
-        return render_template('methodology.html')
+        return render_template(
+            'methodology.html', host=request.host, uptime=_get_uptime())
 
     @app.route('/data')
     def get_dataset() -> Response:
-        return render_template('dataset.html')
+        return render_template('dataset.html', host=request.host)
 
     @app.route('/about')
     def get_about() -> Response:
-        return render_template('about.html')
+        return render_template('about.html', host=request.host)
 
     @app.route('/data/people')
     def get_data_people() -> Response:
-        return render_template('data/people.html', search_keys=SearchKey)
+        return render_template(
+            'data/people.html', search_keys=SearchKey)
 
     @app.route('/data/tags')
     def get_data_tags() -> Response:
-        return render_template('data/tags.html', search_keys=SearchKey)
+        return render_template(
+            'data/tags.html', search_keys=SearchKey)
 
     @app.route('/data/shows')
     def get_data_shows() -> Response:
