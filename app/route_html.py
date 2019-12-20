@@ -1,14 +1,14 @@
 import time
 import re
-from typing import Optional
+from typing import Optional, Dict
 from flask import Flask, Response, render_template, request
 
 from .types_frontend import SearchKey, SearchParam
 
 
 def add_html_routes(
-    app: Flask, num_total_videos: int, num_video_samples: int,
-    default_text_window: int
+    app: Flask, host: Optional[str], num_total_videos: int,
+    num_video_samples: int, default_text_window: int, show_uptime: bool
 ):
     server_start_time = time.time()
 
@@ -22,6 +22,15 @@ def add_html_routes(
         s -= m * 60
         return '{}d {}h {}m {}s'.format(d, h, m, int(s))
 
+    def _get_host() -> str:
+        return host if host else request.host
+
+    def _get_template_kwargs() -> Dict[str, str]:
+        kwargs = {'host': _get_host()}
+        if show_uptime:
+            kwargs['uptime'] = _get_uptime()
+        return kwargs
+
     @app.template_filter('quoted')
     def quoted(s: str) -> Optional[str]:
         l = re.findall('\'([^\']*)\'', str(s))
@@ -30,11 +39,11 @@ def add_html_routes(
     @app.route('/')
     def root() -> Response:
         return render_template(
-            'home.html', host=request.host, uptime=_get_uptime())
+            'home.html', **_get_template_kwargs())
 
     @app.route('/embed')
     def embed() -> Response:
-        return render_template('embed.html', host=request.host)
+        return render_template('embed.html', host=_get_host())
 
     @app.route('/video-embed')
     def show_videos() -> Response:
@@ -43,53 +52,57 @@ def add_html_routes(
     @app.route('/getting-started')
     def get_getting_started() -> Response:
         return render_template(
-            'getting-started.html', host=request.host, uptime=_get_uptime(),
-            search_keys=SearchKey)
+            'getting-started.html', search_keys=SearchKey,
+            **_get_template_kwargs())
 
     @app.route('/docs')
     def get_docs() -> Response:
         return render_template(
-            'docs.html', host=request.host, uptime=_get_uptime(),
-            search_keys=SearchKey, default_text_window=default_text_window)
+            'docs.html', search_keys=SearchKey,
+            default_text_window=default_text_window, **_get_template_kwargs())
 
     @app.route('/methodology')
     def get_methodology() -> Response:
         return render_template(
-            'methodology.html', host=request.host, uptime=_get_uptime())
+            'methodology.html', **_get_template_kwargs())
 
     @app.route('/data')
     def get_dataset() -> Response:
-        return render_template('dataset.html', host=request.host)
+        return render_template('dataset.html', **_get_template_kwargs())
 
     @app.route('/about')
     def get_about() -> Response:
-        return render_template('about.html', host=request.host)
+        return render_template('about.html', **_get_template_kwargs())
 
     @app.route('/data/people')
     def get_data_people() -> Response:
         return render_template(
-            'data/people.html', search_keys=SearchKey)
+            'data/people.html', search_keys=SearchKey,
+            **_get_template_kwargs())
 
     @app.route('/data/tags')
     def get_data_tags() -> Response:
         return render_template(
-            'data/tags.html', search_keys=SearchKey)
+            'data/tags.html', search_keys=SearchKey,
+            **_get_template_kwargs())
 
     @app.route('/data/shows')
     def get_data_shows() -> Response:
-        return render_template('data/shows.html', search_keys=SearchKey)
+        return render_template('data/shows.html', search_keys=SearchKey,
+                               **_get_template_kwargs())
 
     @app.route('/data/videos')
     def get_data_videos() -> Response:
         return render_template(
             'data/videos.html', n_samples='{:,}'.format(num_video_samples),
-            n_total='{:,}'.format(num_total_videos))
+            n_total='{:,}'.format(num_total_videos),
+            **_get_template_kwargs())
 
     @app.route('/data/transcripts')
     def get_data_transcripts() -> Response:
         return render_template(
-            'data/transcripts.html', params=SearchParam,
-            search_keys=SearchKey)
+            'data/transcripts.html', params=SearchParam, search_keys=SearchKey,
+            **_get_template_kwargs())
 
     #NOTE(kayvonf): I'm adding misc/ routes here to add pages to the site,
     # although they may not be linked in for others to see

@@ -46,7 +46,7 @@ def main(
         from app.types_frontend import Ternary
 
         app = build_app(
-            data_dir, index_dir, video_endpoint, video_auth_endpoint,
+            data_dir, index_dir, video_endpoint, video_auth_endpoint, None,
             min_date=datetime(2010, 1, 1),
             max_date=datetime(2019, 7, 31),
             tz=timezone('US/Eastern'),
@@ -55,7 +55,8 @@ def main(
             default_text_window=0,
             default_is_commercial=Ternary.false,
             default_serve_from_archive=True,
-            data_version='dev')
+            data_version='dev',
+            show_uptime=True)
     else:
         from flask import Flask
         from app.route_html import add_html_routes

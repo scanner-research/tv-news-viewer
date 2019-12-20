@@ -65,6 +65,7 @@ def build_app(
     index_dir: str,
     video_endpoint: Optional[str],
     video_auth_endpoint: Optional[str],
+    host: Optional[str],
     min_date: datetime,
     max_date: datetime,
     tz: timezone,
@@ -73,7 +74,8 @@ def build_app(
     default_text_window: int,
     default_is_commercial: Ternary,
     default_serve_from_archive: bool,
-    data_version: Optional[str]
+    data_version: Optional[str],
+    show_uptime: bool
 ) -> Flask:
 
     caption_data_context, video_data_context = \
@@ -95,9 +97,10 @@ def build_app(
         return response
 
     add_html_routes(
-        app, num_total_videos=len(video_data_context.video_dict),
+        app, host, num_total_videos=len(video_data_context.video_dict),
         num_video_samples=NUM_VIDEO_SAMPLES,
-        default_text_window=default_text_window)
+        default_text_window=default_text_window,
+        show_uptime=show_uptime)
 
     add_data_json_routes(app, video_data_context,
                          num_video_samples=NUM_VIDEO_SAMPLES)
@@ -118,7 +121,9 @@ def build_app(
             v.show for v in video_data_context.video_dict.values()
         }))
         resp = make_response(render_template(
-            'js/values.js', host=request.host, data_version=data_version,
+            'js/values.js',
+            host=host if host else request.host,
+            data_version=data_version,
             start_date=format_date(start_date),
             end_date=format_date(end_date),
             default_agg_by=default_aggregate_by,
