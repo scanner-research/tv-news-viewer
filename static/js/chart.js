@@ -194,32 +194,30 @@ class Chart {
     );
 
     // Data for lines
-    let line_data = this.search_results.flatMap(
-      ([color, result]) => {
-        var values = result.main;
-        // Fill in zeros for subtraction
-        if (result.subtract) {
-          Object.keys(result.subtract).forEach(t => {
-            if (!values.hasOwnProperty(t)) {
-              values[t] = [];
-            }
-          });
-        }
-        // Fill in zeros for points next to non-zero points
-        values = fillZeros(
-          values, this.options.aggregate, this.options.start_date,
-          this.options.end_date, []);
-        return Object.entries(values).map(
-          ([t, v]) => {
-            let value = getPointValue(result, v, t);
-            return {
-              time: t, color: color, value: value,
-              size: v.length > 0 ? 30 : 0
-            };
+    let line_data = _.flatMap(this.search_results, ([color, result]) => {
+      var values = result.main;
+      // Fill in zeros for subtraction
+      if (result.subtract) {
+        Object.keys(result.subtract).forEach(t => {
+          if (!values.hasOwnProperty(t)) {
+            values[t] = [];
           }
-        );
+        });
       }
-    );
+      // Fill in zeros for points next to non-zero points
+      values = fillZeros(
+        values, this.options.aggregate, this.options.start_date,
+        this.options.end_date, []);
+      return Object.entries(values).map(
+        ([t, v]) => {
+          let value = getPointValue(result, v, t);
+          return {
+            time: t, color: color, value: value,
+            size: v.length > 0 ? 30 : 0
+          };
+        }
+      );
+    });
 
     // X axis settings
     let all_times_set = new Set(line_data.map(x => x.time));
@@ -310,15 +308,18 @@ class Chart {
       vega_layers.push({
         mark: 'rule',
         selection: {
-          hover: {type: 'single', on: 'mouseover', nearest: true}
+          hover: {
+            type: 'single', on: 'mouseover', nearest: true, encodings: ['x'],
+            clear: 'mouseout'
+          }
         },
         encoding: {
-          color: {
+          opacity: {
             condition: {
               selection: {not: 'hover'}, value: 'transparent'
-            }
-          },
-          opacity: {value: 0.5}
+            },
+            value: 0.5
+          }
         }
       });
     }
@@ -345,6 +346,9 @@ class Chart {
       },
       layer: vega_layers
     };
+    if (!options.transparent) {
+      vega_spec.background = 'white';
+    }
 
     let formatDate = getDateFormatFunction(this.options.aggregate);
     let this_chart = this;
@@ -405,7 +409,7 @@ class Chart {
           });
           $(div_id).append(tooltip);
 
-          $(div_id).on('mouseleave', function() {
+          view.addEventListener('mouseout', function(event, item) {
             tooltip.hide();
             $('.chart-link').hide();
           });

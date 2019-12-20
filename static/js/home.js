@@ -32,7 +32,7 @@ function getChartPath(data) {
 }
 
 function getDownloadUrl(search_results) {
-  let json_data = search_results.flatMap(([color, result]) => {
+  let json_data = _.flatMap(search_results, ([color, result]) => {
     let times = new Set(Object.keys(result.main));
     if (result.normalize) {
       Object.keys(result.normalize).forEach(x => times.add(x));
@@ -69,7 +69,8 @@ function displaySearchResults(
     width: $("#chartArea").width(), height: chartHeight
   }).load('#chart', {
     video_div: '#vgridArea', show_tooltip: !minimalMode,
-    show_mean: false, vega_actions: minimalMode
+    show_mean: false, vega_actions: minimalMode,
+    transparent: minimalMode
   });
 
   if (search_results.length == lines.length) {

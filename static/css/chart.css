@@ -1,3 +1,6 @@
+.vega-embed {
+  padding-right: 0px !important;
+}
 .chart-tooltip {
   display: none;
   padding: 8px;
