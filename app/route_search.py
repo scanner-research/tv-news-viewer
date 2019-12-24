@@ -533,26 +533,24 @@ def person_tags_to_people(
 
             if selected_names is None:
                 selected_names = set(people_with_tag)
-            selected_names = selected_names.intersection(people_with_tag)
+            else:
+                selected_names = selected_names.intersection(people_with_tag)
     return selected_names
 
 
 def person_tags_to_ilistmaps(
     video_data_context: VideoDataContext, tags: Iterable[str]
 ) -> List[MmapIntervalListMapping]:
+    non_global_tags = [t for t in tags if t not in GLOBAL_TAGS]
+    if len(non_global_tags) == 1:
+        ilistmap = video_data_context.cached_tag_intervals.get(
+            non_global_tags[0], None)
+        if ilistmap:
+            return [ilistmap]
+
     ilistmaps = []
-
-    non_cached_tags = []
-    for tag in tags:
-        if tag not in GLOBAL_TAGS:
-            ilistmap = video_data_context.cached_tag_intervals.get(tag, None)
-            if ilistmap:
-                ilistmaps.append(ilistmap)
-            else:
-                non_cached_tags.append(tag)
-
-    if len(non_cached_tags) > 0:
-        people = person_tags_to_people(video_data_context, non_cached_tags)
+    if len(non_global_tags) > 0:
+        people = person_tags_to_people(video_data_context, non_global_tags)
         assert people is not None
         ilistmaps.extend(people_to_ilistmaps(video_data_context, people))
     return ilistmaps
