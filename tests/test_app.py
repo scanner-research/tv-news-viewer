@@ -7,13 +7,14 @@ import os
 import pytest
 import random
 from datetime import datetime
+from pytz import timezone
 from urllib.parse import urlencode
 from typing import Dict, List, Optional, Callable
 from flask import Response
 from flask.testing import FlaskClient
 
 from app.core import build_app
-from app.types import Ternary
+from app.types_frontend import Ternary
 
 
 CONFIG_FILE = os.path.join(os.path.dirname(os.path.realpath(__file__)),
@@ -30,13 +31,17 @@ def client():
         config['data_dir'], config['index_dir'],
         config.get('video_endpoint'),
         config.get('archive_video_endpoint'),
+        config.get('host'),
         min_date=datetime(2010, 1, 1),
         max_date=datetime(2018, 4, 1),
+        tz=timezone('US/Eastern'),
         min_person_screen_time=600,
         default_aggregate_by='month',
         default_text_window=0,
         default_is_commercial=Ternary.false,
-        data_version='test')
+        default_serve_from_archive=True,
+        data_version='test',
+        show_uptime=True)
 
     with flask_app.test_client() as test_client:
         yield test_client
@@ -63,16 +68,27 @@ def test_get_pages(client: FlaskClient) -> None:
     _is_ok(client.get('/methodology'))
     _is_ok(client.get('/about'))
 
-    # test non-existent path
-    _is_bad(client.get('/badpage'))
-
-
-def test_get_data(client: FlaskClient) -> None:
-    """Make sure the we can retreive basic data"""
+    _is_ok(client.get('/data'))
     _is_ok(client.get('/data/shows'))
     _is_ok(client.get('/data/people'))
     _is_ok(client.get('/data/videos'))
     _is_ok(client.get('/data/tags'))
+
+    # test non-existent path
+    _is_bad(client.get('/badpage'))
+
+
+def test_get_generated_js(client: FlaskClient) -> None:
+    """Make sure the we can retreive values.js"""
+    _is_ok(client.get('/generated/js/values.js'))
+
+
+def test_get_data(client: FlaskClient) -> None:
+    """Make sure the we can retreive basic data"""
+    _is_ok(client.get('/data/shows.json'))
+    _is_ok(client.get('/data/people.json'))
+    _is_ok(client.get('/data/videos.json'))
+    _is_ok(client.get('/data/tags.json'))
 
 
 def test_get_transcript(client: FlaskClient) -> None:
@@ -153,22 +169,25 @@ TEST_DETAILED_OPTIONS = ['true', 'false']
 TEST_AGGREGATE_OPTIONS = ['year', 'month', 'week', 'day']
 TEST_SHOW_OPTIONS = [None, 'The Situaton Room']
 TEST_CHANNEL_OPTIONS = [None, 'CNN', 'FOXNEWS', 'MSNBC']
-TEST_HOUR_OPTIONS = [None, '9-5', '5', '5,6', '5-6,7']
-TEST_DAYOFWEEK_OPTIONS = [None, 'mon-wed,thu,fri', 'sat', 'sat-sun', 'sat,sun']
+TEST_HOUR_OPTIONS = [None, '9-17', '5']
+TEST_DAYOFWEEK_OPTIONS = [None, 'mon-wed', 'sat']
 TEST_IS_COMMERCIAL_OPTIONS = [None, 'false', 'true', 'both']
 TEST_FACE_NAME_OPTIONS = [None, 'wolf blitzer', 'rachel maddow']
 TEST_FACE_TAG_OPTIONS = [
     None, 'all', 'journalist', 'tv_host', 'female', 'male,host',
     'female,journalist'
 ]
-TEST_TEXT_OPTIONS = [None, 'united states of america', 'health care']
+TEST_TEXT_OPTIONS = [
+    None, 'united states of america', 'health care', 'united & airlines'
+]
 TEST_TEXT_WINDOW_OPTIONS = [None, '0', '15', '120']
 
 
 def _check_count_result(
     response: Response, params: Dict[str, Optional[str]]
 ) -> None:
-    assert response.status_code == 200, 'Query failed: {}'.format(repr(params))
+    assert response.status_code == 200, 'Query failed: {}, {}'.format(
+        repr(params), str(response.data))
     assert response.is_json, str(response.data)
 
 

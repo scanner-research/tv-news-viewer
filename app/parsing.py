@@ -45,7 +45,7 @@ def parse_hour_set(s: str) -> Set[int]:
         if h0 < 24:
             if m[2]:
                 h1 = int(m[2])
-                if h0 < h1 and h1 <= 23:
+                if h0 < h1 and h1 < 24:
                     result = set(range(h0, h1 + 1))
             else:
                 result = {h0}
@@ -67,7 +67,7 @@ def parse_day_of_week_set(s: str) -> Set[int]:
             d0_idx = DAYS_OF_WEEK.index(d0.strip())
             if m[2]:
                 d1 = m[2].lower()
-                d1_idx = DAYS_OF_WEEK.index(d0.strip())
+                d1_idx = DAYS_OF_WEEK.index(d1.strip())
                 if d0_idx < d1_idx:
                     result = set(range(d0_idx + 1, d1_idx + 2))
             else:
