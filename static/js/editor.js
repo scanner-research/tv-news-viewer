@@ -187,6 +187,10 @@ function isValidQuery(s, macros) {
 class Editor {
 
   constructor(div_id, options) {
+    if (!options) {
+      options = {};
+    }
+
     if (!INIT_CODE_EDITORS) {
       addParsingMode('tvnews', {
         no_prefix: true, check_values: true,
@@ -194,10 +198,6 @@ class Editor {
       });
       addCodeHintHelper('tvnews');
       INIT_CODE_EDITORS = true;
-    }
-
-    if (!options) {
-      options = {};
     }
 
     this.div_id = div_id;
