@@ -149,7 +149,7 @@ function loadVideos(params, serve_from_internet_archive) {
   SERVE_FROM_INTERNET_ARCHIVE = serve_from_internet_archive;
 
   PARAMS = params;
-  QUERY = new SearchableQuery(PARAMS.query, false);
+  QUERY = new SearchableQuery(PARAMS.query, PARAMS.macros, false);
   CURR_PAGE = 0;
 
   $('#textInfo').append(

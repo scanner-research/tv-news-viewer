@@ -1,48 +1,48 @@
-#searchTable {
+.search-table {
   width: 100%;
   border-collapse: separate;
   border-spacing: 0px 4px;
 }
-#searchTable th {
+.search-table th {
   text-align: center;
 }
-#searchTable .input-group, .input-group-prepend, .input-group-text, .form-control {
+.search-table .input-group, .input-group-prepend, .input-group-text, .form-control {
   height: 30px;
   padding-top: 0px;
   padding-bottom: 0px;
   font-size: 12px;
 }
-#searchTable .query-td {
+.search-table .query-td {
   width: 100%;
 }
-#searchTable .prefix-td {
+.search-table .prefix-td {
   width: 120px;
 }
-#searchTable .option-td {
+.search-table .control-td {
   padding-left: 10px;
 }
-#searchTable .color-box {
+.search-table .color-box {
   margin: auto;
   width: 35px;
   height: 30px;
   border-radius: .2rem;
   cursor: pointer;
 }
-#searchTable .remove-row-btn {
+.search-table .remove-row-btn {
   width: 35px;
   height: 30px;
   text-align: center;
   vertical-align: middle;
   font-size: 12px;
 }
-#searchTable .toggle-query-builder-btn {
+.search-table .toggle-query-builder-btn {
   width: 35px;
   height: 30px;
   text-align: center;
   vertical-align: middle;
   font-size: 12px;
 }
-#searchTable .code-editor {
+.search-table .code-editor {
   width: 100%;
   max-width: 100%;
   min-height: 30px;
@@ -52,45 +52,55 @@
   padding-left: 4px;
   padding-right: 4px;
 }
-#searchTable .code-editor[disable] {
+.search-table .code-editor[disable] {
   background-color: rgba(0, 0, 0, 0.15);
 }
-#searchTable .code-editor[invalid] {
+.search-table .code-editor[invalid] {
   background-color: rgba(255, 0, 0, 0.15);
 }
-#searchTable .code-editor .CodeMirror{
+.search-table .code-editor .CodeMirror{
   height: auto !important;
   background: none;
 }
-#searchTable .code-editor .CodeMirror-placeholder{
+.search-table .code-editor .CodeMirror-placeholder{
   font-style: italic;
   color: rgba(0, 0, 0, 0.5);
 }
-#searchTable .add-row-btn {
+.search-table .add-row-btn {
   width: 35px;
   height: 30px;
   text-align: center;
   font-size: 14px;
 }
-#searchTable .chart-options {
+.search-table .control-tr {
   text-align: left;
   font-size: 14px;
   white-space: nowrap;
 }
-#searchTable .chart-options input, select, .filter-option {
+.search-table .control-tr input, select, .filter-option {
   text-align: center;
   font-size: 14px;
 }
-#searchTable .chart-options hr {
+.search-table .control-tr hr {
   margin-top: 0.25rem;
   margin-bottom: 0.25rem;
 }
-#searchTable .chart-options .datepicker {
+.search-table .control-tr .datepicker {
   width: 100px;
 }
-
-#search {
+.macro-div {
+  display: none;
+  margin-top: 0.2em;
+  margin-bottom: 0.2em;
+  display: none;
+  padding: 4px;
+  border-style: solid;
+  border-radius: 5px;
+  width: 100%;
+}
+.macro-div .CodeMirror {
   font-size: 12px;
+  height: 100px;
 }
 
 .query-builder {

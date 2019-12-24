@@ -174,9 +174,9 @@ function getRandomSample(arr) {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
-function isValidQuery(s) {
+function isValidQuery(s, macros) {
   try {
-    new SearchableQuery(s, false);
+    new SearchableQuery(s, macros, false);
   } catch (e) {
     console.log(e);
     return false;
@@ -186,19 +186,38 @@ function isValidQuery(s) {
 
 class Editor {
 
-  constructor(div_id, enable_query_builder) {
+  constructor(div_id, options) {
     if (!INIT_CODE_EDITORS) {
       addParsingMode('tvnews', {no_prefix: true, check_values: true});
       addCodeHintHelper('tvnews');
       INIT_CODE_EDITORS = true;
     }
 
+    if (!options) {
+      options = {};
+    }
+
     this.div_id = div_id;
-    this.enable_query_builder = enable_query_builder;
+    this.enable_query_builder = options.enable_query_builder;
     this.cached_query_builder = null;
     this.code_editors = {};
 
     $(div_id).find('.add-row-btn').click(() => {this.addRow();});
+
+    let that = this;
+    if (options.enable_query_macros) {
+      $(div_id).find('.macro-div').each(function() {
+        that.macro_editor = CodeMirror($(this)[0], {
+          mode: 'application/json', theme: 'idea',
+          lint: true, lineNumbers: true, lineWrapping: true, tabSize: 2,
+          autoCloseBrackets:  true, matchBrackets: true, styleActiveLine: true,
+          value: '{}'
+        });
+        that.macro_editor.on('change', function() {
+          that._onCodeEditorUpdate();
+        });
+      });
+    }
   }
 
   _getQueryBuilder() {
@@ -239,7 +258,7 @@ class Editor {
     let query_builder = search_table_row.find('.query-builder');
 
     try {
-      let parsed_query = new SearchableQuery(editor.getValue(), true);
+      let parsed_query = new SearchableQuery(editor.getValue(), {}, true);
       let top_level_kv = {};
       if (parsed_query.main_query) {
         let [k, v] = parsed_query.main_query;
@@ -421,8 +440,8 @@ class Editor {
       start_idx = 0;
     }
     for (var i = 0; i < DEFAULT_COLORS.length; i++) {
-      let color_idx = (i + start_idx) %  DEFAULT_COLORS.length;
-      if ($(`#searchTable tr[data-color='${DEFAULT_COLORS[color_idx]}']`).length == 0) {
+      let color_idx = (i + start_idx) % DEFAULT_COLORS.length;
+      if ($(`.search-table tr[data-color='${DEFAULT_COLORS[color_idx]}']`).length == 0) {
         return DEFAULT_COLORS[color_idx];
       }
     }
@@ -431,16 +450,16 @@ class Editor {
 
   _setRemoveButtonsState() {
     let editor = $(this.div_id);
-    let state = editor.find('#searchTable > tbody > tr').length < 2;
-    editor.find('#searchTable td').find('button.remove-row-btn').each(function() {
+    let state = editor.find('.search-table > tbody > tr').length < 2;
+    editor.find('.search-table td').find('button.remove-row-btn').each(function() {
       this.disabled = state;
     });
   }
 
   _getDefaultQuery() {
     let editor = $(this.div_id);
-    if (editor.find('#searchTable .query-row').length > 0) {
-      let last_row = editor.find('#searchTable .query-row:last');
+    if (editor.find('.search-table .query-row').length > 0) {
+      let last_row = editor.find('.search-table .query-row:last');
       let last_row_color = last_row.attr('data-color');
       return this.code_editors[last_row_color].getValue();
     } else {
@@ -461,8 +480,16 @@ class Editor {
 
   _onCodeEditorUpdate() {
     let editor = $(this.div_id);
+    var macros = null;
+    if (this.macro_editor) {
+      try {
+        macros = this._parseMacros();
+      } catch (e) {
+        console.log('Invalid macros...');
+      }
+    }
     Object.entries(this.code_editors).forEach(([data_color, code_editor]) => {
-      var err = !isValidQuery(code_editor.getValue());
+      var err = !isValidQuery(code_editor.getValue(), macros);
       let code_editor_div = editor.find(`tr[data-color="${data_color}"] .code-editor`);
       if (err) {
         code_editor_div.attr('invalid', '');
@@ -472,9 +499,27 @@ class Editor {
     });
   }
 
+  _parseMacros() {
+    let value = $.trim(this.macro_editor.getValue());
+    if (value.length > 0) {
+      let json = Object.entries(JSON.parse(value)).filter(
+        ([k, v]) => k.length > 0 && k[0] == '@'
+      ).reduce(
+        (acc, kv) => {
+          acc[kv[0]] = kv[1];
+          return acc;
+        }, {}
+      );
+      if (Object.keys(json).length > 0) {
+        return json;
+      }
+    }
+    return null;
+  }
+
   closeQueryBuilders() {
     let that = this;
-    $(this.div_id).find('#searchTable .query-builder').each(function() {
+    $(this.div_id).find('.search-table .query-builder').each(function() {
       let row = $(this).closest('.query-row');
       that._closeQueryBuilder(row);
     });
@@ -486,7 +531,7 @@ class Editor {
     this.closeQueryBuilders();
 
     // Remove all rows except one
-    editor.find('#searchTable .query-row').each(function() {
+    editor.find('.search-table .query-row').each(function() {
       if ($(this).index() > 0) {
         that.removeRow($(this));
       }
@@ -496,22 +541,22 @@ class Editor {
     Object.values(this.code_editors).forEach(e => e.setValue(''));
 
     // Reset to defaults
-    editor.find('#aggregateBy').val(DEFAULT_AGGREGATE_BY).trigger("chosen:updated");
-    editor.find('#startDate').val(toDatepickerStr(DEFAULT_START_DATE));
-    editor.find('#endDate').val(toDatepickerStr(DEFAULT_END_DATE));
+    editor.find('[name="aggregateBy"]').val(DEFAULT_AGGREGATE_BY).trigger("chosen:updated");
+    editor.find('[name="startDate"]').val(toDatepickerStr(DEFAULT_START_DATE));
+    editor.find('[name="endDate"]').val(toDatepickerStr(DEFAULT_END_DATE));
   }
 
   getChartOptions() {
     let editor = $(this.div_id);
-    let start_date = fromDatepickerStr(editor.find('#startDate').val());
-    let end_date = fromDatepickerStr(editor.find('#endDate').val());
+    let start_date = fromDatepickerStr(editor.find('[name="startDate"]').val());
+    let end_date = fromDatepickerStr(editor.find('[name="endDate"]').val());
     if (start_date > end_date) {
       alertAndThrow('Start date cannot exceed end date.');
     }
     return {
       start_date: start_date,
       end_date: end_date,
-      aggregate: editor.find('#aggregateBy').val()
+      aggregate: editor.find('[name="aggregateBy"]').val()
     }
   }
 
@@ -525,15 +570,15 @@ class Editor {
       end_date = chart_options.end_date;
       aggregate_by = chart_options.aggregate;
     }
-    editor.find('#aggregateBy').val(aggregate_by);
-    editor.find('#startDate').datepicker({
+    editor.find('[name="aggregateBy"]').val(aggregate_by);
+    editor.find('[name="startDate"]').datepicker({
       format: 'mm/dd/yyyy',
       changeYear: true,
       changeMonth: true,
       startDate: toDatepickerStr(DEFAULT_START_DATE),
       endDate: toDatepickerStr(DEFAULT_END_DATE)
     }).datepicker('setDate', toDatepickerStr(start_date));
-    editor.find('#endDate').datepicker({
+    editor.find('[name="endDate"]').datepicker({
       format: 'mm/dd/yyyy',
       changeYear: true,
       changeMonth: true,
@@ -550,7 +595,7 @@ class Editor {
     let color = search_table_row.attr('data-color');
     search_table_row.remove();
     delete this.code_editors[color];
-    editor.find('#searchTable .add-row-btn').prop('disabled', false);
+    editor.find('.search-table .add-row-btn').prop('disabled', false);
     this._setRemoveButtonsState();
   }
 
@@ -626,26 +671,55 @@ class Editor {
     });
     this.code_editors[color] = code_editor;
 
-    let tbody = $(this.div_id).find('#searchTable > tbody');
+    let tbody = $(this.div_id).find('.search-table > tbody');
     tbody.append(new_row);
 
     if (tbody.find('tr').length >= DEFAULT_COLORS.length) {
-      $(this.div_id).find('#searchTable .add-row-btn').prop('disabled', true);
+      $(this.div_id).find('.search-table .add-row-btn').prop('disabled', true);
     }
     this._setRemoveButtonsState();
 
     new_row.find('.query-row').trigger('change');
   }
 
-  getRawQueries() {
+  getLines() {
+    var macros = null;
+    if (this.macro_editor) {
+      try {
+        macros = this._parseMacros();
+      } catch (e) {
+        alertAndThrow(`Failed to parse macros: ${e}`);
+      }
+    }
     let editor = $(this.div_id);
     let queries = [];
     let that = this;
-    editor.find('#searchTable .query-row').each(function() {
+    editor.find('.search-table .query-row').each(function() {
       let color = $(this).attr('data-color');
-      let query_str = that.code_editors[color].getValue();
-      queries.push({color: color, text: $.trim(query_str)});
+      var query_str = $.trim(that.code_editors[color].getValue());
+      queries.push({
+        color: color,
+        query: new SearchableQuery(query_str, macros, false)
+      });
     });
     return queries;
+  }
+
+  getMacros() {
+    if (this.macro_editor) {
+      try {
+        return this._parseMacros();
+      } catch (e) {
+        alertAndThrow(`Failed to parse macros: ${e}`);
+      }
+    }
+    return null;
+  }
+
+  setMacros(s) {
+    if (this.macro_editor) {
+      $(this.div_id).find('.macro-div').show();
+      setCodeEditorValue(this.macro_editor, s);
+    }
   }
 }

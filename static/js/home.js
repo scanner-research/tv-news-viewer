@@ -1,4 +1,4 @@
-const DEFAULT_CHART_DIMS = {width: 1000, height: 400};
+const DEFAULT_CHART_DIMS = {width: '100%', height: 400};
 
 function clearChart() {
   $('#chart').empty();
@@ -8,11 +8,15 @@ function clearChart() {
   $('#embedArea').hide();
 }
 
-function getDataString(chart_options, lines) {
-  return urlSafeBase64Encode(JSON.stringify({
+function getDataString(chart_options, lines, macros) {
+  let data = {
     options: chart_options,
     queries: lines.map(l => ({color: l.color, text: l.query.query}))
-  }));
+  };
+  if (macros) {
+    data.macros = macros;
+  }
+  return urlSafeBase64Encode(JSON.stringify(data));
 }
 
 function getEmbedUrl(data) {
@@ -59,15 +63,23 @@ function getDownloadUrl(search_results) {
   return URL.createObjectURL(data_blob);
 }
 
-var minimalMode, chartHeight;
+var minimalMode, chartHeight, enableMacros;
 var setCopyUrl, setEmbedUrl;
 
 function displaySearchResults(
   chart_options, lines, search_results, push_state
 ) {
-  new Chart(chart_options, search_results, {
-    width: $("#chartArea").width(), height: chartHeight
-  }).load('#chart', {
+  // Kind of hacky, but it works
+  var macros = null;
+  if (lines[0].query.macros && Object.keys(lines[0].query.macros).length > 0) {
+    macros = lines[0].query.macros;
+  }
+
+  new Chart(
+    chart_options, search_results, {
+      width: $("#chartArea").width(), height: chartHeight
+    }, macros
+  ).load('#chart', {
     video_div: '#vgridArea', show_tooltip: !minimalMode,
     show_mean: false, vega_actions: minimalMode,
     transparent: minimalMode
@@ -75,9 +87,9 @@ function displaySearchResults(
 
   if (search_results.length == lines.length) {
     // Allow embedding if all queries are ok
-    let data_str = getDataString(chart_options, lines);
+    let data_str = getDataString(chart_options, lines, macros);
     let chart_path = getChartPath(data_str);
-    let embed_url = getEmbedUrl(data_str);
+    let embed_str = !macros ? `<iframe src="${getEmbedUrl(data_str)}"></iframe>` : 'Disabled due to macros';
 
     setCopyUrl = () => {
       var dummy = document.createElement('input');
@@ -92,7 +104,7 @@ function displaySearchResults(
 
     setEmbedArea = () => {
       let x = $('#embedArea textarea[name="embed"]');
-      x.val(`<iframe src="${embed_url}"></iframe>`);
+      x.val(embed_str);
       x.toggle();
       return false;
     };
@@ -109,41 +121,31 @@ function displaySearchResults(
       }).text('download'),
       ' the data.'
     );
+    $('#embedArea').show();
     if (push_state && !minimalMode) {
       window.history.pushState(null, '', chart_path);
     }
   } else {
     // Allow embedding if all queries are ok
     $('#embedArea p[name="text"]').empty();
+    $('#embedArea').hide();
     if (push_state && !minimalMode) {
       window.history.pushState(null, '', '');
     }
   }
-  $('#embedArea').show();
 }
 
 function search(editor, push_state) {
   clearChart();
   editor.closeQueryBuilders();
 
-  var chart_options;
+  var chart_options, lines;
   try {
     chart_options = editor.getChartOptions();
+    lines = editor.getLines();
   } catch (e) {
     alertAndThrow(e.message);
   }
-
-  let lines = editor.getRawQueries().map(
-    raw_query => {
-      var parsed_query;
-      try {
-        parsed_query = new SearchableQuery(raw_query.text, false);
-      } catch (e) {
-        alertAndThrow(e.message);
-      }
-      return {color: raw_query.color, query: parsed_query};
-    }
-  );
 
   $('#shade').show();
   let indexed_search_results = [];
@@ -201,6 +203,10 @@ function initialize() {
   let params = (new URL(document.location)).searchParams;
   minimalMode = params.get('minimal') == 1;
   chartHeight = params.get('chartHeight') ? parseInt(params.get('chartHeight')) : DEFAULT_CHART_DIMS.height;
+  enableMacros = params.get('macro') == 1;
+  if (enableMacros) {
+    $('.macro-div').show();
+  }
 
   if (params.get('dataVersion')) {
     let version_id = params.get('dataVersion');
@@ -209,13 +215,20 @@ function initialize() {
     }
   }
 
-  let editor = new Editor('#editor', true);
+  let editor = new Editor('#editor', {
+    enable_query_builder: true, enable_query_macros: true
+  });
 
   var loaded = false;
-  if (params.get('data')) {
+  let data_str = params.get('data');
+  if (data_str) {
     try {
-      let data = JSON.parse(urlSafeBase64Decode(params.get('data')));
+      let data = JSON.parse(urlSafeBase64Decode(data_str));
       editor.initChartOptions(data.options);
+      if (data.macros) {
+        enableMacros |= true;
+        editor.setMacros(JSON.stringify(data.macros));
+      }
       data.queries.forEach(query => editor.addRow(query));
       search(editor, false);
       loaded = true;
@@ -238,10 +251,10 @@ function initialize() {
   }
 
   $('.chosen-select').chosen({width: 'auto'});
-  $('#searchButton').click(function() {
+  $('.search-btn').click(function() {
     search(editor, event != undefined);
   });
-  $('#resetButton').click(function() {
+  $('.reset-btn').click(function() {
     if (window.confirm('Warning! This will clear all of your current queries.')) {
       editor.reset();
       // Clear the url
@@ -254,7 +267,7 @@ function initialize() {
   addHighlight('#plusMinusHover', ['.remove-row-btn', '.add-row-btn']);
   addHighlight('#dropdownEditorHover', ['.toggle-query-builder-btn']);
   addHighlight('#chartAreaHover', ['#chart']);
-  addHighlight('#searchButtonHover', ['#searchButton']);
+  addHighlight('#searchButtonHover', ['.search-btn']);
 
   $('#infoToggle').click(function() {
     let info_text = $('#infoSpanText');

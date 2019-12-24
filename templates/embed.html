@@ -39,32 +39,32 @@
 {% block content %}
 <div class="chart-info">
   <form action="javascript:void(0);" id="editor">
-    <table id="searchTable">
+    <table class="search-table">
       <tbody></tbody>
       <tfoot>
-        <tr name="controls" class="chart-options">
+        <tr class="control-tr">
           <td>
             <button type="button" title="Add a new row."
                     class="btn btn-outline-secondary btn-sm add-row-btn">+</button>
           </td>
           <td></td>
-          <td class="option-td">
+          <td class="control-td">
             between &nbsp;
-            <input type="text" class="datepicker" id="startDate">
+            <input type="text" class="datepicker" name="startDate">
             &nbsp; and &nbsp;
-            <input type="text" class="datepicker" id="endDate">
+            <input type="text" class="datepicker" name="endDate">
             &nbsp; aggregated by &nbsp;
-            <select class="chosen-select" id="aggregateBy" data-width="fit">
+            <select class="chosen-select" name="aggregateBy" data-width="fit">
               <option value="year">year</option>
               <option value="month">month</option>
               <option value="week">week</option>
               <option value="day">day</option>
             </select>
             . &nbsp;
-            <input type="submit" class="btn btn-secondary btn-sm"
-                   value="Search the news!" id="searchButton">
-            <input type="submit" class="btn btn-secondary btn-sm"
-                   value="Clear queries" id="resetButton">
+            <input type="submit" class="btn btn-secondary btn-sm search-btn"
+                   value="Search the news!">
+            <input type="submit" class="btn btn-secondary btn-sm reset-btn"
+                   value="Clear queries">
           </td>
         </tr>
       </tfoot>

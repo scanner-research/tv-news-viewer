@@ -5,7 +5,7 @@ function checkDataVersion(params) {
   if (params.get('dataVersion')) {
     let version_id = params.get('dataVersion');
     if (DATA_VERSION_ID != version_id) {
-      return $('<span>').html(`<b>Warning:</b> the requested data version has changed from <b>${version_id}</b> to <b>${DATA_VERSION_ID}</b>. The following chart may have changed.`);
+      return $('<span>').addClass('warning-span').html(`<b>Warning:</b> the requested data version has changed from <b>${version_id}</b> to <b>${DATA_VERSION_ID}</b>. The following chart may have changed.`);
     }
   }
   return null;
@@ -26,24 +26,13 @@ function getDataString(chart_options, lines) {
 }
 
 function search(editor) {
-  var chart_options;
+  var chart_options, lines;
   try {
     chart_options = editor.getChartOptions();
+    lines = editor.getLines();
   } catch (e) {
     alertAndThrow(e.message);
   }
-
-  let lines = editor.getRawQueries().map(
-    raw_query => {
-      var parsed_query;
-      try {
-        parsed_query = new SearchableQuery(raw_query.text, false);
-      } catch (e) {
-        alertAndThrow(e.message);
-      }
-      return {color: raw_query.color, query: parsed_query};
-    }
-  );
 
   $('#loadingText').show();
   let indexed_search_results = [];
@@ -53,7 +42,7 @@ function search(editor) {
     let data_str = getDataString(chart_options, lines);
     new Chart(
       chart_options, indexed_search_results.map(([i, v]) => v),
-      getChartDimensions()
+      getChartDimensions(), null
     ).load('#chart', {
       show_tooltip: true, show_mean: false,
       href: `//${SERVER_HOST}/?data=` + data_str
@@ -86,15 +75,14 @@ function search(editor) {
   })).then(onDone).catch(onDone);
 }
 
-function initializeDynamic(params) {
+function initializeDynamic(params, data) {
   $('.chart-info').show();
   $('#editor').show();
-  let editor = new Editor('#editor', false);
+  let editor = new Editor('#editor');
 
   var loaded = false;
-  if (params.get('data')) {
+  if (data) {
     try {
-      let data = JSON.parse(urlSafeBase64Decode(params.get('data')));
       editor.initChartOptions(data.options);
       data.queries.forEach(query => editor.addRow(query));
       search(editor);
@@ -113,11 +101,11 @@ function initializeDynamic(params) {
   }
 
   $('.chosen-select').chosen({width: 'auto'});
-  $('#searchButton').click(() => {
+  $('.search-btn').click(() => {
     $('#chart').empty();
     search(editor)
   });
-  $('#resetButton').click(() => {
+  $('.reset-btn').click(() => {
     $('#chart').empty();
     editor.reset();
   });
@@ -146,18 +134,17 @@ function getStaticLegend(lines) {
   return legend;
 }
 
-function initializeStatic(params) {
+function initializeStatic(params, data) {
   $('#loadingText').show();
   let hide_legend = params.get('hideLegend') == 1;
   let hide_tooltip = params.get('hideTooltip') == 1;
   let hide_mean = params.get('showMean') != 1;
   let data_str = params.get('data');
-  let data = JSON.parse(urlSafeBase64Decode(data_str));
 
   let lines = data.queries.map(raw_query => {
     var parsed;
     try {
-      parsed_query = new SearchableQuery(raw_query.text, false);
+      parsed_query = new SearchableQuery(raw_query.text, null, false);
     } catch (e) {
       alertAndThrow(e.message);
     }
@@ -209,11 +196,23 @@ function initialize() {
   let chart_info_div = $('.chart-info');
   chart_info_div.prepend(checkDataVersion(params));
 
+  var data = null;
+  let data_str = params.get('data');
+  if (data_str) {
+    data = JSON.parse(urlSafeBase64Decode(data_str));
+    if (data.macros) {
+      chart_info_div.prepend(
+        $('<span>').addClass('warning-span').text(
+          'Error: macros are not allowed in embedded charts.'));
+      return;
+    }
+  }
+
   let enable_editor = params.get('edit') == 1;
   if (enable_editor) {
-    initializeDynamic(params);
+    initializeDynamic(params, data);
   } else {
-    initializeStatic(params);
+    initializeStatic(params, data);
   }
 }
 

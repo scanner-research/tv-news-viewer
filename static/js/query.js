@@ -124,8 +124,12 @@ function parseTernary(s) {
   }
 }
 
-function validateKeyValue(key, value, no_err) {
+function validateKeyValue(key, value, macros, no_err) {
   key = key.toLowerCase();
+  value = $.trim(value);
+  if (macros && macros.hasOwnProperty(value)) {
+    value = macros[value];
+  }
   let getKVError = () => new QueryParseError(`Unknown ${key}: ${value}`);
   switch (key) {
     case SEARCH_KEY.text:
@@ -225,7 +229,7 @@ function optimizeKeyValues(op, query) {
   return result.length == 1 ? result[0] : [op, result];
 }
 
-function validateTree(query, no_err) {
+function validateTree(query, macros, no_err) {
   if (query == null) {
     return null;
   }
@@ -249,7 +253,7 @@ function validateTree(query, no_err) {
           }
           and_list = [];
         } else {
-          and_list.push(validateTree(x, no_err));
+          and_list.push(validateTree(x, macros, no_err));
         }
       });
       if (and_list.length == 0) {
@@ -263,7 +267,7 @@ function validateTree(query, no_err) {
       return or_list.length == 1 ? or_list[0] : optimizeKeyValues('or', or_list);
     }
     default:
-      return validateKeyValue(k, v, no_err);
+      return validateKeyValue(k, v, macros, no_err);
   }
 }
 
@@ -274,7 +278,7 @@ function getSortedQueryString(obj) {
 }
 
 class SearchableQuery {
-  constructor(s, no_err) {
+  constructor(s, macros, no_err) {
     this.query = s;
     this.has_norm = false;
     this.norm_query = null;
@@ -283,6 +287,7 @@ class SearchableQuery {
     this.has_sub = false;
     this.sub_query = null;
     this.main_query = null;
+    this.macros = macros;
     this.alias = null;
 
     var p;
@@ -298,20 +303,20 @@ class SearchableQuery {
     }
     if (p.has_add) {
       this.has_add = true;
-      this.add_query = validateTree(p.add, no_err);
+      this.add_query = validateTree(p.add, macros, no_err);
     }
     if (p.has_normalize) {
       this.has_norm = true;
-      this.norm_query = validateTree(p.normalize, no_err);
+      this.norm_query = validateTree(p.normalize, macros, no_err);
     }
     if (p.has_subtract) {
       this.has_sub = true;
-      this.sub_query = validateTree(p.subtract, no_err);
+      this.sub_query = validateTree(p.subtract, macros, no_err);
     }
     if (p.alias) {
       this.alias = p.alias;
     }
-    this.main_query = validateTree(p.main, no_err);
+    this.main_query = validateTree(p.main, macros, no_err);
   }
 
   search(chart_options, onSuccess, onError) {

@@ -31,7 +31,6 @@ code {
 }
 .warning-span {
   color: red;
-  display: none;
 }
 #editor {
   display: none;

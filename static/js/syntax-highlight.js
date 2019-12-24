@@ -57,7 +57,7 @@ function generateCodeMirrorParser(options) {
     value = $.trim(value);
 
     // Best effort highlighting of errors
-    if (options.check_values) {
+    if (options.check_values && value.length > 0 && value[0] != '@') {
       switch (key) {
         case SEARCH_KEY.channel:
           return value.match(CHANNEL_REGEX) ? 'video' : 'error';

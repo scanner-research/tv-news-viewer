@@ -181,10 +181,11 @@ function getRoundedValue(value, frac_digits) {
 }
 
 class Chart {
-  constructor(chart_options, search_results, dimenisons) {
+  constructor(chart_options, search_results, dimenisons, search_macros) {
     this.dimensions = dimenisons;
     this.options = chart_options;
     this.search_results = search_results;
+    this.search_macros = search_macros;
   }
 
   _getVegaSpec(options) {
@@ -361,6 +362,7 @@ class Chart {
       $('<p>').append(VGRID_INSTRUCTIONS)
     );
 
+    let search_macros = this.search_macros;
     let count = this.options.count;
     this.search_results.forEach(([color, result]) => {
       let shuffled_results = weightedShuffle(
@@ -368,7 +370,7 @@ class Chart {
       );
       let video_ids = shuffled_results.map(x => x[0]);
       let params = {
-        color: color, count: count, query: result.query,
+        color: color, count: count, query: result.query, macros: search_macros,
         video_ids: video_ids, video_count: video_ids.length
       };
 

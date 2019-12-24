@@ -21,11 +21,14 @@
 
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.48.4/codemirror.min.css" integrity="sha256-vZ3SaLOjnKO/gGvcUWegySoDU6ff33CS5i9ot8J9Czk=" crossorigin="anonymous" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.48.4/addon/hint/show-hint.min.css" integrity="sha256-Ng5EdzHS/CC37tR7tE75e4Th9+fBvOB4eYITOkXS22Q=" crossorigin="anonymous" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.48.4/theme/idea.min.css" integrity="sha256-LTYao9tg/W6fIzk5enrHysqnKPbLUWjRRAqDQBR1d5U=" crossorigin="anonymous" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.48.4/codemirror.min.js" integrity="sha256-dPTL2a+npIonoK5i0Tyes0txCMUWZBf8cfKRfACRotc=" crossorigin="anonymous"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.48.4/addon/display/placeholder.min.js" integrity="sha256-nCk9E4e5fX9GB+yPxdFEXbdrshMwVm6vYymmjf9iSvM=" crossorigin="anonymous"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.48.4/addon/edit/closebrackets.min.js" integrity="sha256-SQxxspooiex44fVMEgTgEyhTBfxFEDx7N77hx2OpeTs=" crossorigin="anonymous"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.48.4/addon/edit/matchbrackets.min.js" integrity="sha256-E6SXqOxC0Z+uAGQmS9gr9Furz8Py05kCgC0XZXg9Hdo=" crossorigin="anonymous"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.48.4/addon/hint/show-hint.min.js" integrity="sha256-P946oK/OkcGC8rs/phAXZRvTADKK0V+x23Jbl0DilgQ=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.48.4/addon/lint/lint.js" integrity="sha256-CgWPQKACSubz5tLvYSKAqssyorDcQLLhOenNooEmV/k=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.48.4/addon/lint/json-lint.min.js" integrity="sha256-mWRA+eRb2A3v8WLC4QSEVKYYgWuy1jYrLoi4+tbWrnU=" crossorigin="anonymous"></script>
 
   <link rel="stylesheet" href="{{ url_for('static', filename='css/editor.css') }}" />
   <link rel="stylesheet" href="{{ url_for('static', filename='css/chart.css') }}" />
@@ -80,33 +83,34 @@
   </span>
 
   <form action="javascript:void(0);" id="editor">
-    <table id="searchTable">
+    <div class="macro-div"></div>
+    <table class="search-table">
       <tbody></tbody>
       <tfoot>
-        <tr name="controls" class="chart-options">
+        <tr class="control-tr">
           <td>
             <button type="button" title="Add a new row."
                     class="btn btn-outline-secondary btn-sm add-row-btn">+</button>
           </td>
           <td></td>
           <td></td>
-          <td class="option-td">
+          <td class="control-td">
             between &nbsp;
-            <input type="text" class="datepicker" id="startDate">
+            <input type="text" class="datepicker" name="startDate">
             &nbsp; and &nbsp;
-            <input type="text" class="datepicker" id="endDate">
+            <input type="text" class="datepicker" name="endDate">
             &nbsp; aggregated by &nbsp;
-            <select class="chosen-select" id="aggregateBy" data-width="fit">
+            <select class="chosen-select" name="aggregateBy" data-width="fit">
               <option value="year">year</option>
               <option value="month">month</option>
               <option value="week">week</option>
               <option value="day">day</option>
             </select>
             . &nbsp;
-            <input type="submit" class="btn btn-secondary btn-sm"
-                   value="Search the news!" id="searchButton">
-            <input type="submit" class="btn btn-secondary btn-sm"
-                   value="Clear queries" id="resetButton">
+            <input type="submit" class="btn btn-secondary btn-sm search-btn"
+                   value="Search the news!">
+            <input type="submit" class="btn btn-secondary btn-sm reset-btn"
+                   value="Clear queries">
           </td>
         </tr>
       </tfoot>
