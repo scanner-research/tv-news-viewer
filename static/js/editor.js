@@ -143,6 +143,9 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
   </table>
 </div>`;
 
+const MACRO_PLACEHOLDER = '@text_to_replace     new_text;\n@text_to_replace2    new_text;\n'
+const QUERY_PLACEHOLDER = 'enter search here (all the data, if blank)';
+
 function fromDatepickerStr(s) {
   let m = s.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
   if (!m) {
@@ -213,7 +216,7 @@ class Editor {
         that.macro_editor = CodeMirror($(this)[0], {
           mode: 'text/plain', lineNumbers: true, lineWrapping: true, tabSize: 2,
           autoCloseBrackets:  true, matchBrackets: true, styleActiveLine: true,
-          value: '', placeholder: '@old_string new_string'
+          value: '', placeholder: MACRO_PLACEHOLDER
         });
         that.macro_editor.on('change', function() {
           that._onCodeEditorUpdate();
@@ -503,7 +506,7 @@ class Editor {
 
   _parseMacros() {
     let macros = {};
-    this.macro_editor.getValue().split('\n').map($.trim).filter(
+    this.macro_editor.getValue().replaceAll('\n', ' ').split(';').map($.trim).filter(
       x => x.length > 0
     ).forEach(line => {
       let m = line.match(/^(@[a-zA-Z0-9_]+)\s+(.+)$/);
@@ -642,7 +645,7 @@ class Editor {
       mode: 'tvnews', theme: 'tvnews', lineNumbers: false,
       autoCloseBrackets: true, matchBrackets: true,
       lineWrapping: true, noNewlines: true, scrollbarStyle: null,
-      placeholder: 'enter search here (all the data, if blank)',
+      placeholder: QUERY_PLACEHOLDER,
       hintOptions: {hint: CodeMirror.hint.tvnews, completeSingle: false},
       extraKeys: {Enter: search}
     });
@@ -716,7 +719,7 @@ class Editor {
   setMacros(macros) {
     if (this.macro_editor) {
       $(this.div_id).find('.macro-div').show();
-      let s = Object.entries(macros).map(([k, v]) => k + '\t' + v).join('\n');
+      let s = Object.entries(macros).map(([k, v]) => k + '\t' + v + ';').join('\n');
       setCodeEditorValue(this.macro_editor, s);
     }
   }
