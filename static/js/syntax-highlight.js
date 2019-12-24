@@ -57,7 +57,9 @@ function generateCodeMirrorParser(options) {
     value = $.trim(value);
 
     // Best effort highlighting of errors
-    if (options.check_values && value.length > 0 && value[0] != '@') {
+    if (options.allow_macros && value.length > 0 && value[0] == '@') {
+      return null;
+    } else if (options.check_values) {
       switch (key) {
         case SEARCH_KEY.channel:
           return value.match(CHANNEL_REGEX) ? 'video' : 'error';
@@ -248,6 +250,11 @@ function generateCodeMirrorParser(options) {
                 }
               }
               return style;
+            } else if (options.allow_macros && stream.match(/@[a-zA-Z0-9_]+/)) {
+              state.prefix = ReadState.done;
+              state.ready_for_key = false;
+              state.ready_for_keyword = true;
+              return null;
             } else if (options.allow_free_tokens && stream.match(/[^\s]+/)) {
               state.prefix = ReadState.done;
               state.ready_for_key = false;

@@ -188,7 +188,10 @@ class Editor {
 
   constructor(div_id, options) {
     if (!INIT_CODE_EDITORS) {
-      addParsingMode('tvnews', {no_prefix: true, check_values: true});
+      addParsingMode('tvnews', {
+        no_prefix: true, check_values: true,
+        allow_macros: options.enable_query_macros
+      });
       addCodeHintHelper('tvnews');
       INIT_CODE_EDITORS = true;
     }
@@ -208,10 +211,9 @@ class Editor {
     if (options.enable_query_macros) {
       $(div_id).find('.macro-div').each(function() {
         that.macro_editor = CodeMirror($(this)[0], {
-          mode: 'application/json', theme: 'idea',
-          lint: true, lineNumbers: true, lineWrapping: true, tabSize: 2,
+          mode: 'text/plain', lineNumbers: true, lineWrapping: true, tabSize: 2,
           autoCloseBrackets:  true, matchBrackets: true, styleActiveLine: true,
-          value: '{}'
+          value: '', placeholder: '@old_string new_string'
         });
         that.macro_editor.on('change', function() {
           that._onCodeEditorUpdate();
@@ -485,7 +487,7 @@ class Editor {
       try {
         macros = this._parseMacros();
       } catch (e) {
-        console.log('Invalid macros...');
+        console.log('Invalid macros:', e);
       }
     }
     Object.entries(this.code_editors).forEach(([data_color, code_editor]) => {
@@ -500,21 +502,16 @@ class Editor {
   }
 
   _parseMacros() {
-    let value = $.trim(this.macro_editor.getValue());
-    if (value.length > 0) {
-      let json = Object.entries(JSON.parse(value)).filter(
-        ([k, v]) => k.length > 0 && k[0] == '@'
-      ).reduce(
-        (acc, kv) => {
-          acc[kv[0]] = kv[1];
-          return acc;
-        }, {}
-      );
-      if (Object.keys(json).length > 0) {
-        return json;
+    let macros = {};
+    this.macro_editor.getValue().split('\n').map($.trim).filter(
+      x => x.length > 0
+    ).forEach(line => {
+      let m = line.match(/^(@[a-zA-Z0-9_]+)\s+(.+)$/);
+      if (m) {
+        macros[m[1]] = m[2];
       }
-    }
-    return null;
+    });
+    return Object.keys(macros).length > 0 ? macros : null;
   }
 
   closeQueryBuilders() {
@@ -716,9 +713,10 @@ class Editor {
     return null;
   }
 
-  setMacros(s) {
+  setMacros(macros) {
     if (this.macro_editor) {
       $(this.div_id).find('.macro-div').show();
+      let s = Object.entries(macros).map(([k, v]) => k + '\t' + v).join('\n');
       setCodeEditorValue(this.macro_editor, s);
     }
   }

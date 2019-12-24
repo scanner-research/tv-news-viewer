@@ -124,12 +124,9 @@ function parseTernary(s) {
   }
 }
 
-function validateKeyValue(key, value, macros, no_err) {
+function validateKeyValue(key, value, no_err) {
   key = key.toLowerCase();
   value = $.trim(value);
-  if (macros && macros.hasOwnProperty(value)) {
-    value = macros[value];
-  }
   let getKVError = () => new QueryParseError(`Unknown ${key}: ${value}`);
   switch (key) {
     case SEARCH_KEY.text:
@@ -229,7 +226,7 @@ function optimizeKeyValues(op, query) {
   return result.length == 1 ? result[0] : [op, result];
 }
 
-function validateTree(query, macros, no_err) {
+function validateTree(query, no_err) {
   if (query == null) {
     return null;
   }
@@ -253,7 +250,7 @@ function validateTree(query, macros, no_err) {
           }
           and_list = [];
         } else {
-          and_list.push(validateTree(x, macros, no_err));
+          and_list.push(validateTree(x, no_err));
         }
       });
       if (and_list.length == 0) {
@@ -267,7 +264,7 @@ function validateTree(query, macros, no_err) {
       return or_list.length == 1 ? or_list[0] : optimizeKeyValues('or', or_list);
     }
     default:
-      return validateKeyValue(k, v, macros, no_err);
+      return validateKeyValue(k, v, no_err);
   }
 }
 
@@ -275,6 +272,14 @@ function getSortedQueryString(obj) {
   return Object.keys(obj).sort().map(
     k => `${encodeURIComponent(k)}=${encodeURIComponent(obj[k])}`
   ).join('&');
+}
+
+function applyMacros(macros, text) {
+  return Object.keys(macros).sort(
+    (a, b) => b.length - a.length
+  ).reduce((s, k) => {
+    return s.replaceAll(k, macros[k]);
+  }, text);
 }
 
 class SearchableQuery {
@@ -290,6 +295,10 @@ class SearchableQuery {
     this.macros = macros;
     this.alias = null;
 
+    if (macros) {
+      s = applyMacros(macros, s);
+    }
+
     var p;
     if (no_err) {
       try {
@@ -303,20 +312,20 @@ class SearchableQuery {
     }
     if (p.has_add) {
       this.has_add = true;
-      this.add_query = validateTree(p.add, macros, no_err);
+      this.add_query = validateTree(p.add, no_err);
     }
     if (p.has_normalize) {
       this.has_norm = true;
-      this.norm_query = validateTree(p.normalize, macros, no_err);
+      this.norm_query = validateTree(p.normalize, no_err);
     }
     if (p.has_subtract) {
       this.has_sub = true;
-      this.sub_query = validateTree(p.subtract, macros, no_err);
+      this.sub_query = validateTree(p.subtract, no_err);
     }
     if (p.alias) {
       this.alias = p.alias;
     }
-    this.main_query = validateTree(p.main, macros, no_err);
+    this.main_query = validateTree(p.main, no_err);
   }
 
   search(chart_options, onSuccess, onError) {

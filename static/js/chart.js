@@ -12,11 +12,6 @@ const VGRID_INSTRUCTIONS = $('<ul />').append(
     Expand the video thumbnail to show labeled identities.`)
 );
 
-String.prototype.replaceAll = function(search, replacement) {
-    var target = this;
-    return target.split(search).join(replacement);
-};
-
 const EPSILON = 1e-4;
 
 function weightedShuffle(data) {

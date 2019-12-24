@@ -1,4 +1,5 @@
 const DEFAULT_CHART_DIMS = {width: '100%', height: 400};
+const EMBED_MACRO_MESSAGE = 'Feature disabled. Embedding with macros is not allowed.';
 
 function clearChart() {
   $('#chart').empty();
@@ -89,7 +90,9 @@ function displaySearchResults(
     // Allow embedding if all queries are ok
     let data_str = getDataString(chart_options, lines, macros);
     let chart_path = getChartPath(data_str);
-    let embed_str = !macros ? `<iframe src="${getEmbedUrl(data_str)}"></iframe>` : 'Disabled due to macros';
+    let embed_str = !macros ?
+      `<iframe src="${getEmbedUrl(data_str)}"></iframe>` :
+      EMBED_MACRO_MESSAGE;
 
     setCopyUrl = () => {
       var dummy = document.createElement('input');
@@ -227,7 +230,7 @@ function initialize() {
       editor.initChartOptions(data.options);
       if (data.macros) {
         enableMacros |= true;
-        editor.setMacros(JSON.stringify(data.macros));
+        editor.setMacros(data.macros);
       }
       data.queries.forEach(query => editor.addRow(query));
       search(editor, false);

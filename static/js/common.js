@@ -24,3 +24,8 @@ function urlSafeBase64Decode(s) {
   }
   return atob(s);
 }
+
+String.prototype.replaceAll = function(search, replacement) {
+    var target = this;
+    return target.split(search).join(replacement);
+};

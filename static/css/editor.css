@@ -102,6 +102,10 @@
   font-size: 12px;
   height: 100px;
 }
+.macro-div .CodeMirror-placeholder{
+  font-style: italic;
+  color: rgba(0, 0, 0, 0.5) !important;
+}
 
 .query-builder {
   padding: 10px;
