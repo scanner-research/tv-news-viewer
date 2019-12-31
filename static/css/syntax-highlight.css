@@ -80,3 +80,7 @@
   padding-left: 1px;
   padding-right: 1px;
 }
+
+.cm-s-tvnewsmacro span.cm-macro {
+  font-weight: bold;
+}

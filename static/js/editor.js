@@ -1,4 +1,5 @@
-var INIT_CODE_EDITORS = false;
+const TAG_MACRO_PREFIX = '@TAG_';
+const TAG_MACRO_RE = new RegExp(`^${TAG_MACRO_PREFIX}(\\w+)$`);
 
 const QUERY_BUILDER_HTML = `<div class="query-builder">
   <table>
@@ -143,8 +144,14 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
   </table>
 </div>`;
 
-const MACRO_PLACEHOLDER = '@text_to_replace     new_text;\n@text_to_replace2    new_text;\n'
+const MACRO_PLACEHOLDER = [
+  '@text_to_replace     new_text;',
+  '@text_to_replace2    new_text;',
+  `${TAG_MACRO_PREFIX}name_of_tag     *`,
+].join('\n');
 const QUERY_PLACEHOLDER = 'enter search here (all the data, if blank)';
+
+var INITIALIZED_CODE_EDITORS = false;
 
 function fromDatepickerStr(s) {
   let m = s.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
@@ -194,13 +201,16 @@ class Editor {
       options = {};
     }
 
-    if (!INIT_CODE_EDITORS) {
+    if (!INITIALIZED_CODE_EDITORS) {
       addParsingMode('tvnews', {
         no_prefix: true, check_values: true,
         allow_macros: options.enable_query_macros
       });
       addCodeHintHelper('tvnews');
-      INIT_CODE_EDITORS = true;
+      if (options.enable_query_macros) {
+        addMacroParsingMode('tvnews/macro');
+      }
+      INITIALIZED_CODE_EDITORS = true;
     }
 
     this.div_id = div_id;
@@ -214,12 +224,13 @@ class Editor {
     if (options.enable_query_macros) {
       $(div_id).find('.macro-div').each(function() {
         that.macro_editor = CodeMirror($(this)[0], {
-          mode: 'text/plain', lineNumbers: true, lineWrapping: true, tabSize: 2,
-          autoCloseBrackets:  true, matchBrackets: true, styleActiveLine: true,
-          value: '', placeholder: MACRO_PLACEHOLDER
+          mode: 'tvnews/macro', theme: 'tvnewsmacro',
+          lineNumbers: true, lineWrapping: true, tabSize: 2,
+          autoCloseBrackets:  true, matchBrackets: true,
+          styleActiveLine: true, value: '', placeholder: MACRO_PLACEHOLDER
         });
         that.macro_editor.on('change', function() {
-          that._onCodeEditorUpdate();
+          that._onMacroEditorUpdate();
         });
       });
     }
@@ -481,6 +492,30 @@ class Editor {
     search_table_row.attr('data-color', new_color);
     this.code_editors[new_color] = code_editor;
     delete this.code_editors[old_color];
+  }
+
+  _onMacroEditorUpdate() {
+    try {
+      var dirty = false;
+      let macros = Object.entries(this._parseMacros()).reduce((acc, [k, v]) => {
+        var m;
+        if (v == '*' && (m = k.match(TAG_MACRO_RE))) {
+          let tag = m[1];
+          if (PERSON_TAG_TO_PEOPLE.hasOwnProperty(tag)) {
+            v = PERSON_TAG_TO_PEOPLE[tag].map(x => `name="${x}"`).join(' OR ');
+            dirty = true;
+          }
+        }
+        acc[k] = v;
+        return acc;
+      }, {});
+      if (dirty) {
+        this.setMacros(macros);
+      }
+    } catch (e) {
+      console.log('Invalid macros:', e);
+    }
+    this._onCodeEditorUpdate();
   }
 
   _onCodeEditorUpdate() {

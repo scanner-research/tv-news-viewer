@@ -140,7 +140,7 @@ def build_app(
             shows=all_shows,
             people=list(video_data_context.all_person_intervals.keys()),
             global_face_tags=list(sorted(GLOBAL_TAGS)),
-            person_tags=video_data_context.all_person_tags.tags))
+            person_tags_dict=video_data_context.all_person_tags.tag_name_dict))
         resp.headers['Content-type'] = 'text/javascript'
         return resp
 

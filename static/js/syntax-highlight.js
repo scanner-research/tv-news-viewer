@@ -1,6 +1,6 @@
 const DEBUG_AUTOCOMPLETE = false;
 
-function generateCodeMirrorParser(options) {
+function generateCodeMirrorQueryParser(options) {
 
   let ReadState = {notStarted: 1, inProgress: 2, done: 3};
   let ValidKeys = Object.values(SEARCH_KEY);
@@ -276,7 +276,33 @@ function reverseString(str) {
 }
 
 function addParsingMode(name, options) {
-  CodeMirror.defineMode(name, generateCodeMirrorParser(options));
+  CodeMirror.defineMode(name, generateCodeMirrorQueryParser(options));
+}
+
+function addMacroParsingMode(name) {
+  CodeMirror.defineMode(name, function() {
+    return {
+      startState: function() { return {in_macro: false}; },
+      token: function(stream, state) {
+        if (state.in_macro) {
+          if (!stream.skipTo(';')) {
+            stream.skipToEnd();
+          } else {
+            stream.eat(';');
+          }
+          state.in_macro = false;
+          return null;
+        } else if (stream.eatSpace()) {
+          return null;
+        } else if (stream.match(/@\w+/)) {
+          state.in_macro = true;
+          return 'macro';
+        }
+        stream.skipToEnd();
+        return null;
+      }
+    }
+  });
 }
 
 function addCodeHintHelper(name) {

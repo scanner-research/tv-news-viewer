@@ -58,20 +58,21 @@ function testVideoAuth() {
 }
 
 const ALL_SHOWS = [
-  {% for show in shows %}"{{ show }}",{% endfor %}
+  {% for show in shows %}'{{ show }}',{% endfor %}
 ];
 
 const ALL_PEOPLE = [
-  {% for person in people %}"{{ person }}",{% endfor %}
+  {% for person in people %}'{{ person }}',{% endfor %}
 ];
 const ALL_PEOPLE_LOWER_CASE_SET = new Set(ALL_PEOPLE.map(x => x.toLowerCase()));
 
-const ALL_PERSON_TAGS = [
-  {% for tag in person_tags %}"{{ tag }}",{% endfor %}
-];
+const PERSON_TAG_TO_PEOPLE = {
+  {% for tag, people in person_tags_dict.items() %}'{{ tag }}':[{% for person in people %}'{{ person }}',{% endfor %}],{% endfor %}
+};
+const ALL_PERSON_TAGS = Object.keys(PERSON_TAG_TO_PEOPLE).sort();
 
 const ALL_GLOBAL_TAGS = [
-  {% for tag in global_face_tags %}"{{ tag }}",{% endfor %}
+  {% for tag in global_face_tags %}'{{ tag }}',{% endfor %}
 ];
 
 const ALL_TAGS = ALL_GLOBAL_TAGS.concat(ALL_PERSON_TAGS);

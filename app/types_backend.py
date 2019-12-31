@@ -74,14 +74,12 @@ class AllPersonTags(object):
         return self._name_to_tags.get(name, [])
 
     @property
-    def tags(self) -> List[str]:
-        ret = list(self._tag_name_to_names.keys())
-        ret.sort()
-        return ret
-
-    @property
     def tag_dict(self) -> Dict[Tag, List[str]]:
         return self._tag_to_names
+
+    @property
+    def tag_name_dict(self) -> Dict[Tag, List[str]]:
+        return self._tag_name_to_names
 
 
 AllPersonIntervals = Dict[str, PersonIntervals]
