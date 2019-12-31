@@ -141,7 +141,7 @@ def build_app(
             people=list(video_data_context.all_person_intervals.keys()),
             global_face_tags=list(sorted(GLOBAL_TAGS)),
             person_tags_dict=video_data_context.all_person_tags.tag_name_dict))
-        resp.headers['Content-type'] = 'text/javascript'
+        resp.headers['Content-type'] = 'application/javascript'
         return resp
 
     @app.route('/transcript/<int:i>')
