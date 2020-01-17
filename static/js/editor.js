@@ -682,7 +682,9 @@ class Editor {
       lineWrapping: true, noNewlines: true, scrollbarStyle: null,
       placeholder: QUERY_PLACEHOLDER,
       hintOptions: {hint: CodeMirror.hint.tvnews, completeSingle: false},
-      extraKeys: {Enter: search}
+      extraKeys: {
+        Enter: function() { $(that.div_id).find('.search-btn').click(); }
+      }
     });
     setCodeEditorValue(code_editor, text);
     code_editor.on('cursorActivity', (cm) => {
