@@ -76,11 +76,11 @@ function displayVideos(page_i) {
   let face_data = {}
   Promise.all(
     video_ids.map(i =>
-      $.get(`/transcript/${i}`).then(
+      $.get(`${CAPTION_ENDPOINT}/${i}`).then(
         resp => caption_data[i] = resp
       ).catch(e => `Failed to get captions: ${i}`)),
     video_ids.map(i =>
-      $.get(`/static/faces/${i}.json`).then(
+      $.get(`${BBOX_ENDPOINT}/${i}.json`).then(
         resp => face_data[i] = resp
       ).catch(e => `Failed to get faces: ${i}`))
   ).then(() => {

@@ -23,6 +23,8 @@ app = build_app(
     config['data_dir'], config['index_dir'],
     config.get('video_endpoint'),
     config.get('video_auth_endpoint'),
+    config.get('static_bbox_endpoint'),
+    config.get('static_caption_endpoint'),
     config.get('host'),
     min_date=datetime(*options.get('min_date', [2010, 1, 1])),
     max_date=datetime(*options.get('max_date', [2019, 7, 23])),

@@ -4,6 +4,9 @@ const DATA_VERSION_ID = {% if data_version is not none %}"{{ data_version }}"{% 
 
 const SERVER_HOST = '{{ host }}';
 
+const BBOX_ENDPOINT = '{{ bbox_endpoint }}';
+const CAPTION_ENDPOINT = '{{ caption_endpoint }}';
+
 const DEFAULT_QUERIES = ['name="hillary clinton"', 'name="bernie sanders"'];
 
 const DEFAULT_COLORS = [

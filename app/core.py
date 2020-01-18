@@ -65,6 +65,8 @@ def build_app(
     index_dir: str,
     video_endpoint: Optional[str],
     video_auth_endpoint: Optional[str],
+    static_bbox_endpoint: Optional[str],
+    static_caption_endpoint: Optional[str],
     host: Optional[str],
     min_date: datetime,
     max_date: datetime,
@@ -130,6 +132,12 @@ def build_app(
             default_text_window=default_text_window,
             video_endpoint=video_endpoint,
             video_auth_endpoint=video_auth_endpoint,
+            bbox_endpoint=(
+                static_bbox_endpoint if static_bbox_endpoint
+                else '/static/faces'),
+            caption_endpoint=(
+                static_caption_endpoint if static_caption_endpoint
+                else '/transcript'),
             default_serve_from_archive=default_serve_from_archive,
             search_params=[
                 (k, v) for k, v in SearchParam.__dict__.items()
@@ -144,15 +152,18 @@ def build_app(
         resp.headers['Content-type'] = 'application/javascript'
         return resp
 
-    @app.route('/transcript/<int:i>')
-    def get_transcript(i: int) -> Response:
-        video = video_data_context.video_by_id.get(i)
-        if not video:
-            raise NotFound('video id: {}'.format(i))
-        document = caption_data_context.document_by_name.get(video.name)
-        if not document:
-            raise NotFound('transcripts for video id: {}'.format(i))
-        resp = jsonify(get_captions(caption_data_context, document))
-        return resp
+    if static_caption_endpoint is None:
+        @app.route('/transcript/<int:i>')
+        def get_transcript(i: int) -> Response:
+            video = video_data_context.video_by_id.get(i)
+            if not video:
+                raise NotFound('video id: {}'.format(i))
+            document = caption_data_context.document_by_name.get(video.name)
+            if not document:
+                raise NotFound('transcripts for video id: {}'.format(i))
+            resp = jsonify(get_captions(caption_data_context, document))
+            return resp
+    else:
+        print('Serving captions from:', static_caption_endpoint)
 
     return app

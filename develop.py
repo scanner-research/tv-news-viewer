@@ -46,7 +46,9 @@ def main(
         from app.types_frontend import Ternary
 
         app = build_app(
-            data_dir, index_dir, video_endpoint, video_auth_endpoint, None,
+            data_dir, index_dir, video_endpoint, video_auth_endpoint,
+            static_bbox_endpoint=None, static_caption_endpoint=None,
+            host=None,
             min_date=datetime(2010, 1, 1),
             max_date=datetime(2019, 7, 31),
             tz=timezone('US/Eastern'),
