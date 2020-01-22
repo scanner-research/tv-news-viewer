@@ -153,7 +153,7 @@ def _load_person_intervals(
     skipped_counter = Counter()
     all_person_intervals = []
     for person_file_prefix in person_file_prefixes:
-        person_name = re.sub(r'[^\w :]', r'', person_file_prefix)
+        person_name = re.sub(r'[^\w\- :]', r'', person_file_prefix)
         person_name_lower = person_name.lower()
 
         person_iset_path = path.join(
@@ -171,7 +171,7 @@ def _load_person_intervals(
             should_skip = False
             if (
                 not check_person_name_in_lexicon(person_name_lower)
-                or person_time < min_person_screen_time / 60
+                and person_time < min_person_screen_time / 60
             ):
                 skipped_count += 1
                 skipped_time += person_time
