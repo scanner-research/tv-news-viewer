@@ -1067,12 +1067,15 @@ def add_search_routes(
             return None
 
         elif k == SearchKey.video:
-            if context.videos is not None and v in context.videos:
+            video = video_data_context.video_dict.get(v)
+            if video is None:
+                raise VideoNotInDatabase(v)
+            if context.videos is not None and video.id not in context.videos:
                 return None
             else:
                 return SearchResult(
                     SearchResultType.video_set,
-                    context=context._replace(videos={v}))
+                    context=context._replace(videos={video.id}))
 
         elif k == SearchKey.channel:
             if context.channel is not None and context.channel != v:
