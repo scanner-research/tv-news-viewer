@@ -1,4 +1,5 @@
 import random
+from datetime import datetime
 from collections import namedtuple, defaultdict
 from flask import Flask, Response, jsonify
 
@@ -7,6 +8,7 @@ from .load import VideoDataContext
 
 def add_data_json_routes(
     app: Flask, video_data_context: VideoDataContext,
+    min_date: datetime, max_date: datetime,
     num_video_samples: int
 ):
     Person = namedtuple('person', ['name', 'screen_time', 'tags'])
@@ -47,7 +49,9 @@ def add_data_json_routes(
     @app.route('/data/videos.json')
     def get_data_videos_json() -> Response:
         samples = random.sample(
-            list(video_data_context.video_dict.values()), num_video_samples)
+            [v for v in video_data_context.video_dict.values()
+             if v.date >= min_date and v.date <= max_date],
+            num_video_samples)
         return jsonify({'data': [
             (v.name, round(v.num_frames / v.fps / 60)) for v in samples
         ]})

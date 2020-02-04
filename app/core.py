@@ -99,12 +99,17 @@ def build_app(
         return response
 
     add_html_routes(
-        app, host, num_total_videos=len(video_data_context.video_dict),
+        app, host,
+        num_total_videos=sum(
+            1 for v in video_data_context.video_dict.values()
+            if v.date >= min_date and v.date <= max_date
+        ),
         num_video_samples=NUM_VIDEO_SAMPLES,
         default_text_window=default_text_window,
         show_uptime=show_uptime)
 
     add_data_json_routes(app, video_data_context,
+                         min_date=min_date, max_date=max_date,
                          num_video_samples=NUM_VIDEO_SAMPLES)
 
     add_search_routes(
