@@ -778,7 +778,7 @@ def add_search_routes(
                 video = video_data_context.video_dict.get(vc)
                 if video is None:
                     raise VideoNotInDatabase(vc)
-                if context.videos is not None:
+                if context.videos is not None and video.id not in context.videos:
                     return None
                 context = context._replace(videos={video.id})
 
