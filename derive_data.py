@@ -89,15 +89,21 @@ def derive_face_isets(
             (face_ilist_file, mask, value, os.path.join(outdir, outfile)),
             error_callback=build_error_callback('Failed on: ' + face_ilist_file))
 
-    helper(0, 0, 'all.iset.bin')
-    helper(0b1, 0b1, 'male.iset.bin')
-    helper(0b1, 0b0, 'female.iset.bin')
-    helper(0b10, 0b10, 'host.iset.bin')
-    helper(0b10, 0b00, 'nonhost.iset.bin')
-    helper(0b11, 0b11, 'male_host.iset.bin')
-    helper(0b11, 0b01, 'male_nonhost.iset.bin')
-    helper(0b11, 0b10, 'female_host.iset.bin')
-    helper(0b11, 0b00, 'female_nonhost.iset.bin')
+    # There are 3 bits in the encoding
+    #   The 1's place is binary gender. 1 if male, 0 if female. Ignore if
+    #       the 2's place is 1.
+    #   The 2's place is nonbinary gender. If 1, ignore the 1's place.
+    #       This individual counted in neither male nor female aggregations
+    #   The 4's place is 1 if the individual is a host of the show, 0 otherwise
+    helper(0b000, 0b000, 'all.iset.bin')
+    helper(0b011, 0b001, 'male.iset.bin')
+    helper(0b011, 0b000, 'female.iset.bin')
+    helper(0b100, 0b100, 'host.iset.bin')
+    helper(0b100, 0b000, 'nonhost.iset.bin')
+    helper(0b111, 0b101, 'male_host.iset.bin')
+    helper(0b111, 0b001, 'male_nonhost.iset.bin')
+    helper(0b111, 0b100, 'female_host.iset.bin')
+    helper(0b111, 0b000, 'female_nonhost.iset.bin')
 
 
 IntervalAndPayload = Tuple[int, int, int]
