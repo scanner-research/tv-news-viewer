@@ -28,10 +28,13 @@ def client():
         config = json.load(f)
 
     flask_app = build_app(
-        config['data_dir'], config['index_dir'],
-        config.get('video_endpoint'),
-        config.get('archive_video_endpoint'),
-        config.get('host'),
+        data_dir=config['data_dir'],
+        index_dir=config['index_dir'],
+        video_endpoint=config.get('video_endpoint'),
+        video_auth_endpoint=config.get('archive_video_endpoint'),
+        static_bbox_endpoint=None,
+        static_caption_endpoint=None,
+        host=config.get('host'),
         min_date=datetime(2010, 1, 1),
         max_date=datetime(2018, 4, 1),
         tz=timezone('US/Eastern'),
