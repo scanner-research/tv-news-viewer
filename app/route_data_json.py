@@ -48,10 +48,13 @@ def add_data_json_routes(
 
     @app.route('/data/videos.json')
     def get_data_videos_json() -> Response:
-        samples = random.sample(
-            [v for v in video_data_context.video_dict.values()
-             if v.date >= min_date and v.date <= max_date],
-            num_video_samples)
+        if len(video_data_context.video_dict) > num_video_samples:
+            samples = random.sample(
+                [v for v in video_data_context.video_dict.values()
+                 if v.date >= min_date and v.date <= max_date],
+                num_video_samples)
+        else:
+            samples = video_data_context.video_dict.values()
         return jsonify({'data': [
             (v.name, round(v.num_frames / v.fps / 60)) for v in samples
         ]})
