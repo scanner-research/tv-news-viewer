@@ -28,3 +28,9 @@ body {
   height: 1.25rem;
   vertical-align: top;
 }
+.timeline-controls .btn {
+  padding: 0px;
+}
+.timeline-controls span {
+  font-size: 8px;
+}

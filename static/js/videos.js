@@ -96,19 +96,18 @@ function displayVideos(page_i) {
             show_metadata: false,
             paginate: false,
             colors: ['gray', DEFAULT_MALE_COLOR, DEFAULT_FEMALE_COLOR],
-            // FIXME: vgrid not using these constants properly
-            vblock_constants: {
-              timeline_height: 50,
-              timeline_height_expanded: 100
-            }
+            timeline_height: 20,
+            timeline_height_expanded: 20
           }
           if (SERVE_FROM_INTERNET_ARCHIVE) {
             vgrid_settings.video_endpoint = ARCHIVE_VIDEO_ENDPOINT;
             vgrid_settings.show_timeline_controls = false;
+
           } else {
             if (VIDEO_ENDPOINT) {
               vgrid_settings.video_endpoint = VIDEO_ENDPOINT;
               vgrid_settings.show_timeline_controls = true;
+              vgrid_settings.timeline_height_expanded = 60;
             }
           }
           highlight_phrases = getPhrasesToHighlight(query);
