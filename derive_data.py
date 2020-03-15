@@ -18,6 +18,12 @@ U32_MAX = 0xFFFFFFFF
 def get_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument('--datadir', type=str, default='data')
+    parser.add_argument(
+        '-t', '--tag-limit', type=int, default=250,
+        help='Tags exceeding this number of individuals will be precomputed.')
+    parser.add_argument(
+        '-p', '--person-limit', type=int, default=100 * (2 ** 10),    # 100MB
+        help='Person isets will be precomputed for people ilists exceeding this size.')
     return parser.parse_args()
 
 
@@ -178,8 +184,7 @@ def parse_person_name(fname: str) -> str:
 
 
 def derive_person_isets(
-    workers: Pool, person_ilist_dir: str, outdir: str,
-    threshold_in_bytes: int = 100 * (2 ** 10)
+    workers: Pool, person_ilist_dir: str, outdir: str, threshold_in_bytes: int
 ) -> None:
     mkdir_if_not_exists(outdir)
 
@@ -220,7 +225,7 @@ def derive_tag_ilist(person_ilist_files: str, outfile: str) -> None:
 
 def derive_tag_ilists(
     workers: Pool, person_ilist_dir: str, metadata_path: str, outdir: str,
-    threshold: int = 100
+    threshold: int
 ) -> None:
     people_available = {
         parse_person_name(p) for p in os.listdir(person_ilist_dir)
@@ -255,7 +260,7 @@ def derive_tag_ilists(
                 error_callback=build_error_callback('Failed on: ' + tag))
 
 
-def main(datadir: str) -> None:
+def main(datadir: str, tag_limit: int, person_limit: int) -> None:
     outdir = os.path.join(datadir, 'derived')
     mkdir_if_not_exists(outdir)
 
@@ -265,11 +270,13 @@ def main(datadir: str) -> None:
             os.path.join(outdir, 'face'))
         derive_person_isets(
             workers, os.path.join(datadir, 'people'),
-            os.path.join(outdir, 'people'))
+            os.path.join(outdir, 'people'),
+            person_limit)
         derive_tag_ilists(
             workers, os.path.join(datadir, 'people'),
             os.path.join(datadir, 'people.metadata.json'),
-            os.path.join(outdir, 'tags'))
+            os.path.join(outdir, 'tags'),
+            tag_limit)
 
         workers.apply_async(
             derive_num_faces_ilist,
