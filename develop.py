@@ -50,7 +50,7 @@ def main(
             static_bbox_endpoint=None, static_caption_endpoint=None,
             host=None,
             min_date=datetime(2010, 1, 1),
-            max_date=datetime(2019, 7, 31),
+            max_date=datetime(2029, 12, 31),
             tz=timezone('US/Eastern'),
             min_person_screen_time=600,
             default_aggregate_by='month',
