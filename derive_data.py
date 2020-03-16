@@ -16,6 +16,9 @@ from rs_intervalset.writer import (
     IntervalSetMappingWriter, IntervalListMappingWriter)
 
 U32_MAX = 0xFFFFFFFF
+
+# Mask for data bits that are used
+PAYLOAD_DATA_MASK = 0b00000111
 PAYLOAD_LEN = 1
 
 
@@ -275,7 +278,7 @@ def derive_tag_ilist(
     def deoverlap_intervals(intervals):
         payload_dict = defaultdict(lambda: IntervalAccumulator())
         for a, b, c in heapq.merge(*intervals):
-            payload_dict[c].add(a, b)
+            payload_dict[c & PAYLOAD_DATA_MASK].add(a, b)
         return list(heapq.merge(*[
             [(a, b, payload) for a, b in acc.get()]
             for payload, acc in payload_dict.items()
