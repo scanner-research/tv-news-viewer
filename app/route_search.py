@@ -565,9 +565,9 @@ def get_face_time_filter_mask(
     if gender_tag:
         gender_tag = gender_tag.strip().lower()
         if gender_tag:
-            payload_mask |= 1
+            payload_mask |= 0b1
             if gender_tag == 'male':
-                payload_value |= 1
+                payload_value |= 0b1
             elif gender_tag == 'female':
                 pass
             else:
@@ -575,9 +575,9 @@ def get_face_time_filter_mask(
     if host_tag:
         host_tag = host_tag.strip().lower()
         if host_tag:
-            payload_mask |= 1 << 1
+            payload_mask |= 0b100
             if host_tag == 'host':
-                payload_value |= 1 << 1
+                payload_value |= 0b100
             elif host_tag == 'nonhost':
                 pass
             else:
