@@ -27,7 +27,7 @@ app = build_app(
     config.get('static_caption_endpoint'),
     config.get('host'),
     min_date=datetime(*options.get('min_date', [2010, 1, 1])),
-    max_date=datetime(*options.get('max_date', [2019, 7, 23])),
+    max_date=datetime(*options.get('max_date', [2029, 12, 31])),
     tz=timezone(options.get('timezone', 'US/Eastern')),
     min_person_screen_time=options.get('min_person_screen_time', 600),
     default_aggregate_by=options.get('default_aggregate_by', 'month'),
