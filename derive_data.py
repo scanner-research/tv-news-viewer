@@ -4,28 +4,41 @@ import argparse
 import os
 import json
 import heapq
+import time
 from collections import Counter, defaultdict
+from functools import wraps
+from inspect import getfullargspec
 from multiprocessing import Pool
 from typing import List, Tuple
 
-from rs_intervalset import MmapIntervalListMapping
+from rs_intervalset import MmapIntervalListMapping, MmapIntervalSetMapping
 from rs_intervalset.writer import (
     IntervalSetMappingWriter, IntervalListMappingWriter)
 
 U32_MAX = 0xFFFFFFFF
 
+# Mask for data bits that are used
+PAYLOAD_DATA_MASK = 0b00000111
+PAYLOAD_LEN = 1
+
 
 def get_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument('--datadir', type=str, default='data')
+    parser.add_argument(
+        '-i', '--incremental', action='store_true',
+        help='Incrementally update existing derived files (skips video ids with existing derived data).')
+    parser.add_argument(
+        '-t', '--tag-limit', type=int, default=250,
+        help='Tags exceeding this number of individuals will be precomputed.')
+    parser.add_argument(
+        '-p', '--person-limit', type=int, default=2 ** 20,    # 1MB
+        help='Person isets will be precomputed for people ilists exceeding this size.')
     return parser.parse_args()
 
 
-def mkdir_if_not_exists(d: str) -> bool:
-    if not os.path.exists(d):
-        os.makedirs(d)
-        return True
-    return False
+def mkdir_if_not_exists(d: str):
+    os.makedirs(d, exist_ok=True)
 
 
 # TODO(james): investigate why derived data are subtly different from Spark
@@ -60,13 +73,34 @@ def build_error_callback(message):
     return cb
 
 
+def print_task_info(f):
+    arg_spec = getfullargspec(f)
+    arg_idx = arg_spec.args.index('outfile')
+    assert arg_idx >= 0
+
+    @wraps(f)
+    def _task_info(*args, **kwargs):
+        outfile = args[arg_idx]
+        print('Writing:', outfile)
+        start_time = time.time()
+        result = f(*args, **kwargs)
+        print('Done:', outfile, '({:0.3f}s)'.format(time.time() - start_time))
+        return result
+    return _task_info
+
+
+@print_task_info
 def derive_face_iset(
-    face_ilist_file: str, payload_mask: int, payload_value: int, outfile: str
+    face_ilist_file: str, payload_mask: int, payload_value: int, outfile: str,
+    is_incremental: bool
 ) -> None:
-    ilistmap = MmapIntervalListMapping(face_ilist_file, 1)
-    print('Writing:', outfile)
-    with IntervalSetMappingWriter(outfile) as writer:
-        for video_id in ilistmap.get_ids():
+    ilistmap = MmapIntervalListMapping(face_ilist_file, PAYLOAD_LEN)
+    video_ids = set(ilistmap.get_ids())
+    if is_incremental and os.path.exists(outfile):
+        video_ids -= get_iset_ids(outfile)
+
+    with IntervalSetMappingWriter(outfile, append=is_incremental) as writer:
+        for video_id in sorted(video_ids):
             acc = IntervalAccumulator()
             for interval in ilistmap.intersect(
                 video_id, [(0, U32_MAX)], payload_mask, payload_value, False
@@ -75,18 +109,20 @@ def derive_face_iset(
             result = acc.get()
             if result:
                 writer.write(video_id, result)
-    print('Done:', outfile)
 
 
 def derive_face_isets(
-    workers: Pool, face_ilist_file: str, outdir: str
+    workers: Pool, face_ilist_file: str, outdir: str, is_incremental: bool
 ) -> None:
     mkdir_if_not_exists(outdir)
 
     def helper(mask: int, value: int, outfile: str) -> None:
         workers.apply_async(
             derive_face_iset,
-            (face_ilist_file, mask, value, os.path.join(outdir, outfile)),
+            (
+                face_ilist_file, mask, value, os.path.join(outdir, outfile),
+                is_incremental
+            ),
             error_callback=build_error_callback('Failed on: ' + face_ilist_file))
 
     # There are 3 bits in the encoding
@@ -109,8 +145,18 @@ def derive_face_isets(
 IntervalAndPayload = Tuple[int, int, int]
 
 
-def derive_num_faces_ilist(face_ilist_file: str, outfile: str) -> None:
-    ilistmap = MmapIntervalListMapping(face_ilist_file, 1)
+def get_ilist_ids(fname):
+    return set(MmapIntervalListMapping(fname, PAYLOAD_LEN).get_ids())
+
+
+def get_iset_ids(fname):
+    return set(MmapIntervalSetMapping(fname).get_ids())
+
+
+@print_task_info
+def derive_num_faces_ilist(
+    face_ilist_file: str, outfile: str, is_incremental: bool
+) -> None:
 
     def deoverlap(
         intervals: List[IntervalAndPayload], fuzz: int = 250
@@ -127,8 +173,15 @@ def derive_num_faces_ilist(face_ilist_file: str, outfile: str) -> None:
                     result.append(i)
         return result
 
-    with IntervalListMappingWriter(outfile, 1) as writer:
-        for video_id in ilistmap.get_ids():
+    ilistmap = MmapIntervalListMapping(face_ilist_file, PAYLOAD_LEN)
+    video_ids = set(ilistmap.get_ids())
+    if is_incremental and os.path.exists(outfile):
+        video_ids -= get_ilist_ids(outfile)
+
+    with IntervalListMappingWriter(
+        outfile, PAYLOAD_LEN, append=is_incremental
+    ) as writer:
+        for video_id in sorted(video_ids):
             intervals = []
             curr_interval = None
             curr_interval_count = None
@@ -153,12 +206,17 @@ def derive_num_faces_ilist(face_ilist_file: str, outfile: str) -> None:
                 writer.write(video_id, deoverlap(intervals))
 
 
-def derive_person_iset(person_ilist_file: str, outfile: str) -> None:
-    ilistmap = MmapIntervalListMapping(person_ilist_file, 1)
+@print_task_info
+def derive_person_iset(
+    person_ilist_file: str, outfile: str, is_incremental: bool
+) -> None:
+    ilistmap = MmapIntervalListMapping(person_ilist_file, PAYLOAD_LEN)
+    video_ids = set(ilistmap.get_ids())
+    if is_incremental and os.path.exists(outfile):
+        video_ids -= get_iset_ids(outfile)
 
-    print('Writing:', outfile)
-    with IntervalSetMappingWriter(outfile) as writer:
-        for video_id in ilistmap.get_ids():
+    with IntervalSetMappingWriter(outfile, append=is_incremental) as writer:
+        for video_id in sorted(video_ids):
             acc = IntervalAccumulator()
 
             for interval in ilistmap.intersect(
@@ -170,7 +228,6 @@ def derive_person_iset(person_ilist_file: str, outfile: str) -> None:
             result = acc.get()
             if result:
                 writer.write(video_id, result)
-    print('Done:', outfile)
 
 
 def parse_person_name(fname: str) -> str:
@@ -178,49 +235,71 @@ def parse_person_name(fname: str) -> str:
 
 
 def derive_person_isets(
-    workers: Pool, person_ilist_dir: str, outdir: str,
-    threshold_in_bytes: int = 100 * (2 ** 10)
+    workers: Pool, person_ilist_dir: str, outdir: str, threshold_in_bytes: int,
+    is_incremental: bool
 ) -> None:
     mkdir_if_not_exists(outdir)
 
+    skipped_count = 0
     for person_file in os.listdir(person_ilist_dir):
         if not person_file.endswith('.ilist.bin'):
             print('Skipping:', person_file)
             continue
         person_path = os.path.join(person_ilist_dir, person_file)
         if os.path.getsize(person_path) < threshold_in_bytes:
-            print('Skipping (too small):', person_file)
+            if skipped_count < 100:
+                print('Skipping (too small):', person_file)
+            skipped_count += 1
             continue
 
         person_name = parse_person_name(person_file)
         workers.apply_async(
             derive_person_iset,
             (
-                person_path, os.path.join(outdir, person_name + '.iset.bin')
+                person_path, os.path.join(outdir, person_name + '.iset.bin'),
+                is_incremental
             ),
             error_callback=build_error_callback('Failed on: ' + person_file))
+    if skipped_count > 0:
+        print('Skipped {} people (files too small).'.format(skipped_count))
 
 
-def derive_tag_ilist(person_ilist_files: str, outfile: str) -> None:
-    ilistmaps = [MmapIntervalListMapping(f, 1) for f in person_ilist_files]
+@print_task_info
+def derive_tag_ilist(
+    person_ilist_files: str, outfile: str, is_incremental: bool
+) -> None:
+    ilistmaps = [MmapIntervalListMapping(f, PAYLOAD_LEN)
+                 for f in person_ilist_files]
 
-    id_set = set()
+    video_id_set = set()
     for ilist in ilistmaps:
-        id_set.update(ilist.get_ids())
+        video_id_set.update(ilist.get_ids())
 
-    print('Writing:', outfile)
-    with IntervalListMappingWriter(outfile, 1) as writer:
-        for i in sorted(id_set):
+    def deoverlap_intervals(intervals):
+        payload_dict = defaultdict(lambda: IntervalAccumulator())
+        for a, b, c in heapq.merge(*intervals):
+            payload_dict[c & PAYLOAD_DATA_MASK].add(a, b)
+        return list(heapq.merge(*[
+            [(a, b, payload) for a, b in acc.get()]
+            for payload, acc in payload_dict.items()
+        ]))
+
+    if is_incremental and os.path.exists(outfile):
+        video_id_set -= get_ilist_ids(outfile)
+
+    with IntervalListMappingWriter(
+        outfile, PAYLOAD_LEN, append=is_incremental
+    ) as writer:
+        for i in sorted(video_id_set):
             intervals = []
             for ilist in ilistmaps:
                 intervals.append(ilist.get_intervals_with_payload(i, True))
-            writer.write(i, list(heapq.merge(*intervals)))
-    print('Done:', outfile)
+            writer.write(i, deoverlap_intervals(intervals))
 
 
 def derive_tag_ilists(
     workers: Pool, person_ilist_dir: str, metadata_path: str, outdir: str,
-    threshold: int = 100
+    threshold: int, is_incremental: bool
 ) -> None:
     people_available = {
         parse_person_name(p) for p in os.listdir(person_ilist_dir)
@@ -250,37 +329,43 @@ def derive_tag_ilists(
                 derive_tag_ilist,
                 (
                     people_ilist_files,
-                    os.path.join(outdir, tag + '.ilist.bin')
+                    os.path.join(outdir, tag + '.ilist.bin'),
+                    is_incremental
                 ),
                 error_callback=build_error_callback('Failed on: ' + tag))
 
 
-def main(datadir: str) -> None:
+def main(datadir: str, incremental: bool, tag_limit: int,
+         person_limit: int) -> None:
     outdir = os.path.join(datadir, 'derived')
     mkdir_if_not_exists(outdir)
 
     with Pool() as workers:
         derive_face_isets(
             workers, os.path.join(datadir, 'faces.ilist.bin'),
-            os.path.join(outdir, 'face'))
+            os.path.join(outdir, 'face'), incremental)
         derive_person_isets(
             workers, os.path.join(datadir, 'people'),
-            os.path.join(outdir, 'people'))
+            os.path.join(outdir, 'people'),
+            person_limit, incremental)
         derive_tag_ilists(
             workers, os.path.join(datadir, 'people'),
             os.path.join(datadir, 'people.metadata.json'),
-            os.path.join(outdir, 'tags'))
+            os.path.join(outdir, 'tags'),
+            tag_limit, incremental)
 
         workers.apply_async(
             derive_num_faces_ilist,
             (
                 os.path.join(datadir, 'faces.ilist.bin'),
-                os.path.join(outdir, 'num_faces.ilist.bin')
+                os.path.join(outdir, 'num_faces.ilist.bin'),
+                incremental
             ),
             error_callback=build_error_callback('Failed on: num faces ilist'))
 
         workers.close()
         workers.join()
+    print('Done!')
 
 
 if __name__ == '__main__':
