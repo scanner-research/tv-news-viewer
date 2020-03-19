@@ -9,7 +9,7 @@ from typing import Optional
 
 DEFAULT_VIDEO_AUTH_ENDPOINT = 'https://storage.cloud.google.com/esper/do_not_delete.jpg'
 DEFAULT_VIDEO_ENDPOINT = 'https://storage.cloud.google.com/esper/tvnews/videos'
-DEFAULT_INDEX_PATH = 'index'
+DEFAULT_INDEX_PATH = 'data/index'
 DEFAULT_PORT = 8080
 
 
@@ -32,12 +32,13 @@ def get_args() -> argparse.Namespace:
                              'videos or from the Internet Archive')
     parser.add_argument('--html-only', dest='html_only', action='store_true',
                         help='Run the server with only html template pages')
+    parser.add_argument('--host', default=None, help='host for application')
     return parser.parse_args()
 
 
 def main(
     port: int, data_dir: str, index_dir: str, video_endpoint: str,
-    video_auth_endpoint: str, html_only: bool
+    video_auth_endpoint: str, html_only: bool, host: str
 ) -> None:
     """Run a debugging server"""
     if not html_only:
@@ -50,7 +51,7 @@ def main(
             static_bbox_endpoint=None, static_caption_endpoint=None,
             host=None,
             min_date=datetime(2010, 1, 1),
-            max_date=datetime(2019, 7, 31),
+            max_date=datetime(2020, 1, 31),
             tz=timezone('US/Eastern'),
             min_person_screen_time=600,
             default_aggregate_by='month',
@@ -67,7 +68,7 @@ def main(
                     static_folder='static')
         add_html_routes(app, 0, 0, 0)
 
-    app.run(port=port, debug=True)
+    app.run(port=port, host=host, debug=True)
 
 
 if __name__ == '__main__':
