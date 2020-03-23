@@ -32,13 +32,14 @@ def get_args() -> argparse.Namespace:
                              'videos or from the Internet Archive')
     parser.add_argument('--html-only', dest='html_only', action='store_true',
                         help='Run the server with only html template pages')
-    parser.add_argument('--host', default=None, help='host for application')
+    parser.add_argument('--bind-all', action='store_true',
+                        help='Serve on all network interfaces.')
     return parser.parse_args()
 
 
 def main(
     port: int, data_dir: str, index_dir: str, video_endpoint: str,
-    video_auth_endpoint: str, html_only: bool, host: str
+    video_auth_endpoint: str, html_only: bool, bind_all: bool
 ) -> None:
     """Run a debugging server"""
     if not html_only:
@@ -68,7 +69,10 @@ def main(
                     static_folder='static')
         add_html_routes(app, 0, 0, 0)
 
-    app.run(port=port, host=host, debug=True)
+    kwargs = {'port': port, 'debug': True}
+    if bind_all:
+        kwargs['host'] = '0.0.0.0'
+    app.run(**kwargs)
 
 
 if __name__ == '__main__':
