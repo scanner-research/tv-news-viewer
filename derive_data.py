@@ -245,20 +245,19 @@ def derive_person_isets(
         if not person_file.endswith('.ilist.bin'):
             print('Skipping:', person_file)
             continue
+
+        person_name = parse_person_name(person_file)
         person_path = os.path.join(person_ilist_dir, person_file)
-        if os.path.getsize(person_path) < threshold_in_bytes:
+        derived_path = os.path.join(outdir, person_name + '.iset.bin')
+        if not os.path.exists(derived_path) and os.path.getsize(person_path) < threshold_in_bytes:
             if skipped_count < 100:
                 print('Skipping (too small):', person_file)
             skipped_count += 1
             continue
 
-        person_name = parse_person_name(person_file)
         workers.apply_async(
             derive_person_iset,
-            (
-                person_path, os.path.join(outdir, person_name + '.iset.bin'),
-                is_incremental
-            ),
+            (person_path, derived_path, is_incremental),
             error_callback=build_error_callback('Failed on: ' + person_file))
     if skipped_count > 0:
         print('Skipped {} people (files too small).'.format(skipped_count))
@@ -321,17 +320,14 @@ def derive_tag_ilists(
     mkdir_if_not_exists(outdir)
 
     for tag, people in tag_to_people.items():
-        if len(people) >= threshold:
+        tag_path = os.path.join(outdir, tag + '.ilist.bin')
+        if os.path.exists(tag_path) or len(people) >= threshold:
             people_ilist_files = [
                 os.path.join(person_ilist_dir, '{}.ilist.bin'.format(p))
                 for p in people]
             workers.apply_async(
                 derive_tag_ilist,
-                (
-                    people_ilist_files,
-                    os.path.join(outdir, tag + '.ilist.bin'),
-                    is_incremental
-                ),
+                (people_ilist_files, tag_path, is_incremental),
                 error_callback=build_error_callback('Failed on: ' + tag))
 
 
