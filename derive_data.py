@@ -190,6 +190,7 @@ def derive_num_faces_ilist(
                     curr_interval = interval
                     curr_interval_count = 1
                 else:
+                    assert interval >= curr_interval
                     if interval == curr_interval:
                         curr_interval_count += 1
                     else:

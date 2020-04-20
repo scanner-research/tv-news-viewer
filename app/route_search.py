@@ -248,7 +248,7 @@ def get_transcript_intervals(
 
         postings = raw_result.postings
         if text_window > 0:
-            postings = PostingUtil.deoverlap(PostingUtil.dilate(
+            postings = PostingUtil.deoverlap(PostingUtil.to_fixed_length(
                 postings, text_window,
                 video.num_frames / video.fps))
         results.append(PythonISetData(
