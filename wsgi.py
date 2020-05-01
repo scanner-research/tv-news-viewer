@@ -14,6 +14,19 @@ from app.types_frontend import Ternary
 
 CONFIG_FILE = 'config.json'
 
+DEFAULT_MIN_DATE = [2010, 1, 1]
+DEFAULT_MAX_DATE = [2030, 1, 1]
+
+DEFAULT_TIME_ZONE = 'US/Eastern'
+
+DEFAULT_MIN_PERSON_SCREEN_TIME = 10 * 60
+DEFAULT_MIN_PERSON_AUTOCOMPETE_SCREEN_TIME = 10 * 60 * 60
+
+DEFAULT_IS_COMMERCIAL = Ternary.false
+
+DEFAULT_AGGREGATE_BY = 'month'
+DEFAULT_TEXT_WINDOW = 0
+
 with open(CONFIG_FILE) as f:
     config = json.load(f)
 
@@ -26,13 +39,21 @@ app = build_app(
     config.get('static_bbox_endpoint'),
     config.get('static_caption_endpoint'),
     config.get('host'),
-    min_date=datetime(*options.get('min_date', [2010, 1, 1])),
-    max_date=datetime(*options.get('max_date', [2029, 12, 31])),
-    tz=timezone(options.get('timezone', 'US/Eastern')),
-    min_person_screen_time=options.get('min_person_screen_time', 600),
-    default_aggregate_by=options.get('default_aggregate_by', 'month'),
-    default_text_window=options.get('default_text_window', 0),
-    default_is_commercial=options.get('default_is_commercial', Ternary.false),
+    min_date=datetime(*options.get('min_date', DEFAULT_MIN_DATE)),
+    max_date=datetime(*options.get('max_date', DEFAULT_MAX_DATE)),
+    tz=timezone(options.get('timezone', DEFAULT_TIME_ZONE)),
+    min_person_screen_time=options.get(
+        'min_person_screen_time',
+        DEFAULT_MIN_PERSON_SCREEN_TIME),
+    min_person_autocomplete_screen_time=options.get(
+        'min_person_autocomplete_screen_time',
+        DEFAULT_MIN_PERSON_AUTOCOMPETE_SCREEN_TIME),
+    default_aggregate_by=options.get(
+        'default_aggregate_by', DEFAULT_AGGREGATE_BY),
+    default_text_window=options.get(
+        'default_text_window', DEFAULT_TEXT_WINDOW),
+    default_is_commercial=options.get(
+        'default_is_commercial', DEFAULT_IS_COMMERCIAL),
     default_serve_from_archive=True,
     data_version=config.get('data_version'),
     show_uptime=config.get('show_uptime', False))

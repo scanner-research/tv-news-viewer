@@ -342,7 +342,7 @@ function addCodeHintHelper(name) {
         values = all_shows;
         break;
       case SEARCH_KEY.face_name:
-        values = prefix ? ALL_PEOPLE : [];
+        values = prefix ? ALL_AUTOCOMPLETE_PEOPLE : [];
         break;
       case SEARCH_KEY.face_tag:
         values = ALL_TAGS;

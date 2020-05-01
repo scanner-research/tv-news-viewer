@@ -167,11 +167,11 @@ def _load_person_intervals(
                 if os.path.isfile(person_iset_path) else
                 MmapIListToISetMapping(person_ilist_map, 0, 0, 3000, 100))
 
-            person_time = person_isetmap.sum() / 60000
+            person_time = person_isetmap.sum() / 1000
             should_skip = False
             if (
                 not check_person_name_in_lexicon(person_name_lower)
-                and person_time < min_person_screen_time / 60
+                and person_time < min_person_screen_time
             ):
                 skipped_count += 1
                 skipped_time += person_time
@@ -180,18 +180,18 @@ def _load_person_intervals(
 
             person_intervals = PersonIntervals(
                 name=person_name, ilistmap=person_ilist_map,
-                isetmap=person_isetmap)
+                isetmap=person_isetmap, screen_time_seconds=person_time)
             all_person_intervals.append((person_name_lower, person_intervals))
         except Exception as e:
             print('Unable to load: {} - {}'.format(person_name, e))
             skipped_count += 1
 
-    print('  Loaded intervals for {} people. Skipped {}, totaling {}m.'.format(
-          len(all_person_intervals), skipped_count, int(skipped_time)))
+    print('  Loaded intervals for {} people. Skipped {}, totaling {}h.'.format(
+          len(all_person_intervals), skipped_count, int(skipped_time) / 3600))
     if len(skipped_counter) > 0:
         print('  Skipped people with largest time:')
         for k, v in skipped_counter.most_common(25):
-            print('    {}: {}m'.format(k, int(v)))
+            print('    {}: {}s'.format(k, int(v)))
 
     all_person_intervals.sort()
     return OrderedDict(all_person_intervals)

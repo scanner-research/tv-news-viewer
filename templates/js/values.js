@@ -68,6 +68,9 @@ const ALL_PEOPLE = [
   {% for person in people %}'{{ person }}',{% endfor %}
 ];
 const ALL_PEOPLE_LOWER_CASE_SET = new Set(ALL_PEOPLE.map(x => x.toLowerCase()));
+const ALL_AUTOCOMPLETE_PEOPLE = [
+  {% for person in autocomplete_people %}'{{ person }}',{% endfor %}
+]
 
 const PERSON_TAG_TO_PEOPLE = {
   {% for tag, people in person_tags_dict.items() %}'{{ tag }}':[{% for person in people %}'{{ person }}',{% endfor %}],{% endfor %}

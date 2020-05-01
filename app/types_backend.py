@@ -43,6 +43,7 @@ class PersonIntervals(NamedTuple):
     name: str
     ilistmap: MmapIntervalListMapping
     isetmap: MmapIntervalSetMapping
+    screen_time_seconds: float
 
 
 class Tag(NamedTuple):

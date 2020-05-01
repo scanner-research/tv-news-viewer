@@ -52,16 +52,18 @@ def main(
 
         app = build_app(
             data_dir, index_dir, video_endpoint, video_auth_endpoint,
-            static_bbox_endpoint=None, static_caption_endpoint=None,
+            static_bbox_endpoint=None,
+            static_caption_endpoint=None,
             host=None,
             min_date=datetime(2010, 1, 1),
             max_date=datetime(2029, 12, 31),
             tz=timezone('US/Eastern'),
-            min_person_screen_time=600,
+            min_person_screen_time=0,
+            min_person_autocomplete_screen_time=10 * 60 * 60,   # 10 hrs
             default_aggregate_by='month',
-            default_text_window=0,
-            default_is_commercial=Ternary.false,
-            default_serve_from_archive=True,
+            default_text_window=0,                  # amount to dialate text intervals
+            default_is_commercial=Ternary.false,    # exclude comercials
+            default_serve_from_archive=True,        # link videos directly
             data_version='dev',
             show_uptime=True)
     else:

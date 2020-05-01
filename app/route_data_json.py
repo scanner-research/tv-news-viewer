@@ -14,7 +14,7 @@ def add_data_json_routes(
     Person = namedtuple('person', ['name', 'screen_time', 'tags'])
     people = [
         Person(
-            intervals.name, round(intervals.isetmap.sum() / 60000),
+            intervals.name, round(intervals.screen_time_seconds / 60),
             video_data_context.all_person_tags.name_to_tags(name)
         )
         for name, intervals in video_data_context.all_person_intervals.items()
