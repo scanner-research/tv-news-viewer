@@ -246,7 +246,7 @@ class Chart {
           axis: {
             titleFontSize: 12, labelFontSize: 12, tickCount: x_tick_count,
             format: getVegaDateFormat(this.options.aggregate), title: null,
-            labelAngle: -30
+            labelAngle: 0, gridOpacity: 0.5, tickCount: 10
           },
           scale: {
             domain: [x_start_date, x_end_date]
@@ -255,7 +255,8 @@ class Chart {
         y: {
           field: 'value', type: 'quantitative', title: y_axis_title,
           axis: {
-            titleFontSize: 12, labelFontSize: 12, tickCount: 5
+            titleFontSize: 12, labelFontSize: 12, tickCount: 5,
+            gridOpacity: 0.5
           }
         },
         color: {field: 'color', type: 'nominal', scale: null},
@@ -331,7 +332,7 @@ class Chart {
           axis: {
             titleFontSize: 12, labelFontSize: 12, tickCount: x_tick_count,
             format: getVegaDateFormat(this.options.aggregate), title: null,
-            labelAngle: -30
+            labelAngle: 0, gridOpacity: 0.5, tickCount: 10
           },
           scale: {
             domain: [x_start_date, x_end_date]
@@ -339,7 +340,10 @@ class Chart {
         },
         tooltip: null
       },
-      layer: vega_layers
+      layer: vega_layers,
+      view: {
+         stroke: 'transparent'
+      }
     };
     if (!options.transparent) {
       vega_spec.background = 'white';
