@@ -73,6 +73,7 @@ def build_app(
     tz: timezone,
     min_person_screen_time: int,
     min_person_autocomplete_screen_time: int,
+    autocomplete_person_tags: bool,
     default_aggregate_by: str,
     default_text_window: int,
     default_is_commercial: Ternary,
@@ -158,6 +159,7 @@ def build_app(
                 in video_data_context.all_person_intervals.values()
                 if intervals.screen_time_seconds >= min_person_autocomplete_screen_time
             ],
+            autocomplete_person_tags=autocomplete_person_tags,
             global_face_tags=list(sorted(GLOBAL_TAGS)),
             person_tags_dict=video_data_context.all_person_tags.tag_name_dict))
         resp.headers['Content-type'] = 'application/javascript'

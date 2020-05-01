@@ -1,4 +1,5 @@
 const DEBUG_AUTOCOMPLETE = false;
+const MAX_PEOPLE_AUTOCOMPLETE = 2000
 
 function generateCodeMirrorQueryParser(options) {
 
@@ -342,10 +343,10 @@ function addCodeHintHelper(name) {
         values = all_shows;
         break;
       case SEARCH_KEY.face_name:
-        values = prefix ? ALL_AUTOCOMPLETE_PEOPLE : [];
+        values = prefix || ALL_AUTOCOMPLETE_PEOPLE.length <= MAX_PEOPLE_AUTOCOMPLETE ? ALL_AUTOCOMPLETE_PEOPLE : [];
         break;
       case SEARCH_KEY.face_tag:
-        values = ALL_TAGS;
+        values = ALL_AUTOCOMPLETE_TAGS;
         break;
       case SEARCH_KEY.day_of_week:
         values = DAYS_OF_WEEK;

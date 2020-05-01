@@ -83,6 +83,7 @@ const ALL_GLOBAL_TAGS = [
 
 const ALL_TAGS = ALL_GLOBAL_TAGS.concat(ALL_PERSON_TAGS);
 const ALL_TAGS_LOWER_CASE_SET = new Set(ALL_TAGS.map(x => x.toLowerCase()));
+const ALL_AUTOCOMPLETE_TAGS = {% if autocomplete_person_tags %}ALL_TAGS{% else %}ALL_GLOBAL_TAGS{% endif %};
 
 const CHANNELS = ['CNN', 'FOX', 'MSNBC'];
 const CHANNEL_REGEX = /CNN|FOX(?:NEWS)?|MSNBC/i;

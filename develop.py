@@ -60,6 +60,7 @@ def main(
             tz=timezone('US/Eastern'),
             min_person_screen_time=0,
             min_person_autocomplete_screen_time=10 * 60 * 60,   # 10 hrs
+            autocomplete_person_tags=False,
             default_aggregate_by='month',
             default_text_window=0,                  # amount to dialate text intervals
             default_is_commercial=Ternary.false,    # exclude comercials
