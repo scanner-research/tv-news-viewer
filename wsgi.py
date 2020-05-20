@@ -26,6 +26,8 @@ DEFAULT_AUTOCOMPLETE_PERSON_TAGS = False
 
 DEFAULT_IS_COMMERCIAL = Ternary.false
 
+DEFAULT_COLOR_GENDER_BBOXES = False
+
 DEFAULT_AGGREGATE_BY = 'month'
 DEFAULT_TEXT_WINDOW = 0
 
@@ -60,6 +62,8 @@ app = build_app(
     default_is_commercial=options.get(
         'default_is_commercial', DEFAULT_IS_COMMERCIAL),
     default_serve_from_archive=True,
+    default_color_gender_bboxes=options.get(
+        'default_color_gender_bboxes', DEFAULT_COLOR_GENDER_BBOXES),
     data_version=config.get('data_version'),
     show_uptime=config.get('show_uptime', False))
 del config

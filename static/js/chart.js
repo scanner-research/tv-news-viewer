@@ -5,10 +5,7 @@ const VGRID_INSTRUCTIONS = $('<ul />').append(
   $('<li>').html('The playback position is indicated by the <mark style="background-color: #84db57;">green</mark> bar.'),
   $('<li>').html('<mark style="background-color: grey">Gray</mark> bars indicate matched intervals (note that commercials are excluded by default).'),
   $('<li>').html('Relavant words in the transcripts are highlighted in <mark style="background-color: yellow;">yellow</mark>.'),
-  $('<li>').html(
-    `<mark style="background-color: ${DEFAULT_MALE_COLOR};">male-presenting</mark> and
-    <mark style="background-color: ${DEFAULT_FEMALE_COLOR};">female-presenting</mark> faces.
-    Expand the video thumbnail to show labeled identities.`)
+  $('<li>').html('Expand the video thumbnail to show labeled identities.')
 );
 
 const EPSILON = 1e-4;

@@ -78,6 +78,7 @@ def build_app(
     default_text_window: int,
     default_is_commercial: Ternary,
     default_serve_from_archive: bool,
+    default_color_gender_bboxes: bool,
     data_version: Optional[str],
     show_uptime: bool
 ) -> Flask:
@@ -161,7 +162,8 @@ def build_app(
             ],
             autocomplete_person_tags=autocomplete_person_tags,
             global_face_tags=list(sorted(GLOBAL_TAGS)),
-            person_tags_dict=video_data_context.all_person_tags.tag_name_dict))
+            person_tags_dict=video_data_context.all_person_tags.tag_name_dict),
+            color_gender_bboxes=default_color_gender_bboxes)
         resp.headers['Content-type'] = 'application/javascript'
         return resp
 

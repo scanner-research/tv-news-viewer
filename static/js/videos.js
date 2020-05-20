@@ -84,6 +84,10 @@ function displayVideos(page_i) {
         resp => face_data[i] = resp
       ).catch(e => `Failed to get faces: ${i}`))
   ).then(() => {
+    let color_bboxes_by_gender = DEFAULT_COLOR_GENDER_BBOXES || query.query.match(/male/i);
+    let interval_colors = color_bboxes_by_gender ? 
+	['gray', DEFAULT_MALE_COLOR, DEFAULT_FEMALE_COLOR] :
+        ['gray', DEFAULT_NEUTRAL_COLOR, DEFAULT_NEUTRAL_COLOR];
     query.searchInVideos(
       video_ids,
       json_data => {
