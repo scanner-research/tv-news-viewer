@@ -4,7 +4,7 @@ const VGRID_INSTRUCTIONS = $('<ul />').append(
   $('<li>').html('Click on the thumbnails to expand videos and press <kbd>Space</kbd> to play/pause.'),
   $('<li>').html('The playback position is indicated by the <mark style="background-color: #84db57;">green</mark> bar.'),
   $('<li>').html('<mark style="background-color: grey">Gray</mark> bars indicate matched intervals (note that commercials are excluded by default).'),
-  $('<li>').html('Relavant words in the transcripts are highlighted in <mark style="background-color: yellow;">yellow</mark>.'),
+  $('<li>').html('Relavant words in the transcripts are highlighted in <mark style="background-color: #baffff;">blue</mark>.'),
   $('<li>').html('Expand the video thumbnail to show labeled identities.')
 );
 

@@ -162,8 +162,8 @@ def build_app(
             ],
             autocomplete_person_tags=autocomplete_person_tags,
             global_face_tags=list(sorted(GLOBAL_TAGS)),
-            person_tags_dict=video_data_context.all_person_tags.tag_name_dict),
-            color_gender_bboxes=default_color_gender_bboxes)
+            person_tags_dict=video_data_context.all_person_tags.tag_name_dict,
+            color_gender_bboxes=default_color_gender_bboxes))
         resp.headers['Content-type'] = 'application/javascript'
         return resp
 

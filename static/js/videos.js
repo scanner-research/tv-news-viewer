@@ -99,7 +99,7 @@ function displayVideos(page_i) {
             show_captions: false,
             show_metadata: false,
             paginate: false,
-            colors: ['gray', DEFAULT_MALE_COLOR, DEFAULT_FEMALE_COLOR],
+            colors: interval_colors,
             timeline_height: 20,
             timeline_height_expanded: 20
           }

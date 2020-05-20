@@ -15,9 +15,11 @@ const DEFAULT_COLORS = [
 ];
 
 const DEFAULT_COLOR_GENDER_BBOXES = {% if color_gender_bboxes %}true{% else %}false{% endif %};
-const DEFAULT_NEUTRAL_COLOR = '#FFEA00';
+const DEFAULT_NEUTRAL_COLOR = '#FFFF00';
 const DEFAULT_MALE_COLOR = '#AED6F1';
 const DEFAULT_FEMALE_COLOR = '#F5B7B1';
+
+const CAPTION_HIGHLIGHT_COLOR = '#BAFFFF';
 
 const DEFAULT_START_DATE = '{{ start_date }}';
 const DEFAULT_END_DATE = '{{ end_date }}';
