@@ -22,7 +22,7 @@ DEFAULT_TIME_ZONE = 'US/Eastern'
 DEFAULT_MIN_PERSON_SCREEN_TIME = 10 * 60
 DEFAULT_MIN_PERSON_AUTOCOMPETE_SCREEN_TIME = 10 * 60 * 60
 
-DEFAULT_AUTOCOMPLETE_PERSON_TAGS = False
+DEFAULT_HIDE_PERSON_TAGS = False
 
 DEFAULT_IS_COMMERCIAL = Ternary.false
 
@@ -52,9 +52,8 @@ app = build_app(
     min_person_autocomplete_screen_time=options.get(
         'min_person_autocomplete_screen_time',
         DEFAULT_MIN_PERSON_AUTOCOMPETE_SCREEN_TIME),
-    autocomplete_person_tags=options.get(
-        'autocomplete_person_tags',
-        DEFAULT_AUTOCOMPLETE_PERSON_TAGS),
+    hide_person_tags=options.get(
+        'hide_person_tags', DEFAULT_HIDE_PERSON_TAGS),
     default_aggregate_by=options.get(
         'default_aggregate_by', DEFAULT_AGGREGATE_BY),
     default_text_window=options.get(

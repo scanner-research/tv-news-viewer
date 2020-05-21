@@ -9,7 +9,8 @@ from .load import VideoDataContext
 def add_data_json_routes(
     app: Flask, video_data_context: VideoDataContext,
     min_date: datetime, max_date: datetime,
-    num_video_samples: int
+    num_video_samples: int,
+    hide_person_tags: bool
 ):
     Person = namedtuple('person', ['name', 'screen_time', 'tags'])
     people = [
@@ -24,16 +25,17 @@ def add_data_json_routes(
     def get_data_people_json() -> Response:
         return jsonify({'data': [
             (p.name, p.screen_time,
-             ', '.join(sorted({t.name for t in p.tags})))
+            '' if hide_person_tags else ', '.join(sorted({t.name for t in p.tags})))
             for p in people
         ]})
 
-    @app.route('/data/tags.json')
-    def get_data_tags_json() -> Response:
-        return jsonify({'data': [
-            (t.name, t.source, len(p), ', '.join(p))
-            for t, p in video_data_context.all_person_tags.tag_dict.items()
-        ]})
+    if not hide_person_tags:
+        @app.route('/data/tags.json')
+        def get_data_tags_json() -> Response:
+            return jsonify({'data': [
+                (t.name, t.source, len(p), ', '.join(p))
+                for t, p in video_data_context.all_person_tags.tag_dict.items()
+            ]})
 
     @app.route('/data/shows.json')
     def get_data_shows_json() -> Response:

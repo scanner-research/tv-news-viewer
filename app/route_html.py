@@ -8,7 +8,8 @@ from .types_frontend import SearchKey, SearchParam
 
 def add_html_routes(
     app: Flask, host: Optional[str], num_total_videos: int,
-    num_video_samples: int, default_text_window: int, show_uptime: bool
+    num_video_samples: int, default_text_window: int,
+    hide_person_tags: bool, show_uptime: bool
 ):
     server_start_time = time.time()
 
@@ -53,12 +54,14 @@ def add_html_routes(
     def get_getting_started() -> Response:
         return render_template(
             'getting-started.html', search_keys=SearchKey,
+            hide_person_tags=hide_person_tags,
             **_get_template_kwargs())
 
     @app.route('/docs')
     def get_docs() -> Response:
         return render_template(
-            'docs.html', search_keys=SearchKey,
+            'docs.html', search_keys=SearchKey, 
+            hide_person_tags=hide_person_tags,
             default_text_window=default_text_window, **_get_template_kwargs())
 
     @app.route('/methodology')
@@ -78,12 +81,14 @@ def add_html_routes(
     def get_data_people() -> Response:
         return render_template(
             'data/people.html', search_keys=SearchKey,
+            hide_person_tags=hide_person_tags,
             **_get_template_kwargs())
 
     @app.route('/data/tags')
     def get_data_tags() -> Response:
         return render_template(
             'data/tags.html', search_keys=SearchKey,
+            hide_person_tags=hide_person_tags,
             **_get_template_kwargs())
 
     @app.route('/data/shows')

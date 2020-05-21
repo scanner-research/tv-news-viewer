@@ -230,10 +230,10 @@
         <td>example</td>
         <td>
           <code>
-            {{ search_keys.face_tag }}="male" <br>
-            {{ search_keys.face_tag }}="male,host" <br>
-            {{ search_keys.face_tag }}="male AND host" <br>
-            {{ search_keys.face_tag }}="journalist"
+            {{ search_keys.face_tag }}="male"
+	    <br>{{ search_keys.face_tag }}="male,host"
+	    <br>{{ search_keys.face_tag }}="male AND host"
+	    {% if not hide_person_tags %}<br>{{ search_keys.face_tag }}="journalist"{% endif %}
           </code>
         </td>
       </tr>

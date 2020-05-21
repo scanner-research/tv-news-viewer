@@ -35,19 +35,21 @@ and their accuracy is subject to noise and biases in these models. <b>This list 
       <tr>
         <th>Name</th>
         <th>Total screen time (in minutes)</th>
-        <th>Person-tags</th>
+	<th>Person-tags</th>
       </tr>
     </thead>
   </table>
 
   <script>
+    const show_person_tags = {% if hide_person_tags %}false{% else %}true{% endif %};
     $(document).ready(function() {
       $('.table').DataTable({
         pageLength: 25, columns: [
           {width: '20%'},
           {width: '15%', className: 'text-right',
            render: x => formatNumber(x, 0)},
-          {render: renderLongDataValue}
+		{render: renderLongDataValue, visible: show_person_tags,
+		 searchable: show_person_tags}
         ],
         order: [[1, 'desc']],
         language: {

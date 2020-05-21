@@ -73,7 +73,7 @@ def build_app(
     tz: timezone,
     min_person_screen_time: int,
     min_person_autocomplete_screen_time: int,
-    autocomplete_person_tags: bool,
+    hide_person_tags: bool,
     default_aggregate_by: str,
     default_text_window: int,
     default_is_commercial: Ternary,
@@ -109,11 +109,14 @@ def build_app(
         ),
         num_video_samples=NUM_VIDEO_SAMPLES,
         default_text_window=default_text_window,
+        hide_person_tags=hide_person_tags,
         show_uptime=show_uptime)
 
-    add_data_json_routes(app, video_data_context,
-                         min_date=min_date, max_date=max_date,
-                         num_video_samples=NUM_VIDEO_SAMPLES)
+    add_data_json_routes(
+        app, video_data_context,
+        min_date=min_date, max_date=max_date,
+        num_video_samples=NUM_VIDEO_SAMPLES,
+        hide_person_tags=hide_person_tags)
 
     add_search_routes(
         app, caption_data_context, video_data_context,
@@ -160,7 +163,7 @@ def build_app(
                 in video_data_context.all_person_intervals.values()
                 if intervals.screen_time_seconds >= min_person_autocomplete_screen_time
             ],
-            autocomplete_person_tags=autocomplete_person_tags,
+            hide_person_tags=hide_person_tags,
             global_face_tags=list(sorted(GLOBAL_TAGS)),
             person_tags_dict=video_data_context.all_person_tags.tag_name_dict,
             color_gender_bboxes=default_color_gender_bboxes))
