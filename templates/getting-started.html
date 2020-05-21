@@ -81,12 +81,20 @@ The Stanford Cable TV Analyzer enables you to write queries that compute the amo
 <div class="graph-embed-div">
 <iframe id="maleFemaleHost" class="graph-embed-2line"></iframe></div>
 
-  <p>
-    The <a href="/data/tags">tags</a> page contains the full list of tags that can be used in a face <b>tag</b> filter.  You'll see tags like "musician", "politician", "journalist" and we encourage you to play around with the query above to plot the screen time of people associated with different tags.
-  </p>
-   <p> As you write queries it is important to be mindful that tags are <b>not exhaustive</b>.
-    For example, a query using the filter "tag=politician" computes the screen time of all faces in the dataset that have been identified as politicians.  However, since not every politician in the dataset is correctly identified by automatic face recognition methods, the true screen time of people on the news who are actually politicians is certainly higher.  In some cases, tags are present for all faces in the data (e.g., gender, see the <a href="/data/tags">tags page</a> for a list).  Details about how Stanford Cable TV News Analyzer attributes tags to faces is provided on our <a href="/methodology">methodology page.</a>
-  </p>
+{% if hide_person_tags %}
+<p>
+  The <a href="/data/tags">tags</a> page contains the full list of tags that can be used in a face <b>tag</b> filter. Details about how Stanford Cable TV News Analyzer attributes tags to faces is provided on our <a href="/methodology">methodology page.</a>
+ </p>
+
+{% else %}
+<p>
+  The <a href="/data/tags">tags</a> page contains the full list of tags that can be used in a face <b>tag</b> filter.  You'll see tags like "musician", "politician", "journalist" and we encourage you to play around with the query above to plot the screen time of people associated with different tags.
+</p>
+ <p> 
+  As you write queries it is important to be mindful that tags are <b>not exhaustive</b>.
+  For example, a query using the filter "tag=politician" computes the screen time of all faces in the dataset that have been identified as politicians.  However, since not every politician in the dataset is correctly identified by automatic face recognition methods, the true screen time of people on the news who are actually politicians is certainly higher.  In some cases, tags are present for all faces in the data (e.g., gender, see the <a href="/data/tags">tags page</a> for a list).  Details about how Stanford Cable TV News Analyzer attributes tags to faces is provided on our <a href="/methodology">methodology page.</a>
+</p>
+{% endif %}
 
 <h3>Composite Queries (AND's and OR's)</h3>
 

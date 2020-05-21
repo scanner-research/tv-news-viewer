@@ -10,6 +10,13 @@ function clearChart() {
 }
 
 function getDataString(chart_options, lines, macros) {
+  chart_options = Object.assign({}, chart_options);
+  if (chart_options.start_date == DEFAULT_START_DATE) {
+    delete chart_options.start_date;
+  }
+  if (chart_options.end_date == DEFAULT_END_DATE) {
+    delete chart_options.end_date;
+  }
   let data = {
     options: chart_options,
     queries: lines.map(l => ({color: l.color, text: l.query.query}))

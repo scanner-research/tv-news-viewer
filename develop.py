@@ -60,11 +60,12 @@ def main(
             tz=timezone('US/Eastern'),
             min_person_screen_time=0,
             min_person_autocomplete_screen_time=10 * 60 * 60,   # 10 hrs
-            autocomplete_person_tags=False,
+            hide_person_tags=False,
             default_aggregate_by='month',
             default_text_window=0,                  # amount to dialate text intervals
             default_is_commercial=Ternary.false,    # exclude comercials
             default_serve_from_archive=True,        # link videos directly
+            default_color_gender_bboxes=True,     # color code gender bboxes
             data_version='dev',
             show_uptime=True)
     else:

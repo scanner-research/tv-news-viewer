@@ -601,8 +601,12 @@ class Editor {
     var end_date = DEFAULT_END_DATE;
     var aggregate_by = DEFAULT_AGGREGATE_BY;
     if (chart_options) {
-      start_date = chart_options.start_date;
-      end_date = chart_options.end_date;
+      if (chart_options.start_date) {
+	start_date = chart_options.start_date;
+      }
+      if (chart_options.end_date) {
+        end_date = chart_options.end_date;
+      }
       aggregate_by = chart_options.aggregate;
     }
     editor.find('[name="aggregateBy"]').val(aggregate_by);

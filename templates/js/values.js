@@ -14,8 +14,12 @@ const DEFAULT_COLORS = [
   '#EDC948', '#B07AA1', '#FF9DA7', '#9C755F', '#BAB0AC'
 ];
 
+const DEFAULT_COLOR_GENDER_BBOXES = {% if color_gender_bboxes %}true{% else %}false{% endif %};
+const DEFAULT_NEUTRAL_COLOR = '#FFFF00';
 const DEFAULT_MALE_COLOR = '#AED6F1';
 const DEFAULT_FEMALE_COLOR = '#F5B7B1';
+
+const CAPTION_HIGHLIGHT_COLOR = '#BAFFFF';
 
 const DEFAULT_START_DATE = '{{ start_date }}';
 const DEFAULT_END_DATE = '{{ end_date }}';
@@ -83,7 +87,7 @@ const ALL_GLOBAL_TAGS = [
 
 const ALL_TAGS = ALL_GLOBAL_TAGS.concat(ALL_PERSON_TAGS);
 const ALL_TAGS_LOWER_CASE_SET = new Set(ALL_TAGS.map(x => x.toLowerCase()));
-const ALL_AUTOCOMPLETE_TAGS = {% if autocomplete_person_tags %}ALL_TAGS{% else %}ALL_GLOBAL_TAGS{% endif %};
+const ALL_AUTOCOMPLETE_TAGS = {% if not hide_person_tags %}ALL_TAGS{% else %}ALL_GLOBAL_TAGS{% endif %};
 
 const CHANNELS = ['CNN', 'FOX', 'MSNBC'];
 const CHANNEL_REGEX = /CNN|FOX(?:NEWS)?|MSNBC/i;

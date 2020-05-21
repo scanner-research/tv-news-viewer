@@ -7,7 +7,7 @@ import {
 
 import '@wcrichto/vgrid/dist/vgrid.css';
 
-const HIGHLIGHT_STYLE = {backgroundColor: 'yellow'};
+const HIGHLIGHT_STYLE = {backgroundColor: '#baffff'};
 
 const FACE_FADE_PARAMS = {amount: 0.75};
 
