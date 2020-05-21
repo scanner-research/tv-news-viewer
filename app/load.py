@@ -161,6 +161,13 @@ def _load_person_intervals(
         person_ilist_path = path.join(
             person_ilist_dir, person_file_prefix + '.ilist.bin')
         try:
+            # Heuristic to filter out people who cannot pass the threshold
+            if os.path.getsize(person_ilist_path) / 4 / 2 * 3 < min_person_screen_time:
+                skipped_counter[person_name_lower] = min_person_screen_time
+                skipped_count += 1
+                skipped_time += min_person_screen_time
+                continue
+
             person_ilist_map = MmapIntervalListMapping(person_ilist_path, 1)
             person_isetmap = (
                 MmapIntervalSetMapping(person_iset_path)
