@@ -14,6 +14,9 @@ const FACE_FADE_PARAMS = {amount: 0.75};
 const INTERNET_ARCHIVE_MAX_CLIP_LEN = 180;
 const INTERNET_ARCHIVE_PAD_START = 30;
 
+// From values.js
+const NAMES_TO_SHOW = ALL_PEOPLE_LOWER_CASE_SET;
+
 function getHighlightIndexes(captions, extra_options) {
   let highlight_idxs = new Set();
   if (extra_options.highlight_phrases) {
@@ -42,6 +45,10 @@ function getHighlightIndexes(captions, extra_options) {
     }
   }
   return highlight_idxs;
+}
+
+function sanitizeName(name) {
+  return $.trim(name).replace(/'/, '').toLowerCase();
 }
 
 function flattenCaption(caption) {
@@ -111,7 +118,9 @@ function loadJsonData(json_data, caption_data, face_data, extra_options) {
     let video_face_data = _.get(face_data, video_id, {ids: [], faces: []});
     let faces = video_face_data.faces;
     let face_id_to_name = video_face_data.ids.reduce((acc, x) => {
-      acc[x[1]] = x[0];
+      if (NAMES_TO_SHOW.has(sanitizeName(x[0]))) {
+        acc[x[1]] = x[0];
+      }
       return acc;
     }, {});
     let makeFaceInterval = function(face) {
@@ -121,7 +130,9 @@ function loadJsonData(json_data, caption_data, face_data, extra_options) {
         new Bounds(t0, t1, new BoundingBox(x1, x2, y1, y2)),
         {
           spatial_type: new SpatialType_Bbox({
-            fade: FACE_FADE_PARAMS, text: face.i ? face_id_to_name[face.i] : null
+            fade: FACE_FADE_PARAMS,
+            text: face.i && face_id_to_name.hasOwnProperty(face.i)
+              ? face_id_to_name[face.i] : null
           })
         }
       );
@@ -252,7 +263,9 @@ function loadJsonDataForInternetArchive(json_data, caption_data, face_data,
       return Math.min(block_end, end) - Math.max(block_start, start) >= 0;
     });
     let face_id_to_name = video_face_data.ids.reduce((acc, x) => {
-      acc[x[1]] = x[0];
+      if (NAMES_TO_SHOW.has(sanitizeName(x[0]))) {
+        acc[x[1]] = x[0];
+      }
       return acc;
     }, {});
 
@@ -263,7 +276,9 @@ function loadJsonDataForInternetArchive(json_data, caption_data, face_data,
         makeBounds(t0, t1, new BoundingBox(x1, x2, y1, y2)),
         {
           spatial_type: new SpatialType_Bbox({
-            fade: FACE_FADE_PARAMS, text: face.i ? face_id_to_name[face.i] : null
+            fade: FACE_FADE_PARAMS,
+            text: face.i && face_id_to_name.hasOwnProperty(face.i)
+              ? face_id_to_name[face.i] : null
           })
         }
       );
