@@ -159,11 +159,11 @@ function loadJsonData(json_data, caption_data, face_data, extra_options) {
       }, {
         name: '_male_faces',
         interval_set: new IntervalSet(
-          faces.filter(f => f.g == 'm').map(makeFaceInterval))
+          faces.filter(f => f.g.toLowerCase() == 'm').map(makeFaceInterval))
       }, {
         name: '_female_faces',
         interval_set: new IntervalSet(
-          faces.filter(f => f.g == 'f').map(makeFaceInterval))
+          faces.filter(f => f.g.toLowerCase() == 'f').map(makeFaceInterval))
       }, {
         name: '_captions',
         interval_set: new IntervalSet(
@@ -311,11 +311,11 @@ function loadJsonDataForInternetArchive(json_data, caption_data, face_data,
       }, {
         name: '_male_faces',
         interval_set: new IntervalSet(
-          faces.filter(f => f.g == 'm').map(makeFaceInterval))
+          faces.filter(f => f.g.toLowerCase() == 'm').map(makeFaceInterval))
       }, {
         name: '_female_faces',
         interval_set: new IntervalSet(
-          faces.filter(f => f.g == 'f').map(makeFaceInterval))
+          faces.filter(f => f.g.toLowerCase() == 'f').map(makeFaceInterval))
       }, {
         name: '_captions',
         interval_set: new IntervalSet(
