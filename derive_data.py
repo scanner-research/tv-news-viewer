@@ -345,11 +345,14 @@ def main(datadir: str, incremental: bool, tag_limit: int,
             workers, os.path.join(datadir, 'people'),
             os.path.join(outdir, 'people'),
             person_limit, incremental)
-        derive_tag_ilists(
-            workers, os.path.join(datadir, 'people'),
-            os.path.join(datadir, 'people.metadata.json'),
-            os.path.join(outdir, 'tags'),
-            tag_limit, incremental)
+
+        metadata_path = os.path.join(datadir, 'people.metadata.json')
+        if os.path.exists(metadata_path):
+            derive_tag_ilists(
+                workers, os.path.join(datadir, 'people'),
+                metadata_path,
+                os.path.join(outdir, 'tags'),
+                tag_limit, incremental)
 
         workers.apply_async(
             derive_num_faces_ilist,

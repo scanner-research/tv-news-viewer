@@ -33,8 +33,7 @@ def get_video_name(s: str) -> str:
     s = Path(s).name
     if s.endswith('.word.srt'):
         return s[:-len('.word.srt')]
-    else:
-        return os.path.splitext(s)[0]
+    return os.path.splitext(s)[0]
 
 
 class VideoDataContext(NamedTuple):
@@ -61,7 +60,7 @@ def _load_videos(data_dir: str, tz: timezone) -> Dict[str, Video]:
     video_path = path.join(data_dir, 'videos.json')
     for v in sorted(load_json(video_path), key=lambda x: x[0]):
         (
-            id,
+            vid,
             name,
             show,
             channel,
@@ -70,7 +69,7 @@ def _load_videos(data_dir: str, tz: timezone) -> Dict[str, Video]:
             width,
             height
         ) = v
-        assert isinstance(id, int)
+        assert isinstance(vid, int)
         assert isinstance(name, str)
         assert isinstance(show, str)
         assert isinstance(channel, str)
@@ -84,7 +83,7 @@ def _load_videos(data_dir: str, tz: timezone) -> Dict[str, Video]:
         assert date is not None
         dayofweek = date.isoweekday()  # Mon == 1, Sun == 7
         videos[name] = Video(
-            id=id, name=video_name, show=show, channel=channel,
+            id=vid, name=video_name, show=show, channel=channel,
             date=date, dayofweek=dayofweek, hour=math.floor(minute / 60),
             num_frames=num_frames, fps=fps, width=width, height=height
         )
@@ -175,7 +174,6 @@ def _load_person_intervals(
                 MmapIListToISetMapping(person_ilist_map, 0, 0, 3000, 100))
 
             person_time = person_isetmap.sum() / 1000
-            should_skip = False
             if (
                 not check_person_name_in_lexicon(person_name_lower)
                 and person_time < min_person_screen_time
@@ -216,23 +214,25 @@ def _load_person_metadata(
     data_dir: str, all_people: Set[str]
 ) -> AllPersonTags:
     person_metadata_path = path.join(data_dir, 'people.metadata.json')
-    with open(person_metadata_path) as f:
-        person_to_tags = {}
-        for name, tags in json.load(f).items():
-            filtered_tags = []
-            for tag, tag_source in tags:
-                tag = sanitize_tag(tag)
-                if (
-                    len(tag) > MIN_PERSON_ATTRIBUTE_LEN
-                    and len(tag) < MAX_PERSON_ATTRIBUTE_LEN
-                ):
-                    filtered_tags.append(Tag(tag, tag_source))
-            name_lower = name.lower()
+    person_to_tags = {}
+    if os.path.exists(person_metadata_path):
+        with open(person_metadata_path) as f:
+            for name, tags in json.load(f).items():
+                filtered_tags = []
+                for tag, tag_source in tags:
+                    tag = sanitize_tag(tag)
+                    if (
+                        len(tag) > MIN_PERSON_ATTRIBUTE_LEN
+                        and len(tag) < MAX_PERSON_ATTRIBUTE_LEN
+                    ):
+                        filtered_tags.append(Tag(tag, tag_source))
+                name_lower = name.lower()
 
-            if name_lower in all_people:
-                person_to_tags[name_lower] = filtered_tags
-        all_person_tags = AllPersonTags(person_to_tags)
-    return all_person_tags
+                if name_lower in all_people:
+                    person_to_tags[name_lower] = filtered_tags
+    else:
+        print('No person tags found. Skipping.')
+    return AllPersonTags(person_to_tags)
 
 
 def _load_tag_intervals(data_dir: str) -> Dict[str, MmapIntervalListMapping]:
@@ -242,10 +242,11 @@ def _load_tag_intervals(data_dir: str) -> Dict[str, MmapIntervalListMapping]:
         return path.splitext(path.splitext(fname)[0])[0]
 
     tag_to_intervals = {}
-    for tag_file in os.listdir(tag_ilist_dir):
-        tag_path = os.path.join(tag_ilist_dir, tag_file)
-        tag = sanitize_tag(parse_tag_name(tag_file))
-        tag_to_intervals[tag] = MmapIntervalListMapping(tag_path, 1)
+    if os.path.isdir(tag_ilist_dir):
+        for tag_file in os.listdir(tag_ilist_dir):
+            tag_path = os.path.join(tag_ilist_dir, tag_file)
+            tag = sanitize_tag(parse_tag_name(tag_file))
+            tag_to_intervals[tag] = MmapIntervalListMapping(tag_path, 1)
     return tag_to_intervals
 
 
@@ -289,7 +290,7 @@ def load_app_data(
     all_person_intervals = _load_person_intervals(
         data_dir, caption_data, min_person_screen_time)
 
-    print('Loading metadata tags: please wait...')
+    print('Loading person metadata tags: please wait...')
     all_person_tags = _load_person_metadata(
         data_dir, set(all_person_intervals.keys()))
 
