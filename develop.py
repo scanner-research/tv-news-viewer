@@ -72,9 +72,10 @@ def main(
         from flask import Flask
         from app.route_html import add_html_routes
 
+        autoreload = True
         app = Flask(__name__, template_folder='templates',
                     static_folder='static')
-        add_html_routes(app, 0, 0, 0)
+        add_html_routes(app, 'localhost', 0, 0, 0, False, False)
 
     kwargs = {'port': port, 'debug': autoreload}
     if bind_all:
