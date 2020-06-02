@@ -192,7 +192,7 @@ def get_python_iset_from_rust_iset(
 MAX_TRANSCRIPT_SEARCH_COST = 0.005
 
 
-def get_transcript_intervals(
+def get_caption_intervals(
     cdc: CaptionDataContext, vdc: VideoDataContext,
     text_str: str, context: SearchContext
 ) -> PythonISetDataGenerator:
@@ -220,7 +220,7 @@ def get_transcript_intervals(
     try:
         query = Query(text_str.upper())
     except Exception as e:
-        raise InvalidTranscriptSearch(text_str)
+        raise InvalidCaptionSearch(text_str)
 
     if documents is None:
         if query.estimate_cost(cdc.lexicon) > MAX_TRANSCRIPT_SEARCH_COST:
@@ -1055,7 +1055,7 @@ def add_search_routes(
         elif k == SearchKey.text:
             return SearchResult(
                 SearchResultType.python_iset,
-                data=get_transcript_intervals(
+                data=get_caption_intervals(
                     caption_data_context, video_data_context, v, context))
 
         elif k == SearchKey.text_window:

@@ -98,7 +98,7 @@ def test_get_data(client: FlaskClient) -> None:
 
 
 def test_get_captions(client: FlaskClient) -> None:
-    """Make sure that transcript can be fetched"""
+    """Make sure that captions can be fetched"""
     base_id = 10000
     for i in range(100):
         _is_ok(client.get('/captions/{}'.format(base_id)))

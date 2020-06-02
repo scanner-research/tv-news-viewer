@@ -30,7 +30,7 @@ STATIC_DIR = os.path.join(FILE_DIR, '..', 'static')
 NUM_VIDEO_SAMPLES = 1000
 
 
-def untokenize(words: Iterable[str]) -> str:
+def _untokenize(words: Iterable[str]) -> str:
     text = ' '.join(words)
     step1 = text.replace("`` ", '"').replace(" ''", '"').replace('. . .',  '...')
     step2 = step1.replace(" ( ", " (").replace(" ) ", ") ")
@@ -44,7 +44,7 @@ def untokenize(words: Iterable[str]) -> str:
     return step6.strip()
 
 
-def get_captions(
+def _get_captions(
     cdc: CaptionDataContext, document: Documents.Document
 ) -> List[Caption]:
     lines = []
@@ -56,7 +56,7 @@ def get_captions(
                     document, p.idx, p.len)]
             start: float = round(p.start, 2)
             end: float = round(p.end, 2)
-            lines.append((start, end, untokenize(tokens)))
+            lines.append((start, end, _untokenize(tokens)))
     return lines
 
 
@@ -191,14 +191,14 @@ def build_app(
 
     if static_caption_endpoint is None:
         @app.route('/captions/<int:i>')
-        def get_transcript(i: int) -> Response:
+        def get_captions(i: int) -> Response:
             video = video_data_context.video_by_id.get(i)
             if not video:
                 raise NotFound('video id: {}'.format(i))
             document = caption_data_context.document_by_name.get(video.name)
             if not document:
                 raise NotFound('captions for video id: {}'.format(i))
-            resp = jsonify(get_captions(caption_data_context, document))
+            resp = jsonify(_get_captions(caption_data_context, document))
             return resp
     else:
         print('Serving captions from:', static_caption_endpoint)

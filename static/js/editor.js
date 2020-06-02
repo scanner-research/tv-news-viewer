@@ -64,7 +64,7 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
 
     <tr class="text-div">
       <td type="key-col">
-        the transcript contains
+        the captions contain
       </td>
       <td type="value-col">
         <textarea type="text" class="form-control no-enter-submit"
