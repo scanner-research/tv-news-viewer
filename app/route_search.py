@@ -1,14 +1,10 @@
 from datetime import datetime, timedelta
-import os
 import json
 import heapq
-import random
-import re
-import time
 from enum import Enum
-from flask import Flask, Response, jsonify, request
 from typing import (
-    Any, Dict, List, Set, Tuple, Optional, Iterable, Generator, NamedTuple)
+    Any, List, Set, Tuple, Optional, Iterable, Generator, NamedTuple)
+from flask import Flask, Response, jsonify, request
 
 from captions.util import PostingUtil                   # type: ignore
 from captions.query import Query                        # type: ignore
@@ -679,7 +675,7 @@ def get_face_name_intervals(
 def get_face_count_intervals(
     vdc: VideoDataContext, face_count: int
 ) -> MmapIntervalSetMapping:
-    if face_count < 1:
+    if face_count < 0:
         raise InvalidUsage('"{}" cannot be less than 1'.format(
                            SearchKey.face_count))
     if face_count > 0xFF:

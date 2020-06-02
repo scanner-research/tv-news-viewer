@@ -10,20 +10,24 @@
 <div class="container">
   <h1>Labeling Methodology</h1>
   <p>
-    This page documents the methodology used for extracting metadata from the <a href="/data">cable TV news video dataset</a>.
+    This page documents the methodology used for extracting metadata from the
+    <a href="/data">cable TV news video dataset</a>. Statistics are recent up to
+    July 2019.
 
-<ul>
-  <li><a href="#face_detection">Face Detection</a>
     <ul>
-      <li><a href="#face_descriptors">Face Descriptors</a></li>
-      <li><a href="#face_gender">Face Gender Tags</a></li>
-      <li><a href="#face_identity">Face Identities</a></li>
-      <li><a href="#face_misctags">Additional Face Tags</a></li>
+      <li><a href="#face_detection">Face Detection</a>
+        <ul>
+          <li><a href="#face_descriptors">Face Descriptors</a></li>
+          <li><a href="#face_gender">Face Gender Tags</a></li>
+          <li><a href="#face_identity">Face Identities</a></li>
+          {% if not hide_person_tags %}
+          <li><a href="#face_misctags">Additional Face Tags</a></li>
+          {% endif %}
+        </ul>
+      </li>
+      <li><a href="#commercials">Commercial Segment Detection</a></li>
+      <li><a href="#time_alignment">Caption Time Alignment</a></li>
     </ul>
-  </li>
-  <li><a href="#commercials">Commercial Segment Detection</a></li>
-  <li><a href="#time_alignment">Transcript Time Alignment</a></li>
-</ul>
 
   </p>
   <hr>
@@ -31,8 +35,13 @@
 <h2><a id="face_detection"></a>Face Detection</h2>
 
 
-<p>We detected faces in video frames using the <a href="https://kpzhang93.github.io/MTCNN_face_detection_alignment/index.html">MTCNN</a> [1,2] face detector.  Due to the high cost of performing face detection on all frames in the dataset, we performed face detection on a subset of frames uniformly sampled every three seconds in a video.  This process yielded a total of 306 million face detections.
+<p>
+We detected faces in video frames using the <a href="https://kpzhang93.github.io/MTCNN_face_detection_alignment/index.html">MTCNN</a> [1,2] face detector.  Due to the high cost of performing face detection on all frames in the dataset, we performed face detection on a subset of frames uniformly sampled every three seconds in a video.  This process yielded a total of 306 million face detections.
 Since face detection is performed on frames spaced by three seconds in a video, the Stanford Cable TV News Analyzer tabulates face screen time at a granularity of three seconds.  For example, a face detection of Anderson Cooper in a single video frame contributes three seconds to the estimate of Mr. Cooper's screen time in the video.
+</p>
+
+<p>
+<b>Updated:</b> Since 2019, face detection is now sampled at one frame per second and each face is attributed with one second of screen time.
 </p>
 
 <p>
@@ -84,6 +93,7 @@ To increase the percentage of faces with identity tags, we tag faces that were n
 
 <hr>
 
+{% if not hide_person_tags %}
 <h3><a id="face_misctags"></a>Additional Face Tags</h3>
 
 <p>
@@ -95,11 +105,12 @@ We also augment tags downloaded from DBpedia with additional "derived" tags comp
 </p>
 
 <hr>
+{% endif %}
 
 <h2><a id="commercials"></a>Commercial Segment Detection</h2>
 
 <p>
-We detect commercial segments using an algorithm that scans videos for sequences of black frames (which typically indicate the start and end of commercials) and for video segments where transcript text that is either missing or lower case. (We observed that these transcript features are indicative of commercials in most videos in our dataset.)  Source code for this algorithm is available at:
+We detect commercial segments using an algorithm that scans videos for sequences of black frames (which typically indicate the start and end of commercials) and for video segments where caption text that is either missing or lower case. (We observed that these caption features are indicative of commercials in most videos in our dataset.)  Source code for this algorithm is available at:
 <a href="https://github.com/scanner-research/esper-tv/blob/master/app/esper/commercial_detection_rekall.py">https://github.com/scanner-research/esper-tv/blob/master/app/esper/commercial_detection_rekall.py</a>.
 The algorithm is written using <a href="https://github.com/scanner-research/rekall">Rekall</a>, an API for complex event detection in video.
 </p>
@@ -114,14 +125,14 @@ The algorithm is written using <a href="https://github.com/scanner-research/reka
 
 <hr>
 
-<h2><a id="time_alignment"></a>Transcript Time Alignment</h2>
+<h2><a id="time_alignment"></a>Caption Time Alignment</h2>
 
 <p>
-We use the <a href="https://lowerquality.com/gentle/">Gentle word aligner</a> to perform sub-second alignment of words in a video's closed-caption transcript to the video's audio track.  (The source transcripts are only coarsely aligned to the video.)  To perform alignment, we partition the video's audio track into one-second chunks and use Gentle to search for word-level alignment with transcript text within +/- 10 seconds of this audio segment.
+We use the <a href="https://lowerquality.com/gentle/">Gentle word aligner</a> to perform sub-second alignment of words in a video's closed-caption caption to the video's audio track.  (The source captions are only coarsely aligned to the video.)  To perform alignment, we partition the video's audio track into one-second chunks and use Gentle to search for word-level alignment with caption text within +/- 10 seconds of this audio segment.
 </p>
 
 <p>
-The Stanford Cable TV News Analyzer tabulates the screen time of transcript-text queries using the duration of words determined via transcript time alignment. For example, an utterance of the word "politics" that begins at 10:35.10 in a video and ends at 10:35.90 contributes 0.8 seconds to the estimate of the word's total screen time in the video.  Since the Stanford Cable TV News Analyzer tabulates the screen time of transcript words matching a query, the screen time estimate for a longer word (e.g., "Mississippi") will likely be greater than that of a shorter word (e.g., "Iraq") even if the two words are spoken the same number of times.
+The Stanford Cable TV News Analyzer tabulates the screen time of caption-text queries using the duration of words determined via caption time alignment. For example, an utterance of the word "politics" that begins at 10:35.10 in a video and ends at 10:35.90 contributes 0.8 seconds to the estimate of the word's total screen time in the video.  Since the Stanford Cable TV News Analyzer tabulates the screen time of caption words matching a query, the screen time estimate for a longer word (e.g., "Mississippi") will likely be greater than that of a shorter word (e.g., "Iraq") even if the two words are spoken the same number of times.
 </p>
 
 

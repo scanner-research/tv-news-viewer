@@ -101,11 +101,30 @@ def build_app(
         response.status_code = 404
         return response
 
+    num_videos = sum(
+        1 for v in video_data_context.video_dict.values()
+        if v.date >= min_date and v.date <= max_date)
+    num_videos_with_captions = sum(
+        1 for v in video_data_context.video_dict.values()
+        if v.date >= min_date and v.date <= max_date
+        and v.name in caption_data_context.document_by_name)
+
     add_html_routes(
         app, host,
-        num_total_videos=sum(
-            1 for v in video_data_context.video_dict.values()
+        num_videos=num_videos,
+        num_video_hours=sum(
+            v.num_frames / v.fps / 3600
+            for v in video_data_context.video_dict.values()
             if v.date >= min_date and v.date <= max_date
+        ),
+        num_videos_with_captions=num_videos_with_captions,
+        start_date=min(
+            v.date for v in video_data_context.video_dict.values()
+            if v.date >= min_date
+        ),
+        end_date=max(
+            v.date for v in video_data_context.video_dict.values()
+            if v.date <= max_date
         ),
         num_video_samples=NUM_VIDEO_SAMPLES,
         default_text_window=default_text_window,
@@ -148,7 +167,7 @@ def build_app(
                 else '/static/faces'),
             caption_endpoint=(
                 static_caption_endpoint if static_caption_endpoint
-                else '/transcript'),
+                else '/captions'),
             default_serve_from_archive=default_serve_from_archive,
             search_params=[
                 (k, v) for k, v in SearchParam.__dict__.items()
@@ -171,14 +190,14 @@ def build_app(
         return resp
 
     if static_caption_endpoint is None:
-        @app.route('/transcript/<int:i>')
+        @app.route('/captions/<int:i>')
         def get_transcript(i: int) -> Response:
             video = video_data_context.video_by_id.get(i)
             if not video:
                 raise NotFound('video id: {}'.format(i))
             document = caption_data_context.document_by_name.get(video.name)
             if not document:
-                raise NotFound('transcripts for video id: {}'.format(i))
+                raise NotFound('captions for video id: {}'.format(i))
             resp = jsonify(get_captions(caption_data_context, document))
             return resp
     else:

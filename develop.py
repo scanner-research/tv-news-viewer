@@ -5,7 +5,6 @@ Run a development server
 
 import argparse
 from pytz import timezone
-from typing import Optional
 
 DEFAULT_VIDEO_AUTH_ENDPOINT = 'https://storage.cloud.google.com/esper/do_not_delete.jpg'
 DEFAULT_VIDEO_ENDPOINT = 'https://storage.cloud.google.com/esper/tvnews/videos'
@@ -60,7 +59,7 @@ def main(
             tz=timezone('US/Eastern'),
             min_person_screen_time=60 * 60,                     # 1 hr
             min_person_autocomplete_screen_time=10 * 60 * 60,   # 10 hrs
-            hide_person_tags=False,
+            hide_person_tags=True,
             default_aggregate_by='month',
             default_text_window=0,                  # amount to dialate text intervals
             default_is_commercial=Ternary.false,    # exclude comercials
@@ -75,7 +74,9 @@ def main(
         autoreload = True
         app = Flask(__name__, template_folder='templates',
                     static_folder='static')
-        add_html_routes(app, 'localhost', 0, 0, 0, False, False)
+        add_html_routes(
+            app, 'localhost', 0, 0, 0, 0, datetime.now(), datetime.now(),
+            0, False, False)
 
     kwargs = {'port': port, 'debug': autoreload}
     if bind_all:

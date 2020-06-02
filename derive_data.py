@@ -8,6 +8,7 @@ import time
 from collections import Counter, defaultdict
 from functools import wraps
 from inspect import getfullargspec
+from pytz import timezone
 from multiprocessing import Pool
 from typing import List, Tuple
 
@@ -15,11 +16,16 @@ from rs_intervalset import MmapIntervalListMapping, MmapIntervalSetMapping
 from rs_intervalset.writer import (
     IntervalSetMappingWriter, IntervalListMappingWriter)
 
+from app.load import load_videos
+
 U32_MAX = 0xFFFFFFFF
 
 # Mask for data bits that are used
 PAYLOAD_DATA_MASK = 0b00000111
 PAYLOAD_LEN = 1
+
+# Minimum interval for no faces
+MIN_NO_FACES_MS = 1000
 
 
 def get_args() -> argparse.Namespace:
@@ -155,7 +161,7 @@ def get_iset_ids(fname):
 
 @print_task_info
 def derive_num_faces_ilist(
-    face_ilist_file: str, outfile: str, is_incremental: bool
+    data_dir: str, face_ilist_file: str, outfile: str, is_incremental: bool
 ) -> None:
 
     def deoverlap(
@@ -178,6 +184,12 @@ def derive_num_faces_ilist(
     if is_incremental and os.path.exists(outfile):
         video_ids -= get_ilist_ids(outfile)
 
+    # timezone does not matter here since we only want video length
+    video_durations = {
+        v.id : int(v.num_frames / v.fps * 1000)
+        for v in load_videos(data_dir, timezone('UTC')).values()
+    }
+
     with IntervalListMappingWriter(
         outfile, PAYLOAD_LEN, append=is_incremental
     ) as writer:
@@ -187,6 +199,9 @@ def derive_num_faces_ilist(
             curr_interval_count = None
             for interval in ilistmap.get_intervals(video_id, 0, 0, False):
                 if not curr_interval:
+                    if interval[0] > 0 and interval[0] > MIN_NO_FACES_MS:
+                        intervals.append((0, interval[0], 0))
+
                     curr_interval = interval
                     curr_interval_count = 1
                 else:
@@ -195,16 +210,21 @@ def derive_num_faces_ilist(
                         curr_interval_count += 1
                     else:
                         intervals.append((*curr_interval, curr_interval_count))
+                        if interval[0] - curr_interval[1] > MIN_NO_FACES_MS:
+                            intervals.append((curr_interval[1], interval[0], 0))
+
                         curr_interval = interval
                         curr_interval_count = 1
             else:
                 if curr_interval:
                     intervals.append((*curr_interval, curr_interval_count))
-                    del curr_interval
-                    del curr_interval_count
 
-            if len(intervals) > 0:
-                writer.write(video_id, deoverlap(intervals))
+                    if video_durations[video_id] - curr_interval[1] > MIN_NO_FACES_MS:
+                        intervals.append((curr_interval[1], video_durations[video_id], 0))
+                else:
+                    intervals.append((0, video_durations[video_id], 0))
+
+            writer.write(video_id, deoverlap(intervals))
 
 
 @print_task_info
@@ -357,6 +377,7 @@ def main(datadir: str, incremental: bool, tag_limit: int,
         workers.apply_async(
             derive_num_faces_ilist,
             (
+                datadir,
                 os.path.join(datadir, 'faces.ilist.bin'),
                 os.path.join(outdir, 'num_faces.ilist.bin'),
                 incremental

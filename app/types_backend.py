@@ -3,8 +3,7 @@ Data types used by the backend server.
 """
 
 from datetime import datetime
-from enum import Enum
-from typing import Callable, Dict, List, Set, Tuple, NamedTuple, Union
+from typing import Callable, Dict, List, Tuple, NamedTuple, Union
 
 from rs_intervalset import (
     MmapIntervalSetMapping, MmapIntervalListMapping)  # type: ignore

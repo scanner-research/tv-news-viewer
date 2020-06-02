@@ -3,13 +3,13 @@
 {% block content %}
 <div class="container">
   <h1>
-    The Transcripts
+    The Captions
   </h1>
   <p>
-    95.4% of the video files in the dataset have accompanying closed caption transcripts. However, is it common for transcript text to be missing during commercial segments. Transcripts are  
-    time aligned to the video's audio track at word granularity. For example, the following are the results of aligning the phrase "I'M CHRIS CUOMO. WELCOME TO PRIMETIME."  Fine-scale time information enables queries to select video segments exactly when a word is spoken.  
+    {{ n_caption_percentage }}% of the video files in the dataset have accompanying closed caption transcripts. However, is it common for caption text to be missing during commercial segments. Captions are
+    time aligned to the video's audio track at word granularity. For example, the following are the results of aligning the phrase "I'M CHRIS CUOMO. WELCOME TO PRIMETIME."  Fine-scale time information enables queries to select video segments exactly when a word is spoken.
 </p>
- 
+
 
 <code>
 <div>00:00:10,730 --> 00:00:10,960</div>

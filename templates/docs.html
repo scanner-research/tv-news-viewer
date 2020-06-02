@@ -267,7 +267,7 @@
       <tr>
         <td rowspan="4">{{ search_keys.text }}</td>
         <td>description</td>
-        <td>segments where the specified text pattern appears in the transcript.</td>
+        <td>segments where the specified text pattern appears in the captions.</td>
       </tr>
       <tr>
         <td>values</td>
@@ -321,10 +321,10 @@
   <p>
     Sometimes a topic can be defined with multiple related or synonymous
     words/phrases. For example, the "European Union" can be also be referred to
-    as the EU or E.U. in the transcripts. When this is the case, use the "|"
+    as the EU or E.U. in the captions. When this is the case, use the "|"
     character to delimit multiple words and phrases. For example,
     <code>{{ search_keys.text}}="European Union | EU | E.U."</code>
-    will search for video segments where any of these three n-grams appear in the transcript.
+    will search for video segments where any of these three n-grams appear in the captions.
     This can be repeated for an arbitrary
     number of words and phrases.
   </p>
@@ -349,11 +349,11 @@
     By default, <code>{{ search_keys.text}}</code> will precisely find
     the intervals of time during which a word or phrase is spoken. This means that
     each mention will likely contribute only a small fraction of a second of screen time to a query result.
-    Sometimes it is useful for a transcript query to match a wider region of time around the utterance
+    Sometimes it is useful for a caption-text query to match a wider region of time around the utterance
     of a word, for example if an query seeks examples where a person is on-screen within a specific amount of time
     of a word being stated.  The
     <code>{{ search_keys.text_window }}</code> parameter defines how much a time of time is dilated around a
-    transcript match. (By default, its value is 0.)
+    caption-text match. (By default, its value is 0.)
     For example,
     <code>{{ search_keys.text }}="immigration" AND {{ search_keys.text_window }}=30</code>
     will find video intervals starting and ending 30 seconds before and after

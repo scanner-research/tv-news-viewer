@@ -14,10 +14,10 @@
 
   The dataset available for analysis using Stanford Cable TV News Analyzer was
   provided by the Internet Archive's <a href="https://archive.org/details/tv">TV
-  News Archive</a>. The dataset includes near 24-7 recordings of CNN, FOX, and
-  MSNBC between January 1, 2010 and July 23, 2019. In total, the dataset
-  consists of over 230,000 hours of video and includes both TV news programming
-  and commercial segments.
+  News Archive</a>. The dataset includes near 24-7 recordings of CNN, Fox News, and
+  MSNBC between {{ start_date }} and {{ end_date }}. In total, the dataset
+  consists of over {{ n_total_hours }} hours of video and includes both TV news
+  programming and commercial segments.
 
   </p>
 
@@ -28,8 +28,8 @@
   (e.g., most videos are approximately one hour in length). Per-video metadata
   includes the name of the news program, the date/time it aired, and the channel
   on which it aired. Video frames range in resolution from 640x360 to 858x480.
-  All videos include audio. 95.4% of the video files have accompanying closed
-  caption transcripts.
+  All videos include audio. {{ n_caption_percentage }}% of the video files have
+  accompanying closed caption transcripts.
 
   </p>
 
@@ -48,7 +48,7 @@
 
     <h3><a href="/data/videos">The Videos</a></h3>
     <h3><a href="/data/shows">The Shows</a></h3>
-    <h3><a href="/data/transcripts">The Transcripts</a></h3>
+    <h3><a href="/data/captions">The Captions</a></h3>
     <h3><a href="/data/people">The People</a></h3>
     <h3><a href="/data/tags">The Tags (for faces)</a></h3>
 

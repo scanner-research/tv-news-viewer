@@ -164,8 +164,8 @@ function validateKeyValue(key, value, no_err) {
     case SEARCH_KEY.face_count: {
       if (value.match(/^[0-9]+$/)) {
         value = parseInt(value);
-        if (value == 0) {
-          throw new QueryParseError(`${key} must be greater than 0`);
+        if (value < 0) {
+          throw new QueryParseError(`${key} must be at least 0`);
         }
       } else {
         throw new QueryParseError(`${key} must be an integer`);

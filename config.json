@@ -1,6 +1,6 @@
 {
   "data_dir": "data",
-  "index_dir": "index",
+  "index_dir": "data/index",
   "video_endpoint": null,
   "video_auth_endpoint": null,
   "static_bbox_endpoint": null,

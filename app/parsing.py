@@ -1,8 +1,8 @@
 import json
 import re
 from datetime import datetime
+from typing import Optional, Set, Tuple, NamedTuple
 from pytz import timezone
-from typing import Optional, Set, Tuple, NamedTuple, List
 
 from .types_backend import JsonObject
 from .error import InvalidUsage
@@ -29,7 +29,7 @@ def parse_date_from_video_name(p: str, tz: timezone) -> Tuple[datetime, int]:
     channel, ymd, hms = p.split('_', 3)[:3]
     timestamp = datetime.strptime(ymd + hms, '%Y%m%d%H%M%S')
     timestamp_et = timestamp.replace(tzinfo=UTC).astimezone(tz=tz)
-    assert timestamp.hour != timestamp_et.hour
+    assert tz == UTC or timestamp.hour != timestamp_et.hour
     return (parse_date(timestamp_et.strftime(DATE_FORMAT)),
             timestamp_et.hour * 60 + timestamp_et.minute)
 
@@ -50,7 +50,7 @@ def parse_hour_set(s: str) -> Set[int]:
             else:
                 result = {h0}
     if result is None:
-        raise InvalidUsage('Invalid hour filter:'.format(s))
+        raise InvalidUsage('Invalid hour filter: {}'.format(s))
     return result
 
 

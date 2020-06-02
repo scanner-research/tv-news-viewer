@@ -4,12 +4,12 @@ Test suite to ensure codepath coverage
 
 import json
 import os
-import pytest
 import random
 from datetime import datetime
-from pytz import timezone
 from urllib.parse import urlencode
 from typing import Dict, List, Optional, Callable
+import pytest
+from pytz import timezone
 from flask import Response
 from flask.testing import FlaskClient
 
@@ -39,10 +39,13 @@ def client():
         max_date=datetime(2018, 4, 1),
         tz=timezone('US/Eastern'),
         min_person_screen_time=600,
+        min_person_autocomplete_screen_time=600,
+        hide_person_tags=True,
         default_aggregate_by='month',
         default_text_window=0,
         default_is_commercial=Ternary.false,
         default_serve_from_archive=True,
+        default_color_gender_bboxes=True,
         data_version='test',
         show_uptime=True)
 
@@ -94,11 +97,11 @@ def test_get_data(client: FlaskClient) -> None:
     _is_ok(client.get('/data/tags.json'))
 
 
-def test_get_transcript(client: FlaskClient) -> None:
+def test_get_captions(client: FlaskClient) -> None:
     """Make sure that transcript can be fetched"""
     base_id = 10000
     for i in range(100):
-        _is_ok(client.get('/transcript/{}'.format(base_id)))
+        _is_ok(client.get('/captions/{}'.format(base_id)))
 
 
 # Search tests

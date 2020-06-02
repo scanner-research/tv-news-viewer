@@ -6,15 +6,15 @@ import math
 import re
 import os
 import json
-import unidecode
 from os import path
 from collections import Counter, OrderedDict
 from pathlib import Path
-from pytz import timezone
 from typing import NamedTuple, Dict, Set, Tuple
 
+import unidecode
+from pytz import timezone
+
 from captions import CaptionIndex, Documents, Lexicon       # type: ignore
-from captions.query import Query                            # type: ignore
 from rs_intervalset import (                                # type: ignore
     MmapIntervalSetMapping, MmapIntervalListMapping)
 from rs_intervalset.wrapper import MmapIListToISetMapping   # type: ignore
@@ -33,6 +33,8 @@ def get_video_name(s: str) -> str:
     s = Path(s).name
     if s.endswith('.word.srt'):
         return s[:-len('.word.srt')]
+    if s.endswith('.srt'):
+        return s[:-len('.srt')]
     return os.path.splitext(s)[0]
 
 
@@ -55,7 +57,7 @@ class CaptionDataContext(NamedTuple):
     document_by_name: Dict[str, Documents.Document]
 
 
-def _load_videos(data_dir: str, tz: timezone) -> Dict[str, Video]:
+def load_videos(data_dir: str, tz: timezone) -> Dict[str, Video]:
     videos = OrderedDict()
     video_path = path.join(data_dir, 'videos.json')
     for v in sorted(load_json(video_path), key=lambda x: x[0]):
@@ -267,7 +269,7 @@ def load_app_data(
     caption_data = load_caption_data(index_dir)
 
     print('Loading video data: please wait...')
-    videos = _load_videos(data_dir, tz)
+    videos = load_videos(data_dir, tz)
 
     matched_documents = Documents([
         d._replace(name=get_video_name(d.name))

@@ -29,21 +29,15 @@
 <div class="container">
   <h1>Getting Started</h1>
   <p>
-The Stanford Cable TV Analyzer enables you to write queries that compute the amount of time <i>people appear</i> and the amount of time <i>words are heard</i> in <a href="/data">cable TV news</a>.  In this tutorial we'll go over the basics of how to use the tool to write simple queries.
+    The Stanford Cable TV Analyzer enables you to write queries that compute the amount of time <i>people appear</i> and the amount of time <i>words are heard</i> in <a href="/data">cable TV news</a>.  In this tutorial we will go over the basics of how to use the tool to write simple queries.
   </p>
-
-<!--
-<p>
-  We describe the process of creating queries by directly typing them into the Stanford Cable TV Analyzer's query box.  Some users may prefer using the graphical query builder that is accessible to left of the query box via the 🔍 button.
-</p>
--->
 
   <hr>
 
   <h3>Computing the Screen Time of Individuals</h3>
 
   <p>
-    Writing a query using the Stanford Cable TV Analyzer involves specifying filters that determine what video segments to include in a screen time computation.  One of the most important filters is the <b>name</b> filter, which selects video segments where a specified individual appears on screen.  For example, below is a query that computes the amount of time Hillary Clinton's face appeared on screen in every month since January 2010. One obvious feature of the graph is the spike in coverage during the 2016 U.S. presidential election.
+    Writing a query using the Stanford Cable TV Analyzer involves specifying filters that determine what video segments to include in a screen time computation.  One of the most important filters is the <b>name</b> filter, which selects video segments where a specified individual appears on screen.  For example, below is a query that computes the amount of time Hillary Clinton's face appeared on screen in every month since {{ start_date }}. One obvious feature of the graph is the spike in coverage during the 2016 U.S. presidential election.
   </p>
 
 <div class="graph-embed-div">
@@ -90,7 +84,7 @@ The Stanford Cable TV Analyzer enables you to write queries that compute the amo
 <p>
   The <a href="/data/tags">tags</a> page contains the full list of tags that can be used in a face <b>tag</b> filter.  You'll see tags like "musician", "politician", "journalist" and we encourage you to play around with the query above to plot the screen time of people associated with different tags.
 </p>
- <p> 
+ <p>
   As you write queries it is important to be mindful that tags are <b>not exhaustive</b>.
   For example, a query using the filter "tag=politician" computes the screen time of all faces in the dataset that have been identified as politicians.  However, since not every politician in the dataset is correctly identified by automatic face recognition methods, the true screen time of people on the news who are actually politicians is certainly higher.  In some cases, tags are present for all faces in the data (e.g., gender, see the <a href="/data/tags">tags page</a> for a list).  Details about how Stanford Cable TV News Analyzer attributes tags to faces is provided on our <a href="/methodology">methodology page.</a>
 </p>
@@ -114,14 +108,14 @@ The Stanford Cable TV Analyzer enables you to write queries that compute the amo
 <iframe id="sandersChannelHour" class="graph-embed-3line"></iframe>
 </div>
 
-<h3>Transcript Filters</h3>
+<h3>Caption-Text Filters</h3>
 
 <p>
-  Queries may also filter video content based on the text contents of video transcripts.  For example, if you were interested in how much certain foreign countries are discussed on the news, you could use <b>text</b> filters to compare the amount of time country names are mentioned in the transcript.  For example:
+  Queries may also filter video content based on the text contents of video captions.  For example, if you were interested in how much certain foreign countries are discussed on the news, you could use <b>text</b> filters to compare the amount of time country names are mentioned in the captions.  For example:
 </p>
 
 <div class="graph-embed-div">
-<iframe id="countriesTranscript" class="graph-embed-5line"></iframe>
+<iframe id="countriesText" class="graph-embed-5line"></iframe>
 </div>
 
 <p>
@@ -133,15 +127,15 @@ The Stanford Cable TV Analyzer enables you to write queries that compute the amo
 </p>
 
 <p>
-  It is important to notice that the above graph plots measurements of time.  <b>It does not count the number of times the specified phrase is found in the transcript.</b> All queries run by the Stanford Cable TV Analyzer, regardless of the filters used, compute the time spanned by video segments that match the specified filters. When interpreting results of queries that contain <b>text</b> filters, users should be mindful that longer text phrases will likely contribute more time per found instance than shorter phrases.
+  It is important to notice that the above graph plots measurements of time.  <b>It does not count the number of times the specified phrase is found in the captions.</b> All queries run by the Stanford Cable TV Analyzer, regardless of the filters used, compute the time spanned by video segments that match the specified filters. When interpreting results of queries that contain <b>text</b> filters, users should be mindful that longer text phrases will likely contribute more time per found instance than shorter phrases.
 </p>
 
 <p>
-  Since <b>text</b> filters (like all other filters) are used to select video segments, they can be combined with all other filters in queries.  Combining <b>text</b> and face filters (e.g, <b>name</b> or <b>tag</b>) can yield interesting queries. For example, the following graph computes the time Hillary Clinton is on screen AND the word "email" is spoken. This occurs far more often on Fox News than CNN or MSNBC.
+  Since <b>text</b> filters (like all other filters) are used to select video segments, they can be combined with all other filters in queries.  Combining <b>text</b> and face filters (e.g, <b>name</b> or <b>tag</b>) can yield interesting queries. For example, the following graph computes the time Hillary Clinton is on screen AND the word "email" is spoken. (Note that the word email is some times broken up as "e mail" in the captions, so the text search needs to include "email" or "e mail".)
 </p>
 
 <div class="graph-embed-div">
-<iframe id="clintonEmailTranscript" class="graph-embed-3line"></iframe>
+<iframe id="clintonEmailText" class="graph-embed-3line"></iframe>
 </div>
 
 <p>
@@ -151,7 +145,7 @@ The Stanford Cable TV Analyzer enables you to write queries that compute the amo
 <h3>Viewing Video Clips</h3>
 
 <p>
-  In many situations it is useful to view examples of video clips that pass a queries filters.  For example, you might wish to inspect video clips to get of sense of whether automated face identification is robustly recognizing the person specified in the query. Another common task is to view selected clips when debugging a more complex query to ensure the query is selecting the types of videos intended.  When viewing a graphs on the main <a href="/">Stanford Cable TV News Analyzer</a> site, clicking on the graph will display a random selection of video clips that matched query's filters at that point in time.  You can further investigate these results by playing the video clips as well as viewing their transcripts.
+  In many situations it is useful to view examples of video clips that pass a queries filters.  For example, you might wish to inspect video clips to get of sense of whether automated face identification is robustly recognizing the person specified in the query. Another common task is to view selected clips when debugging a more complex query to ensure the query is selecting the types of videos intended.  When viewing a graphs on the main <a href="/">Stanford Cable TV News Analyzer</a> site, clicking on the graph will display a random selection of video clips that matched query's filters at that point in time.  You can further investigate these results by playing the video clips as well as viewing their captions.
 </p>
 <p>
   A sampling of results from our earlier query <b>{{ search_keys.face_name }}="Hillary Clinton"</b> are given below.  These thumbnails serve as a good reminder that a person can appear on screen in many different ways: as a guest on a show, in B-roll footage, or as a static image used as part of an infographic.
@@ -218,7 +212,7 @@ The Stanford Cable TV Analyzer enables you to write queries that compute the amo
     true
   );
   setIframeSource(
-    '#countriesTranscript', [
+    '#countriesText', [
       '{{ search_keys.text }}="France"',
       '{{ search_keys.text }}="United Kingdom | UK | U.K"',
       '{{ search_keys.text }}="China"',
@@ -228,10 +222,10 @@ The Stanford Cable TV Analyzer enables you to write queries that compute the amo
     true
   );
   setIframeSource(
-    '#clintonEmailTranscript', [
-      '{{ search_keys.face_name }}="Hillary Clinton" and {{ search_keys.text }}="email" and {{ search_keys.channel }}="cnn"',
-      '{{ search_keys.face_name }}="Hillary Clinton" and {{ search_keys.text }}="email" and {{ search_keys.channel }}="fox"',
-      '{{ search_keys.face_name }}="Hillary Clinton" and {{ search_keys.text }}="email" and {{ search_keys.channel }}="msnbc"'
+    '#clintonEmailText', [
+      '{{ search_keys.face_name }}="Hillary Clinton" and {{ search_keys.text }}="email | e mail" and {{ search_keys.channel }}="cnn"',
+      '{{ search_keys.face_name }}="Hillary Clinton" and {{ search_keys.text }}="email | e mail" and {{ search_keys.channel }}="fox"',
+      '{{ search_keys.face_name }}="Hillary Clinton" and {{ search_keys.text }}="email | e mail" and {{ search_keys.channel }}="msnbc"'
     ],
     true
   );

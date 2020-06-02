@@ -1,15 +1,27 @@
 import time
 import re
+from datetime import datetime
 from typing import Optional, Dict
 from flask import Flask, Response, render_template, request
 
 from .types_frontend import SearchKey, SearchParam
 
 
+HOURS_GRANULATITY = 10000
+DATE_FORMAT = '%B %-d, %Y'
+
+
 def add_html_routes(
-    app: Flask, host: Optional[str], num_total_videos: int,
-    num_video_samples: int, default_text_window: int,
-    hide_person_tags: bool, show_uptime: bool
+    app: Flask, host: Optional[str],
+    num_videos: int,
+    num_video_hours: int,
+    num_video_samples: int,
+    num_videos_with_captions: int,
+    start_date: datetime,
+    end_date: datetime,
+    default_text_window: int,
+    hide_person_tags: bool,
+    show_uptime: bool
 ):
     server_start_time = time.time()
 
@@ -50,28 +62,42 @@ def add_html_routes(
     def show_videos() -> Response:
         return render_template('video-embed.html')
 
+    start_date_str = start_date.strftime(DATE_FORMAT)
+    end_date_str = end_date.strftime(DATE_FORMAT)
+
     @app.route('/getting-started')
     def get_getting_started() -> Response:
         return render_template(
             'getting-started.html', search_keys=SearchKey,
-            hide_person_tags=hide_person_tags,
+            hide_person_tags=hide_person_tags, start_date=start_date_str,
             **_get_template_kwargs())
 
     @app.route('/docs')
     def get_docs() -> Response:
         return render_template(
-            'docs.html', search_keys=SearchKey, 
+            'docs.html', search_keys=SearchKey,
             hide_person_tags=hide_person_tags,
             default_text_window=default_text_window, **_get_template_kwargs())
 
     @app.route('/methodology')
     def get_methodology() -> Response:
         return render_template(
-            'methodology.html', **_get_template_kwargs())
+            'methodology.html', hide_person_tags=hide_person_tags,
+            **_get_template_kwargs())
+
+    rounded_hour_str = '{:,}'.format(
+        int(num_video_hours / HOURS_GRANULATITY) * HOURS_GRANULATITY)
+    caption_percent_str = '{:0.1f}'.format(
+        num_videos_with_captions / num_videos * 100)
 
     @app.route('/data')
     def get_dataset() -> Response:
-        return render_template('dataset.html', **_get_template_kwargs())
+        return render_template(
+            'dataset.html',
+            n_total_hours=rounded_hour_str,
+            n_caption_percentage=caption_percent_str,
+            start_date=start_date_str, end_date=end_date_str,
+            **_get_template_kwargs())
 
     @app.route('/about')
     def get_about() -> Response:
@@ -100,13 +126,14 @@ def add_html_routes(
     def get_data_videos() -> Response:
         return render_template(
             'data/videos.html', n_samples='{:,}'.format(num_video_samples),
-            n_total='{:,}'.format(num_total_videos),
+            n_total='{:,}'.format(num_videos),
             **_get_template_kwargs())
 
-    @app.route('/data/transcripts')
-    def get_data_transcripts() -> Response:
+    @app.route('/data/captions')
+    def get_data_captions() -> Response:
         return render_template(
-            'data/transcripts.html', params=SearchParam, search_keys=SearchKey,
+            'data/captions.html', params=SearchParam, search_keys=SearchKey,
+            n_caption_percentage=caption_percent_str,
             **_get_template_kwargs())
 
     #NOTE(kayvonf): I'm adding misc/ routes here to add pages to the site,
