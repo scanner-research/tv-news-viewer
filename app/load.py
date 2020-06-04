@@ -5,9 +5,10 @@ Module for loading the data.
 import math
 import re
 import os
+import csv
 import json
 from os import path
-from collections import Counter, OrderedDict
+from collections import Counter, OrderedDict, defaultdict
 from pathlib import Path
 from typing import NamedTuple, Dict, Set, Tuple
 
@@ -22,6 +23,7 @@ from rs_intervalset.wrapper import MmapIListToISetMapping   # type: ignore
 from .types_backend import (
     Video, FaceIntervals, PersonIntervals, Tag, AllPersonTags,
     AllPersonIntervals)
+from .types_frontend import GLOBAL_TAGS
 from .parsing import load_json, parse_date_from_video_name
 
 
@@ -47,6 +49,7 @@ class VideoDataContext(NamedTuple):
     all_person_intervals: AllPersonIntervals
     all_person_tags: AllPersonTags
     cached_tag_intervals: Dict[str, MmapIntervalListMapping]
+    host_to_channels: Dict[str, Set[str]]
 
 
 class CaptionDataContext(NamedTuple):
@@ -120,6 +123,10 @@ def _load_face_intervals(data_dir: str) -> FaceIntervals:
     return face_intervals
 
 
+def _sanitize_name(name):
+    return re.sub(r'[^\w\- :]', r'', name)
+
+
 MIN_NAME_TOKEN_LEN = 3
 
 
@@ -154,7 +161,7 @@ def _load_person_intervals(
     skipped_counter = Counter()
     all_person_intervals = []
     for person_file_prefix in person_file_prefixes:
-        person_name = re.sub(r'[^\w\- :]', r'', person_file_prefix)
+        person_name = _sanitize_name(person_file_prefix)
         person_name_lower = person_name.lower()
 
         person_iset_path = path.join(
@@ -207,8 +214,8 @@ def _load_person_intervals(
 def sanitize_tag(tag: str) -> str:
     tag = re.sub(r'\W+', '', tag.lower())
     # FIXME: this avoids a conflict with the host tag
-    if tag == 'host':
-        tag = 'tv_host'
+    if tag in GLOBAL_TAGS:
+        tag = 'tv_' + tag
     return tag
 
 
@@ -262,6 +269,18 @@ def load_caption_data(index_dir: str) -> CaptionDataContext:
         index, documents, lexicon, {d.name: d for d in documents})
 
 
+def _load_hosts(host_file):
+    hosts = defaultdict(set)
+    if os.path.exists(host_file):
+        with open(host_file) as fp:
+            reader = csv.DictReader(fp)
+            for row in reader:
+                host_name = _sanitize_name(row['name']).lower()
+                channel_name = row['channel']
+                hosts[host_name].add(channel_name)
+    return hosts
+
+
 def load_app_data(
     index_dir: str, data_dir: str, tz: timezone, min_person_screen_time: int
 ) -> Tuple[CaptionDataContext, VideoDataContext]:
@@ -299,9 +318,12 @@ def load_app_data(
     print('Loading cached tag intervals: please wait...')
     cached_tag_intervals = _load_tag_intervals(data_dir)
 
+    print('Loading host list: please wait...')
+    host_to_channels = _load_hosts(path.join(data_dir, 'hosts.csv'))
+
     print('Done loading data!')
     return (caption_data,
             VideoDataContext(
                 videos, {v.id: v for v in videos.values()},
                 commercials, face_intervals, all_person_intervals,
-                all_person_tags, cached_tag_intervals))
+                all_person_tags, cached_tag_intervals, host_to_channels))

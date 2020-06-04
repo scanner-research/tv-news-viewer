@@ -4,7 +4,7 @@ from datetime import datetime
 from typing import Optional, Dict
 from flask import Flask, Response, render_template, request
 
-from .types_frontend import SearchKey, SearchParam
+from .types_frontend import SearchKey, SearchParam, GlobalTags
 
 
 HOURS_GRANULATITY = 10000
@@ -69,13 +69,14 @@ def add_html_routes(
     def get_getting_started() -> Response:
         return render_template(
             'getting-started.html', search_keys=SearchKey,
+            global_tags=GlobalTags,
             hide_person_tags=hide_person_tags, start_date=start_date_str,
             **_get_template_kwargs())
 
     @app.route('/docs')
     def get_docs() -> Response:
         return render_template(
-            'docs.html', search_keys=SearchKey,
+            'docs.html', search_keys=SearchKey, global_tags=GlobalTags,
             hide_person_tags=hide_person_tags,
             default_text_window=default_text_window, **_get_template_kwargs())
 
@@ -113,7 +114,7 @@ def add_html_routes(
     @app.route('/data/tags')
     def get_data_tags() -> Response:
         return render_template(
-            'data/tags.html', search_keys=SearchKey,
+            'data/tags.html', search_keys=SearchKey, global_tags=GlobalTags,
             hide_person_tags=hide_person_tags,
             **_get_template_kwargs())
 
@@ -141,4 +142,4 @@ def add_html_routes(
 
     @app.route('/misc/gender')
     def get_misc_gender() -> Response:
-        return render_template('misc/gender.html')
+        return render_template('misc/gender.html', global_tags=GlobalTags)

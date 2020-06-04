@@ -69,7 +69,7 @@
 </div>
 
 <p>
-  A query can specify multiple tags that a face must match.  For example, adding the "host" tag to the face tag filter from the prior graph yields this graph that compares the screen time of <b>male show hosts</b> with that of <b>female show hosts</b>.  Among hosts, the trend toward gender parity appears to have reversed since 2015.
+  A query can specify multiple tags that a face must match.  For example, adding the "{{ global_tags.presenter }}" tag to the face tag filter from the prior graph yields this graph that compares the screen time of <b>male news presenters</b> with that of <b>female news presenters</b>.  Among presenters, the trend toward gender parity appears to have reversed since 2015.
 </p>
 
 <div class="graph-embed-div">
@@ -183,15 +183,15 @@
   );
   setIframeSource(
     '#maleFemale', [
-      '{{ search_keys.face_tag }}="male"',
-      '{{ search_keys.face_tag }}="female"'
+      '{{ search_keys.face_tag }}="{{ global_tags.male }}"',
+      '{{ search_keys.face_tag }}="{{ global_tags.female }}"'
     ],
     true
   );
   setIframeSource(
     '#maleFemaleHost', [
-      '{{ search_keys.face_tag }}="male and host"',
-      '{{ search_keys.face_tag }}="female and host"'
+      '{{ search_keys.face_tag }}="{{ global_tags.male }} and {{ global_tags.host }}"',
+      '{{ search_keys.face_tag }}="{{ global_tags.female }} and {{ global_tags.host }}"'
     ],
     true
   );

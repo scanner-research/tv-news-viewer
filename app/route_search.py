@@ -510,9 +510,9 @@ def people_to_ilistmaps(
 def interpret_global_tags(
     global_tags: Set[str]
 ) -> Tuple[bool, Optional[str], Optional[str]]:
-    gender_tag = either_tag_or_none('male', 'female', global_tags)
-    host_tag = either_tag_or_none('host', 'nonhost', global_tags)
-    is_all = 'all' in global_tags and gender_tag is None and host_tag is None
+    gender_tag = either_tag_or_none(GlobalTags.male, GlobalTags.female, global_tags)
+    host_tag = either_tag_or_none(GlobalTags.host, GlobalTags.non_host, global_tags)
+    is_all = GlobalTags.all in global_tags and gender_tag is None and host_tag is None
     return is_all, gender_tag, host_tag
 
 
@@ -562,9 +562,9 @@ def get_face_time_filter_mask(
         gender_tag = gender_tag.strip().lower()
         if gender_tag:
             payload_mask |= 0b1
-            if gender_tag == 'male':
+            if gender_tag == GlobalTags.male:
                 payload_value |= 0b1
-            elif gender_tag == 'female':
+            elif gender_tag == GlobalTags.female:
                 pass
             else:
                 raise UnreachableCode()
@@ -572,9 +572,9 @@ def get_face_time_filter_mask(
         host_tag = host_tag.strip().lower()
         if host_tag:
             payload_mask |= 0b100
-            if host_tag == 'host':
+            if host_tag == GlobalTags.host:
                 payload_value |= 0b100
-            elif host_tag == 'nonhost':
+            elif host_tag == GlobalTags.non_host:
                 pass
             else:
                 raise UnreachableCode()
@@ -629,27 +629,27 @@ def get_face_tag_intervals(
         if is_all:
             isetmap = vdc.face_intervals.all_isetmap
         elif gender_tag is None:
-            if host_tag == 'host':
+            if host_tag == GlobalTags.host:
                 isetmap = vdc.face_intervals.host_isetmap
-            elif host_tag == 'nonhost':
+            elif host_tag == GlobalTags.non_host:
                 isetmap = vdc.face_intervals.nonhost_isetmap
             else:
                 raise UnreachableCode()
-        elif gender_tag == 'male':
+        elif gender_tag == GlobalTags.male:
             if host_tag is None:
                 isetmap = vdc.face_intervals.male_isetmap
-            elif host_tag == 'host':
+            elif host_tag == GlobalTags.host:
                 isetmap = vdc.face_intervals.male_host_isetmap
-            elif host_tag == 'nonhost':
+            elif host_tag == GlobalTags.non_host:
                 isetmap = vdc.face_intervals.male_nonhost_isetmap
             else:
                 raise UnreachableCode()
-        elif gender_tag == 'female':
+        elif gender_tag == GlobalTags.female:
             if host_tag is None:
                 isetmap = vdc.face_intervals.female_isetmap
-            elif host_tag == 'host':
+            elif host_tag == GlobalTags.host:
                 isetmap = vdc.face_intervals.female_host_isetmap
-            elif host_tag == 'nonhost':
+            elif host_tag == GlobalTags.non_host:
                 isetmap = vdc.face_intervals.female_nonhost_isetmap
             else:
                 raise UnreachableCode()

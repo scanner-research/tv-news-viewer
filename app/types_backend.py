@@ -91,6 +91,3 @@ JsonObject = Dict[str, object]
 
 VideoFilterFn = Callable[[Video], bool]
 AggregateFn = Callable[[datetime], datetime]
-
-
-GLOBAL_TAGS = {'all', 'male', 'female', 'host', 'nonhost'}

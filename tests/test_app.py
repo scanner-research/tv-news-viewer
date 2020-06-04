@@ -180,7 +180,7 @@ TEST_DAYOFWEEK_OPTIONS = [None, 'mon-wed', 'sat']
 TEST_IS_COMMERCIAL_OPTIONS = [None, 'false', 'true', 'both']
 TEST_FACE_NAME_OPTIONS = [None, 'wolf blitzer', 'rachel maddow']
 TEST_FACE_TAG_OPTIONS = [
-    None, 'all', 'journalist', 'tv_host', 'female', 'male,host',
+    None, 'all', 'journalist', 'female', 'male,prresenter',
     'female,journalist'
 ]
 TEST_TEXT_OPTIONS = [

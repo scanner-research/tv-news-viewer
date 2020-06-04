@@ -43,3 +43,14 @@ class SearchParam:
 
     query = 'query'
     video_ids = 'ids'
+
+
+class GlobalTags:
+    all = 'all'
+    male = 'male'
+    female = 'female'
+    host = 'presenter'
+    non_host = 'non_presenter'
+
+GLOBAL_TAGS = {GlobalTags.all, GlobalTags.male, GlobalTags.female,
+               GlobalTags.host, GlobalTags.non_host}

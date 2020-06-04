@@ -12,10 +12,12 @@ def add_data_json_routes(
     num_video_samples: int,
     hide_person_tags: bool
 ):
-    Person = namedtuple('person', ['name', 'screen_time', 'tags'])
+    Person = namedtuple('person', ['name', 'is_host', 'screen_time', 'tags'])
     people = [
         Person(
-            intervals.name, round(intervals.screen_time_seconds / 60),
+            intervals.name,
+            sorted(video_data_context.host_to_channels.get(name, [])),
+            round(intervals.screen_time_seconds / 60),
             video_data_context.all_person_tags.name_to_tags(name)
         )
         for name, intervals in video_data_context.all_person_intervals.items()
@@ -24,8 +26,8 @@ def add_data_json_routes(
     @app.route('/data/people.json')
     def get_data_people_json() -> Response:
         return jsonify({'data': [
-            (p.name, p.screen_time,
-            '' if hide_person_tags else ', '.join(sorted({t.name for t in p.tags})))
+            (p.name, ', '.join(p.is_host),p.screen_time,
+             '' if hide_person_tags else ', '.join(sorted({t.name for t in p.tags})))
             for p in people
         ]})
 

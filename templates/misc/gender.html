@@ -1,5 +1,11 @@
 {% extends "layout.html" %}
 
+{% block meta %}
+  {{ super() }}
+  <meta property="og:title" content="Stanford Cable TV News Analyzer - Gender Example" />
+  <meta property="og:url" content="https://{{ host }}/misc/gender" />
+{% endblock %}
+
 {% block head %}
 {{ super() }}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/instructions.css') }}" />
@@ -16,11 +22,6 @@
   font-size: 1.25rem;
   padding-bottom: 0.25em;
 }
-
-li {
-   padding-bottom: .5em;
-}
-
 </style>
 {% endblock %}
 
@@ -117,32 +118,32 @@ li {
 </div>
 
 <script>
-  setIframeSource('#gender', ['tag="male"', 'tag="female"'], false);
+  setIframeSource('#gender', ['tag="{{ global_tags.male }}"', 'tag="{{ global_tags.female }}"'], false);
   setIframeSource(
     '#genderNorm',
-    ['tag="male" normalize tag="all"', 'tag="female" normalize tag="all"'],
+    ['tag="{{ global_tags.male }}" normalize tag="{{ global_tags.all }}"', 'tag="{{ global_tags.female }}" normalize tag="{{ global_tags.all }}"'],
     false);
   setIframeSource(
-    '#genderRatio', ['tag="male" normalize tag="female"'], false);
+    '#genderRatio', ['tag="{{ global_tags.male }}" normalize tag="{{ global_tags.female }}"'], false);
   setIframeSource(
     '#genderRatioChannel', [
-      'tag="male" and channel="msnbc" normalize channel="msnbc" and tag="female"',
-      'tag="male" and channel="fox" normalize channel="fox" and tag="female"',
-      'tag="male" and channel="cnn" normalize channel="cnn" and tag="female"'
+      'tag="{{ global_tags.male }}" and channel="msnbc" normalize channel="msnbc" and tag="{{ global_tags.female }}"',
+      'tag="{{ global_tags.male }}" and channel="fox" normalize channel="fox" and tag="{{ global_tags.female }}"',
+      'tag="{{ global_tags.male }}" and channel="cnn" normalize channel="cnn" and tag="{{ global_tags.female }}"'
     ], false);
   setIframeSource(
     '#genderHostNorm', [
-      'tag="male,host" normalize tag="host"',
-      'tag="female,host" normalize tag="host"'
+      'tag="{{ global_tags.male }},{{ global_tags.host }}" normalize tag="{{ global_tags.host }}"',
+      'tag="{{ global_tags.female }},{{ global_tags.host }}" normalize tag="{{ global_tags.host }}"'
     ], false);
   setIframeSource(
     '#genderHostChannelNorm', [
-      'tag="male,host" and channel="msnbc" normalize tag="host" and channel="msnbc"',
-      'tag="female,host" and channel="msnbc" normalize tag="host" and channel="msnbc"',
-      'tag="male,host" and channel="fox" normalize tag="host" and channel="fox"',
-      'tag="female,host" and channel="fox" normalize tag="host" and channel="fox"',
-      'tag="male,host" and channel="cnn" normalize tag="host" and channel="cnn"',
-      'tag="female,host" and channel="cnn" normalize tag="host" and channel="cnn"'
+      'tag="{{ global_tags.male }},{{ global_tags.host }}" and channel="msnbc" normalize tag="{{ global_tags.host }}" and channel="msnbc"',
+      'tag="{{ global_tags.female }},{{ global_tags.host }}" and channel="msnbc" normalize tag="{{ global_tags.host }}" and channel="msnbc"',
+      'tag="{{ global_tags.male }},{{ global_tags.host }}" and channel="fox" normalize tag="{{ global_tags.host }}" and channel="fox"',
+      'tag="{{ global_tags.female }},{{ global_tags.host }}" and channel="fox" normalize tag="{{ global_tags.host }}" and channel="fox"',
+      'tag="{{ global_tags.male }},{{ global_tags.host }}" and channel="cnn" normalize tag="{{ global_tags.host }}" and channel="cnn"',
+      'tag="{{ global_tags.female }},{{ global_tags.host }}" and channel="cnn" normalize tag="{{ global_tags.host }}" and channel="cnn"'
     ], false);
 </script>
 

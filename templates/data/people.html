@@ -18,7 +18,7 @@
 
   <p>
     This page contains a list of people who have been identified in the cable TV news dataset.
-    These identities were estimated using the   
+    These identities were estimated using the
 Amazon Rekognition Celebrity detection API and our own identity models,
 and their accuracy is subject to noise and biases in these models. <b>This list of recognized individuals is my no means a comprehensive listing of all individuals appearing the dataset.</b>
   </p>
@@ -33,8 +33,9 @@ and their accuracy is subject to noise and biases in these models. <b>This list 
     <thead>
       <tr>
         <th>Name</th>
+        <th>Is a news presenter?</th>
         <th>Total screen time (in minutes)</th>
-	<th>Person-tags</th>
+	      <th>Person-tags</th>
       </tr>
     </thead>
   </table>
@@ -45,12 +46,14 @@ and their accuracy is subject to noise and biases in these models. <b>This list 
       $('.table').DataTable({
         pageLength: 25, columns: [
           {width: '20%'},
+          {width: '10%', className: 'text-right',
+           render: renderLongDataValue},
           {width: '15%', className: 'text-right',
            render: x => formatNumber(x, 0)},
-		{render: renderLongDataValue, visible: show_person_tags,
+		      {render: renderLongDataValue, visible: show_person_tags,
 		 searchable: show_person_tags}
         ],
-        order: [[1, 'desc']],
+        order: [[2, 'desc']],
         language: {
           info: 'Showing _START_ to _END_ of _TOTAL_ people',
         },

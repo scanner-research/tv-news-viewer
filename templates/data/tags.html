@@ -40,24 +40,24 @@
     </thead>
     <tbody>
       <tr>
-        <td>all</td>
+        <td>{{ global_tags.all }}</td>
         <td>Any face returned by the face detector.</td>
       </tr>
       <tr>
-        <td>male</td>
+        <td>{{ global_tags.male }}</td>
         <td>A face identified as male by our gender classifier.</td>
       </tr>
       <tr>
-        <td>female</td>
+        <td>{{ global_tags.female }}</td>
         <td>A face identified as female by our gender classifier.</td>
       </tr>
       <tr>
-        <td>host</td>
-        <td>A face identified as a host, based off of our list of known hosts.</td>
+        <td>{{ global_tags.host }}</td>
+        <td>A face identified as a host/reporter/news presenter, based off of our list of known individuals.</td>
       </tr>
       <tr>
-        <td>nonhost</td>
-        <td>A face identified that is not identified as a host.</td>
+        <td>{{ global_tags.non_host }}</td>
+        <td>A face identified that is not identified as a presenter.</td>
       </tr>
     </tbody>
   </table>
