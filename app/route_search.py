@@ -215,7 +215,6 @@ def get_caption_intervals(
         if len(documents) == 0:
             return iter(())
 
-    results = []
     query = None
     try:
         query = Query(text_str.upper())
@@ -228,6 +227,7 @@ def get_caption_intervals(
                 'The text query is too expensive to compute. '
                 '"{}" contains too many common words/phrases.'.format(text_str))
 
+    results = []
     for raw_result in query.execute(
         cdc.lexicon, cdc.index, documents=documents, ignore_word_not_found=True
     ):
@@ -250,7 +250,8 @@ def get_caption_intervals(
         results.append(PythonISetData(
             video, False,
             [(int(p.start * 1000), int(p.end * 1000)) for p in postings]))
-    return iter(sorted(results, key=lambda x: x.video.id))
+    results.sort(key=lambda x: x.video.id)
+    return iter(results)
 
 
 def search_result_to_python_iset(
@@ -291,10 +292,10 @@ def and_python_isets(
                 yield PythonISetData(
                     curr[1].video, False,
                     list(merge_close_intervals(intersect_sorted_intervals(
-                            prev[1].intervals, curr[1].intervals))))
+                         prev[1].intervals, curr[1].intervals))))
             prev = None
         else:
-            assert prev[0] < curr[0]
+            assert curr[0] > prev[0], '{} < {}'.format(curr[0], prev[0])
             prev = curr
 
 
@@ -354,7 +355,7 @@ def or_python_isets(
                         100))
             prev = None
         else:
-            assert curr[0] > prev[0]
+            assert curr[0] > prev[0], '{} < {}'.format(curr[0], prev[0])
             yield prev[1]
             prev = curr
     if prev is not None:

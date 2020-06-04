@@ -40,7 +40,7 @@ def client():
         tz=timezone('US/Eastern'),
         min_person_screen_time=600,
         min_person_autocomplete_screen_time=600,
-        hide_person_tags=True,
+        hide_person_tags=False,
         default_aggregate_by='month',
         default_text_window=0,
         default_is_commercial=Ternary.false,
@@ -178,9 +178,9 @@ TEST_CHANNEL_OPTIONS = [None, 'CNN', 'FOXNEWS', 'MSNBC']
 TEST_HOUR_OPTIONS = [None, '9-17', '5']
 TEST_DAYOFWEEK_OPTIONS = [None, 'mon-wed', 'sat']
 TEST_IS_COMMERCIAL_OPTIONS = [None, 'false', 'true', 'both']
-TEST_FACE_NAME_OPTIONS = [None, 'wolf blitzer', 'rachel maddow']
+TEST_FACE_NAME_OPTIONS = [None, 'wolf blitzer', 'rachel maddow', 'tom hanks']
 TEST_FACE_TAG_OPTIONS = [
-    None, 'all', 'journalist', 'female', 'male,prresenter',
+    None, 'all', 'journalist', 'female', 'male,presenter',
     'female,journalist'
 ]
 TEST_TEXT_OPTIONS = [

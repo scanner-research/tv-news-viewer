@@ -33,12 +33,11 @@ MIN_PERSON_ATTRIBUTE_LEN = 3
 
 def get_video_name(s: str) -> str:
     s = Path(s).name
-    if s.endswith('.word.srt'):
-        return s[:-len('.word.srt')]
     if s.endswith('.srt'):
         return s[:-len('.srt')]
-    return os.path.splitext(s)[0]
-
+    if s.endswith('.mp4'):
+        return s[:-len('.mp4')]
+    return s
 
 class VideoDataContext(NamedTuple):
     """Wrapper object for video data"""
@@ -84,6 +83,7 @@ def load_videos(data_dir: str, tz: timezone) -> Dict[str, Video]:
         assert isinstance(height, int)
 
         video_name = get_video_name(name)
+        assert video_name not in videos, '{} is duplicated'.format(name)
         date, minute = parse_date_from_video_name(video_name, tz)
         assert date is not None
         dayofweek = date.isoweekday()  # Mon == 1, Sun == 7
