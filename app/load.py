@@ -170,6 +170,8 @@ def _load_person_intervals(
             person_ilist_dir, person_file_prefix + '.ilist.bin')
         try:
             # Heuristic to filter out people who cannot pass the threshold
+            # This assumes a 3s sample rate and assigns 3s for each 8 bytes of
+            # interval file as a prefilter for whether to open the file or not.
             if os.path.getsize(person_ilist_path) / 4 / 2 * 3 < min_person_screen_time:
                 skipped_counter[person_name_lower] = min_person_screen_time
                 skipped_count += 1
@@ -184,8 +186,8 @@ def _load_person_intervals(
 
             person_time = person_isetmap.sum() / 1000
             if (
-                not check_person_name_in_lexicon(person_name_lower)
-                and person_time < min_person_screen_time
+                person_time < min_person_screen_time
+                # and check_person_name_in_lexicon(person_name_lower)
             ):
                 skipped_count += 1
                 skipped_time += person_time
