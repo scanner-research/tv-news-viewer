@@ -333,7 +333,7 @@ function addCodeHintHelper(name) {
 
   let all_shows = ALL_SHOWS.filter(x => x.length > 0);
 
-  function getValuesForKey(key, prefix) {
+  function getValuesForKey(key, substr) {
     var values = [];
     switch (key) {
       case SEARCH_KEY.channel:
@@ -343,7 +343,7 @@ function addCodeHintHelper(name) {
         values = all_shows;
         break;
       case SEARCH_KEY.face_name:
-        values = prefix || ALL_AUTOCOMPLETE_PEOPLE.length <= MAX_PEOPLE_AUTOCOMPLETE ? ALL_AUTOCOMPLETE_PEOPLE : [];
+        values = substr || ALL_AUTOCOMPLETE_PEOPLE.length <= MAX_PEOPLE_AUTOCOMPLETE ? ALL_AUTOCOMPLETE_PEOPLE : [];
         break;
       case SEARCH_KEY.face_tag:
         values = ALL_AUTOCOMPLETE_TAGS;
@@ -357,9 +357,9 @@ function addCodeHintHelper(name) {
       default:
         break;
     }
-    if (prefix) {
-      let prefix_regex = new RegExp('^' + prefix, 'i');
-      values = values.filter(x => x.match(prefix_regex))
+    if (substr) {
+      let substr_regex = new RegExp(substr, 'i');
+      values = values.filter(x => x.match(substr_regex))
     }
     return values;
   }
