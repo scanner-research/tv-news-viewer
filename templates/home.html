@@ -119,10 +119,12 @@
   <div id="chart"></div>
 </div>
 
+{% if allow_sharing %}
 <div class="container" id="embedArea">
   <p name="text"></p>
   <textarea readonly rows="3" name="embed"></textarea>
 </div>
+{% endif %}
 
 <div class="container" id="vgridArea"></div>
 

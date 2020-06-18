@@ -65,6 +65,7 @@ def main(
             default_is_commercial=Ternary.false,    # exclude comercials
             default_serve_from_archive=True,        # link videos directly
             default_color_gender_bboxes=True,       # color code gender bboxes
+            allow_sharing=True,
             data_version='dev',
             show_uptime=True)
     else:

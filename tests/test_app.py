@@ -46,6 +46,7 @@ def client():
         default_is_commercial=Ternary.false,
         default_serve_from_archive=True,
         default_color_gender_bboxes=True,
+        allow_sharing=True,
         data_version='test',
         show_uptime=True)
 

@@ -12,7 +12,8 @@ DATE_FORMAT = '%B %-d, %Y'
 
 
 def add_html_routes(
-    app: Flask, host: Optional[str],
+    app: Flask,
+    host: Optional[str],
     num_videos: int,
     num_video_hours: int,
     num_video_samples: int,
@@ -21,6 +22,7 @@ def add_html_routes(
     end_date: datetime,
     default_text_window: int,
     hide_person_tags: bool,
+    allow_sharing: bool,
     show_uptime: bool
 ):
     server_start_time = time.time()
@@ -52,7 +54,7 @@ def add_html_routes(
     @app.route('/')
     def root() -> Response:
         return render_template(
-            'home.html', **_get_template_kwargs())
+            'home.html', allow_sharing=allow_sharing, **_get_template_kwargs())
 
     @app.route('/embed')
     def embed() -> Response:

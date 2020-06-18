@@ -31,6 +31,8 @@ DEFAULT_COLOR_GENDER_BBOXES = False
 DEFAULT_AGGREGATE_BY = 'month'
 DEFAULT_TEXT_WINDOW = 0
 
+DEFAULT_ALLOW_SHARING = True
+
 with open(CONFIG_FILE) as f:
     config = json.load(f)
 
@@ -63,6 +65,7 @@ app = build_app(
     default_serve_from_archive=True,
     default_color_gender_bboxes=options.get(
         'default_color_gender_bboxes', DEFAULT_COLOR_GENDER_BBOXES),
+    allow_sharing=options.get('allow_sharing', DEFAULT_ALLOW_SHARING),
     data_version=config.get('data_version'),
     show_uptime=config.get('show_uptime', False))
 del config

@@ -79,6 +79,7 @@ def build_app(
     default_is_commercial: Ternary,
     default_serve_from_archive: bool,
     default_color_gender_bboxes: bool,
+    allow_sharing: bool,
     data_version: Optional[str],
     show_uptime: bool
 ) -> Flask:
@@ -129,6 +130,7 @@ def build_app(
         num_video_samples=NUM_VIDEO_SAMPLES,
         default_text_window=default_text_window,
         hide_person_tags=hide_person_tags,
+        allow_sharing=allow_sharing,
         show_uptime=show_uptime)
 
     add_data_json_routes(
