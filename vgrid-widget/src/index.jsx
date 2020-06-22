@@ -7,8 +7,6 @@ import {
 
 import '@wcrichto/vgrid/dist/vgrid.css';
 
-const HIGHLIGHT_STYLE = {backgroundColor: '#baffff'};
-
 const FACE_FADE_PARAMS = {amount: 0.75};
 
 const INTERNET_ARCHIVE_MAX_CLIP_LEN = 180;
@@ -77,6 +75,7 @@ function getSourceLink(source_options, video, start, end) {
 function loadJsonData(json_data, caption_data, face_data, extra_options) {
   let videos = [];
   let interval_blocks = [];
+  let highlight_style = extra_options.highlight_style;
 
   json_data.forEach(video_json => {
     let video_id = video_json.metadata.id;
@@ -108,7 +107,7 @@ function loadJsonData(json_data, caption_data, face_data, extra_options) {
         return new Interval(
           bounds, {
             spatial_type: new SpatialType_Caption(
-              text, highlight_idxs.has(i) ? HIGHLIGHT_STYLE : null),
+              text, highlight_idxs.has(i) ? highlight_style : null),
             metadata: {}
           }
         );
@@ -197,6 +196,7 @@ function loadJsonDataForInternetArchive(json_data, caption_data, face_data,
                                         extra_options) {
   let videos = [];
   let interval_blocks = [];
+  let highlight_style = extra_options.highlight_style;
 
   json_data.forEach(video_json => {
     let video_id = video_json.metadata.id;
@@ -250,7 +250,7 @@ function loadJsonDataForInternetArchive(json_data, caption_data, face_data,
         return new Interval(
           bounds, {
             spatial_type: new SpatialType_Caption(
-              text, highlight_idxs.has(i) ? HIGHLIGHT_STYLE : null),
+              text, highlight_idxs.has(i) ? highlight_style : null),
             metadata: {}
           }
         );

@@ -85,7 +85,7 @@ function displayVideos(page_i) {
       ).catch(e => `Failed to get faces: ${i}`))
   ).then(() => {
     let color_bboxes_by_gender = DEFAULT_COLOR_GENDER_BBOXES || query.query.match(/male/i);
-    let interval_colors = color_bboxes_by_gender ? 
+    let interval_colors = color_bboxes_by_gender ?
 	['gray', DEFAULT_MALE_COLOR, DEFAULT_FEMALE_COLOR] :
         ['gray', DEFAULT_NEUTRAL_COLOR, DEFAULT_NEUTRAL_COLOR];
     query.searchInVideos(
@@ -119,6 +119,7 @@ function displayVideos(page_i) {
             `videos-${page_i}`,
             json_data, caption_data, face_data, vgrid_settings,
             SERVE_FROM_INTERNET_ARCHIVE, {
+              highlight_style: {color: '#de2a2a', fontWeight: 'bold'},
               highlight_phrases: highlight_phrases,
               video_source_link: {
                 url: ARCHIVE_ENDPOINT,
