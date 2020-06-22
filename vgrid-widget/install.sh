@@ -19,3 +19,5 @@ rm -rf node_modules package-lock.json
 npm install
 npm link @wcrichto/vgrid
 npm run build
+
+echo 'Done!'
