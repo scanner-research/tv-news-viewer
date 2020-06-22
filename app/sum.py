@@ -10,7 +10,7 @@ from .types_backend import AggregateFn, Number, JsonObject
 from .parsing import format_date
 
 
-class DateAccumulator(object):
+class DateAccumulator:
 
     @abstractmethod
     def __init__(self, aggregate_fn: AggregateFn):

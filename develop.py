@@ -20,8 +20,7 @@ def get_args() -> argparse.Namespace:
                         help='Directory of video metadata. Default: data')
     parser.add_argument('--index', dest='index_dir',
                         default=DEFAULT_INDEX_PATH,
-                        help='Directory of caption index. Default: {}'.format(
-                              DEFAULT_INDEX_PATH))
+                        help='Directory of caption index. Default: {}'.format(DEFAULT_INDEX_PATH))
     parser.add_argument('--videos', dest='video_endpoint', type=str,
                         default=DEFAULT_VIDEO_ENDPOINT,
                         help='Video server URL and path')
@@ -39,9 +38,14 @@ def get_args() -> argparse.Namespace:
 
 
 def main(
-    port: int, data_dir: str, index_dir: str, video_endpoint: str,
-    video_auth_endpoint: str, html_only: bool, bind_all: bool,
-    autoreload: bool
+        port: int,
+        data_dir: str,
+        index_dir: str,
+        video_endpoint: str,
+        video_auth_endpoint: str,
+        html_only: bool,
+        bind_all: bool,
+        autoreload: bool
 ) -> None:
     """Run a debugging server"""
     if not html_only:
