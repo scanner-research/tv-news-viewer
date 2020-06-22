@@ -12,18 +12,18 @@ DATE_FORMAT = '%B %-d, %Y'
 
 
 def add_html_routes(
-    app: Flask,
-    host: Optional[str],
-    num_videos: int,
-    num_video_hours: int,
-    num_video_samples: int,
-    num_videos_with_captions: int,
-    start_date: datetime,
-    end_date: datetime,
-    default_text_window: int,
-    hide_person_tags: bool,
-    allow_sharing: bool,
-    show_uptime: bool
+        app: Flask,
+        host: Optional[str],
+        num_videos: int,
+        num_video_hours: int,
+        num_video_samples: int,
+        num_videos_with_captions: int,
+        start_date: datetime,
+        end_date: datetime,
+        default_text_window: int,
+        hide_person_tags: bool,
+        allow_sharing: bool,
+        show_uptime: bool
 ):
     server_start_time = time.time()
 

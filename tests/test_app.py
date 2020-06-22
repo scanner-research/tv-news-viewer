@@ -111,8 +111,10 @@ ResponseFn = Callable[[Response, Dict[str, Optional[str]]], None]
 
 
 def _test_get(
-    client: FlaskClient, path: str, params: Dict[str, Optional[str]],
-    response_fn: ResponseFn
+        client: FlaskClient,
+        path: str,
+        params: Dict[str, Optional[str]],
+        response_fn: ResponseFn
 ) -> None:
     param_str = urlencode({k: v for k, v in params.items() if v is not None})
     query_str = path + '?' + param_str
@@ -122,12 +124,12 @@ def _test_get(
 
 
 def _combination_test_get(
-    client: FlaskClient, path: str,
-    param_options: Dict[str, List[Optional[str]]],
-    key_options: Dict[str, List[Optional[str]]],
-    response_fn: ResponseFn,
-    n: Optional[int] = None,
-    join_ops: List[str] = ['and', 'or']
+        client: FlaskClient, path: str,
+        param_options: Dict[str, List[Optional[str]]],
+        key_options: Dict[str, List[Optional[str]]],
+        response_fn: ResponseFn,
+        n: Optional[int] = None,
+        join_ops: List[str] = ['and', 'or']
 ) -> None:
     """Enumerate combinations of params_options"""
     num_combos = 1
@@ -141,13 +143,13 @@ def _combination_test_get(
         print('Testing {} possible combinations'.format(num_combos))
     else:
         print('Testing {} of {} possible combinations'.format(
-              min(n, num_combos), num_combos))
+            min(n, num_combos), num_combos))
 
     param_names = list(sorted(param_options))
     key_names = list(sorted(key_options))
     for i in (
-        range(num_combos) if n is None
-        else random.sample(range(num_combos), min(n, num_combos))
+            range(num_combos) if n is None
+            else random.sample(range(num_combos), min(n, num_combos))
     ):
         get_params = {}
         for k in param_names:
@@ -191,7 +193,8 @@ TEST_TEXT_WINDOW_OPTIONS = [None, '0', '15', '120']
 
 
 def _check_count_result(
-    response: Response, params: Dict[str, Optional[str]]
+        response: Response,
+        params: Dict[str, Optional[str]]
 ) -> None:
     assert response.status_code == 200, 'Query failed: {}, {}'.format(
         repr(params), str(response.data))
@@ -231,7 +234,8 @@ TEST_COMMON_TEXT_OPTIONS = ['the', 'united states']  # Use a common token
 
 
 def _check_search_in_video_result(
-    response: Response, params: Dict[str, Optional[str]]
+        response: Response,
+        params: Dict[str, Optional[str]]
 ) -> None:
     assert response.status_code == 200, 'Query failed: {}'.format(repr(params))
     assert response.is_json, str(response.data)

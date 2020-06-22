@@ -5,9 +5,6 @@ Data types used by the backend server.
 from datetime import datetime
 from typing import Callable, Dict, List, Tuple, NamedTuple, Union
 
-from rs_intervalset import (
-    MmapIntervalSetMapping, MmapIntervalListMapping)  # type: ignore
-
 
 class Video(NamedTuple):
     id: int
@@ -24,24 +21,24 @@ class Video(NamedTuple):
 
 
 class FaceIntervals(NamedTuple):
-    all_ilistmap: MmapIntervalListMapping
-    num_faces_ilistmap: MmapIntervalListMapping
+    all_ilistmap: 'MmapIntervalListMapping'
+    num_faces_ilistmap: 'MmapIntervalListMapping'
 
-    all_isetmap: MmapIntervalSetMapping
-    male_isetmap: MmapIntervalSetMapping
-    female_isetmap: MmapIntervalSetMapping
-    host_isetmap: MmapIntervalSetMapping
-    nonhost_isetmap: MmapIntervalSetMapping
-    male_host_isetmap: MmapIntervalSetMapping
-    male_nonhost_isetmap: MmapIntervalSetMapping
-    female_host_isetmap: MmapIntervalSetMapping
-    female_nonhost_isetmap: MmapIntervalSetMapping
+    all_isetmap: 'MmapIntervalSetMapping'
+    male_isetmap: 'MmapIntervalSetMapping'
+    female_isetmap: 'MmapIntervalSetMapping'
+    host_isetmap: 'MmapIntervalSetMapping'
+    nonhost_isetmap: 'MmapIntervalSetMapping'
+    male_host_isetmap: 'MmapIntervalSetMapping'
+    male_nonhost_isetmap: 'MmapIntervalSetMapping'
+    female_host_isetmap: 'MmapIntervalSetMapping'
+    female_nonhost_isetmap: 'MmapIntervalSetMapping'
 
 
 class PersonIntervals(NamedTuple):
     name: str
-    ilistmap: MmapIntervalListMapping
-    isetmap: MmapIntervalSetMapping
+    ilistmap: 'MmapIntervalListMapping'
+    isetmap: 'MmapIntervalSetMapping'
     screen_time_seconds: float
 
 

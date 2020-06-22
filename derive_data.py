@@ -1,16 +1,19 @@
 #!/usr/bin/env python3
+"""
+Generates derived (i.e. cached) data for faster real-time queries
+"""
 
 import argparse
 import os
 import json
 import heapq
 import time
-from collections import Counter, defaultdict
+from collections import defaultdict
 from functools import wraps
 from inspect import getfullargspec
-from pytz import timezone
 from multiprocessing import Pool
 from typing import List, Tuple
+from pytz import timezone
 
 from rs_intervalset import MmapIntervalListMapping, MmapIntervalSetMapping
 from rs_intervalset.writer import (
@@ -33,7 +36,8 @@ def get_args() -> argparse.Namespace:
     parser.add_argument('--datadir', type=str, default='data')
     parser.add_argument(
         '-i', '--incremental', action='store_true',
-        help='Incrementally update existing derived files (skips video ids with existing derived data).')
+        help='Incrementally update existing derived files (skips video ids '
+             'with existing derived data).')
     parser.add_argument(
         '-t', '--tag-limit', type=int, default=250,
         help='Tags exceeding this number of individuals will be precomputed.')
@@ -48,7 +52,7 @@ def mkdir_if_not_exists(d: str):
 
 
 # TODO(james): investigate why derived data are subtly different from Spark
-class IntervalAccumulator(object):
+class IntervalAccumulator:
 
     def __init__(self, fuzz: int = 250):
         self._intervals = None
@@ -97,8 +101,11 @@ def print_task_info(f):
 
 @print_task_info
 def derive_face_iset(
-    face_ilist_file: str, payload_mask: int, payload_value: int, outfile: str,
-    is_incremental: bool
+        face_ilist_file: str,
+        payload_mask: int,
+        payload_value: int,
+        outfile: str,
+        is_incremental: bool
 ) -> None:
     ilistmap = MmapIntervalListMapping(face_ilist_file, PAYLOAD_LEN)
     video_ids = set(ilistmap.get_ids())
@@ -109,7 +116,8 @@ def derive_face_iset(
         for video_id in sorted(video_ids):
             acc = IntervalAccumulator()
             for interval in ilistmap.intersect(
-                video_id, [(0, U32_MAX)], payload_mask, payload_value, False
+                    video_id, [(0, U32_MAX)], payload_mask, payload_value,
+                    False
             ):
                 acc.add(*interval)
             result = acc.get()
@@ -118,7 +126,10 @@ def derive_face_iset(
 
 
 def derive_face_isets(
-    workers: Pool, face_ilist_file: str, outdir: str, is_incremental: bool
+        workers: Pool,
+        face_ilist_file: str,
+        outdir: str,
+        is_incremental: bool
 ) -> None:
     mkdir_if_not_exists(outdir)
 
@@ -161,11 +172,14 @@ def get_iset_ids(fname):
 
 @print_task_info
 def derive_num_faces_ilist(
-    data_dir: str, face_ilist_file: str, outfile: str, is_incremental: bool
+        data_dir: str,
+        face_ilist_file: str,
+        outfile: str,
+        is_incremental: bool
 ) -> None:
 
     def deoverlap(
-        intervals: List[IntervalAndPayload], fuzz: int = 250
+            intervals: List[IntervalAndPayload], fuzz: int = 250
     ) -> List[IntervalAndPayload]:
         result = []
         for i in intervals:
@@ -191,7 +205,7 @@ def derive_num_faces_ilist(
     }
 
     with IntervalListMappingWriter(
-        outfile, PAYLOAD_LEN, append=is_incremental
+            outfile, PAYLOAD_LEN, append=is_incremental
     ) as writer:
         for video_id in sorted(video_ids):
             intervals = []
@@ -229,7 +243,9 @@ def derive_num_faces_ilist(
 
 @print_task_info
 def derive_person_iset(
-    person_ilist_file: str, outfile: str, is_incremental: bool
+        person_ilist_file: str,
+        outfile: str,
+        is_incremental: bool
 ) -> None:
     ilistmap = MmapIntervalListMapping(person_ilist_file, PAYLOAD_LEN)
     video_ids = set(ilistmap.get_ids())
@@ -241,9 +257,9 @@ def derive_person_iset(
             acc = IntervalAccumulator()
 
             for interval in ilistmap.intersect(
-                video_id, [(0, U32_MAX)],
-                0, 0,              # Keep all faces
-                False
+                    video_id, [(0, U32_MAX)],
+                    0, 0,              # Keep all faces
+                    False
             ):
                 acc.add(*interval)
             result = acc.get()
@@ -256,8 +272,11 @@ def parse_person_name(fname: str) -> str:
 
 
 def derive_person_isets(
-    workers: Pool, person_ilist_dir: str, outdir: str, threshold_in_bytes: int,
-    is_incremental: bool
+        workers: Pool,
+        person_ilist_dir: str,
+        outdir: str,
+        threshold_in_bytes: int,
+        is_incremental: bool
 ) -> None:
     mkdir_if_not_exists(outdir)
 
@@ -286,7 +305,9 @@ def derive_person_isets(
 
 @print_task_info
 def derive_tag_ilist(
-    person_ilist_files: str, outfile: str, is_incremental: bool
+        person_ilist_files: str,
+        outfile: str,
+        is_incremental: bool
 ) -> None:
     ilistmaps = [MmapIntervalListMapping(f, PAYLOAD_LEN)
                  for f in person_ilist_files]
@@ -296,7 +317,7 @@ def derive_tag_ilist(
         video_id_set.update(ilist.get_ids())
 
     def deoverlap_intervals(intervals):
-        payload_dict = defaultdict(lambda: IntervalAccumulator())
+        payload_dict = defaultdict(IntervalAccumulator)
         for a, b, c in heapq.merge(*intervals):
             payload_dict[c & PAYLOAD_DATA_MASK].add(a, b)
         return list(heapq.merge(*[
@@ -308,7 +329,7 @@ def derive_tag_ilist(
         video_id_set -= get_ilist_ids(outfile)
 
     with IntervalListMappingWriter(
-        outfile, PAYLOAD_LEN, append=is_incremental
+            outfile, PAYLOAD_LEN, append=is_incremental
     ) as writer:
         for i in sorted(video_id_set):
             intervals = []
@@ -318,8 +339,12 @@ def derive_tag_ilist(
 
 
 def derive_tag_ilists(
-    workers: Pool, person_ilist_dir: str, metadata_path: str, outdir: str,
-    threshold: int, is_incremental: bool
+        workers: Pool,
+        person_ilist_dir: str,
+        metadata_path: str,
+        outdir: str,
+        threshold: int,
+        is_incremental: bool
 ) -> None:
     people_available = {
         parse_person_name(p) for p in os.listdir(person_ilist_dir)
@@ -352,8 +377,12 @@ def derive_tag_ilists(
                 error_callback=build_error_callback('Failed on: ' + tag))
 
 
-def main(datadir: str, incremental: bool, tag_limit: int,
-         person_limit: int) -> None:
+def main(
+        datadir: str,
+        incremental: bool,
+        tag_limit: int,
+        person_limit: int
+) -> None:
     outdir = os.path.join(datadir, 'derived')
     mkdir_if_not_exists(outdir)
 

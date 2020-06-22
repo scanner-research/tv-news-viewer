@@ -7,10 +7,12 @@ from .load import VideoDataContext
 
 
 def add_data_json_routes(
-    app: Flask, video_data_context: VideoDataContext,
-    min_date: datetime, max_date: datetime,
-    num_video_samples: int,
-    hide_person_tags: bool
+        app: Flask,
+        video_data_context: VideoDataContext,
+        min_date: datetime,
+        max_date: datetime,
+        num_video_samples: int,
+        hide_person_tags: bool
 ):
     Person = namedtuple('person', ['name', 'is_host', 'screen_time', 'tags'])
     people = [
