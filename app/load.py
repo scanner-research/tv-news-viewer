@@ -12,7 +12,6 @@ from collections import Counter, OrderedDict, defaultdict
 from pathlib import Path
 from typing import NamedTuple, Dict, Set, Tuple
 
-import unidecode
 from pytz import timezone
 
 from captions import CaptionIndex, Documents, Lexicon       # type: ignore
@@ -131,23 +130,13 @@ MIN_NAME_TOKEN_LEN = 3
 
 
 def _load_person_intervals(
-    data_dir: str, caption_data: CaptionDataContext,
-    min_person_screen_time: int
+        data_dir: str,
+        caption_data: CaptionDataContext,
+        min_person_screen_time: int
 ) -> Dict[str, PersonIntervals]:
 
     def parse_person_file_prefix(fname: str) -> str:
         return path.splitext(path.splitext(fname)[0])[0]
-
-    def check_person_name_in_lexicon(name: str) -> bool:
-        tokens = [t for t in name.split(' ') if len(t) > MIN_NAME_TOKEN_LEN]
-        if len(tokens) == 0:
-            return False
-        for t in tokens:
-            if (t.upper() not in caption_data.lexicon
-                and unidecode.unidecode(t).upper() not in caption_data.lexicon
-            ):
-                return False
-        return True
 
     person_ilist_dir = path.join(data_dir, 'people')
     person_iset_dir = path.join(data_dir, 'derived', 'people')
@@ -186,8 +175,7 @@ def _load_person_intervals(
 
             person_time = person_isetmap.sum() / 1000
             if (
-                person_time < min_person_screen_time
-                # and check_person_name_in_lexicon(person_name_lower)
+                    person_time < min_person_screen_time
             ):
                 skipped_count += 1
                 skipped_time += person_time
@@ -204,6 +192,7 @@ def _load_person_intervals(
 
     print('  Loaded intervals for {} people. Skipped {}, totaling {}h.'.format(
           len(all_person_intervals), skipped_count, int(skipped_time) / 3600))
+
     if len(skipped_counter) > 0:
         print('  Skipped people with largest time:')
         for k, v in skipped_counter.most_common(25):
@@ -215,15 +204,15 @@ def _load_person_intervals(
 
 def sanitize_tag(tag: str) -> str:
     tag = re.sub(r'\W+', '', tag.lower())
-    # FIXME: this avoids a conflict with the host tag
+    # FIXME: this avoids a conflict with the presenter tag
     if tag in GLOBAL_TAGS:
         tag = 'tv_' + tag
     return tag
 
 
-def _load_person_metadata(
-    data_dir: str, all_people: Set[str]
-) -> AllPersonTags:
+def _load_person_metadata(data_dir: str, all_people: Set[str]) -> AllPersonTags:
+    """Read in metadata attributes on individuals"""
+
     person_metadata_path = path.join(data_dir, 'people.metadata.json')
     person_to_tags = {}
     if os.path.exists(person_metadata_path):
@@ -233,8 +222,8 @@ def _load_person_metadata(
                 for tag, tag_source in tags:
                     tag = sanitize_tag(tag)
                     if (
-                        len(tag) > MIN_PERSON_ATTRIBUTE_LEN
-                        and len(tag) < MAX_PERSON_ATTRIBUTE_LEN
+                            len(tag) > MIN_PERSON_ATTRIBUTE_LEN
+                            and len(tag) < MAX_PERSON_ATTRIBUTE_LEN
                     ):
                         filtered_tags.append(Tag(tag, tag_source))
                 name_lower = name.lower()
@@ -262,11 +251,18 @@ def _load_tag_intervals(data_dir: str) -> Dict[str, MmapIntervalListMapping]:
 
 
 def load_caption_data(index_dir: str) -> CaptionDataContext:
+    """Load the captions"""
+
     documents = Documents.load(path.join(index_dir, 'documents.txt'))
     lexicon = Lexicon.load(path.join(index_dir, 'lexicon.txt'),
                            lazy_lemmas=False)
     index = CaptionIndex(path.join(index_dir, 'index.bin'),
                          lexicon, documents)
+
+    # Convert the document names so that they match the video names
+    documents = Documents([
+        d._replace(name=get_video_name(d.name)) for d in documents])
+    documents.configure(path.join(index_dir, 'data'))
     return CaptionDataContext(
         index, documents, lexicon, {d.name: d for d in documents})
 
@@ -284,25 +280,23 @@ def _load_hosts(host_file):
 
 
 def load_app_data(
-    index_dir: str, data_dir: str, tz: timezone, min_person_screen_time: int
+        index_dir: str,
+        data_dir: str,
+        tz: timezone,
+        min_person_screen_time: int
 ) -> Tuple[CaptionDataContext, VideoDataContext]:
+    """Load all of the site's static data"""
+
     print('Loading caption index: please wait...')
     caption_data = load_caption_data(index_dir)
 
     print('Loading video data: please wait...')
     videos = load_videos(data_dir, tz)
 
-    matched_documents = Documents([
-        d._replace(name=get_video_name(d.name))
-        for d in caption_data.documents])
-    caption_data = caption_data._replace(
-        documents=matched_documents,
-        document_by_name={d.name: d for d in matched_documents}
-    )
     n_videos_with_captions = sum(1 for d in caption_data.documents
                                  if d.name in videos)
     print('  {} / {} videos have captions'.format(
-          n_videos_with_captions, len(videos)))
+        n_videos_with_captions, len(videos)))
 
     print('Loading commercial intervals: please wait...')
     commercials = MmapIntervalSetMapping(

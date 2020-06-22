@@ -5,13 +5,12 @@ Main application code
 from datetime import datetime
 import os
 import re
+from typing import List, Optional, Iterable
+
+from pytz import timezone
 from flask import (
     Flask, Response, jsonify, request, render_template,
     make_response)
-from pytz import timezone
-from typing import List, Optional, Iterable
-
-from captions import Documents                           # type: ignore
 
 from .types_frontend import *
 from .types_backend import *
@@ -32,7 +31,7 @@ NUM_VIDEO_SAMPLES = 1000
 
 def _untokenize(words: Iterable[str]) -> str:
     text = ' '.join(words)
-    step1 = text.replace("`` ", '"').replace(" ''", '"').replace('. . .',  '...')
+    step1 = text.replace("`` ", '"').replace(" ''", '"').replace('. . .', '...')
     step2 = step1.replace(" ( ", " (").replace(" ) ", ") ")
     step3 = re.sub(r' ([.,:;?!%>]+)([ \'"`])', r"\1\2", step2)
     step4 = re.sub(r' ([.,:;?!%>]+)$', r"\1", step3)
@@ -45,42 +44,43 @@ def _untokenize(words: Iterable[str]) -> str:
 
 
 def _get_captions(
-    cdc: CaptionDataContext, document: Documents.Document
+        cdc: CaptionDataContext,
+        document: 'Documents.Document'
 ) -> List[Caption]:
     lines = []
-    for p in cdc.index.intervals(document):
-        if p.len > 0:
-            tokens: List[str] = [
+    doc_handle = cdc.documents.open(document)
+    for line in doc_handle.lines():
+        if line.len > 0:
+            tokens = [
                 cdc.lexicon.decode(t)
-                for t in cdc.index.tokens(
-                    document, p.idx, p.len)]
-            start: float = round(p.start, 2)
-            end: float = round(p.end, 2)
+                for t in doc_handle.tokens(line.idx, line.len)]
+            start = round(line.start, 2)
+            end = round(line.end, 2)
             lines.append((start, end, _untokenize(tokens)))
     return lines
 
 
 def build_app(
-    data_dir: str,
-    index_dir: str,
-    video_endpoint: Optional[str],
-    video_auth_endpoint: Optional[str],
-    static_bbox_endpoint: Optional[str],
-    static_caption_endpoint: Optional[str],
-    host: Optional[str],
-    min_date: datetime,
-    max_date: datetime,
-    tz: timezone,
-    min_person_screen_time: int,
-    min_person_autocomplete_screen_time: int,
-    hide_person_tags: bool,
-    default_aggregate_by: str,
-    default_text_window: int,
-    default_is_commercial: Ternary,
-    default_serve_from_archive: bool,
-    default_color_gender_bboxes: bool,
-    data_version: Optional[str],
-    show_uptime: bool
+        data_dir: str,
+        index_dir: str,
+        video_endpoint: Optional[str],
+        video_auth_endpoint: Optional[str],
+        static_bbox_endpoint: Optional[str],
+        static_caption_endpoint: Optional[str],
+        host: Optional[str],
+        min_date: datetime,
+        max_date: datetime,
+        tz: timezone,
+        min_person_screen_time: int,
+        min_person_autocomplete_screen_time: int,
+        hide_person_tags: bool,
+        default_aggregate_by: str,
+        default_text_window: int,
+        default_is_commercial: Ternary,
+        default_serve_from_archive: bool,
+        default_color_gender_bboxes: bool,
+        data_version: Optional[str],
+        show_uptime: bool
 ) -> Flask:
 
     caption_data_context, video_data_context = \

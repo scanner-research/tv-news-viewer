@@ -26,7 +26,7 @@ DATE_FORMAT = '%Y-%m-%d'
 
 
 def parse_date_from_video_name(p: str, tz: timezone) -> Tuple[datetime, int]:
-    channel, ymd, hms = p.split('_', 3)[:3]
+    _, ymd, hms = p.split('_', 3)[:3]
     timestamp = datetime.strptime(ymd + hms, '%Y%m%d%H%M%S')
     timestamp_et = timestamp.replace(tzinfo=UTC).astimezone(tz=tz)
     assert tz == UTC or timestamp.hour != timestamp_et.hour
