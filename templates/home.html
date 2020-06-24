@@ -92,7 +92,21 @@
           <td></td>
           <td></td>
           <td class="control-td">
-            between &nbsp;
+            <div class="dropdown" style="display: inline;" title="Populate time range.">
+              <button class="btn btn-sm btn-light dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                between
+              </button>
+              <div class="dropdown-menu quick-date-dropdown" aria-labelledby="dropdownMenuButton">
+                <a class="dropdown-item" href="#" value="1m">last month, by day</a>
+                <a class="dropdown-item" href="#" value="3m">last 3 months, by day</a>
+                <a class="dropdown-item" href="#" value="6m">last 6 months, by day</a>
+                <a class="dropdown-item" href="#" value="1y">last year, by day</a>
+                <a class="dropdown-item" href="#" value="2y">last 2 years, by month</a>
+                <a class="dropdown-item" href="#" value="5y">last 5 year, by month</a>
+                <a class="dropdown-item" href="#" value="all">entire data set, by month</a>
+              </div>
+            </div>
+            &nbsp;
             <input type="text" class="datepicker" name="startDate">
             &nbsp; and &nbsp;
             <input type="text" class="datepicker" name="endDate">
@@ -106,7 +120,7 @@
             . &nbsp;
             <input type="submit" class="btn btn-secondary btn-sm search-btn"
                    value="Search the news!">
-            <input type="submit" class="btn btn-secondary btn-sm reset-btn"
+            <input type="button" class="btn btn-secondary btn-sm reset-btn"
                    value="Clear queries">
           </td>
         </tr>

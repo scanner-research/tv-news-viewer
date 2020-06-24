@@ -209,6 +209,28 @@ function addWarning(message) {
   ).show();
 }
 
+function parseDate(s) {
+  let m = s.match(/(\d{1,4})-(\d{1,2})-(\d{2})/);
+  if (!m) {
+    throw Error(`Invalid date: ${s}. Please use YYYY/MM/DD format.`);
+  }
+  return new Date(Date.UTC(parseInt(m[1]), parseInt(m[2]) - 1, parseInt(m[3])));
+}
+
+function lastNMonths(n) {
+  new_date = parseDate(DEFAULT_END_DATE);
+  new_date.setUTCMonth(new_date.getUTCMonth() - n);
+  month = `${new_date.getUTCMonth() + 1}`.padStart(2, '0');
+  day = `${new_date.getUTCDate()}`.padStart(2, '0');
+  return `${new_date.getUTCFullYear()}-${month}-${day}`;
+}
+
+function lastNYears(n) {
+  end_date = parseDate(DEFAULT_END_DATE);
+  month = `${end_date.getUTCMonth() + 1}`.padStart(2, '0');
+  return `${end_date.getUTCFullYear() - n}-${month}-01`;
+}
+
 function initialize() {
   let params = (new URL(document.location)).searchParams;
   minimalMode = params.get('minimal') == 1;
@@ -272,6 +294,46 @@ function initialize() {
       // Reset the chart
       clearChart();
     }
+  });
+
+  function setDateShortcuts(date_option) {
+    switch(date_option) {
+      case '1m':
+        editor.setStartDate(lastNMonths(1));
+        editor.setAggregateBy('day');
+        break;
+      case '3m':
+        editor.setStartDate(lastNMonths(3));
+        editor.setAggregateBy('day');
+        break;
+      case '6m':
+        editor.setStartDate(lastNMonths(6));
+        editor.setAggregateBy('day');
+        break;
+      case '1y':
+        editor.setStartDate(lastNMonths(12));
+        editor.setAggregateBy('day');
+        break;
+      case '2y':
+        editor.setStartDate(lastNYears(2));
+        editor.setAggregateBy('month');
+        break;
+      case '5y':
+        editor.setStartDate(lastNYears(5));
+        editor.setAggregateBy('month');
+        break;
+      case 'all':
+        editor.setStartDate(DEFAULT_START_DATE);
+        editor.setAggregateBy('month');
+      default:
+        console.log(`Unknown: ${date_option}`)
+    }
+    $('.search-btn').click();
+  }
+
+  $('.quick-date-dropdown a').each(function(x) {
+    let value = $(this).attr('value');
+    this.onclick = function() { setDateShortcuts(value); };
   });
 
   addHighlight('#plusMinusHover', ['.remove-row-btn', '.add-row-btn']);

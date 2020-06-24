@@ -602,7 +602,7 @@ class Editor {
     var aggregate_by = DEFAULT_AGGREGATE_BY;
     if (chart_options) {
       if (chart_options.start_date) {
-	start_date = chart_options.start_date;
+      	start_date = chart_options.start_date;
       }
       if (chart_options.end_date) {
         end_date = chart_options.end_date;
@@ -624,6 +624,17 @@ class Editor {
       startDate: toDatepickerStr(DEFAULT_START_DATE),
       endDate: toDatepickerStr(DEFAULT_END_DATE)
     }).datepicker('setDate', toDatepickerStr(end_date));
+  }
+
+  setStartDate(value) {
+    let editor = $(this.div_id);
+    editor.find('[name="startDate"]').val(toDatepickerStr(value));
+    editor.find('[name="endDate"]').val(toDatepickerStr(DEFAULT_END_DATE));
+  }
+
+  setAggregateBy(value) {
+    let editor = $(this.div_id);
+    editor.find('[name="aggregateBy"]').val(value).trigger("chosen:updated");
   }
 
   removeRow(search_table_row) {
