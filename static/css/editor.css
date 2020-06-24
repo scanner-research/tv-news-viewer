@@ -19,7 +19,7 @@
   width: 120px;
 }
 .search-table .control-td {
-  padding-left: 10px;
+  padding-left: 5px;
 }
 .search-table .color-box {
   margin: auto;
@@ -182,4 +182,19 @@
 }
 .chosen-container .chosen-drop ul {
   white-space: nowrap;
+}
+.quick-date-dropdown {
+  display: inline;
+}
+.quick-date-dropdown button {
+  padding-left: 2px;
+  padding-right: 2px;
+  padding-top: 0;
+  padding-bottom: 0;
+  background: none;
+  border: none;
+}
+.dropdown:hover .dropdown-menu {
+  display: block;
+  margin-top: 0; // remove the gap so it doesn't close
 }
