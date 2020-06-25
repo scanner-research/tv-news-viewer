@@ -39,6 +39,7 @@
   <script src="{{ url_for('static', filename='js/query.js') }}" /></script>
   <script src="{{ url_for('static', filename='js/chart.js') }}" /></script>
   <script src="{{ url_for('static', filename='js/editor.js') }}" /></script>
+  <script src="{{ url_for('static', filename='js/example-queries.js') }}" /></script>
 {% endblock %}
 
 {% block content %}
@@ -47,7 +48,8 @@
 <div class="container">
   <span id="infoSpan">
     Use this tool to count the screen time of <b>who</b> and <b>what</b>
-    is in cable TV news. (<a href="#" id="infoToggle">show help</a>)<br>
+    is in cable TV news. (<a href="#" id="infoToggle">show help</a>)
+    <br>
     <div id="infoSpanText">
       To begin, read the
       <a href="/getting-started" target="_blank">getting started</a> guide.
@@ -92,13 +94,14 @@
           <td></td>
           <td></td>
           <td class="control-td">
-            <div class="dropdown quick-date-dropdown" title="Populate time range.">
-              <button class="btn btn-sm btn-light dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">between</button>
-              <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+            <div class="dropdown" id="quickDateDropdown" title="Populate time range.">
+              <button class="btn btn-sm btn-light dropdown-toggle" type="button" id="quickDateDropdownButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">between</button>
+              <div class="dropdown-menu" aria-labelledby="quickDateDropdownButton">
                 <a class="dropdown-item" href="#" value="1m">last month, by day</a>
                 <a class="dropdown-item" href="#" value="3m">last 3 months, by day</a>
                 <a class="dropdown-item" href="#" value="6m">last 6 months, by day</a>
                 <a class="dropdown-item" href="#" value="1y">last year, by day</a>
+                <div class="dropdown-divider"></div>
                 <a class="dropdown-item" href="#" value="2y">last 2 years, by month</a>
                 <a class="dropdown-item" href="#" value="5y">last 5 years, by month</a>
                 <a class="dropdown-item" href="#" value="all">entire data set, by month</a>
@@ -120,6 +123,10 @@
                    value="Search the news!">
             <input type="button" class="btn btn-secondary btn-sm reset-btn"
                    value="Clear queries">
+            <div class="dropdown" id="exampleQueryDropdown">
+              <button class="btn btn-sm btn-secondary dropdown-toggle" type="button" id="exampleQueryDropdownButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">More examples</button>
+              <div class="dropdown-menu" aria-labelledby="exampleQueryDropdownButton"></div>
+            </div>
           </td>
         </tr>
       </tfoot>

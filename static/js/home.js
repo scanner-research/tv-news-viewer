@@ -331,10 +331,18 @@ function initialize() {
     $('.search-btn').click();
   }
 
-  $('.quick-date-dropdown a').each(function(x) {
+  $('#quickDateDropdown a').each(function(x) {
     let value = $(this).attr('value');
     this.onclick = function() { setDateShortcuts(value); };
   });
+
+  try {
+    $('#exampleQueryDropdown .dropdown-menu').append(EXAMPLE_QUERIES.map(
+      x => $('<a>').addClass('dropdown-item').attr('href', x[1]).text(x[0])));
+  } catch (e) {
+    console.log('Unable to load example queries');
+    $('#exampleQueryDropdown').hide();
+  }
 
   addHighlight('#plusMinusHover', ['.remove-row-btn', '.add-row-btn']);
   addHighlight('#dropdownEditorHover', ['.toggle-query-builder-btn']);

@@ -183,10 +183,10 @@
 .chosen-container .chosen-drop ul {
   white-space: nowrap;
 }
-.quick-date-dropdown {
+#quickDateDropdown {
   display: inline;
 }
-.quick-date-dropdown button {
+#quickDateDropdown button {
   padding-left: 2px;
   padding-right: 2px;
   padding-top: 0;
@@ -197,4 +197,7 @@
 .dropdown:hover .dropdown-menu {
   display: block;
   margin-top: 0; // remove the gap so it doesn't close
+}
+#exampleQueryDropdown {
+  display: inline;
 }
