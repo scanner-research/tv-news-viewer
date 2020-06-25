@@ -52,8 +52,7 @@ const EXAMPLE_QUERIES = [
     )
   ], [
     'Black Lives Matter', getExampleChartPath(
-      ['text="BLACK LIVES MATTER"', 'text="BLACK LIVES"'],
-    )
+      ['text="BLACK LIVES MATTER"'], {aggregate: 'day'})
   ], [
     'Illegal vs. undocumented immigration', getExampleChartPath(
       [
