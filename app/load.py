@@ -10,7 +10,7 @@ import json
 from os import path
 from collections import Counter, OrderedDict, defaultdict
 from pathlib import Path
-from typing import NamedTuple, Dict, Set, Tuple
+from typing import NamedTuple, Dict, Set, Tuple, Optional
 
 from pytz import timezone
 
@@ -122,6 +122,16 @@ def _load_face_intervals(data_dir: str) -> FaceIntervals:
     return face_intervals
 
 
+def read_person_whitelist(fname):
+    people = set()
+    with open(fname) as f:
+        for line in f:
+            line = line.strip()
+            if line:
+                people.add(line.lower())
+    return people
+
+
 def _sanitize_name(name):
     return re.sub(r'[^\w\- :]', r'', name)
 
@@ -131,9 +141,13 @@ MIN_NAME_TOKEN_LEN = 3
 
 def _load_person_intervals(
         data_dir: str,
-        caption_data: CaptionDataContext,
+        person_whitelist_file: Optional[str],
         min_person_screen_time: int
 ) -> Dict[str, PersonIntervals]:
+    if person_whitelist_file is not None:
+        whitelisted_people = read_person_whitelist(person_whitelist_file)
+    else:
+        whitelisted_people = None
 
     def parse_person_file_prefix(fname: str) -> str:
         return path.splitext(path.splitext(fname)[0])[0]
@@ -146,12 +160,16 @@ def _load_person_intervals(
     }
 
     skipped_count = 0
-    skipped_time = 0.
     skipped_counter = Counter()
     all_person_intervals = []
     for person_file_prefix in person_file_prefixes:
         person_name = _sanitize_name(person_file_prefix)
         person_name_lower = person_name.lower()
+
+        if (whitelisted_people is not None
+                and person_name_lower not in whitelisted_people):
+            skipped_count += 1
+            continue
 
         person_iset_path = path.join(
             person_iset_dir, person_file_prefix + '.iset.bin')
@@ -164,7 +182,6 @@ def _load_person_intervals(
             if os.path.getsize(person_ilist_path) / 4 / 2 * 3 < min_person_screen_time:
                 skipped_counter[person_name_lower] = min_person_screen_time
                 skipped_count += 1
-                skipped_time += min_person_screen_time
                 continue
 
             person_ilist_map = MmapIntervalListMapping(person_ilist_path, 1)
@@ -178,7 +195,6 @@ def _load_person_intervals(
                     person_time < min_person_screen_time
             ):
                 skipped_count += 1
-                skipped_time += person_time
                 skipped_counter[person_name_lower] = person_time
                 continue
 
@@ -190,8 +206,8 @@ def _load_person_intervals(
             print('Unable to load: {} - {}'.format(person_name, e))
             skipped_count += 1
 
-    print('  Loaded intervals for {} people. Skipped {}, totaling {}h.'.format(
-          len(all_person_intervals), skipped_count, int(skipped_time) / 3600))
+    print('  Loaded intervals for {} people. Skipped {}.'.format(
+          len(all_person_intervals), skipped_count))
 
     if len(skipped_counter) > 0:
         print('  Skipped people with largest time:')
@@ -283,6 +299,7 @@ def load_app_data(
         index_dir: str,
         data_dir: str,
         tz: timezone,
+        person_whitelist_file: Optional[str],
         min_person_screen_time: int
 ) -> Tuple[CaptionDataContext, VideoDataContext]:
     """Load all of the site's static data"""
@@ -305,7 +322,7 @@ def load_app_data(
     print('Loading face intervals: please wait...')
     face_intervals = _load_face_intervals(data_dir)
     all_person_intervals = _load_person_intervals(
-        data_dir, caption_data, min_person_screen_time)
+        data_dir, person_whitelist_file, min_person_screen_time)
 
     print('Loading person metadata tags: please wait...')
     all_person_tags = _load_person_metadata(

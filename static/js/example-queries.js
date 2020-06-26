@@ -15,6 +15,7 @@ function getExampleChartPath(queries, chart_options) {
   return '/?data=' + urlSafeBase64Encode(JSON.stringify(data));
 }
 
+const DEFAULT_QUERIES = ['name="hillary clinton"', 'name="bernie sanders"'];
 
 const EXAMPLE_QUERIES = [
   [

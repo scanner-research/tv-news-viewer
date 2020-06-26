@@ -61,31 +61,35 @@ def _get_captions(
 
 
 def build_app(
-        data_dir: str,
-        index_dir: str,
-        video_endpoint: Optional[str],
+        data_dir: str,                          # Path to the viewer data
+        index_dir: str,                         # Path to the caption-index
+        video_endpoint: Optional[str],          # URL to videos (i.e., mp4s)
         video_auth_endpoint: Optional[str],
+        fallback_to_archive: bool,              # Serve videos from Internet Archive
+                                                # if video auth fails
         static_bbox_endpoint: Optional[str],
         static_caption_endpoint: Optional[str],
         host: Optional[str],
         min_date: datetime,
         max_date: datetime,
         tz: timezone,
+        person_whitelist_file: Optional[str],
         min_person_screen_time: int,
         min_person_autocomplete_screen_time: int,
         hide_person_tags: bool,
         default_aggregate_by: str,
         default_text_window: int,
-        default_is_commercial: Ternary,
-        default_serve_from_archive: bool,
-        default_color_gender_bboxes: bool,
-        allow_sharing: bool,
+        default_is_commercial: Ternary,         # Whether to exclude commercials by default
+        default_color_gender_bboxes: bool,      # Do not color gender bounding boxes
+                                                # unless the query involves gender
+        allow_sharing: bool,                    # Show share, embed, download links
         data_version: Optional[str],
         show_uptime: bool
 ) -> Flask:
 
     caption_data_context, video_data_context = \
-        load_app_data(index_dir, data_dir, tz, min_person_screen_time)
+        load_app_data(index_dir, data_dir, tz, person_whitelist_file,
+                      min_person_screen_time)
 
     app = Flask(__name__, template_folder=TEMPLATE_DIR,
                 static_folder=STATIC_DIR)
@@ -170,7 +174,7 @@ def build_app(
             caption_endpoint=(
                 static_caption_endpoint if static_caption_endpoint
                 else '/captions'),
-            default_serve_from_archive=default_serve_from_archive,
+            fallback_to_archive=fallback_to_archive,
             search_params=[
                 (k, v) for k, v in SearchParam.__dict__.items()
                 if not k.startswith('__')],

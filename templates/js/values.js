@@ -7,8 +7,6 @@ const SERVER_HOST = '{{ host }}';
 const BBOX_ENDPOINT = '{{ bbox_endpoint }}';
 const CAPTION_ENDPOINT = '{{ caption_endpoint }}';
 
-const DEFAULT_QUERIES = ['name="hillary clinton"', 'name="bernie sanders"'];
-
 const DEFAULT_COLORS = [
   '#4E79A7', '#F28E2B', '#E15759', '#76B7B2', '#59A14F',
   '#EDC948', '#B07AA1', '#FF9DA7', '#9C755F', '#BAB0AC'
@@ -54,10 +52,10 @@ const CLIENT_IS_CHROME = (
   !!window.chrome && (!!window.chrome.webstore || !!window.chrome.runtime)
 );
 
-var SERVE_FROM_INTERNET_ARCHIVE = {% if default_serve_from_archive %}true{% else %}false{% endif %};
+var SERVE_FROM_INTERNET_ARCHIVE = {% if fallback_to_archive %}true{% else %}false{% endif %};
 
 function testVideoAuth() {
-  {% if default_serve_from_archive and video_auth_endpoint is not none %}
+  {% if fallback_to_archive and video_auth_endpoint is not none %}
   let img = new Image();
   img.onload = () => { SERVE_FROM_INTERNET_ARCHIVE = false; };
   img.src = '{{ video_auth_endpoint }}';

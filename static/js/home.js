@@ -231,6 +231,41 @@ function lastNYears(n) {
   return `${end_date.getUTCFullYear() - n}-${month}-01`;
 }
 
+function setDateShortcuts(editor, date_option) {
+  switch(date_option) {
+    case '1m':
+      editor.setStartDate(lastNMonths(1));
+      editor.setAggregateBy('day');
+      break;
+    case '3m':
+      editor.setStartDate(lastNMonths(3));
+      editor.setAggregateBy('day');
+      break;
+    case '6m':
+      editor.setStartDate(lastNMonths(6));
+      editor.setAggregateBy('day');
+      break;
+    case '1y':
+      editor.setStartDate(lastNMonths(12));
+      editor.setAggregateBy('day');
+      break;
+    case '2y':
+      editor.setStartDate(lastNYears(2));
+      editor.setAggregateBy('month');
+      break;
+    case '5y':
+      editor.setStartDate(lastNYears(5));
+      editor.setAggregateBy('month');
+      break;
+    case 'all':
+      editor.setStartDate(DEFAULT_START_DATE);
+      editor.setAggregateBy('month');
+    default:
+      console.log(`Unknown: ${date_option}`)
+  }
+  $('.search-btn').click();
+}
+
 function initialize() {
   let params = (new URL(document.location)).searchParams;
   minimalMode = params.get('minimal') == 1;
@@ -249,6 +284,44 @@ function initialize() {
 
   let editor = new Editor('#editor', {
     enable_query_builder: true, enable_query_macros: true
+  });
+
+  $('.chosen-select').chosen({width: 'auto'});
+  $('.search-btn').click(function() {
+    search(editor, event != undefined);
+  });
+  $('.reset-btn').click(function() {
+    if (window.confirm('Warning! This will clear all of your current queries.')) {
+      editor.reset();
+      // Clear the url
+      window.history.pushState({}, document.title, '/');
+      // Reset the chart
+      clearChart();
+    }
+  });
+
+  $('#quickDateDropdown a').each(function(x) {
+    let value = $(this).attr('value');
+    this.onclick = function() { setDateShortcuts(editor, value); };
+  });
+
+  try {
+    $('#exampleQueryDropdown .dropdown-menu').append(EXAMPLE_QUERIES.map(
+      x => $('<a>').addClass('dropdown-item').attr('href', x[1]).text(x[0])));
+  } catch (e) {
+    console.log('Unable to load example queries');
+    $('#exampleQueryDropdown').hide();
+  }
+
+  addHighlight('#plusMinusHover', ['.remove-row-btn', '.add-row-btn']);
+  addHighlight('#dropdownEditorHover', ['.toggle-query-builder-btn']);
+  addHighlight('#chartAreaHover', ['#chart']);
+  addHighlight('#searchButtonHover', ['.search-btn']);
+
+  $('#infoToggle').click(function() {
+    let info_text = $('#infoSpanText');
+    info_text.toggle();
+    $(this).text(info_text.is(':visible') ? 'hide help' : 'show help');
   });
 
   var loaded = false;
@@ -271,6 +344,7 @@ function initialize() {
   }
 
   if (!loaded) {
+    // Try to load the default queries, fallback to an empty one
     editor.initChartOptions();
     if (params.get('blank') != 1 && DEFAULT_QUERIES.every(isValidQuery)) {
       DEFAULT_QUERIES.forEach(x => editor.addRow({text: x}));
@@ -279,81 +353,12 @@ function initialize() {
     }
     try {
       search(editor, false);
-    } catch (e) {};
-  }
-
-  $('.chosen-select').chosen({width: 'auto'});
-  $('.search-btn').click(function() {
-    search(editor, event != undefined);
-  });
-  $('.reset-btn').click(function() {
-    if (window.confirm('Warning! This will clear all of your current queries.')) {
+    } catch (e) {
       editor.reset();
       // Clear the url
       window.history.pushState({}, document.title, '/');
-      // Reset the chart
-      clearChart();
-    }
-  });
-
-  function setDateShortcuts(date_option) {
-    switch(date_option) {
-      case '1m':
-        editor.setStartDate(lastNMonths(1));
-        editor.setAggregateBy('day');
-        break;
-      case '3m':
-        editor.setStartDate(lastNMonths(3));
-        editor.setAggregateBy('day');
-        break;
-      case '6m':
-        editor.setStartDate(lastNMonths(6));
-        editor.setAggregateBy('day');
-        break;
-      case '1y':
-        editor.setStartDate(lastNMonths(12));
-        editor.setAggregateBy('day');
-        break;
-      case '2y':
-        editor.setStartDate(lastNYears(2));
-        editor.setAggregateBy('month');
-        break;
-      case '5y':
-        editor.setStartDate(lastNYears(5));
-        editor.setAggregateBy('month');
-        break;
-      case 'all':
-        editor.setStartDate(DEFAULT_START_DATE);
-        editor.setAggregateBy('month');
-      default:
-        console.log(`Unknown: ${date_option}`)
-    }
-    $('.search-btn').click();
+    };
   }
-
-  $('#quickDateDropdown a').each(function(x) {
-    let value = $(this).attr('value');
-    this.onclick = function() { setDateShortcuts(value); };
-  });
-
-  try {
-    $('#exampleQueryDropdown .dropdown-menu').append(EXAMPLE_QUERIES.map(
-      x => $('<a>').addClass('dropdown-item').attr('href', x[1]).text(x[0])));
-  } catch (e) {
-    console.log('Unable to load example queries');
-    $('#exampleQueryDropdown').hide();
-  }
-
-  addHighlight('#plusMinusHover', ['.remove-row-btn', '.add-row-btn']);
-  addHighlight('#dropdownEditorHover', ['.toggle-query-builder-btn']);
-  addHighlight('#chartAreaHover', ['#chart']);
-  addHighlight('#searchButtonHover', ['.search-btn']);
-
-  $('#infoToggle').click(function() {
-    let info_text = $('#infoSpanText');
-    info_text.toggle();
-    $(this).text(info_text.is(':visible') ? 'hide help' : 'show help');
-  });
 }
 
 /* Load widget */

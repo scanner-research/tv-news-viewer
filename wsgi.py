@@ -42,12 +42,14 @@ app = build_app(
     config['data_dir'], config['index_dir'],
     config.get('video_endpoint'),
     config.get('video_auth_endpoint'),
-    config.get('static_bbox_endpoint'),
-    config.get('static_caption_endpoint'),
-    config.get('host'),
+    fallback_to_archive=True,
+    static_bbox_endpoint=config.get('static_bbox_endpoint'),
+    static_caption_endpoint=config.get('static_caption_endpoint'),
+    host=config.get('host'),
     min_date=datetime(*options.get('min_date', DEFAULT_MIN_DATE)),
     max_date=datetime(*options.get('max_date', DEFAULT_MAX_DATE)),
     tz=timezone(options.get('timezone', DEFAULT_TIME_ZONE)),
+    person_whitelist_file=options.get('person_whitelist_file'),
     min_person_screen_time=options.get(
         'min_person_screen_time',
         DEFAULT_MIN_PERSON_SCREEN_TIME),
@@ -62,7 +64,6 @@ app = build_app(
         'default_text_window', DEFAULT_TEXT_WINDOW),
     default_is_commercial=options.get(
         'default_is_commercial', DEFAULT_IS_COMMERCIAL),
-    default_serve_from_archive=True,
     default_color_gender_bboxes=options.get(
         'default_color_gender_bboxes', DEFAULT_COLOR_GENDER_BBOXES),
     allow_sharing=options.get('allow_sharing', DEFAULT_ALLOW_SHARING),
