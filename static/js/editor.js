@@ -609,7 +609,7 @@ class Editor {
       }
       aggregate_by = chart_options.aggregate;
     }
-    editor.find('[name="aggregateBy"]').val(aggregate_by);
+    editor.find('[name="aggregateBy"]').val(aggregate_by).trigger('chosen:updated');
     editor.find('[name="startDate"]').datepicker({
       format: 'mm/dd/yyyy',
       changeYear: true,
@@ -634,7 +634,7 @@ class Editor {
 
   setAggregateBy(value) {
     let editor = $(this.div_id);
-    editor.find('[name="aggregateBy"]').val(value).trigger("chosen:updated");
+    editor.find('[name="aggregateBy"]').val(value).trigger('chosen:updated');
   }
 
   removeRow(search_table_row) {
