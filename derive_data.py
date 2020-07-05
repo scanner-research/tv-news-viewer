@@ -365,7 +365,8 @@ def derive_tag_ilists(
 
     mkdir_if_not_exists(outdir)
 
-    for tag, people in tag_to_people.items():
+    # Try to queue the expensive ones first
+    for tag, people in sorted(tag_to_people.items(), key=lambda x: -len(x[1])):
         tag_path = os.path.join(outdir, tag + '.ilist.bin')
         if os.path.exists(tag_path) or len(people) >= threshold:
             people_ilist_files = [
@@ -386,23 +387,9 @@ def main(
     outdir = os.path.join(datadir, 'derived')
     mkdir_if_not_exists(outdir)
 
+    # Tasks are added from most expensive to least expensive to reduce tail
+    # latency and CPU underutilization
     with Pool() as workers:
-        derive_face_isets(
-            workers, os.path.join(datadir, 'faces.ilist.bin'),
-            os.path.join(outdir, 'face'), incremental)
-        derive_person_isets(
-            workers, os.path.join(datadir, 'people'),
-            os.path.join(outdir, 'people'),
-            person_limit, incremental)
-
-        metadata_path = os.path.join(datadir, 'people.metadata.json')
-        if os.path.exists(metadata_path):
-            derive_tag_ilists(
-                workers, os.path.join(datadir, 'people'),
-                metadata_path,
-                os.path.join(outdir, 'tags'),
-                tag_limit, incremental)
-
         workers.apply_async(
             derive_num_faces_ilist,
             (
@@ -412,6 +399,23 @@ def main(
                 incremental
             ),
             error_callback=build_error_callback('Failed on: num faces ilist'))
+
+        metadata_path = os.path.join(datadir, 'people.metadata.json')
+        if os.path.exists(metadata_path):
+            derive_tag_ilists(
+                workers, os.path.join(datadir, 'people'),
+                metadata_path,
+                os.path.join(outdir, 'tags'),
+                tag_limit, incremental)
+
+        derive_face_isets(
+            workers, os.path.join(datadir, 'faces.ilist.bin'),
+            os.path.join(outdir, 'face'), incremental)
+
+        derive_person_isets(
+            workers, os.path.join(datadir, 'people'),
+            os.path.join(outdir, 'people'),
+            person_limit, incremental)
 
         workers.close()
         workers.join()
