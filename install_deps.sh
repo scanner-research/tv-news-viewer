@@ -5,14 +5,15 @@ set -e
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 DEPS_DIR=$SCRIPT_DIR/deps
 
-RUST_VERSION=nightly-2020-06-01
+cd $SCRIPT_DIR
+git submodule init && git submodule update
 
 cd $DEPS_DIR/caption-index
-rustup override set $RUST_VERSION
+rustup override remove
 python3 setup.py install --user
 
 cd $DEPS_DIR/rs-intervalset
-rustup override set $RUST_VERSION
+rustup override remove
 python3 setup.py install --user
 
 echo 'Done!'
