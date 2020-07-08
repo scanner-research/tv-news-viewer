@@ -67,7 +67,7 @@ def main(
             min_person_autocomplete_screen_time=10 * 60 * 60,   # 10 hrs
             hide_person_tags=True,
             default_aggregate_by='month',
-            default_text_window=0,                  # amount to dialate text intervals
+            default_text_window=1,                  # amount to dialate text intervals
             default_is_commercial=Ternary.false,    # exclude comercials
             default_color_gender_bboxes=True,       # color code gender bboxes
             allow_sharing=True,
