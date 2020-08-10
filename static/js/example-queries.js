@@ -15,13 +15,18 @@ function getExampleChartPath(queries, chart_options) {
   return '/?data=' + urlSafeBase64Encode(JSON.stringify(data));
 }
 
-const DEFAULT_QUERIES = ['name="hillary clinton"', 'name="bernie sanders"'];
+const DEFAULT_QUERIES = ['name="joe biden"', 'name="donald trump"'];
 
 const EXAMPLE_QUERIES = [
   [
-    'Donald Trump vs. Joe Biden in 2020', getExampleChartPath(
-      ['name="donald trump"', 'name="joe biden"'],
+    'Joe Biden vs. Donald Trump in 2020', getExampleChartPath(
+      ['name="joe biden"', 'name="donald trump"'],
       {start_date: '2020-01-01', aggregate: 'day'}
+    )
+  ], [
+    'Hillary Clinton vs. Donald Trump in 2016', getExampleChartPath(
+      ['name="hillary clinton"', 'name="donald trump"'],
+      {start_date: '2016-01-01', end_date: '2017-01-01', aggregate: 'day'}
     )
   ], [
     'Binary gender presentation, as a fraction of screen time', getExampleChartPath(

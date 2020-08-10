@@ -8,7 +8,7 @@ const BBOX_ENDPOINT = '{{ bbox_endpoint }}';
 const CAPTION_ENDPOINT = '{{ caption_endpoint }}';
 
 const DEFAULT_COLORS = [
-  '#4E79A7', '#F28E2B', '#E15759', '#76B7B2', '#59A14F',
+  '#4E79A7', '#E15759', '#F28E2B', '#76B7B2', '#59A14F',
   '#EDC948', '#B07AA1', '#FF9DA7', '#9C755F', '#BAB0AC'
 ];
 
