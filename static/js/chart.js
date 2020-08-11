@@ -1,5 +1,8 @@
 /* Embed a chart using vega-embed */
 
+const DEFAULT_CHART_MESSAGE = 'Click graph to show videos!';
+const DEFAULT_EMBEDED_CHART_MESSAGE = 'Click graph to open!';
+
 const VGRID_INSTRUCTIONS = $('<ul />').append(
   $('<li>').html(
     'Click on the thumbnails to expand videos and press ' +
@@ -421,11 +424,11 @@ class Chart {
 
           view.addEventListener('mouseout', function(event, item) {
             tooltip.hide();
-            $('.chart-link').hide();
+            $('.chart-msg').hide();
           });
 
           view.addEventListener('mouseover', function(event, item) {
-            let chart_link = $('.chart-link');
+            let chart_msg = $('.chart-msg');
             if (item && item.datum) {
               let t = new Date(item.datum.datum.time).toISOString().split('T')[0];
               let t_str = formatDate(t);
@@ -457,28 +460,35 @@ class Chart {
               tooltip.css('left', tooltip_x);
               tooltip.css('top', tooltip_y);
               tooltip.show();
-              chart_link.show();
+              chart_msg.show();
             } else {
               tooltip.hide();
-              chart_link.hide();
+              chart_msg.hide();
             }
           });
         }
 
         if (options) {
+          var default_message = null;
+
           if (options.video_div) {
             let video_div = options.video_div;
             view.addEventListener('click', function(event, item) {
               let t = new Date(item.datum.datum.time).toISOString().split('T')[0];
               this_chart._showVideos(t, video_div);
             });
+            default_message = DEFAULT_CHART_MESSAGE;
           } else if (options.href) {
             let open_href = () => window.open(options.href, '_blank');
             view.addEventListener('click', open_href);
+            default_message = DEFAULT_EMBEDED_CHART_MESSAGE;
+          }
+
+          if (options.message || default_message) {
             $(div_id).append(
-              $('<div>').addClass('chart-link').text(
-                options.href_message ? options.href_message : 'Click to open!'
-              ).click(open_href)
+              $('<div>').addClass('chart-msg').text(
+                options.message ? options.message : default_message
+              )
             );
           }
         }

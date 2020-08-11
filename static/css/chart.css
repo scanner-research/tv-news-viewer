@@ -25,7 +25,7 @@
   display: block;
   width: 100%;
 }
-.chart-link {
+.chart-msg {
   display: none;
   position: absolute;
   right: 20px;
