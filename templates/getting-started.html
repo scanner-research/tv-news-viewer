@@ -37,11 +37,11 @@
   <h3>Computing the Screen Time of Individuals</h3>
 
   <p>
-    Writing a query using the Stanford Cable TV Analyzer involves specifying filters that determine what video segments to include in a screen time computation.  One of the most important filters is the <b>name</b> filter, which selects video segments where a specified individual appears on screen.  For example, below is a query that computes the amount of time Hillary Clinton's face appeared on screen in every month since {{ start_date }}. One obvious feature of the graph is the spike in coverage during the 2016 U.S. presidential election.
+    Writing a query using the Stanford Cable TV Analyzer involves specifying filters that determine what video segments to include in a screen time computation.  One of the most important filters is the <b>name</b> filter, which selects video segments where a specified individual appears on screen.  For example, below is a query that computes the amount of time Kamala Harris's face appeared on screen in every month since {{ start_date }}. One obvious feature of the graph is the spike in coverage in July 2019, after the first Democratic presidential debate, as well as in August 2020, after Harris was named as Biden's running mate.
   </p>
 
 <div class="graph-embed-div">
-  <iframe id="clinton" class="graph-embed-1line"></iframe>
+  <iframe id="onePerson" class="graph-embed-1line"></iframe>
 </div>
 
   <p>
@@ -51,11 +51,11 @@
 <h3>Comparing Screen Times</h3>
 
 <p>
-  Many questions about cable TV news content require comparisons between different screen time computations.  To add new lines to the graph, use the + button to add more query boxes. The following graph compares the screen time of Hillary Clinton to that of Bernie Sanders.
+  Many questions about cable TV news content require comparisons between different screen time computations.  To add new lines to the graph, use the + button to add more query boxes. The following graph compares the screen time of Kamala Harris to that of Elizabeth Warren.
 </p>
 
 <div class="graph-embed-div">
-<iframe id="clintonSanders" class="graph-embed-2line"></iframe>
+<iframe id="twoPeople" class="graph-embed-3line"></iframe>
 </div>
 
 <h3>Filtering by Face Tags</h3>
@@ -93,19 +93,19 @@
 <h3>Composite Queries (AND's and OR's)</h3>
 
 <p>
-  To allow more precise control over what video segments are included in a screen time computation, queries may contain multiple filters connected by AND's and OR's.  For example, the graph below extends our previous Hillary Clinton vs. Bernie Sanders graph with a third line that plots the amount of time where both Mrs. Clinton AND Mr. Sanders are on screen.
+  To allow more precise control over what video segments are included in a screen time computation, queries may contain multiple filters connected by AND's and OR's.  For example, the graph below extends our previous Kamala Harris vs. Elizabeth Warren graph with a third line that plots the amount of time where both Ms. Harris AND Ms. Warren are on screen.
 </p>
 
 <div class="graph-embed-div">
-<iframe id="clintonAndSanders" class="graph-embed-3line"></iframe>
+<iframe id="harrisAndWarren" class="graph-embed-3line"></iframe>
 </div>
 
 <p>
-  A common use of multiple filters is limit screen time computations to certain channels, news programs, or specific times of day or days of the week.  For example, in the graph below we compare the screen time of Bernie Sanders between 6-10pm (US Eastern time) on CNN, with that of Fox News and MSNBC.  (Mr. Sanders receives the most screen time during this time period on MSNBC.)
+  A common use of multiple filters is limit screen time computations to certain channels, news programs, or specific times of day or days of the week.  For example, in the graph below we compare the screen time of Kamala Harris between 6-10pm (US Eastern time) on CNN, with that of Fox News and MSNBC.  (Ms. Harris receives the most screen time during this time period on MSNBC.)
 </p>
 
 <div class="graph-embed-div">
-<iframe id="sandersChannelHour" class="graph-embed-3line"></iframe>
+<iframe id="harrisChannelHour" class="graph-embed-3line"></iframe>
 </div>
 
 <h3>Caption-Text Filters</h3>
@@ -131,7 +131,7 @@
 </p>
 
 <p>
-  Since <b>text</b> filters (like all other filters) are used to select video segments, they can be combined with all other filters in queries.  Combining <b>text</b> and face filters (e.g, <b>name</b> or <b>tag</b>) can yield interesting queries. For example, the following graph computes the time Hillary Clinton is on screen AND the word "email" is spoken. (Note that the word email is some times broken up as "e mail" in the captions, so the text search needs to include "email" or "e mail".)
+  Since <b>text</b> filters (like all other filters) are used to select video segments, they can be combined with all other filters in queries.  Combining <b>text</b> and face filters (e.g, <b>name</b> or <b>tag</b>) can yield interesting queries. For example, the following graph computes the time that Hillary Clinton is on screen AND the word "email" is spoken. (Note that the word email is some times broken up as "e mail" in the captions, so the text search needs to include "email" or "e mail".)
 </p>
 
 <div class="graph-embed-div">
@@ -139,7 +139,7 @@
 </div>
 
 <p>
-  Observe that the above graph computes the amount of time where Mrs. Clinton is on screen AND the word "email" is spoken, but this query does not mean that the word "email" was spoken by Mrs. Clinton. It is possible the speaker was another person on screen or even an off-screen voice. At this time the Stanford Cable TV Analyzer does not provide the ability to identify who is speaking and use this information in filters.
+  Observe that the above graph computes the amount of time where Ms. Clinton is on screen AND the word "email" is spoken, but this query does not mean that the word "email" was spoken by Ms. Clinton. It is possible the speaker was another person on screen or even an off-screen voice. At this time the Stanford Cable TV Analyzer does not provide the ability to identify who is speaking and use this information in filters.
 </p>
 
 <h3>Viewing Video Clips</h3>
@@ -147,12 +147,13 @@
 <p>
   In many situations it is useful to view examples of video clips that pass a queries filters.  For example, you might wish to inspect video clips to get of sense of whether automated face identification is robustly recognizing the person specified in the query. Another common task is to view selected clips when debugging a more complex query to ensure the query is selecting the types of videos intended.  When viewing a graphs on the main <a href="/">Stanford Cable TV News Analyzer</a> site, clicking on the graph will display a random selection of video clips that matched query's filters at that point in time.  You can further investigate these results by playing the video clips as well as viewing their captions.
 </p>
+
 <p>
-  A sampling of results from our earlier query <b>{{ search_keys.face_name }}="Hillary Clinton"</b> are given below.  These thumbnails serve as a good reminder that a person can appear on screen in many different ways: as a guest on a show, in B-roll footage, or as a static image used as part of an infographic.
+  A sampling of results from our earlier query <b>{{ search_keys.face_name }}="Kamala Harris"</b> are given below.  These thumbnails serve as a good reminder that a person can appear on screen in many different ways: as a guest on a show, in B-roll footage, or as a static image used as part of an infographic.
 </p>
 
 <p style="text-align: center;">
-  <img class="example_img" src="{{ url_for('static', filename='img/tutorials/video_thumbs_clinton.jpg') }}" width="900" height="343" />
+  <img class="example_img" src="{{ url_for('static', filename='img/tutorials/video_thumbs_harris.jpg') }}" width="900" height="289" />
 </p>
 
 <hr>
@@ -170,14 +171,14 @@
 
 <script type="text/javascript">
   setIframeSource(
-    '#clinton',
-    ['{{ search_keys.face_name }}="Hillary Clinton"'],
+    '#onePerson',
+    ['{{ search_keys.face_name }}="Kamala Harris"'],
     true
   );
   setIframeSource(
-    '#clintonSanders', [
-      '{{ search_keys.face_name }}="Hillary Clinton"',
-      '{{ search_keys.face_name }}="Bernie Sanders"'
+    '#twoPeople', [
+      '{{ search_keys.face_name }}="Kamala Harris"',
+      '{{ search_keys.face_name }}="Elizabeth Warren"'
     ],
     true
   );
@@ -196,18 +197,18 @@
     true
   );
   setIframeSource(
-    '#clintonAndSanders', [
-      '{{ search_keys.face_name }}="Hillary Clinton"',
-      '{{ search_keys.face_name }}="Bernie Sanders"',
-      '{{ search_keys.face_name }}="Hillary Clinton" and {{ search_keys.face_name }}="Bernie Sanders"'
+    '#harrisAndWarren', [
+      '{{ search_keys.face_name }}="Kamala Harris"',
+      '{{ search_keys.face_name }}="Elizabeth Warren"',
+      '{{ search_keys.face_name }}="Kamala Harris" and {{ search_keys.face_name }}="Elizabeth Warren"'
     ],
     true
   );
   setIframeSource(
-    '#sandersChannelHour', [
-      '{{ search_keys.face_name }}="Bernie Sanders" and {{ search_keys.channel }}="cnn" and {{ search_keys.hour }}="18-22"',
-      '{{ search_keys.face_name }}="Bernie Sanders" and {{ search_keys.channel }}="fox" and {{ search_keys.hour }}="18-22"',
-      '{{ search_keys.face_name }}="Bernie Sanders" and {{ search_keys.channel }}="msnbc" and {{ search_keys.hour }}="18-22"'
+    '#harrisChannelHour', [
+      '{{ search_keys.face_name }}="Kamala Harris" and {{ search_keys.channel }}="cnn" and {{ search_keys.hour }}="18-22"',
+      '{{ search_keys.face_name }}="Kamala Harris" and {{ search_keys.channel }}="fox" and {{ search_keys.hour }}="18-22"',
+      '{{ search_keys.face_name }}="Kamala Harris" and {{ search_keys.channel }}="msnbc" and {{ search_keys.hour }}="18-22"'
     ],
     true
   );
