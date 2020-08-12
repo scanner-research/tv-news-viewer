@@ -123,6 +123,7 @@ def build_app(
             if v.date >= min_date and v.date <= max_date
         ),
         num_videos_with_captions=num_videos_with_captions,
+        num_people=len(video_data_context.all_person_intervals),
         start_date=min(
             v.date for v in video_data_context.video_dict.values()
             if v.date >= min_date

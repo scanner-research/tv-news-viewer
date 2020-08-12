@@ -18,6 +18,7 @@ def add_html_routes(
         num_video_hours: int,
         num_video_samples: int,
         num_videos_with_captions: int,
+        num_people: int,
         start_date: datetime,
         end_date: datetime,
         default_text_window: int,
@@ -105,6 +106,13 @@ def add_html_routes(
     @app.route('/about')
     def get_about() -> Response:
         return render_template('about.html', **_get_template_kwargs())
+
+    num_people_str = '{:,}'.format(num_people)
+
+    @app.route('/faq')
+    def get_faq() -> Response:
+        return render_template(
+            'faq.html', n_people=num_people_str, **_get_template_kwargs())
 
     @app.route('/data/people')
     def get_data_people() -> Response:
