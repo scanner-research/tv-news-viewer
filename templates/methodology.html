@@ -87,7 +87,7 @@ selected at random from the dataset is given by the confusion matrix below. In t
 
 <p>
 To increase the percentage of faces with identity tags, we tag faces that were not identified by the Celebrity Recognition API but have close visual similarity to identified faces. This is accomplished with a nearest neighbor classifier on a per video basis; we take the faces that have no label from the Celebrity Recognition API, and find all of their neighbors (if they exist) in face embedding space with L2 distance under a conservative threshold, and then take the majority vote of those labels as the identity label for the face. In total, 55.5% of the faces in the dataset contain an identity tag.
-However, the Stanford Cable TV News Analyzer limits queries to use only the 1000 identities with the most screen time in the dataset (as of August 1, 2020).
+However, the Stanford Cable TV News Analyzer limits queries to individuals that have at least ten hours of estimated screen time as of August 1, 2020.
 </p>
 
 <hr>
