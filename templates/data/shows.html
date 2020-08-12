@@ -38,7 +38,7 @@
         columns: [
           null,
           {render: x => x.length > 0 ? x : '&lt;unnamed&gt;' },
-          {render: x => formatNumber(x, 0),
+          {render: x => formatNumber(x, 1),
            width: '25%', className: 'text-right'},
         ],
         order: [[2, 'desc']],
