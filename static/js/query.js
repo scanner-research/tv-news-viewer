@@ -331,9 +331,15 @@ class SearchableQuery {
   search(chart_options, onSuccess, onError) {
     function getParams(query, detailed) {
       let obj = {detailed: detailed};
-      obj[SEARCH_PARAM.start_date] = chart_options.start_date;
-      obj[SEARCH_PARAM.end_date] = chart_options.end_date;
-      obj[SEARCH_PARAM.aggregate] = chart_options.aggregate;
+      if (chart_options.start_date) {
+        obj[SEARCH_PARAM.start_date] = chart_options.start_date;
+      }
+      if (chart_options.end_date) {
+        obj[SEARCH_PARAM.end_date] = chart_options.end_date;
+      }
+      if (chart_options.aggregate) {
+        obj[SEARCH_PARAM.aggregate] = chart_options.aggregate;
+      }
       if (query) {
         obj.query = JSON.stringify(query);
       }

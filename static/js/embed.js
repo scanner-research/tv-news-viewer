@@ -141,6 +141,14 @@ function initializeStatic(params, data) {
   let hide_mean = params.get('showMean') != 1;
   let data_str = params.get('data');
 
+  let chart_options = data.options;
+  if (!chart_options.start_date) {
+    chart_options.start_date = DEFAULT_START_DATE;
+  }
+  if (!chart_options.end_date) {
+    chart_options.end_date = DEFAULT_END_DATE;
+  }
+
   let lines = data.queries.map(raw_query => {
     var parsed;
     try {
@@ -155,14 +163,21 @@ function initializeStatic(params, data) {
   $('#search').prop('disabled', true);
 
   let search_results = [];
+  var rendered = false;
   function onDone() {
+    if (rendered) {
+      return;
+    }
+    rendered = true;
+
     let chart_info_div = $('.chart-info');
     if (!hide_legend) {
       chart_info_div.append(getStaticLegend(lines));
     }
+
     chart_info_div.show();
     new Chart(
-      data.options, search_results, getChartDimensions(),
+      chart_options, search_results, getChartDimensions(),
     ).load('#chart', {
       show_tooltip: !hide_tooltip, show_mean: !hide_mean,
       href: `//${SERVER_HOST}/?data=` + data_str
@@ -185,7 +200,7 @@ function initializeStatic(params, data) {
     }
 
     return line.query.search(
-      data.options,
+      chart_options,
       result => search_results.push([line.color, result]),
       onError);
   })).then(onDone).catch(onDone);
