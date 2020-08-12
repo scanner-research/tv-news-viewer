@@ -81,12 +81,17 @@ selected at random from the dataset is given by the confusion matrix below. In t
 <h3><a id="face_identity"></a>Face Identity Tags</h3>
 
 <p>
-  We use the <a href="https://docs.aws.amazon.com/rekognition/latest/dg/celebrities.html">Amazon Rekognition Celebrity Recognition API</a> to identify the detected faces. The API provides a face identity estimate only when its identification confidence score is greater than 0.5. We use all predictions above this 0.5 threshold, and do no additional thresholding.  As a result of this process, the API returns an identity prediction for 45.2% of the faces in the dataset.  Identities in the dataset for videos airing prior to January 1, 2019 result from Celebrity Recognition API queries performed in September 2019. Identities for subsequent videos result from API queries made within a few days of the video's air date.
-  Amazon does not disclose the full list of individuals that can be recognized by this service.
+  We use the <a href="https://docs.aws.amazon.com/rekognition/latest/dg/celebrities.html">Amazon Rekognition Celebrity Recognition API</a> to identify the detected faces. The API provides a face identity estimate only when its identification confidence score is greater than 0.5. We use all predictions above this 0.5 threshold, and do no additional thresholding.  As a result of this process, the API returns an identity prediction for 45.2% of the faces in the dataset.  Identities in the dataset for videos airing prior to January 1, 2019 result from Celebrity Recognition API queries performed in September 2019. Identities for subsequent videos result from API queries made within a few days of the video's original air date.
+  Amazon does not disclose the full list of individuals that can be recognized by the Amazon Rekognition Celebrity Recognition API.
 </p>
 
 <p>
-To increase the percentage of faces with identity tags, we tag faces that were not identified by the Celebrity Recognition API but have close visual similarity to identified faces. This is accomplished with a nearest neighbor classifier on a per video basis; we take the faces that have no label from the Celebrity Recognition API, and find all of their neighbors (if they exist) in face embedding space with L2 distance under a conservative threshold, and then take the majority vote of those labels as the identity label for the face. In total, 55.5% of the faces in the dataset contain an identity tag.
+To increase the percentage of faces with identity tags, we also add identity tags to faces that were not identified by the Celebrity Recognition API, but have close visual similarity to identified faces.
+This is accomplished with a nearest neighbor classifier on a per video basis;
+we take the faces that have no identity label provided by the Celebrity Recognition API,
+and find all of their neighbors in face embedding space within a given L2 distance,
+and then assign the unlabeled face the majority vote of those labels.
+In total, 55.5% of the faces in the dataset contain an identity tag.
 However, the Stanford Cable TV News Analyzer limits queries to individuals that have at least ten hours of estimated screen time as of August 1, 2020.
 </p>
 
