@@ -42,7 +42,7 @@
   <p>
     All queries compute the total time of video segments in the dataset that match the query's filters. Screen time queries are broken in to several parts. A basic query consists of filters separated by "AND"s.
     <div class="code-block" id="andSyntax"></div>
-    For example, the following query computes the screen time of Hillary Clinton on CNN:
+    For example, the following query computes the screen time of Kamala Harris on CNN:
     <div class="code-block" id="andExample"></div>
     Likewise, "OR" is also supported.
     <div class="code-block" id="orSyntax"></div>
@@ -53,7 +53,7 @@
     complex queries. If no parentheses are specified, AND precedes OR.
     <div class="code-block" id="parenSyntax"></div>
     Putting the examples above together, the following query computes the screen
-    time of Hillary Clinton on CNN or MSNBC:
+    time of Kamala Harris on CNN or MSNBC:
     <div class="code-block" id="parenExample"></div>
 
     If the query is left blank, then no filters are applied and all of the
@@ -197,7 +197,7 @@
         <td>example</td>
         <td>
           <code>
-            {{ search_keys.face_name }}="Barack Obama"
+            {{ search_keys.face_name }}="Kamala Harris"
           </code>
         </td>
       </tr>
@@ -393,8 +393,7 @@
 
     <div class="code-block" id="subSyntax"></div>
 
-    For example, the following query plots how much more screen time Hillary
-    Clinton received than Bernie Sanders:
+    For example, the following query plots how much more screen time Kamala Harris received than :
 
     <div class="code-block" id="subExampleCode"></div>
     <div class="graph-embed-div">
@@ -407,11 +406,11 @@
 
     Users should be mindful of the difference between "OR'ing" two query filters
     and adding the times computed using two queries.  For example,
-    <code>name="Bernie Sanders" OR name="Bernie Sanders"</code> selects the same video
+    <code>name="Kamala Harris" OR name="Kamala Harris"</code> selects the same video
     segments, and therefore results in the same screen time computation as
-    <code>name="Bernie Sanders"</code>.  However, <code>name="Bernie Sanders" ADD
-    name="Bernie Sanders"</code> yields a plot showing double the value of Mr.
-    Sanders' computed screen time.
+    <code>name="Kamala Harris"</code>.  However, <code>name="Kamala Harris" ADD
+    name="Kamala Harris"</code> yields a plot showing double the value of Mrs.
+    Harris' computed screen time.
 
   </p>
 
@@ -419,11 +418,11 @@
     initSynaxHighlighting();
 
     setCodeArea('#andSyntax', ['filter1="..." AND filter2="..." AND ... ']);
-    setCodeArea('#andExample', ['{{ search_keys.face_name }}="Hillary Clinton" AND {{ search_keys.channel }}=CNN']);
+    setCodeArea('#andExample', ['{{ search_keys.face_name }}="Kamala Harris" AND {{ search_keys.channel }}=CNN']);
     setCodeArea('#orSyntax', ['filter1="..." OR filter2="..." OR ... ']);
     setCodeArea('#orExample', ['{{ search_keys.channel }}="CNN" OR {{ search_keys.channel }}=MSNBC']);
     setCodeArea('#parenSyntax', ['(filter1="..." AND filter2="...") OR filter3="..."']);
-    setCodeArea('#parenExample', ['{{ search_keys.face_name }}="Hillary Clinton" AND ({{ search_keys.channel }}=CNN OR {{ search_keys.channel }}=MSNBC)']);
+    setCodeArea('#parenExample', ['{{ search_keys.face_name }}="Kamala Harris" AND ({{ search_keys.channel }}=CNN OR {{ search_keys.channel }}=MSNBC)']);
 
     setCodeArea('#normSyntax', ['query1 NORMALIZE query2']);
     let norm_cnn_queries = [
@@ -434,7 +433,7 @@
 
     setCodeArea('#subSyntax', ['query1 SUBTRACT query2']);
     let subtract_queries = [
-      '{{ search_keys.face_name }}=hillary clinton SUBTRACT {{ search_keys.face_name }}=bernie sanders'
+      '{{ search_keys.face_name }}=joe biden SUBTRACT {{ search_keys.face_name }}=kamala harris'
     ];
     setIframeSource('#subExample', subtract_queries);
     setCodeArea('#subExampleCode', subtract_queries);
