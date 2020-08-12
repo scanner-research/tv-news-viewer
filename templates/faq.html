@@ -9,6 +9,8 @@
 {% block content %}
 <div class="container">
   <h1>Frequently Asked Questions</h1>
+  
+  <hr>
 
   <h3>
     Automated face recognition has been shown to have errors, bias, and has the potential to cause harm.  Why does the Stanford Cable TV News Analyzer use this technology?
@@ -29,6 +31,8 @@
   <p>
     <b>Accuracy and bias concerns.</b>  Automated facial recognition will have errors, and studies of other face recognition services have demonstrated accuracy biases by <a href="http://gendershades.org/" target="_blank">gender and race</a>.  It is not feasible to validate the accuracy of all face identifications in our dataset, but we provide results from a number of validation efforts on our <a href="/methodology">methodology page</a>.  We also point users to recent <a href="https://arxiv.org/abs/2001.00964" target="_blank">studies of accuracy</a> of the Amazon Rekognition service.  Also, to help users build trust in the accuracy of their own query results and to identify face identification errors, the Stanford Cable TV News Viewer provides the ability to directly view the video clips selected by queries.
   </p>
+
+  <hr>
 
   <h3>
     Gender is a non-binary quantity and cannot be assesed from a person’s appearance alone.  Why does the Stanford Cable TV Analyzer automatically label faces with a binary gender label?
@@ -57,6 +61,8 @@
     We also provide the ability to report misgendered individuals via <a href="mailto: tvnews-project@stanford.edu?subject=Report Gender">tvnews-project@stanford.edu</a>.
   </p>
 
+  <hr>
+
   <h3>
     Does the Stanford Cable TV News Analyzer attempt to identify the race of an individual?
   </h3>
@@ -65,6 +71,8 @@
     The Stanford Cable TV News Analyzer does not attempt to determine the race of individuals.  We are unaware of any computational model that can accurately estimate an individual’s race from their appearance. In the future, it may be possible to use external data sources to link public figure identities to the individual’s self-reported race.  Such approaches would enable a new set of queries that could assist studies of representation in cable TV news that concern the subject of race.
   </p>
 
+  <hr>
+
   <h3>
     I am concerned about possible sources of error and bias in my query results. What algorithms does the Stanford Cable TV News Analyzer use to annotate the dataset?
   </h3>
@@ -72,12 +80,16 @@
     We document our data labeling algorithms as well as provide assessment of their accuracy on the <a href="/methodology">methodology page</a>.
   </p>
 
+  <hr>
+
   <h3>
     How do I request to be removed from the dataset?
   </h3>
   <p>
     To request removal from the dataset, please email <a href="mailto: tvnews-project@stanford.edu?subject=Remove Me">tvnews-project@stanford.edu</a>.
   </p>
+
+  <hr>
 
   <h3>
     I recognize an individual in the video, but the face in the video was not labeled with the individual’s name.  Why were they not identified?
@@ -89,6 +101,8 @@
   <p>
     Note that regardless of the success of face identification, text transcripts can always be queried for an individual’s name even if the individual’s face is not identified on screen.
   </p>
+
+  <hr>
 
   <h3>
     I see a misidentified or misgended individual in the dataset. How do I report the error?

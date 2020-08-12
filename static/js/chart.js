@@ -11,8 +11,9 @@ const VGRID_INSTRUCTIONS = $('<ul />').append(
     'The playback position is indicated by the ' +
     '<mark style="background-color: #84db57;">green</mark> bar.'),
   $('<li>').html(
-    '<mark style="background-color: grey; color: white">Gray</mark> bars indicate matched ' +
-    'intervals (note that commercials are excluded by default).'),
+    '<mark style="background-color: grey; color: white">Gray</mark> bars ' +
+    'indicate time intervals in video that match the query ' +
+    '(note that commercials are excluded).'),
   $('<li>').html(
     'Relavant words in the captions are bolded in ' +
     '<span style="color: #de2a2a; font-weight: bold">red</span>.'),
