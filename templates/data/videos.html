@@ -45,11 +45,11 @@
     $('#archiveLogo').replaceWith(renderArchiveLink(''));
     $(document).ready(function() {
       $('.table').DataTable({
-        pageLength: 25,
+        pageLength: 100,
         columns: [
           {render: x => renderArchiveLink(x) + ' ' + x},
           {width: '20%', className: 'text-right',
-           render: x => formatNumber(x, 1)},
+           render: x => formatNumber(x, 0)},
         ],
         language: {
           info: 'Showing _START_ to _END_ of _TOTAL_ videos',

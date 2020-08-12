@@ -34,11 +34,11 @@
   <script>
     $(document).ready(function() {
       $('.table').DataTable({
-        pageLength: 25,
+        pageLength: 100,
         columns: [
           null,
           {render: x => x.length > 0 ? x : '&lt;unnamed&gt;' },
-          {render: x => formatNumber(x, 1),
+          {render: x => formatNumber(x, 0),
            width: '25%', className: 'text-right'},
         ],
         order: [[2, 'desc']],
