@@ -89,6 +89,12 @@
   width: 90px;
   padding: 1px;
 }
+.search-table .control-td .reset-btn {
+  display: none;
+}
+.search-table .control-td .search-btn {
+  margin-left: 10px;
+}
 .macro-div {
   display: none;
   margin-top: 0.2em;
@@ -198,18 +204,4 @@
 .dropdown:hover .dropdown-menu {
   display: block;
   margin-top: 0; // remove the gap so it doesn't close
-}
-#exampleQueryDropdown {
-  display: inline;
-}
-#exampleQueryDropdown button {
-  padding-left: 2px;
-  padding-right: 2px;
-  padding-top: 0;
-  padding-bottom: 0;
-  background: none;
-  border: none;
-}
-.reset-btn {
-  display: none;
 }

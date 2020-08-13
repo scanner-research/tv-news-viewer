@@ -90,6 +90,21 @@
   font-weight: bold;
 }
 
+#exampleQueryDropdown {
+  display: inline;
+}
+#exampleQueryDropdown button {
+  padding-left: 2px;
+  padding-right: 2px;
+  padding-top: 0;
+  padding-bottom: 0;
+  background: none;
+  border: none;
+}
+#exampleQueryDropdown a.dropdown-item {
+  font-style: normal;
+}
+
 .highlight {
   box-shadow: 0 8px 20px 0 rgba(0, 0, 0, 0.8);
 }
