@@ -32,8 +32,14 @@
   </p>
   <hr>
 
-<h2><a id="face_detection"></a>Face Detection</h2>
+<h2>
 
+<p>The Stanford Cable TV News Analyzer accesses video data provided by the Internet Archive's <<a href="https://archive.org/details/tv">TV News Archive</a>.
+The Internet Archive provides data on a 24 hour delay. As a result of this delay, plus the latency of additional data processing, new results appear on the Stanford Cable TV News Analyzer approximately 24-36 hours after a program's original air time.</p>
+  
+</h2>
+
+<h2><a id="face_detection"></a>Face Detection</h2>
 
 <p>
 We detected faces in video frames using the <a href="https://kpzhang93.github.io/MTCNN_face_detection_alignment/index.html">MTCNN</a> [1,2] face detector.  Due to the high cost of performing face detection on all frames in the dataset, we performed face detection on a subset of frames. Data prior to January 1, 2019 is uniformly sampled every three seconds in a video.  Data after January 1, 2019 is sampled uniformly sampled at one frame per second.
