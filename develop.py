@@ -81,9 +81,10 @@ def main(
         app = Flask(__name__, template_folder='templates',
                     static_folder='static')
         add_html_routes(
-            app, 'localhost', 0, 0, 0, 0, datetime.now(), datetime.now(),
+            app, 'localhost', 0, 0, 0, 0, 0, datetime.now(), datetime.now(),
             0, False, True, False)
 
+    app.config['TEMPLATES_AUTO_RELOAD'] = True
     kwargs = {'port': port, 'debug': autoreload}
     if bind_all:
         kwargs['host'] = '0.0.0.0'

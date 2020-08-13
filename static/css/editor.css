@@ -86,7 +86,8 @@
   margin-bottom: 0.25rem;
 }
 .search-table .control-tr .datepicker {
-  width: 100px;
+  width: 90px;
+  padding: 1px;
 }
 .macro-div {
   display: none;
@@ -200,4 +201,15 @@
 }
 #exampleQueryDropdown {
   display: inline;
+}
+#exampleQueryDropdown button {
+  padding-left: 2px;
+  padding-right: 2px;
+  padding-top: 0;
+  padding-bottom: 0;
+  background: none;
+  border: none;
+}
+.reset-btn {
+  display: none;
 }
