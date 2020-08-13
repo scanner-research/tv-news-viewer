@@ -4,6 +4,9 @@
 #infoSpan ul {
   margin: 0;
 }
+#infoSpan a {
+  font-style: italic;
+}
 #infoSpanText {
   display: none;
   background-color: #f2f2f2;

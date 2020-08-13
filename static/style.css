@@ -3,7 +3,7 @@ body {
   font-style: normal;
 }
 
-h1, h2, h3, h4 { 
+h1, h2, h3, h4 {
   font-weight: bold;
 }
 
@@ -29,6 +29,14 @@ code {
   color: inherit; /* blue colors for links too */
   text-decoration: inherit; /* no underline */
 }
+.top-header .tvnews-icon {
+  vertical-align: top;
+  margin-top: 2px;
+  width: 24px;
+  height: 24px;
+  margin-right: 4px;
+}
+
 .bottom-footer {
   position: fixed;
   left: 0;
