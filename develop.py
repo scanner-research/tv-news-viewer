@@ -4,6 +4,7 @@ Run a development server
 """
 
 import argparse
+from datetime import datetime
 from pytz import timezone
 
 DEFAULT_VIDEO_AUTH_ENDPOINT = 'https://storage.cloud.google.com/esper/do_not_delete.jpg'
@@ -49,7 +50,6 @@ def main(
 ) -> None:
     """Run a debugging server"""
     if not html_only:
-        from datetime import datetime
         from app.core import build_app
         from app.types_frontend import Ternary
 
@@ -81,8 +81,8 @@ def main(
         app = Flask(__name__, template_folder='templates',
                     static_folder='static')
         add_html_routes(
-            app, 'localhost', 0, 0, 0, 0, 0, datetime.now(), datetime.now(),
-            0, False, True, False)
+            app, 'localhost', 1, 2, 3, 4, 5, datetime.now(), datetime.now(),
+            6, False, True, False)
 
     app.config['TEMPLATES_AUTO_RELOAD'] = True
     kwargs = {'port': port, 'debug': autoreload}
