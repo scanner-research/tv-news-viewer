@@ -44,11 +44,15 @@ The Internet Archive provides data on a 24 hour delay. As a result of this delay
 <p>
 We detected faces in video frames using the <a href="https://kpzhang93.github.io/MTCNN_face_detection_alignment/index.html">MTCNN</a> [1,2] face detector.  Due to the high cost of performing face detection on all frames in the dataset, we performed face detection on a subset of frames. Data prior to January 1, 2019 is uniformly sampled every three seconds in a video.  Data after January 1, 2019 is sampled uniformly sampled at one frame per second.
 This process yielded a total of 306 million face detections.
-The Stanford Cable TV News Analyzer tabulates face screen time at a granularity of this sampling.  For example, a face detection of Anderson Cooper in a single video frame (after Jan. 1, 2019) contributes one second to the estimate of Mr. Cooper's screen time in the video.
+The Stanford Cable TV News Analyzer tabulates face screen time at the granularity of this sampling.  For example, a face detection of Anderson Cooper in a single video frame (after Jan. 1, 2019) contributes one second to the estimate of Mr. Cooper's screen time in the video.
 </p>
 
 <p>
 The location of each detected face is represented by an axis-aligned bounding box. To remind users that face detection is not occurring on all frames, the Stanford Cable TV News Analyzer's video player renders face bounding boxes in the frame in which a detection occurred, then fades out the box until the next sampled frame.
+</p>
+
+<p>
+  <b>Validation:</b> To estimate the precision and recall of the face detector, we manually counted the number of faces present in 2,500 randomly selected frames of the dataset (250 frames from each year from 2010-2019).  We find that precision is 98.5% and precision is 74.5%.  Recall is lower because the "ground truth" human annotations include all faces in the frame, including difficult to detect faces (e.g., out-of-focus, partially occluded, very small faces). A large fraction of recall errors are in frames with crowds (such as a political rally) where background faces are small and often partially occluded.
 </p>
 
 <p>
