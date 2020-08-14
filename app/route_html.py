@@ -1,3 +1,4 @@
+import os
 import time
 import re
 from datetime import datetime
@@ -9,6 +10,9 @@ from .types_frontend import SearchKey, SearchParam, GlobalTags
 
 HOURS_GRANULATITY = 10000
 DATE_FORMAT = '%B %-d, %Y'
+
+DIR_PATH = os.path.dirname(os.path.realpath(__file__))
+ANALYTICS_PATH = os.path.join(DIR_PATH, '..', 'analytics')
 
 
 def add_html_routes(
@@ -41,10 +45,17 @@ def add_html_routes(
     def _get_host() -> str:
         return host if host else request.host
 
+    analytics_str = None
+    if os.path.exists(ANALYTICS_PATH):
+        with open(ANALYTICS_PATH) as fp:
+            analytics_str = fp.read()
+
     def _get_template_kwargs() -> Dict[str, str]:
         kwargs = {'host': _get_host()}
         if show_uptime:
             kwargs['uptime'] = _get_uptime()
+        if analytics_str:
+            kwargs['analytics_str'] = analytics_str
         return kwargs
 
     @app.template_filter('quoted')
