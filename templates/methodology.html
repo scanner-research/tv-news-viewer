@@ -72,15 +72,22 @@ We compute the 128-element <a href="https://github.com/davidsandberg/facenet">Fa
 </p>
 
 <p>
- <b>Validation:</b> We manually annotated the presented binary gender of 12,669 faces selected at random from the dataset.  Each face was annotated by a single human annotator. (No additional consensus protocol was used.)  We used these ground-truth annotations to train a binary classifier based on the precomputed FaceNet descriptors. Our implementation is a k-NN classifier with classification results determined by majority vote with k=7.
+To train the classifier, we manually annotated the presented binary gender of 12,669 faces selected at random from the dataset.  Each face was annotated by a single human annotator. (No additional consensus protocol was used.)  We used these ground-truth annotations to train a binary classifier based on the precomputed FaceNet descriptors. Our implementation of th classifier is a k-NN classifier with classification results determined by majority vote with k=7.
 </p>
 
 <p>
-The classifier's agreement with human annotators on a test set of 1,066 faces
-selected at random from the dataset is given by the confusion matrix below. In this test set, 735 of these faces were assessed by human annotator to be male presenting. 331 were assessed by humans to be female.
+ <b>Validation:</b> We computed the classifier's agreement with a human annotator on a test set of 6000 faces 
+  Faces were drawn from the first ten years of the dataset (January 1, 2010 to December 31, 2019).
+We stratified samples by year and channel, selecting 200 faces at random from each of the 30 (year,channel) slices. 
+The human annotator judged 4109 of the 6000 test set faces (68.5%) to be male-presenting and 1891 to be female presenting (31.5%).
 </p>
 
-<p style="text-align: center"><img src="{{ url_for('static', filename='img/validation/gender_confusion.png') }}" height="300"/></p>
+<p>
+The confusion matrix for our gender estimation model is given below.  Overall the model agrees with human annotations 97.2% of the time.  When a face is judged to be male-presenting by a human, the model aggrees with the human 98.8% of the time.
+When a face is judged to be female-presenting, the model aggrees with the human 93.8% of the time.  
+</p>
+
+<p style="text-align: center"><img src="{{ url_for('static', filename='img/validation/gender_confusion_new.png') }}" height="350" /></p>
 
 <hr>
 
