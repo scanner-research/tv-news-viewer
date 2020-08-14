@@ -76,15 +76,15 @@ To train the classifier, we manually annotated the presented binary gender of 12
 </p>
 
 <p>
- <b>Validation:</b> We computed the classifier's agreement with a human annotator on a test set of 6000 faces 
+ <b>Validation:</b> We computed the classifier's agreement with a human annotator on a test set of 6000 faces.
   Faces were drawn from the first ten years of the dataset (January 1, 2010 to December 31, 2019).
-We stratified samples by year and channel, selecting 200 faces at random from each of the 30 (year,channel) slices. 
-The human annotator judged 4109 of the 6000 test set faces (68.5%) to be male-presenting and 1891 to be female presenting (31.5%).
+  We stratified samples by year and channel, selecting 200 faces at random from each of the 30 (year, channel) slices.
+  The human annotator judged 4109 of the 6000 test set faces (68.5%) to be male-presenting and 1891 to be female presenting (31.5%).
 </p>
 
 <p>
 The confusion matrix for our gender estimation model is given below.  Overall the model agrees with human annotations 97.2% of the time.  When a face is judged to be male-presenting by a human, the model aggrees with the human 98.8% of the time.
-When a face is judged to be female-presenting, the model aggrees with the human 93.8% of the time.  
+When a face is judged to be female-presenting, the model aggrees with the human 93.8% of the time.
 </p>
 
 <p style="text-align: center"><img src="{{ url_for('static', filename='img/validation/gender_confusion_new.png') }}" height="350" /></p>
