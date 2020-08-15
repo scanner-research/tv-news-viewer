@@ -272,7 +272,8 @@
       <tr>
         <td>values</td>
         <td>keywords or phrases. Use <code>|</code> for "or"<br />
-            (See <a href="#text_filter_syntax">Text Filter Syntax</a> for more details of valid text patterns.)
+            (See <a href="#text_filter_syntax">Text Filter Syntax</a> for more
+            details of valid text patterns.)
         </td>
       </tr>
       <tr>
@@ -283,7 +284,7 @@
         <td>example</td>
         <td>
           <code>{{ search_keys.text }}="affordable care act"</code><br>
-          <code>{{ search_keys.text }}="affordable care act | obamacare"</code><br>
+          <code>{{ search_keys.text }}="affordable care act | obamacare | obama care"</code><br>
         </td>
       </tr>
     </tbody>
@@ -292,7 +293,16 @@
       <tr>
         <td rowspan="4">{{ search_keys.text_window }}</td>
         <td>description</td>
-        <td>Specifies how much to dilate the time interval associated with text filter matches.  By default a text filter selects exactly the video segment when a word or phase is being said.  By increasing the "window" around these matches it is possible to design queries where segments matching one filter need only be within a certain amount of time of a segment matching a text filter.</td>
+        <td>Specifies how much to dilate the time interval associated with text filter matches.
+          If the text window is 0, then text filter selects exactly the video segment when
+          a word or phase is being said. By increasing the "window" to larger than 0,
+          it is possible to design queries where segments matching one
+          filter need only be within a certain amount of time of a segment matching a text filter.
+          For example, if the word "obamacare" is said and the text window is 1 second,
+          then each instance of "obamacare" is converted to a 1 second interval centered around
+          the time when "obamacare" is said. Note that for long windows, overlapping intervals
+          are merged.
+        </td>
       </tr>
       <tr>
         <td>values</td>
@@ -306,7 +316,7 @@
       </tr>
       <tr>
         <td>example</td>
-        <td><code>{{ search_keys.text_window }}=2</code> (allows matches within 2 seconds)</td>
+        <td><code>{{ search_keys.text_window }}=10</code> (treat each text match as 10 seconds)</td>
       </tr>
     </tbody>
   </table>
