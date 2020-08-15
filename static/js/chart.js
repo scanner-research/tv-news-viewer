@@ -477,9 +477,7 @@ class Chart {
               let tooltip_x = (
                 event.x >= window.innerWidth / 2 ?
                 event.x - tooltip.width() - 25 : event.x + 10);
-              let tooltip_y = (
-                event.y >= chart_div.position().top + chart_div.height() / 2 ?
-                event.y - tooltip.height() - 25 : event.y + 10);
+              let tooltip_y = event.y + 10;
               tooltip.css('left', tooltip_x);
               tooltip.css('top', tooltip_y);
               tooltip.show();
