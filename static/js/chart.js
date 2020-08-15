@@ -292,7 +292,7 @@ class Chart {
         let num_digits = value > 15 ? 0 : 2;
         return {
           color: color, value: value, time: this.options.start_date,
-          value_str: `mean=${getRoundedValue(value, num_digits)},sum=${getRoundedValue(total, num_digits)}`
+          value_str: `avg=${getRoundedValue(value, num_digits)},tot=${getRoundedValue(total, num_digits)}`
         };
       });
       vega_layers.push({
