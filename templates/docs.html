@@ -385,7 +385,8 @@
     </div>
   </p>
 
-  <hr>
+
+  <!-- <hr>
   <h3>Adding and Subtracting Query Results</h3>
   <p>
     The query systems supports addition and subtraction of the times computed by
@@ -412,7 +413,7 @@
     name="Kamala Harris"</code> yields a plot showing double the value of Ms.
     Harris' computed screen time.
 
-  </p>
+  </p> -->
 
   <script type="text/javascript">
     initSynaxHighlighting();
@@ -431,14 +432,14 @@
     setIframeSource('#normExample', norm_cnn_queries);
     setCodeArea('#normExampleCode', norm_cnn_queries);
 
-    setCodeArea('#subSyntax', ['query1 SUBTRACT query2']);
-    let subtract_queries = [
-      '{{ search_keys.face_name }}=joe biden SUBTRACT {{ search_keys.face_name }}=kamala harris'
-    ];
-    setIframeSource('#subExample', subtract_queries);
-    setCodeArea('#subExampleCode', subtract_queries);
-
-    setCodeArea('#addSyntax', ['query1 ADD query2']);
+    // setCodeArea('#subSyntax', ['query1 SUBTRACT query2']);
+    // let subtract_queries = [
+    //   '{{ search_keys.face_name }}=joe biden SUBTRACT {{ search_keys.face_name }}=kamala harris'
+    // ];
+    // setIframeSource('#subExample', subtract_queries);
+    // setCodeArea('#subExampleCode', subtract_queries);
+    //
+    // setCodeArea('#addSyntax', ['query1 ADD query2']);
   </script>
 </div>
 {% endblock %}

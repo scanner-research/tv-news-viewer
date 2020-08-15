@@ -572,8 +572,8 @@ function addCodeHintHelper(name) {
         let keywords = ['AND', 'OR'];
         if (!line.match(/NORMALIZE|SUBTRACT|ADD/i)) {
           keywords.push('NORMALIZE');
-          keywords.push('ADD');
-          keywords.push('SUBTRACT');
+          // keywords.push('ADD');
+          // keywords.push('SUBTRACT');
         }
         return {
           list: keywords.map(x => padding + x + ' '),
