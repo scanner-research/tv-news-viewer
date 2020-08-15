@@ -83,14 +83,14 @@ function displaySearchResults(
     macros = lines[0].query.macros;
   }
 
-  new Chart(
+  let chart = new Chart(
     chart_options, search_results, {
       width: $("#chartArea").width(), height: chartHeight
     }, macros
-  ).load('#chart', {
+  );
+  chart.load('#chart', {
     video_div: '#vgridArea', show_tooltip: !minimalMode,
-    show_stats: showStats, vega_actions: minimalMode,
-    transparent: minimalMode
+    show_stats: showStats, vega_actions: minimalMode
   });
 
   if (search_results.length == lines.length) {
@@ -119,16 +119,32 @@ function displaySearchResults(
       return false;
     };
 
+    let time_str = new Date().toISOString().slice(0, 19).replaceAll(/\-|T|:/, '');
+
+    saveImage = () => {
+      chart.renderPNG('#dummyChartDiv', 600, 300, function (img_data) {
+        var tmp = document.createElement('a');
+        tmp.href = img_data;
+        tmp.download = `tvnews_${time_str}.png`;
+        tmp.click();
+      });
+    }
+
+    downloadData = () => {
+      var tmp = document.createElement('a');
+      tmp.href =  getDownloadUrl(search_results);
+      tmp.download = `tvnews_${time_str}.csv`;
+      tmp.click();
+    }
+
     $('#embedArea p[name="text"]').empty().append(
       $('<a>').addClass('copy-a').attr('href', '#').click(setCopyUrl).text('Copy'),
       ' url, ',
       $('<a>').addClass('embed-a').attr('href', '#').click(setEmbedArea).text('embed'),
-      ' chart, or ',
-      $('<a>').addClass('download-a').attr({
-        href: getDownloadUrl(search_results),
-        download: 'data.csv',
-        type: 'text/csv',
-      }).text('download'),
+      ' chart, ',
+      $('<a>').addClass('save-img-a').attr('href', '#').click(saveImage).text('save'),
+      ' image, or ',
+      $('<a>').addClass('download-a').attr('href', '#').click(downloadData).text('download'),
       ' the data.'
     );
     $('#embedArea').show();

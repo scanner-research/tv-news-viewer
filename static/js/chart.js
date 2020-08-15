@@ -329,11 +329,8 @@ class Chart {
       });
     }
 
-    let vega_spec = {
+    return {
       $schema: 'https://vega.github.io/schema/vega-lite/v3.json',
-      width: this.dimensions.width,
-      height: this.dimensions.height,
-      autosize: {type: 'fit', resize: true, contains: 'padding'},
       data: {values: x_axis_data},
       encoding: {
         x: {
@@ -354,10 +351,6 @@ class Chart {
          stroke: 'transparent'
       }
     };
-    if (!options.transparent) {
-      vega_spec.background = 'white';
-    }
-    return vega_spec;
   }
 
   _showVideos(t, video_div_id) {
@@ -399,9 +392,38 @@ class Chart {
     }, 1000);
   }
 
+  renderPNG(dummy_div_id, width, height, callback) {
+    let vega_spec = this._getVegaSpec({
+      show_tooltip: false, show_stats: false
+    });
+    let that = this;
+    Object.assign(vega_spec, {width: width, height: height, background: '#fff'});
+    vegaEmbed(dummy_div_id, vega_spec, {actions: false}).then(
+      function() {
+        let canvas = $(dummy_div_id).find('canvas');
+        that.search_results.forEach((x, i) => {
+          let y = (i * 24) + 15;
+          canvas.drawRect({
+            fillStyle: x[0], x: 20, y: y, width: 18, height: 18
+          });
+          canvas.drawText({
+            fillStyle: x[0], x: 38, y: y - 8, text: x[1].query,
+            fromCenter: false, fontSize: 16
+          });
+        });
+        callback(canvas.getCanvasImage());
+        $(dummy_div_id).empty();
+      }
+    );
+  }
+
   load(div_id, options) {
     let vega_spec = this._getVegaSpec(options);
-
+    Object.assign(vega_spec, {
+      width: this.dimensions.width,
+      height: this.dimensions.height,
+      autosize: {type: 'fit', resize: true, contains: 'padding'},
+    });
     let formatDate = getDateFormatFunction(this.options.aggregate);
     let this_chart = this;
     vegaEmbed(

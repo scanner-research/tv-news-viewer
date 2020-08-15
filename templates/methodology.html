@@ -42,8 +42,8 @@ The Internet Archive provides data on a 24 hour delay. As a result of this delay
 <h2><a id="face_detection"></a>Face Detection</h2>
 
 <p>
-We detected faces in video frames using the <a href="https://kpzhang93.github.io/MTCNN_face_detection_alignment/index.html">MTCNN</a> [1,2] face detector.  Due to the high cost of performing face detection on all frames in the dataset, we performed face detection on a subset of frames. Data prior to January 1, 2019 is uniformly sampled every three seconds in a video.  Data after January 1, 2019 is sampled uniformly sampled at one frame per second.
-This process yielded a total of 306 million face detections.
+We detected faces in video frames using the <a href="https://kpzhang93.github.io/MTCNN_face_detection_alignment/index.html">MTCNN</a> [1,2] face detector.  Due to the high cost of performing face detection on all frames in the dataset, we performed face detection on a subset of frames. Data prior to Jan. 1, 2019 is uniformly sampled every three seconds in a video.  Data after Jan. 1, 2019 is sampled uniformly sampled at one frame per second.
+This process yielded a total of 306 million face detections (from Jan. 2010 to Jul. 2019).
 The Stanford Cable TV News Analyzer tabulates face screen time at the granularity of this sampling.  For example, a face detection of Anderson Cooper in a single video frame (after Jan. 1, 2019) contributes one second to the estimate of Mr. Cooper's screen time in the video.
 </p>
 
@@ -82,7 +82,7 @@ To train the classifier, we manually annotated the presented binary gender of 12
 <p>
 
 <b>Validation:</b> We computed the classifier's agreement with a human annotator on a test set of 6,000 faces.
-Faces were sampled from the first ten years of the dataset (January 1, 2010 to December 31, 2019).
+Faces were sampled from the first ten years of the dataset (Jan. 1, 2010 to Dec. 31, 2019).
 We stratified samples by year and channel, selecting 200 faces at random from each of the 30 slices (10 years x 3 channels).
 The human annotator judged 4,109 of the 6,000 test set faces (68.5%) as male-presenting individuals and 1,891 (31.5%) as female-presenting individuals.
 </p>
@@ -99,7 +99,7 @@ When a face is judged to be female-presenting, the model aggrees with the human 
 <h3><a id="face_identity"></a>Face Identity Tags</h3>
 
 <p>
-  We use the <a href="https://docs.aws.amazon.com/rekognition/latest/dg/celebrities.html">Amazon Rekognition Celebrity Recognition API</a> to identify the detected faces. The API provides a face identity estimate only when its identification confidence score is greater than 0.5. We use all predictions above this 0.5 threshold, and do no additional thresholding.  As a result of this process, the API returns an identity prediction for 45.2% of the faces in the dataset.  Identities in the dataset for videos airing prior to January 1, 2019 result from Celebrity Recognition API queries performed in September 2019. Identities for subsequent videos result from API queries made within a few days of the video's original air date.
+  We use the <a href="https://docs.aws.amazon.com/rekognition/latest/dg/celebrities.html">Amazon Rekognition Celebrity Recognition API</a> to identify the detected faces. The API provides a face identity estimate only when its identification confidence score is greater than 0.5. We use all predictions above this 0.5 threshold, and do no additional thresholding.  As a result of this process, the API returns an identity prediction for 45.2% of the faces in the dataset.  Identities in the dataset for videos airing prior to Jan. 1, 2019 result from Celebrity Recognition API queries performed in September 2019. Identities for subsequent videos result from API queries made within a few days of the video's original air date.
   Amazon does not disclose the full list of individuals that can be recognized by the Amazon Rekognition Celebrity Recognition API.
 </p>
 
@@ -110,7 +110,7 @@ we take the faces that have no identity label provided by the Celebrity Recognit
 and find all of their neighbors in face embedding space within a given L2 distance,
 and then assign the unlabeled face the majority vote of those labels.
 In total, 55.5% of the faces in the dataset contain an identity tag.
-However, the Stanford Cable TV News Analyzer limits queries to individuals that have at least ten hours of estimated screen time as of August 1, 2020.
+However, the Stanford Cable TV News Analyzer limits queries to individuals that have at least ten hours of estimated screen time as of Aug. 1, 2020.
 </p>
 
 <hr>
@@ -138,7 +138,7 @@ The algorithm is written using <a href="https://github.com/scanner-research/reka
 </p>
 
 <p>
-  Overall, there are 70,559 hours of detected commercials in the dataset, leaving 182,896 hours of program content.  By default, video segments lying within commercials are excluded from query results in the Stanford Cable TV News Analyzer.
+  From Jan. 2020 to Jul. 2019, there are 70,559 hours of detected commercials in the dataset, leaving 182,896 hours of program content.  By default, video segments lying within commercials are excluded from query results in the Stanford Cable TV News Analyzer.
 </p>
 
 <p>
