@@ -274,7 +274,7 @@ class Chart {
       }
     }];
 
-    if (options.show_mean) {
+    if (options.show_stats) {
       // Compute mean for each value
       let num_time_bins = getNumTimeBins(
         this.options.aggregate, this.options.start_date, this.options.end_date);
@@ -292,13 +292,13 @@ class Chart {
         let num_digits = value > 15 ? 0 : 2;
         return {
           color: color, value: value, time: this.options.start_date,
-          value_str: `avg=${getRoundedValue(value, num_digits)}`
+          value_str: `mean=${getRoundedValue(value, num_digits)},sum=${getRoundedValue(total, num_digits)}`
         };
       });
       vega_layers.push({
         data: {values: mean_data},
         mark: {
-          type: 'text', align: 'right', dx: -15
+          type: 'text', align: 'right', dx: -5
         },
         encoding: {
           x: {field: 'time', type: 'temporal', timeUnit: 'utcyearmonthdate', title: null},

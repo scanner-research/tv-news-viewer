@@ -71,7 +71,7 @@ function getDownloadUrl(search_results) {
   return URL.createObjectURL(data_blob);
 }
 
-var minimalMode, chartHeight, enableMacros;
+var minimalMode, chartHeight, enableMacros, showStats;
 var setCopyUrl, setEmbedUrl;
 
 function displaySearchResults(
@@ -89,7 +89,7 @@ function displaySearchResults(
     }, macros
   ).load('#chart', {
     video_div: '#vgridArea', show_tooltip: !minimalMode,
-    show_mean: false, vega_actions: minimalMode,
+    show_stats: showStats, vega_actions: minimalMode,
     transparent: minimalMode
   });
 
@@ -270,6 +270,7 @@ function initialize() {
   let params = (new URL(document.location)).searchParams;
   minimalMode = params.get('minimal') == 1;
   chartHeight = params.get('chartHeight') ? parseInt(params.get('chartHeight')) : DEFAULT_CHART_DIMS.height;
+  showStats = params.get('showStats') == 1;
   enableMacros = params.get('macro') == 1;
   if (enableMacros) {
     $('.macro-div').show();
