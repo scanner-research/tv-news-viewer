@@ -407,7 +407,7 @@ class Chart {
             fillStyle: x[0], x: 20, y: y, width: 18, height: 18
           });
           canvas.drawText({
-            fillStyle: x[0], x: 38, y: y - 8, text: x[1].query,
+            fillStyle: '#000', x: 38, y: y - 8, text: x[1].query,
             fromCenter: false, fontSize: 16
           });
         });
