@@ -240,7 +240,7 @@ class Chart {
         y_axis_title = `Fraction of Screen Time`;
       }
     } else {
-      y_axis_title = 'Minutes';
+      y_axis_title = `Minutes per ${this.options.aggregate}`;
     }
 
     let vega_layers = [{

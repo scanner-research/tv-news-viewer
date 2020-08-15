@@ -149,14 +149,14 @@ function displaySearchResults(
     );
     $('#embedArea').show();
     if (push_state && !minimalMode) {
-      window.history.pushState(null, '', chart_path);
+      window.history.replaceState(null, '', chart_path);
     }
   } else {
     // Allow embedding if all queries are ok
     $('#embedArea p[name="text"]').empty();
     $('#embedArea').hide();
     if (push_state && !minimalMode) {
-      window.history.pushState(null, '', '');
+      window.history.replaceState(null, '', '');
     }
   }
 }
@@ -311,7 +311,7 @@ function initialize() {
     if (window.confirm('Warning! This will clear all of your current queries.')) {
       editor.reset();
       // Clear the url
-      window.history.pushState({}, document.title, '/');
+      window.history.replaceState({}, document.title, '/');
       // Reset the chart
       clearChart();
     }
@@ -338,7 +338,7 @@ function initialize() {
   $('#infoToggle').click(function() {
     let info_text = $('#infoSpanText');
     info_text.toggle();
-    $(this).text(info_text.is(':visible') ? 'hide help' : 'show help');
+    $(this).text(info_text.is(':visible') ? 'hide help' : 'help');
   });
 
   var loaded = false;
@@ -373,7 +373,7 @@ function initialize() {
     } catch (e) {
       editor.reset();
       // Clear the url
-      window.history.pushState({}, document.title, '/');
+      window.history.replaceState({}, document.title, '/');
     };
   }
 }

@@ -10,14 +10,11 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
       </td>
     </tr>
 
-    <tr class="face-div">
+    <tr class="face-div" title='A face is on screen if it is visible anywhere in the frame. This definition includes faces in the foreground or background; live or still; and big or small.'>
       <td type="key-col">
         the screen has a face that:
       </td>
       <td type="value-col">
-        <span title='A face is on screen if it is visible anywhere in the frame. This definition includes faces in the foreground or background; live or still; and big or small.'>
-          &#9432;
-        </span>
       </td>
     </tr>
     <tr class="face-div">
@@ -44,9 +41,6 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
                   name="${SEARCH_KEY.face_tag}" data-width="fit">
           </select>
           (on the same face)
-          <span title='Tags marked with an * are computed on all faces; otherwise, tags are applied to faces with identities.'>
-            &#9432;
-          </span>
         </span>
       </td>
     </tr>
@@ -129,12 +123,9 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
         </select>
       </td>
     </tr>
-    <tr>
+    <tr title="This name will be used in any embedded chart legends.">
       <td type="key-col">
         Optionally, give this line a name
-        <span title="This name will be used in any embedded chart legends.">
-          &#9432;
-        </span>
       </td>
       <td type="value-col">
         <input type="text" class="form-control no-enter-submit alias-input"
@@ -247,7 +238,7 @@ class Editor {
       let name_select = builder.find(`[name="${SEARCH_KEY.face_name}"]`);
       ALL_PEOPLE.forEach(x => name_select.append($('<option>').val(x).text(x)));
       let tag_select = builder.find(`[name="${SEARCH_KEY.face_tag}"]`);
-      ALL_GLOBAL_TAGS.forEach(x => tag_select.append($('<option>').val(x).text(x + '*')));
+      ALL_GLOBAL_TAGS.forEach(x => tag_select.append($('<option>').val(x).text(x)));
       ALL_PERSON_TAGS.forEach(x => tag_select.append($('<option>').val(x).text(x)));
       this.cached_query_builder = builder;
     }
