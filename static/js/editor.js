@@ -431,7 +431,7 @@ class Editor {
       parts.push(`${SEARCH_KEY.text}="${text}"`);
     }
     let text_window = builder.find(`[name="${SEARCH_KEY.text_window}"]`).val();
-    if (text_window && text_window != 0) {
+    if (text_window && text_window != DEFAULT_TEXT_WINDOW) {
       parts.push(`${SEARCH_KEY.text_window}=${text_window}`);
     }
 

@@ -74,10 +74,15 @@ const ALL_AUTOCOMPLETE_PEOPLE = [
   {% for person in autocomplete_people %}'{{ person }}',{% endfor %}
 ]
 
+{% if hide_person_tags %}
 const PERSON_TAG_TO_PEOPLE = {
   {% for tag, people in person_tags_dict.items() %}'{{ tag }}':[{% for person in people %}'{{ person }}',{% endfor %}],{% endfor %}
 };
 const ALL_PERSON_TAGS = Object.keys(PERSON_TAG_TO_PEOPLE).sort();
+{% else %}
+const PERSON_TAG_TO_PEOPLE = {};
+const ALL_PERSON_TAGS = [];
+{% endif %}
 
 const ALL_GLOBAL_TAGS = [
   {% for tag in global_face_tags %}'{{ tag }}',{% endfor %}
@@ -85,7 +90,6 @@ const ALL_GLOBAL_TAGS = [
 
 const ALL_TAGS = ALL_GLOBAL_TAGS.concat(ALL_PERSON_TAGS);
 const ALL_TAGS_LOWER_CASE_SET = new Set(ALL_TAGS.map(x => x.toLowerCase()));
-const ALL_AUTOCOMPLETE_TAGS = {% if not hide_person_tags %}ALL_TAGS{% else %}ALL_GLOBAL_TAGS{% endif %};
 
 const CHANNELS = ['CNN', 'FOX', 'MSNBC'];
 const CHANNEL_REGEX = /CNN|FOX(?:NEWS)?|MSNBC/i;

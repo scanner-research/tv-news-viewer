@@ -346,7 +346,7 @@ function addCodeHintHelper(name) {
         values = substr || ALL_AUTOCOMPLETE_PEOPLE.length <= MAX_PEOPLE_AUTOCOMPLETE ? ALL_AUTOCOMPLETE_PEOPLE : [];
         break;
       case SEARCH_KEY.face_tag:
-        values = ALL_AUTOCOMPLETE_TAGS;
+        values = ALL_TAGS;
         break;
       case SEARCH_KEY.day_of_week:
         values = DAYS_OF_WEEK;
