@@ -17,12 +17,26 @@
 
   <hr>
 
-  <h3>
+  <ul>
+      <li><a href="#face_rec_concerns">Why does the Stanford Cable TV News Analyzer use automated face recognition technology?</a></li>
+      <li><a href="#gender_concerns">Why does the Stanford Cable TV Analyzer automatically label faces with a binary gender label?</a>
+      <li><a href="#detect_race">Does the Stanford Cable TV News Analyzer attempt to identify the race of an individual?</a>
+      <li><a href="#what_algorithms">What algorithms does the Stanford Cable TV News Analyzer use to annotate the dataset?</a>
+      <li><a href="#remove_me">How do I request to be removed from the dataset?</a>
+      <li><a href="#missing_face_id">I recognize an individual in the video, but the face in the video was not labeled with the individual’s name.  Why were they not identified?</a>
+      <li><a href="#report_errors">How do I report errors in video annotations?</a>
+      <li><a href="#update_rate">How quickly after a program airs is the Stanford Cable TV News Analyzer updated to reflect new content?</a>
+    </ul>
+
+  <hr>
+
+  <h3><a id="face_rec_concerns"></a>
     Automated face recognition has been shown to have errors, bias, and has the potential to cause harm.  Why does the Stanford Cable TV News Analyzer use this technology?
   </h3>
 
   <p>
-    The Stanford Cable TV News Analyzer uses automated face recognition technology from <a href="https://docs.aws.amazon.com/rekognition/latest/dg/celebrities.html" target="_blank">Amazon’s Celebrity Recognition</a> service to identify and compute the screen time of individuals on cable TV News. Face recognition, particularly when performed en masse on large image databases, is a <a href="https://www.nytimes.com/2020/06/09/technology/facial-recognition-software.html" target="_blank">controversial technology</a> because of its potential to cause harm due to <a href="http://gendershades.org/" target="_blank">errors and bias</a>, erode personal privacy, and <a href="https://www.nytimes.com/2020/01/12/technology/facial-recognition-police.html" target="_blank">misuse by governments and law enforcement</a>.  Due to these concerns the City of San Francisco has <a href="https://www.nytimes.com/2019/05/14/us/facial-recognition-ban-san-francisco.html" target="_blank">banned face recognition technology for law enforcement</a>, Amazon AWS (the same service we use to perform face identification) <a href="https://blog.aboutamazon.com/policy/we-are-implementing-a-one-year-moratorium-on-police-use-of-rekognition" target="_blank">announced a moratorium</a> on police use, and IBM recently announced that it is <a href="https://www.ibm.com/blogs/policy/facial-recognition-susset-racial-justice-reforms/" target="_blank">sunsetting its face identification services</a> entirely.
+    The Stanford Cable TV News Analyzer uses automated face recognition technology provided by the <a href="https://docs.aws.amazon.com/rekognition/latest/dg/celebrities.html" target="_blank">Amazon Rekognition Celebrity Recognition API</a> to identify and compute the screen time of individuals on cable TV News.
+    Face recognition, particularly when performed en masse on large image databases, is a <a href="https://www.nytimes.com/2020/06/09/technology/facial-recognition-software.html" target="_blank">controversial technology</a> because of its potential to cause harm due to <a href="http://gendershades.org/" target="_blank">errors and bias</a>, erode personal privacy, and <a href="https://www.nytimes.com/2020/01/12/technology/facial-recognition-police.html" target="_blank">misuse by governments and law enforcement</a>.  Due to these concerns the City of San Francisco has <a href="https://www.nytimes.com/2019/05/14/us/facial-recognition-ban-san-francisco.html" target="_blank">banned face recognition technology for law enforcement</a>, Amazon AWS <a href="https://blog.aboutamazon.com/policy/we-are-implementing-a-one-year-moratorium-on-police-use-of-rekognition" target="_blank">announced a moratorium</a> on police use of its face recognition services, and IBM recently announced that it is <a href="https://www.ibm.com/blogs/policy/facial-recognition-susset-racial-justice-reforms/" target="_blank">sunsetting its face identification services</a> entirely.
   </p>
 
   <p>
@@ -30,8 +44,8 @@
   </p>
 
   <p>
-    <b>Individual privacy concerns.</b> The Stanford Cable TV News Analyzer only applies face recognition to publicly-aired broadcast cable TV news video. Additionally, our database contains only individuals identified by <a href="https://docs.aws.amazon.com/rekognition/latest/dg/celebrities.html">Amazon’s Celebrity Recognition</a> service, which identifies only <i>public figures</i>. (Amazon does not disclose their definition of "public figure".)  Additionally, the Stanford Cable TV News Analyzer only permits screen time queries for individuals that have received at least <i>ten hours of screen time</i> as of August 1, 2020 (according to the Amazon Celebrity Recognition service).
-    This is a total of {{ n_people }} individuals.  The full set of individuals identified in our dataset is given on our <a href="/data">dataset page</a>.  Individuals can request to be removed from the dataset at <a href="mailto: tvnews-project@stanford.edu?subject=RemoveMe">tvnews-project@stanford.edu</a>.
+    <b>Individual privacy concerns.</b> The Stanford Cable TV News Analyzer only applies face recognition to publicly-aired broadcast cable TV news video. Additionally, our database contains only individuals identified by the <a href="https://docs.aws.amazon.com/rekognition/latest/dg/celebrities.html">Amazon Rekognition Celebrity Recognition API</a>, which identifies only <i>public figures</i>. (Amazon does not disclose their definition of "public figure".)  Additionally, the Stanford Cable TV News Analyzer only permits screen time queries for individuals that have received at least <i>ten hours of screen time</i> as of August 1, 2020 (according to the Celebrity Recognition API results).
+    This is a total of {{ n_people }} individuals.  The full set of individuals identified in our dataset is given on our <a href="/data">dataset page</a>.  Individuals that wish to be removed from the dataset should email us at <a href="mailto: tvnews-project@stanford.edu?subject=RemoveMe">tvnews-project@stanford.edu</a>.
   </p>
 
   <p>
@@ -40,11 +54,11 @@
 
   <hr>
 
-  <h3>
+  <h3><a id="gender_concerns"></a>
     Gender is a non-binary quantity and cannot be assessed from a person’s appearance alone.  Why does the Stanford Cable TV Analyzer automatically label faces with a binary gender label?
   </h3>
   <p>
-    The Stanford Cable TV News Analyzer uses computer vision to make a binary assessment of an individual’s <i>presented gender</i> based on the appearance of their face (see our <a href="/methodology">methodology page</a> for the algorithms used to do this). Gender presentation (also referred to as gender expression) reflects an individual’s external expression of their gender (through cues such as facial features, makeup, hairstyle, and clothing), which may be different from both their gender identity and/or their birth sex.  When an individual's presented gender differs from their actual gender identity, algorithmic attempts to infer gender identity from facial appearance will fail.
+    The Stanford Cable TV News Analyzer uses computer vision to make a binary assessment of an individual’s <i>presented gender</i> based on the appearance of their face (see our <a href="/methodology">methodology page</a> for the algorithms used to do this). <a href="https://www.glaad.org/reference/transgender">Gender presentation</a> (also referred to as gender expression) reflects an individual’s external expression of their gender (through cues such as facial features, makeup, hairstyle, and clothing), which may be different from both their gender identity and/or their birth sex.  When an individual's presented gender differs from their actual gender identity, algorithmic attempts to infer gender identity from facial appearance will fail.
   </p>
   <p>
     We recognize that treating an individual’s gender as a binary quantity, as well as assessing gender solely from an individual's appearance, is a grossly simplified treatment of a complex topic. Further, we recognize that perpetuating the notion of binary gender can cause harm to non-binary individuals.
@@ -65,7 +79,7 @@
 
   <hr>
 
-  <h3>
+  <h3><a id="detect_race"></a>
     Does the Stanford Cable TV News Analyzer attempt to identify the race of an individual?
   </h3>
 
@@ -75,7 +89,7 @@
 
   <hr>
 
-  <h3>
+  <h3><a id="what_algorithms"></a>
     I am concerned about possible sources of error and bias in my query results. What algorithms does the Stanford Cable TV News Analyzer use to annotate the dataset?
   </h3>
   <p>
@@ -84,7 +98,7 @@
 
   <hr>
 
-  <h3>
+  <h3><a id="remove_me"></a>
     How do I request to be removed from the dataset?
   </h3>
   <p>
@@ -93,7 +107,7 @@
 
   <hr>
 
-  <h3>
+  <h3><a id="missing_face_id"></a>
     I recognize an individual in the video, but the face in the video was not labeled with the individual’s name.  Why were they not identified?
   </h3>
   <p>
@@ -106,15 +120,17 @@
 
   <hr>
 
-  <h3>
+  <h3><a id="report_errors"></a>
     I see a missed face detection, a misidentified face, or misgendered individual in the dataset. How do I report the error?
   </h3>
   <p>
     Due to the scale of our dataset, we will not be able to correct all labeling errors. However, we welcome comments and feedback via <a href="mailto: tvnews-project@stanford.edu?subject=Feedback">tvnews-project@stanford.edu</a>.
   </p>
 
-  <h3>
-    How quickly after a program's air time/date is the database updated to reflect new content?
+  <hr>
+
+  <h3><a id="update_rate"></a>
+    How quickly after a program airs is the site updated to reflect new content?
   </h3>
 
 <p>
