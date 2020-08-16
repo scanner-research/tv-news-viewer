@@ -152,7 +152,6 @@ function displaySearchResults(
       window.history.replaceState(null, '', chart_path);
     }
   } else {
-    // Allow embedding if all queries are ok
     $('#embedArea p[name="text"]').empty();
     $('#embedArea').hide();
     if (push_state && !minimalMode) {
@@ -300,21 +299,15 @@ function initialize() {
   }
 
   let editor = new Editor('#editor', {
-    enable_query_builder: true, enable_query_macros: true
+    enable_query_builder: true, enable_query_macros: true,
+    color_change_callback: function() {
+      search(editor, true);
+    }
   });
 
   $('.chosen-select').chosen({width: 'auto'});
   $('.search-btn').click(function() {
-    search(editor, event != undefined);
-  });
-  $('.reset-btn').click(function() {
-    if (window.confirm('Warning! This will clear all of your current queries.')) {
-      editor.reset();
-      // Clear the url
-      window.history.replaceState({}, document.title, '/');
-      // Reset the chart
-      clearChart();
-    }
+    search(editor, true);
   });
 
   $('#quickDateDropdown a').each(function(x) {
@@ -376,6 +369,12 @@ function initialize() {
       window.history.replaceState({}, document.title, '/');
     };
   }
+
+  $('select[name="aggregateBy"], input[name="startDate"], input[name="endDate"]').change(function(e) {
+    if (e.isTrigger) {
+      search(editor, true);
+    }
+  });
 }
 
 /* Load widget */

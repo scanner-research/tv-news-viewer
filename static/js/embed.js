@@ -26,6 +26,8 @@ function getDataString(chart_options, lines) {
 }
 
 function search(editor) {
+  $('#chart').empty();
+
   var chart_options, lines;
   try {
     chart_options = editor.getChartOptions();
@@ -78,7 +80,9 @@ function search(editor) {
 function initializeDynamic(params, data) {
   $('.chart-info').show();
   $('#editor').show();
-  let editor = new Editor('#editor');
+  let editor = new Editor('#editor', {
+    color_change_callback: function() { search(editor); }
+  });
 
   var loaded = false;
   if (data) {
@@ -105,9 +109,11 @@ function initializeDynamic(params, data) {
     $('#chart').empty();
     search(editor)
   });
-  $('.reset-btn').click(() => {
-    $('#chart').empty();
-    editor.reset();
+
+  $('select[name="aggregateBy"], input[name="startDate"], input[name="endDate"]').change(function(e) {
+    if (e.isTrigger) {
+      search(editor);
+    }
   });
 }
 

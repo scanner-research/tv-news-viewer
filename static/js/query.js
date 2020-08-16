@@ -351,7 +351,7 @@ class SearchableQuery {
     let promises = [
       $.ajax({
         url: '/search', type: 'get', data: getParams(this.main_query, true),
-        error: onError
+        cache: true, error: onError
       }).then(resp => result.main = resp)
     ];
 
@@ -360,7 +360,7 @@ class SearchableQuery {
       promises.push(
         $.ajax({
           url: '/search', type: 'get', data: getParams(this.add_query, true),
-          error: onError
+          cache: true, error: onError
         }).then(resp => to_add = resp)
       );
     }
@@ -369,7 +369,7 @@ class SearchableQuery {
       promises.push(
         $.ajax({
           url: '/search', type: 'get', data: getParams(this.norm_query, false),
-          error: onError
+          cache: true, error: onError
         }).then(resp => result.normalize = resp)
       );
     }
@@ -378,7 +378,7 @@ class SearchableQuery {
       promises.push(
         $.ajax({
           url: '/search', type: 'get', data: getParams(this.sub_query, false),
-          error: onError
+          cache: true, error: onError
         }).then(resp => result.subtract = resp)
       );
     }
@@ -414,7 +414,8 @@ class SearchableQuery {
       args.query = JSON.stringify(query_tree);
     }
     return $.ajax({
-      url: '/search-videos', type: 'get', data: getSortedQueryString(args)
+      url: '/search-videos', type: 'get', data: getSortedQueryString(args),
+      cache: true
     }).then(onSuccess).catch(onError);
   }
 

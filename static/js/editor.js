@@ -208,6 +208,7 @@ class Editor {
     this.enable_query_builder = options.enable_query_builder;
     this.cached_query_builder = null;
     this.code_editors = {};
+    this.oncolorchange = options.color_change_callback;
 
     $(div_id).find('.add-row-btn').click(() => {this.addRow();});
 
@@ -483,6 +484,10 @@ class Editor {
     search_table_row.attr('data-color', new_color);
     this.code_editors[new_color] = code_editor;
     delete this.code_editors[old_color];
+
+    if (this.oncolorchange) {
+      this.oncolorchange();
+    }
   }
 
   _onMacroEditorUpdate() {
