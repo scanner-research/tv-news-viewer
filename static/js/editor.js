@@ -125,7 +125,7 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
     </tr>
     <tr title="This name will be used in any embedded chart legends.">
       <td type="key-col">
-        Optionally, give this line a name
+        Optionally, name this line in the graph
       </td>
       <td type="value-col">
         <input type="text" class="form-control no-enter-submit alias-input"
