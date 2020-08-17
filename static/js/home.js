@@ -313,7 +313,7 @@ function initialize() {
   let editor = new Editor('#editor', {
     enable_query_builder: true, enable_query_macros: true,
     color_change_callback: function() {
-      let now_time = Date.now().getTime();
+      let now_time = new Date.now().getTime();
       if (last_color_change == null || now_time - last_color_change > COLOR_CHANGE_REDRAW_DELAY) {
         last_color_change = now_time;
         setTimeout(function() { search(editor, true); }, COLOR_CHANGE_REDRAW_DELAY);
