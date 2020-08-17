@@ -1,6 +1,8 @@
 const CHART_H_SLACK = 50;
 const CHART_MIN_WIDTH = 300;
 
+const MINOR_EDIT_REDRAW_DELAY = 500;
+
 function checkDataVersion(params) {
   if (params.get('dataVersion')) {
     let version_id = params.get('dataVersion');
@@ -80,8 +82,20 @@ function search(editor) {
 function initializeDynamic(params, data) {
   $('.chart-info').show();
   $('#editor').show();
+
+  var last_minor_edit_time = null;
+  function minorEditCallback() {
+    last_minor_edit_time = (new Date()).getTime();
+    setTimeout(function() {
+      if ((new Date()).getTime() - last_minor_edit_time >= MINOR_EDIT_REDRAW_DELAY) {
+        search(editor);
+      }
+    }, MINOR_EDIT_REDRAW_DELAY);
+  }
+
   let editor = new Editor('#editor', {
-    color_change_callback: function() { search(editor); }
+    color_change_callback: minorEditCallback,
+    remove_line_callback: minorEditCallback,
   });
 
   var loaded = false;

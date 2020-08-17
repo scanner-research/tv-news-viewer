@@ -1,8 +1,6 @@
 const DEFAULT_CHART_DIMS = {width: '100%', height: 400};
 const EMBED_MACRO_MESSAGE = 'Feature disabled. Embedding with macros is not allowed.';
 
-const COLOR_CHANGE_REDRAW_DELAY = 500;
-
 function clearChart() {
   $('#chart').empty();
   let vgrid_selector = $('#vgridArea');
@@ -309,17 +307,20 @@ function initialize() {
     }
   }
 
-  var last_color_change = null;
+  var last_minor_edit_time = null;
+  function minorEditCallback() {
+    last_minor_edit_time = (new Date()).getTime();
+    setTimeout(function() {
+      if ((new Date()).getTime() - last_minor_edit_time >= MINOR_EDIT_REDRAW_DELAY) {
+        search(editor, true);
+      }
+    }, MINOR_EDIT_REDRAW_DELAY);
+  }
+
   let editor = new Editor('#editor', {
     enable_query_builder: true, enable_query_macros: true,
-    color_change_callback: function() {
-      last_color_change = (new Date()).getTime();
-      setTimeout(function() {
-        if ((new Date()).getTime() - last_color_change >= COLOR_CHANGE_REDRAW_DELAY) {
-          search(editor, true);
-        }
-      }, COLOR_CHANGE_REDRAW_DELAY);
-    }
+    color_change_callback: minorEditCallback,
+    remove_line_callback: minorEditCallback
   });
 
   $('.chosen-select').chosen({width: 'auto'});

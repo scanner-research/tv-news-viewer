@@ -209,6 +209,7 @@ class Editor {
     this.cached_query_builder = null;
     this.code_editors = {};
     this.oncolorchange = options.color_change_callback;
+    this.onremoveline = options.remove_line_callback;
 
     $(div_id).find('.add-row-btn').click(() => {this.addRow();});
 
@@ -643,6 +644,10 @@ class Editor {
     delete this.code_editors[color];
     editor.find('.search-table .add-row-btn').prop('disabled', false);
     this._setRemoveButtonsState();
+
+    if (this.onremoveline) {
+      this.onremoveline();
+    }
   }
 
   addRow(query) {
