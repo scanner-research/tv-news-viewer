@@ -1,6 +1,8 @@
 const DEFAULT_CHART_DIMS = {width: '100%', height: 400};
 const EMBED_MACRO_MESSAGE = 'Feature disabled. Embedding with macros is not allowed.';
 
+const MINOR_EDIT_REDRAW_DELAY = 500;
+
 function clearChart() {
   $('#chart').empty();
   let vgrid_selector = $('#vgridArea');
@@ -149,14 +151,13 @@ function displaySearchResults(
     );
     $('#embedArea').show();
     if (push_state && !minimalMode) {
-      window.history.replaceState(null, '', chart_path);
+      window.history.pushState(null, '', chart_path);
     }
   } else {
-    // Allow embedding if all queries are ok
     $('#embedArea p[name="text"]').empty();
     $('#embedArea').hide();
     if (push_state && !minimalMode) {
-      window.history.replaceState(null, '', '');
+      window.history.pushState(null, '', '');
     }
   }
 }
@@ -173,15 +174,24 @@ function search(editor, push_state) {
     alertAndThrow(e.message);
   }
 
-  $('#shade').show();
+
+  var is_done = false;
   let indexed_search_results = [];
   function onDone() {
+    is_done = true;
     $('#shade').hide();
     indexed_search_results.sort();
     displaySearchResults(
       chart_options, lines, indexed_search_results.map(([i, v]) => v),
       push_state);
   }
+
+  // Give the query 100ms before setting the loading screen
+  window.setTimeout(function() {
+    if (!is_done) {
+      $('#shade').show();
+    }
+  }, 100);
 
   Promise.all(lines.map((line, i) => {
     console.log('Executing query:', line.query);
@@ -299,22 +309,25 @@ function initialize() {
     }
   }
 
+  var last_minor_edit_time = null;
+  function minorEditCallback() {
+    last_minor_edit_time = (new Date()).getTime();
+    setTimeout(function() {
+      if ((new Date()).getTime() - last_minor_edit_time >= MINOR_EDIT_REDRAW_DELAY) {
+        search(editor, true);
+      }
+    }, MINOR_EDIT_REDRAW_DELAY);
+  }
+
   let editor = new Editor('#editor', {
-    enable_query_builder: true, enable_query_macros: true
+    enable_query_builder: true, enable_query_macros: true,
+    color_change_callback: minorEditCallback,
+    remove_line_callback: minorEditCallback
   });
 
   $('.chosen-select').chosen({width: 'auto'});
   $('.search-btn').click(function() {
-    search(editor, event != undefined);
-  });
-  $('.reset-btn').click(function() {
-    if (window.confirm('Warning! This will clear all of your current queries.')) {
-      editor.reset();
-      // Clear the url
-      window.history.replaceState({}, document.title, '/');
-      // Reset the chart
-      clearChart();
-    }
+    search(editor, true);
   });
 
   $('#quickDateDropdown a').each(function(x) {
@@ -373,8 +386,19 @@ function initialize() {
     } catch (e) {
       editor.reset();
       // Clear the url
-      window.history.replaceState({}, document.title, '/');
+      window.history.pushState({}, document.title, '/');
     };
+  }
+
+  $('select[name="aggregateBy"], input[name="startDate"], input[name="endDate"]').change(function(e) {
+    if (e.isTrigger) {
+      search(editor, true);
+    }
+  });
+
+  // Force reload the page on back or forward button press
+  window.onpopstate = function(e) {
+    window.location.reload();
   }
 }
 

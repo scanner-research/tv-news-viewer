@@ -74,7 +74,7 @@ const ALL_AUTOCOMPLETE_PEOPLE = [
   {% for person in autocomplete_people %}'{{ person }}',{% endfor %}
 ]
 
-{% if hide_person_tags %}
+{% if not hide_person_tags %}
 const PERSON_TAG_TO_PEOPLE = {
   {% for tag, people in person_tags_dict.items() %}'{{ tag }}':[{% for person in people %}'{{ person }}',{% endfor %}],{% endfor %}
 };

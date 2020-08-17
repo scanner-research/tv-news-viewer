@@ -125,7 +125,7 @@ const QUERY_BUILDER_HTML = `<div class="query-builder">
     </tr>
     <tr title="This name will be used in any embedded chart legends.">
       <td type="key-col">
-        Optionally, give this line a name
+        Optionally, name this line in the graph
       </td>
       <td type="value-col">
         <input type="text" class="form-control no-enter-submit alias-input"
@@ -208,6 +208,8 @@ class Editor {
     this.enable_query_builder = options.enable_query_builder;
     this.cached_query_builder = null;
     this.code_editors = {};
+    this.oncolorchange = options.color_change_callback;
+    this.onremoveline = options.remove_line_callback;
 
     $(div_id).find('.add-row-btn').click(() => {this.addRow();});
 
@@ -483,6 +485,10 @@ class Editor {
     search_table_row.attr('data-color', new_color);
     this.code_editors[new_color] = code_editor;
     delete this.code_editors[old_color];
+
+    if (this.oncolorchange) {
+      this.oncolorchange();
+    }
   }
 
   _onMacroEditorUpdate() {
@@ -638,6 +644,10 @@ class Editor {
     delete this.code_editors[color];
     editor.find('.search-table .add-row-btn').prop('disabled', false);
     this._setRemoveButtonsState();
+
+    if (this.onremoveline) {
+      this.onremoveline();
+    }
   }
 
   addRow(query) {

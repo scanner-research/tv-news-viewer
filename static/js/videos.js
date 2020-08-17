@@ -140,7 +140,7 @@ function displayVideos(page_i) {
   });
 }
 
-function convertHex(hex, a){
+function convertHex(hex, a) {
     hex = hex.replace('#', '');
     r = parseInt(hex.substring(0,2), 16);
     g = parseInt(hex.substring(2,4), 16);
@@ -162,8 +162,7 @@ function loadVideos(params, serve_from_internet_archive) {
       'background-color': convertHex(PARAMS.color, 0.5)
     }).append(
       QUERY.alias ? [
-        $('<span>').text(QUERY.alias), '&nbsp;',
-        $('<span>').html('&#9432;').attr('title', QUERY.query)
+        $('<span>').text(QUERY.alias).attr('title', QUERY.query)
       ] : $('<code>').text(
         $.trim(QUERY.query) ? QUERY.query : '<blank query: i.e. all the data>'
       )
