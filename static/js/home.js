@@ -1,6 +1,8 @@
 const DEFAULT_CHART_DIMS = {width: '100%', height: 400};
 const EMBED_MACRO_MESSAGE = 'Feature disabled. Embedding with macros is not allowed.';
 
+const MINOR_EDIT_REDRAW_DELAY = 500;
+
 function clearChart() {
   $('#chart').empty();
   let vgrid_selector = $('#vgridArea');
