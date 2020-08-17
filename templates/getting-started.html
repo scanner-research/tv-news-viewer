@@ -101,7 +101,7 @@
 </div>
 
 <p>
-  A common use of multiple filters is limit screen time computations to certain channels, news programs, or specific times of day or days of the week.  For example, in the graph below we compare the screen time of Kamala Harris between 6-10pm (US Eastern time) on CNN, with that of Fox News and MSNBC.  (Ms. Harris receives the most screen time during this time period on MSNBC.)
+  A common use of multiple filters is to limit screen time computations to certain channels, news programs, or specific times of day or days of the week.  For example, in the graph below we compare the screen time of Kamala Harris between 6-10pm (US Eastern time) on CNN, with that of Fox News and MSNBC.  (Ms. Harris receives the most screen time during this time period on MSNBC.)
 </p>
 
 <div class="graph-embed-div">
@@ -131,7 +131,7 @@
 </p>
 
 <p>
-  Since <b>text</b> filters (like all other filters) are used to select video segments, they can be combined with all other filters in queries.  Combining <b>text</b> and face filters (e.g, <b>name</b> or <b>tag</b>) can yield interesting queries. For example, the following graph computes the time that Hillary Clinton is on screen AND the word "email" is spoken. (Note that the word email is some times broken up as "e mail" in the captions, so the text search needs to include "email" or "e mail".)
+  Since <b>text</b> filters (like all other filters) are used to select video segments, they can be combined with all other filters in queries.  Combining <b>text</b> and face filters (e.g, <b>name</b> or <b>tag</b>) can yield interesting queries. For example, the following graph computes the time that Hillary Clinton is on screen AND the word "email" is spoken. (We observe that word "email" is sometimes written as "e mail" in the captions, so the text search filter matches both "email" or "e mail".)
 </p>
 
 <div class="graph-embed-div">
@@ -139,13 +139,13 @@
 </div>
 
 <p>
-  Observe that the above graph computes the amount of time where Ms. Clinton is on screen AND the word "email" is spoken, but this query does not mean that the word "email" was spoken by Ms. Clinton. It is possible the speaker was another person on screen or even an off-screen voice. At this time the Stanford Cable TV Analyzer does not provide the ability to identify who is speaking and use this information in filters.
+  Observe that the above graph computes the amount of time where Ms. Clinton is on screen AND the word "email" is spoken, but this query does not mean that the word "email" was spoken by Ms. Clinton. It is possible the speaker was another person on screen or even an off-screen voice. At this time the Stanford Cable TV Analyzer does not provide the ability to identify who is speaking.
 </p>
 
 <h3>Viewing Video Clips</h3>
 
 <p>
-  In many situations it is useful to view examples of video clips that pass a queries filters.  For example, you might wish to inspect video clips to get of sense of whether automated face identification is robustly recognizing the person specified in the query. Another common task is to view selected clips when debugging a more complex query to ensure the query is selecting the types of videos intended.  When viewing a graphs on the main <a href="/">Stanford Cable TV News Analyzer</a> site, clicking on the graph will display a random selection of video clips that matched query's filters at that point in time.  You can further investigate these results by playing the video clips as well as viewing their captions.
+  In many situations it is useful to view examples of video clips that pass a query's filters.  For example, you might wish to inspect the matching video clips to get of sense of whether automated face identification is robustly recognizing the person specified in the query. Another common task is to view selected clips when debugging a more complex query to ensure the query is selecting the types of videos intended.  When viewing a graphs on the main <a href="/">Stanford Cable TV News Analyzer</a> site, clicking on the graph will display a random selection of video clips that matched query's filters at that point in time.  You can further investigate these results by playing the video clips as well as viewing their captions.
 </p>
 
 <p>
