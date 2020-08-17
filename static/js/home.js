@@ -1,7 +1,7 @@
 const DEFAULT_CHART_DIMS = {width: '100%', height: 400};
 const EMBED_MACRO_MESSAGE = 'Feature disabled. Embedding with macros is not allowed.';
 
-const COLOR_CHANGE_REDRAW_DELAY = 500;
+const COLOR_CHANGE_REDRAW_DELAY = 250;
 
 function clearChart() {
   $('#chart').empty();
@@ -313,7 +313,7 @@ function initialize() {
   let editor = new Editor('#editor', {
     enable_query_builder: true, enable_query_macros: true,
     color_change_callback: function() {
-      let now_time = Date.now().getTime();
+      let now_time = (new Date()).getTime();
       if (last_color_change == null || now_time - last_color_change > COLOR_CHANGE_REDRAW_DELAY) {
         last_color_change = now_time;
         setTimeout(function() { search(editor, true); }, COLOR_CHANGE_REDRAW_DELAY);
