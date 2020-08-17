@@ -172,15 +172,24 @@ function search(editor, push_state) {
     alertAndThrow(e.message);
   }
 
-  $('#shade').show();
+
+  var is_done = false;
   let indexed_search_results = [];
   function onDone() {
+    is_done = true;
     $('#shade').hide();
     indexed_search_results.sort();
     displaySearchResults(
       chart_options, lines, indexed_search_results.map(([i, v]) => v),
       push_state);
   }
+
+  // Give the query 100ms before setting the loading screen
+  window.setTimeout(function() {
+    if (!is_done) {
+      $('#shade').show();
+    }
+  }, 100);
 
   Promise.all(lines.map((line, i) => {
     console.log('Executing query:', line.query);
