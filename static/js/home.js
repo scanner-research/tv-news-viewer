@@ -151,13 +151,13 @@ function displaySearchResults(
     );
     $('#embedArea').show();
     if (push_state && !minimalMode) {
-      window.history.replaceState(null, '', chart_path);
+      window.history.pushState(null, '', chart_path);
     }
   } else {
     $('#embedArea p[name="text"]').empty();
     $('#embedArea').hide();
     if (push_state && !minimalMode) {
-      window.history.replaceState(null, '', '');
+      window.history.pushState(null, '', '');
     }
   }
 }
@@ -386,7 +386,7 @@ function initialize() {
     } catch (e) {
       editor.reset();
       // Clear the url
-      window.history.replaceState({}, document.title, '/');
+      window.history.pushState({}, document.title, '/');
     };
   }
 
@@ -395,6 +395,11 @@ function initialize() {
       search(editor, true);
     }
   });
+
+  // Force reload the page on back or forward button press
+  window.onpopstate = function(e) {
+    window.location.reload();
+  }
 }
 
 /* Load widget */
