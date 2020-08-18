@@ -88,14 +88,14 @@ The human annotator judged 4,109 of the 6,000 test set faces (68.5%) as male-pre
 </p>
 
 <p>
-The confusion matrix for our gender estimation model is given below.  Overall the model agrees with human annotations 97.2% of the time.  When a face is judged to be male-presenting by a human, the model aggrees with the human 98.8% of the time.
-When a face is judged to be female-presenting, the model aggrees with the human 93.8% of the time.
+The confusion matrix for our gender estimation model is given below.  Overall the model agrees with human annotations 97.2% of the time.  When a face is judged to be male-presenting by a human, the model agrees with the human 98.8% of the time.
+When a face is judged to be female-presenting, the model agrees with the human 93.8% of the time.
 </p>
 
 <p style="text-align: center"><img src="{{ url_for('static', filename='img/validation/gender_confusion_new.png') }}" height="350" /></p>
 
 <p>
-  The table below gives the accuracy of our presenting-gender estimation model for each (year, channel) slice.  Accuracy is judged as agrement with results provided by a human annotator.
+  The table below gives the accuracy of our presenting-gender estimation model for each (year, channel) slice.  Accuracy is judged as agreement with results provided by a human annotator.
 </p>
 
 <p>
@@ -228,7 +228,7 @@ we take the faces that have no identity label provided by the Celebrity Recognit
 and find all of their neighbors in face embedding space within a given L2 distance,
 and then assign the unlabeled face the majority vote of those labels.
 In total, 55.5% of the faces in the dataset contain an identity tag.
-However, the Stanford Cable TV News Analyzer limits queries to individuals that have at least ten hours of estimated screen time as of Aug. 1, 2020.
+<i>However, the Stanford Cable TV News Analyzer limits use of face screen time filters to individuals that have at least ten hours of estimated screen time as of Aug. 1, 2020.</i>
 </p>
 
 <hr>

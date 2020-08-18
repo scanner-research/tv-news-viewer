@@ -69,7 +69,7 @@
 </div>
 
 <p>
-  A query can specify multiple tags that a face must match.  For example, adding the "{{ global_tags.host }}" tag to the face tag filter from the prior graph yields this graph that compares the screen time of <b>male news presenters</b> with that of <b>female news presenters</b>. (We consider news presenters to be program hosts, anchors, key on-air staff.)  Among presenters, the trend toward gender parity appears to have reversed since 2015.
+  A query can specify multiple tags that a face must match.  For example, adding the "{{ global_tags.host }}" tag to the face tag filter from the prior graph yields this graph that compares the screen time of <b>male news presenters</b> with that of <b>female news presenters</b>. (We consider news presenters to be program hosts, anchors, key on-air staff.)  Among news presenters, the trend toward gender parity appears to have reversed since 2015.
 </p>
 
 <div class="graph-embed-div">
@@ -127,7 +127,7 @@
 </p>
 
 <p>
-  It is important to notice that the above graph plots measurements of time.  <b>It does not count the number of times the specified phrase is found in the captions.</b> All queries run by the Stanford Cable TV Analyzer, regardless of the filters used, compute the time spanned by video segments that match the specified filters. When interpreting results of queries that contain <b>text</b> filters, users should be mindful that longer text phrases will likely contribute more time per found instance than shorter phrases.
+  It is important to notice that the above graph plots measurements of time.  <b>It does not count the number of times the specified phrase is found in the captions.</b> All queries run by the Stanford Cable TV Analyzer, regardless of the filters used, compute the time spanned by video segments that match the specified filters. When interpreting results of queries that contain <b>text</b> filters, users should be mindful that longer text phrases may contribute more time per instance than shorter phrases.
 </p>
 
 <p>
@@ -139,7 +139,7 @@
 </div>
 
 <p>
-  Observe that the above graph computes the amount of time where Ms. Clinton is on screen AND the word "email" is spoken, but this query does not mean that the word "email" was spoken by Ms. Clinton. It is possible the speaker was another person on screen or even an off-screen voice. At this time the Stanford Cable TV Analyzer does not provide the ability to identify who is speaking.
+  Observe that the above graph computes the amount of time where Ms. Clinton is on screen AND the word "email" is spoken, but this query does not mean that the word "email" was spoken by Ms. Clinton. It is possible the speaker was another person on screen or even an off-screen voice. At this time the Stanford Cable TV Analyzer does not provide the ability to identify who spoke the words in the text caption.
 </p>
 
 <h3>Viewing Video Clips</h3>
