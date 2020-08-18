@@ -5,9 +5,9 @@
   <meta property="og:site_name" content="Stanford Cable TV News Analyzer" />
   <meta property="og:type" content="website" />
   <meta property="og:description" content="The Stanford Cable TV Analyzer lets you measure who and what is on cable TV news" />
-  <!-- <meta property="og:image" content="https://{{ host }}/static/img/analyzer.jpg" />
-  <meta property="og:image:width" content="1796" />
-  <meta property="og:image:height" content="1134" /> -->
+  <meta property="og:image" content="https://{{ host }}/static/img/analyzer_og_image.png" />
+  <meta property="og:image:width" content="1122" />
+  <meta property="og:image:height" content="310" /> -->
 {% endif %}{% endblock %}
 
 {% if analytics_str %}{{ analytics_str|safe }}{% endif %}
@@ -60,11 +60,11 @@
           <li class="nav-item {% if self | quoted == 'methodology.html' %}active{% endif %}">
             <a class="nav-link" href="/methodology">Methodology</a>
           </li>
-          <li class="nav-item">
-            <a class="nav-link" href="https://medium.com/tvnewsanalyzer">Blog</a>
-          </li>
           <li class="nav-item {% if self | quoted == 'faq.html' %}active{% endif %}">
             <a class="nav-link" href="/faq">FAQ</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="https://medium.com/tvnewsanalyzer">Blog</a>
           </li>
           <li class="nav-item {% if self | quoted == 'about.html' %}active{% endif %}">
             <a class="nav-link" href="/about">About Us</a>
