@@ -81,7 +81,7 @@ To train the classifier, we manually annotated the presented binary gender of 12
 
 <p>
 
-<b>Validation:</b> We computed the classifier's agreement with a human annotator on a test set of 6,000 faces.
+<b>Validation:</b> We computed the classifier's agreement with a single human annotator on a test set of 6,000 faces.
 Faces were sampled from the first ten years of the dataset (Jan. 1, 2010 to Dec. 31, 2019).
 We stratified samples by year and channel, selecting 200 faces at random from each of the 30 slices (10 years x 3 channels).
 The human annotator judged 4,109 of the 6,000 test set faces (68.5%) as male-presenting individuals and 1,891 (31.5%) as female-presenting individuals.
@@ -93,6 +93,124 @@ When a face is judged to be female-presenting, the model aggrees with the human 
 </p>
 
 <p style="text-align: center"><img src="{{ url_for('static', filename='img/validation/gender_confusion_new.png') }}" height="350" /></p>
+
+<p>
+  The table below gives the accuracy of our presenting-gender estimation model for each (year, channel) slice.  Accuracy is judged as agrement with results provided by a human annotator.
+</p>
+
+<p>
+  <table width="900" border="0" align="center">
+    <tr>
+      <td width="50"></td>
+      <td width="25"></td>
+      <td colspan="3" class="table_centered table_bold">CNN</td>
+      <td width="50"></td>
+      <td colspan="3" class="table_centered table_bold">Fox News</td>
+      <td width="50"></td>
+      <td colspan="3" class="table_centered table_bold">MSNBC</td>
+    </tr>
+    <tr>
+      <td>Year</td>
+      <td></td>
+      <td colspan="3">Accuracy (overall/male/female)</td>
+      <td></td>
+      <td colspan="3">Accuracy (overall/male/female)</td>
+      <td></td>
+      <td colspan="3">Accuracy (overall/male/female)</td>
+    </tr>
+    <tr>
+      <td>2010</td>
+      <td></td>
+      <td width="75">97.0</td><td width="75">97.9</td><td width="75">95.0</td>
+      <td></td>
+      <td width="75">98.5</td><td width="75">100.0</td><td width="75">95.1</td>
+      <td></td>
+      <td width="75">99.0</td><td width="75">100.0</td><td width="75">96.9</td>
+    </tr>
+    <tr>
+      <td>2011</td>
+      <td></td>
+      <td>97.0</td><td>99.3</td><td>92.2</td>
+      <td></td>
+      <td>98.5</td><td>99.3</td><td>96.6</td>
+      <td></td>
+      <td>98.0</td><td>100.0</td><td>91.5</td>
+    </tr>
+    <tr>
+      <td>2012</td>
+      <td></td>
+      <td>96.5</td><td>99.2</td><td>91.3</td>
+      <td></td>
+      <td>95.5</td><td>97.1</td><td>92.2</td>
+      <td></td>
+      <td>97.5</td><td>97.3</td><td>98.1</td>
+    </tr>
+    <tr>
+      <td>2013</td>
+      <td></td>
+      <td>97.5</td><td>98.5</td><td>95.2</td>
+      <td></td>
+      <td>96.5</td><td>98.5</td><td>92.9</td>
+      <td></td>
+      <td>97.0</td><td>98.6</td><td>93.3</td>
+    </tr>
+    <tr>
+      <td>2014</td>
+      <td></td>
+      <td>98.0</td><td>98.3</td><td>97.5</td>
+      <td></td>
+      <td>98.0</td><td>100.0</td><td>93.7</td>
+      <td></td>
+      <td>99.0</td><td>100.0</td><td>97.5</td>
+    </tr>
+    <tr>
+      <td>2015</td>
+      <td></td>
+      <td>96.5</td><td>98.5</td><td>92.5</td>
+      <td></td>
+      <td>98.0</td><td>100.0</td><td>93.7</td>
+      <td></td>
+      <td>95.0</td><td>96.6</td><td>90.4</td>
+    </tr>
+    <tr>
+      <td>2016</td>
+      <td></td>
+      <td>95.0</td><td>98.4</td><td>89.6</td>
+      <td></td>
+      <td>96.5</td><td>98.6</td><td>91.7</td>
+      <td></td>
+      <td>96.5</td><td>97.9</td><td>93.1</td>
+    </tr>
+    <tr>
+      <td>2017</td>
+      <td></td>
+      <td>97.5</td><td>98.5</td><td>95.4</td>
+      <td></td>
+      <td>98.0</td><td>97.4</td><td>100.0</td>
+      <td></td>
+      <td>98.0</td><td>100.0</td><td>93.4</td>
+    </tr>
+    <tr>
+       <td>2018</td>
+       <td></td>
+       <td>98.5</td><td>99.3</td><td>96.6</td>
+       <td></td>
+       <td>98.0</td><td>99.3</td><td>95.1</td>
+       <td></td>
+       <td>95.5</td><td>97.0</td><td>92.5</td>
+    </tr>
+    <tr>
+      <td>2019</td>
+      <td></td>
+      <td>96.0</td><td>100.0</td><td>88.7</td>
+      <td></td>
+      <td>96.5</td><td>99.2</td><td>91.0</td>
+      <td></td>
+      <td>96.5</td><td>98.6</td><td>91.9</td>
+    </tr>
+
+  </table>
+</p>
 
 <hr>
 
