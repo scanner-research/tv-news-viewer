@@ -70,15 +70,3 @@ code {
   box-shadow: none;
 }
 
-td {
-  text-align: right;
-}
-
-td.table_centered {
-  text-align: center;
-}
-
-td.table_bold {
-  font-weight: bold;
-}
-
