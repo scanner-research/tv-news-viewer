@@ -3,6 +3,8 @@ const EMBED_MACRO_MESSAGE = 'Feature disabled. Embedding with macros is not allo
 
 const MINOR_EDIT_REDRAW_DELAY = 500;
 
+var NO_RELOAD_ON_POP_FLAG = false;
+
 function clearChart() {
   $('#chart').empty();
   let vgrid_selector = $('#vgridArea');
@@ -124,10 +126,11 @@ function displaySearchResults(
     let time_str = new Date().toISOString().slice(0, 19).replaceAll(/\-|T|:/, '');
 
     saveImage = () => {
-      chart.renderPNG('#dummyChartDiv', 600, 300, function (img_data) {
+      chart.renderPNG('#dummyChartDiv', function (img_data) {
         var tmp = document.createElement('a');
         tmp.href = img_data;
         tmp.download = `tvnews_${time_str}.png`;
+        NO_RELOAD_ON_POP_FLAG = true;
         tmp.click();
       });
     }
@@ -136,6 +139,7 @@ function displaySearchResults(
       var tmp = document.createElement('a');
       tmp.href =  getDownloadUrl(search_results);
       tmp.download = `tvnews_${time_str}.csv`;
+      NO_RELOAD_ON_POP_FLAG = true;
       tmp.click();
     }
 
@@ -398,7 +402,10 @@ function initialize() {
 
   // Force reload the page on back or forward button press
   window.onpopstate = function(e) {
-    window.location.reload();
+    if (!NO_RELOAD_ON_POP_FLAG) {
+      window.location.reload();
+    }
+    NO_RELOAD_ON_POP_FLAG = false;
   }
 }
 

@@ -392,23 +392,27 @@ class Chart {
     }, 1000);
   }
 
-  renderPNG(dummy_div_id, width, height, callback) {
+  renderPNG(dummy_div_id, callback) {
     let vega_spec = this._getVegaSpec({
       show_tooltip: false, show_stats: false
     });
     let that = this;
-    Object.assign(vega_spec, {width: width, height: height, background: '#fff'});
+    let offset_top = 34 * this.search_results.length;
+    Object.assign(vega_spec, {
+      width: this.dimensions.width, height: this.dimensions.height,
+      background: '#fff', padding: {top: offset_top + 10}
+    });
     vegaEmbed(dummy_div_id, vega_spec, {actions: false}).then(
       function() {
         let canvas = $(dummy_div_id).find('canvas');
         that.search_results.forEach((x, i) => {
-          let y = (i * 24) + 15;
+          let y = (i * 34) - offset_top + 5;
           canvas.drawRect({
-            fillStyle: x[0], x: 20, y: y, width: 18, height: 18
+            fillStyle: x[0], x: 20, y: y, width: 24, height: 24
           });
           canvas.drawText({
-            fillStyle: '#000', x: 38, y: y - 8, text: x[1].query,
-            fromCenter: false, fontSize: 16
+            fillStyle: '#000', x: 38, y: y - 9, text: x[1].query,
+            fromCenter: false, fontSize: 18
           });
         });
         callback(canvas.getCanvasImage());
