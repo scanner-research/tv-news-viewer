@@ -4,11 +4,15 @@
   {{ super() }}
   <meta property="og:title" content="Stanford Cable TV News Analyzer - FAQ" />
   <meta property="og:url" content="https://{{ host }}/faq" />
-  <style>
-    h3 {
-      margin-bottom: 0.8em !important;
-    }
-  </style>
+{% endblock %}
+
+{% block head %}
+{{ super() }}
+<style>
+  h3 {
+    margin-bottom: 0.8em !important;
+  }
+</style>
 {% endblock %}
 
 {% block content %}
@@ -36,7 +40,7 @@
   </h3>
 
   <p>
-    Our goal is to provide the public with computational tools that enable large-scale, data-driven analysis of the contents of cable TV news.  We believe the ability to quantitatively measure who is in the news and what is talked about will increase transparency about editorial decisions, serve as a powerful mechanism to identify forms of bias, and identify trends in an important information source that reaches millions of Americans each day. 
+    Our goal is to provide the public with computational tools that enable large-scale, data-driven analysis of the contents of cable TV news.  We believe the ability to quantitatively measure who is in the news and what is talked about will increase transparency about editorial decisions, serve as a powerful mechanism to identify forms of bias, and identify trends in an important information source that reaches millions of Americans each day.
   </p>
 
   <h3><a id="facial_rec"></a>

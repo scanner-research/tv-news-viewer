@@ -1,14 +1,18 @@
 <!DOCTYPE html>
 <html xmlns="https://www.w3.org/1999/xhtml" prefix="og: http://ogp.me/ns#">
 <head>
-{% block meta %}{% if host %}
+{% if host %}
+{% block meta %}
   <meta property="og:site_name" content="Stanford Cable TV News Analyzer" />
   <meta property="og:type" content="website" />
   <meta property="og:description" content="The Stanford Cable TV Analyzer lets you measure who and what is on cable TV news" />
+{% endblock %}
+{% block meta_og_image %}
   <meta property="og:image" content="https://{{ host }}/static/img/analyzer_og_image.png" />
   <meta property="og:image:width" content="1122" />
   <meta property="og:image:height" content="310" />
-{% endif %}{% endblock %}
+{% endblock %}
+{% endif %}
 
 {% if analytics_str %}{{ analytics_str|safe }}{% endif %}
 

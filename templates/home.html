@@ -5,6 +5,11 @@
   <meta property="og:title" content="Stanford Cable TV News Analyzer" />
   <meta property="og:url" content="https://{{ host }}/" />
 {% endblock %}
+{% block meta_og_image %}
+  <meta property="og:image" content="https://{{ host }}/NO_GRAPH_IMAGE.png" />
+  <meta property="og:image:width" content="1122" />
+  <meta property="og:image:height" content="310" />
+{% endblock %}
 
 {% block head %}
   {{ super() }}

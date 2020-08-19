@@ -1,5 +1,11 @@
 {% extends "layout.html" %}
 
+{% block meta_og_image %}
+  <meta property="og:image" content="https://{{ host }}/static/img/NO_GRAPH_IMAGE.png" />
+  <meta property="og:image:width" content="1122" />
+  <meta property="og:image:height" content="310" />
+{% endblock %}
+
 {% block head %}
 {{ super() }}
 
