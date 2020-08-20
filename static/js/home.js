@@ -394,10 +394,16 @@ function initialize() {
     };
   }
 
-  // FIXME: reenable for input[name="startDate"], input[name="endDate"]
-  $('select[name="aggregateBy"]').change(function(e) {
+  $('select[name="aggregateBy"], input[name="startDate"], input[name="endDate"]').change(function(e) {
     if (e.isTrigger) {
-      search(editor, true);
+      var options_valid = false;
+      try {
+        editor.getChartOptions();
+        options_valid = true;
+      } catch(e) {}
+      if (options_valid) {
+        search(editor, true);
+      }
     }
   });
 
