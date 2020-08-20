@@ -394,7 +394,8 @@ function initialize() {
     };
   }
 
-  $('select[name="aggregateBy"], input[name="startDate"], input[name="endDate"]').change(function(e) {
+  // FIXME: reenable for input[name="startDate"], input[name="endDate"]
+  $('select[name="aggregateBy"]').change(function(e) {
     if (e.isTrigger) {
       search(editor, true);
     }
