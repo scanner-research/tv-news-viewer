@@ -726,8 +726,7 @@ def minus_isetmap(
         intervals: Optional[List[Interval]]
 ) -> List[Interval]:
     return isetmap.minus(
-        video.id, intervals
-        if intervals is not None 
+        video.id, intervals if intervals is not None
         else get_entire_video_ms_interval(video), True)
 
 
