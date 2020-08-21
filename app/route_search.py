@@ -296,10 +296,11 @@ def and_python_isets(
             elif curr[1].is_entire_video:
                 yield prev[1]
             else:
-                yield PythonISetData(
-                    curr[1].video, False,
-                    list(merge_close_intervals(intersect_sorted_intervals(
-                        prev[1].intervals, curr[1].intervals))))
+                intervals = list(merge_close_intervals(
+                    intersect_sorted_intervals(
+                        prev[1].intervals, curr[1].intervals)))
+                if len(intervals) > 0:
+                    yield PythonISetData(curr[1].video, False, intervals)
             prev = None
         else:
             assert curr[0] > prev[0], '{} < {}'.format(curr[0], prev[0])
@@ -726,7 +727,7 @@ def minus_isetmap(
 ) -> List[Interval]:
     return isetmap.minus(
         video.id, intervals
-        if intervals else get_entire_video_ms_interval(video), True)
+        if intervals is None else get_entire_video_ms_interval(video), True)
 
 
 def merge_close_intervals(
