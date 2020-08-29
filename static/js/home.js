@@ -3,8 +3,6 @@ const EMBED_MACRO_MESSAGE = 'Feature disabled. Embedding with macros is not allo
 
 const MINOR_EDIT_REDRAW_DELAY = 500;
 
-var NO_RELOAD_ON_POP_FLAG = false;
-
 function clearChart() {
   $('#chart').empty();
   let vgrid_selector = $('#vgridArea');
@@ -130,7 +128,6 @@ function displaySearchResults(
         var tmp = document.createElement('a');
         tmp.href = img_data;
         tmp.download = `tvnews_${time_str}.png`;
-        NO_RELOAD_ON_POP_FLAG = true;
         tmp.click();
       });
     }
@@ -139,18 +136,17 @@ function displaySearchResults(
       var tmp = document.createElement('a');
       tmp.href =  getDownloadUrl(search_results);
       tmp.download = `tvnews_${time_str}.csv`;
-      NO_RELOAD_ON_POP_FLAG = true;
       tmp.click();
     }
 
     $('#embedArea p[name="text"]').empty().append(
-      $('<a>').addClass('copy-a').attr('href', '#').click(setCopyUrl).text('Copy'),
+      $('<a>').addClass('copy-a').attr('href', 'javascript:void(0)').click(setCopyUrl).text('Copy'),
       ' url, ',
-      $('<a>').addClass('embed-a').attr('href', '#').click(setEmbedArea).text('embed'),
+      $('<a>').addClass('embed-a').attr('href', 'javascript:void(0)').click(setEmbedArea).text('embed'),
       ' chart, ',
-      $('<a>').addClass('save-img-a').attr('href', '#').click(saveImage).text('save'),
+      $('<a>').addClass('save-img-a').attr('href', 'javascript:void(0)').click(saveImage).text('save'),
       ' image, or ',
-      $('<a>').addClass('download-a').attr('href', '#').click(downloadData).text('download'),
+      $('<a>').addClass('download-a').attr('href', 'javascript:void(0)').click(downloadData).text('download'),
       ' the data.'
     );
     $('#embedArea').show();
@@ -409,10 +405,7 @@ function initialize() {
 
   // Force reload the page on back or forward button press
   window.onpopstate = function(e) {
-    if (!NO_RELOAD_ON_POP_FLAG) {
-      window.location.reload();
-    }
-    NO_RELOAD_ON_POP_FLAG = false;
+    window.location.reload();
   }
 }
 
