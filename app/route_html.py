@@ -83,8 +83,8 @@ def add_html_routes(
     def get_getting_started() -> Response:
         return render_template(
             'getting-started.html', search_keys=SearchKey,
-            global_tags=GlobalTags,
-            hide_person_tags=hide_person_tags, start_date=start_date_str,
+            global_tags=GlobalTags, hide_person_tags=hide_person_tags,
+            default_text_window=default_text_window, start_date=start_date_str,
             **_get_template_kwargs())
 
     @app.route('/docs')

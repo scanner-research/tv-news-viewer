@@ -126,7 +126,7 @@
 </p>
 
 <p>
-  It is important to notice that the above graph plots measurements of time.  <b>It does not count the number of times the specified phrase is found in the captions.</b> All queries run by the Stanford Cable TV Analyzer, regardless of the filters used, compute the time spanned by video segments that match the specified filters. When interpreting results of queries that contain <b>text</b> filters, users should be mindful that longer text phrases may contribute more time per instance than shorter phrases.
+  It is important to notice that the above graph plots measurements of time.  <b>It does not count the number of times the specified phrase is found in the captions.</b> All queries run by the Stanford Cable TV Analyzer, regardless of the filters used, compute the time spanned by video segments that match the specified filters. By default, each instance is treated as an interval of <b>textwindow</b>={{ default_text_window }} second{% if default_text_window != 1 %}s{% endif %}. If <b>textwindow</b> is set to 0, then the time when the word is said is used; in this case, users should be mindful that longer text phrases may contribute more time per instance than shorter phrases.
 </p>
 
 <p>
