@@ -3,6 +3,8 @@ const EMBED_MACRO_MESSAGE = 'Feature disabled. Embedding with macros is not allo
 
 const MINOR_EDIT_REDRAW_DELAY = 500;
 
+var NO_PAGE_RELOAD_FLAG = false;
+
 function clearChart() {
   $('#chart').empty();
   let vgrid_selector = $('#vgridArea');
@@ -258,6 +260,7 @@ function lastNYears(n) {
 }
 
 function setDateShortcuts(editor, date_option) {
+  NO_PAGE_RELOAD_FLAG = true;
   switch(date_option) {
     case '1m':
       editor.setStartDate(lastNMonths(1));
@@ -405,7 +408,10 @@ function initialize() {
 
   // Force reload the page on back or forward button press
   window.onpopstate = function(e) {
-    window.location.reload();
+    if (!NO_PAGE_RELOAD_FLAG) {
+      window.location.reload();
+      NO_PAGE_RELOAD_FLAG = false;
+    }
   }
 }
 
