@@ -22,7 +22,7 @@ function getPhrasesToHighlight(query) {
           v.forEach(x => visit_queue.push(x));
           break;
         case SEARCH_KEY.text: {
-          v.split(/[&|\^]+/).map($.trim).filter(token_filter).forEach(
+          v.split(/[&|\\\^]+/).map($.trim).filter(token_filter).forEach(
             w => { phrases.add(w.toLowerCase()); }
           );
           break;

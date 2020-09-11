@@ -50,7 +50,7 @@
     <div class="code-block" id="orExample"></div>
 
     Queries can combine "AND" and "OR" using parentheses in order to construct more
-    complex queries. If no parentheses are specified, AND precedes OR.
+    complex queries. If no parentheses are specified, <u>AND precedes OR</u>.
     <div class="code-block" id="parenSyntax"></div>
     Putting the examples above together, the following query computes the screen
     time of Kamala Harris on CNN or MSNBC:
@@ -325,7 +325,7 @@
 
   <h3><a id="text_filter_syntax"></a>Text Filter Syntax</h3>
 
- <h4>
+  <h4>
     Listing words and phrases (word A or word B)
   </h4>
   <p>
@@ -337,6 +337,53 @@
     will search for video segments where any of these three n-grams appear in the captions.
     This can be repeated for an arbitrary
     number of words and phrases.
+  </p>
+
+  <h4>
+    Listing words and phrases (word A and/not word B)
+  </h4>
+  <p>
+    You can also search for instances where words appear nearby using "&" (and).
+    For example, to find instances of "United" near "Airlines", use
+    <code>{{ search_keys.text}}="United & Airlines"</code>.
+    This can be chained; for example,
+    <code>{{ search_keys.text}}="United & Airlines & 737 MAX"</code>.
+    Not ("\") works similarly; for instance,
+    <code>{{ search_keys.text}}="United \ States \ Kingdom"</code> finds instances
+    of "United" that are not near "States" or not near "Kingdom".
+  </p>
+
+  <p>
+    By default, the threshold for nearness is 15 seconds. This can be modified
+    using the following ("::") syntax: <code>{{ search_keys.text}}="United \ States :: 60"</code>,
+    which sets the window for "\" to 60 seconds. Use "//" to change the window
+    policy to tokens; for example,
+    <code>{{ search_keys.text}}="United \ States // 100"</code> finds "United"
+    with no instances of "States" within 100 tokens.
+  </p>
+
+  <h4>
+    Query syntax and semantics
+  </h4>
+  <p>
+    <u>Text query "&" and "|" operators behave differently from AND and OR.</u> The
+    latter operate on intervals, while the former give back intervals which the
+    latter operate on. The query <code>{{ search_keys.text}}="United & Airlines"</code> finds
+    separate intervals of "United" and intervals of "Airlines",
+    which are nearby. These intervals are of duration "textwindow"
+    (by default, {{ default_text_window }} seconds). In contrast,
+    <code>{{ search_keys.text}}="United" AND {{ search_keys.text}}="Airlines"</code>
+    finds intervals of "United" and "Airlines", and returns their exact time overlap.
+  </p>
+
+  <p>
+    The text grammar also supports basic composition of "&", "|", and "\".
+    For example, <code>{{ search_keys.text}}="United \ States \ Kingdom"</code>
+    is equivalent to <code>{{ search_keys.text}}="United \ (States | Kingdom)"</code>,
+    expressing instances of "United" that are not near either "States" or "Kingdom".
+    Parentheses are necessary to separate clauses and operators may not be
+    mixed in a clause. The full details of the text query grammar can be found
+    <a href="https://github.com/scanner-research/caption-index/blob/master/captions/query.py" target="_blank">here</a>.
   </p>
 
   <h4>
