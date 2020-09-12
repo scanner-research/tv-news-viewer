@@ -902,12 +902,12 @@ def add_search_routes(
                     elif r2.type == SearchResultType.rust_iset:
                         # Result: python_iset
                         video_filter = get_video_filter(r2.context)
-                        new_data = (
+                        new_data = [
                             PythonISetData(
                                 x.video, False,
                                 intervals=intersect_isetmap(
                                     x.video, r2.data, x.intervals))
-                            for x in r1.data if video_filter(x.video))
+                            for x in r1.data if video_filter(x.video)]
                         curr_result = SearchResult(
                             SearchResultType.python_iset,
                             data=filter(lambda x: len(x.intervals) > 0,
