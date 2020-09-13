@@ -46,7 +46,7 @@ function getHighlightIndexes(captions, extra_options) {
 }
 
 function sanitizeName(name) {
-  return $.trim(name).replace(/'/, '').toLowerCase();
+  return $.trim(name).replace(/'|\./, '').toLowerCase();
 }
 
 function flattenCaption(caption) {
