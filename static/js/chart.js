@@ -226,7 +226,7 @@ class Chart {
     // X axis settings
     let all_times_set = new Set(line_data.map(x => x.time));
     let x_axis_data = Array.from(all_times_set).map(t => {return {time: t};});
-    let x_tick_count = Math.min(24, all_times_set.size);
+    let x_tick_count = Math.min(12, all_times_set.size);
     let x_start_date = getStartDate(
       this.options.aggregate, this.options.start_date);
     let x_end_date = getEndDate(this.options.end_date);
