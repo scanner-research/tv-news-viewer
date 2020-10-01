@@ -255,7 +255,7 @@ class Chart {
           axis: {
             titleFontSize: 12, labelFontSize: 12, tickCount: x_tick_count,
             format: getVegaDateFormat(this.options.aggregate), title: null,
-            labelAngle: 0, gridOpacity: 0.5, tickCount: 10
+            labelAngle: 0, gridOpacity: 0.5
           },
           scale: {
             domain: [x_start_date, x_end_date]
