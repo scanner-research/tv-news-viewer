@@ -65,7 +65,7 @@ function getDownloadUrl(search_results) {
       } else if (result.subtract) {
         value -=  _.get(result.subtract, t, 0);
       }
-      return [query_text, t, value.toFixed(3).replace(/\.0+$/, ''), unit];
+      return [query_text, t, value.toString(), unit];
     });
   });
   let schema = ['Query', 'Time', 'Value', 'Unit'];
