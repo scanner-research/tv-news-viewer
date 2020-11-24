@@ -43,6 +43,7 @@
         <td>{{ global_tags.all }}</td>
         <td>Any face returned by the face detector.</td>
       </tr>
+      {% if not hide_gender %}
       <tr>
         <td>{{ global_tags.male }}</td>
         <td>A face identified as a male-presenting face by our gender classifier.</td>
@@ -51,6 +52,7 @@
         <td>{{ global_tags.female }}</td>
         <td>A face identified as a female-presenting face by our gender classifier.</td>
       </tr>
+      {% endif %}
       <tr>
         <td>{{ global_tags.host }}</td>
         <td>A face identified as a host/reporter/news presenter, based off of our list of known individuals.</td>

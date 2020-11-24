@@ -57,36 +57,40 @@
 <iframe id="twoPeople" class="graph-embed-3line"></iframe>
 </div>
 
-<h3>Filtering by Face Tags</h3>
+{% if not hide_gender %}
 
-<p>
-  In addition to filtering by a person's name, it is possible to filter by other tags associated with faces that appear in the dataset.  For example, each face detected in our dataset is automatically tagged with a prediction of the individual's presenting gender. In the graph below, we use the <b>tag</b> filter to compare the total time male-presenting individuals are on screen with that of female-presenting individuals. (Please see the discussion in our <a href="/faq#gender">FAQ</a> about the decision to include binary presenting gender tags in the dataset.)
-</p>
+  <h3>Filtering by Face Tags</h3>
 
-<div class="graph-embed-div">
-<iframe id="maleFemale" class="graph-embed-2line"></iframe>
-</div>
+  <p>
+    In addition to filtering by a person's name, it is possible to filter by other tags associated with faces that appear in the dataset.  For example, each face detected in our dataset is automatically tagged with a prediction of the individual's presenting gender. In the graph below, we use the <b>tag</b> filter to compare the total time male-presenting individuals are on screen with that of female-presenting individuals. (Please see the discussion in our <a href="/faq#gender">FAQ</a> about the decision to include binary presenting gender tags in the dataset.)
+  </p>
 
-<p>
-  A query can specify multiple tags that a face must match.  For example, adding the "{{ global_tags.host }}" tag to the face tag filter from the prior graph yields this graph that compares the screen time of <b>male news presenters</b> with that of <b>female news presenters</b>. (We consider news presenters to be program hosts, anchors, key on-air staff.)  Among news presenters, the trend toward gender parity appears to have reversed since 2015.
-</p>
+  <div class="graph-embed-div">
+  <iframe id="maleFemale" class="graph-embed-2line"></iframe>
+  </div>
 
-<div class="graph-embed-div">
-<iframe id="maleFemaleHost" class="graph-embed-2line"></iframe></div>
+  <p>
+    A query can specify multiple tags that a face must match.  For example, adding the "{{ global_tags.host }}" tag to the face tag filter from the prior graph yields this graph that compares the screen time of <b>male news presenters</b> with that of <b>female news presenters</b>. (We consider news presenters to be program hosts, anchors, key on-air staff.)  Among news presenters, the trend toward gender parity appears to have reversed since 2015.
+  </p>
 
-{% if hide_person_tags %}
-<p>
-  The <a href="/data/tags">tags</a> page contains the full list of tags that can be used in a face <b>tag</b> filter. Details about how Stanford Cable TV News Analyzer attributes tags to faces is provided on our <a href="/methodology">methodology page.</a>
- </p>
+  <div class="graph-embed-div">
+  <iframe id="maleFemaleHost" class="graph-embed-2line"></iframe></div>
 
-{% else %}
-<p>
-  The <a href="/data/tags">tags</a> page contains the full list of tags that can be used in a face <b>tag</b> filter.  You'll see tags like "musician", "politician", "journalist" and we encourage you to play around with the query above to plot the screen time of people associated with different tags.
-</p>
- <p>
-  As you write queries it is important to be mindful that tags are <b>not exhaustive</b>.
-  For example, a query using the filter "tag=politician" computes the screen time of all faces in the dataset that have been identified as politicians.  However, since not every politician in the dataset is correctly identified by automatic face recognition methods, the true screen time of people on the news who are actually politicians is certainly higher.  In some cases, tags are present for all faces in the data (e.g., gender, see the <a href="/data/tags">tags page</a> for a list).  Details about how Stanford Cable TV News Analyzer attributes tags to faces is provided on our <a href="/methodology">methodology page.</a>
-</p>
+  {% if hide_person_tags %}
+  <p>
+    The <a href="/data/tags">tags</a> page contains the full list of tags that can be used in a face <b>tag</b> filter. Details about how Stanford Cable TV News Analyzer attributes tags to faces is provided on our <a href="/methodology">methodology page.</a>
+  </p>
+
+  {% else %}
+  <p>
+    The <a href="/data/tags">tags</a> page contains the full list of tags that can be used in a face <b>tag</b> filter.  You'll see tags like "musician", "politician", "journalist" and we encourage you to play around with the query above to plot the screen time of people associated with different tags.
+  </p>
+  <p>
+    As you write queries it is important to be mindful that tags are <b>not exhaustive</b>.
+    For example, a query using the filter "tag=politician" computes the screen time of all faces in the dataset that have been identified as politicians.  However, since not every politician in the dataset is correctly identified by automatic face recognition methods, the true screen time of people on the news who are actually politicians is certainly higher.  In some cases, tags are present for all faces in the data (e.g., gender, see the <a href="/data/tags">tags page</a> for a list).  Details about how Stanford Cable TV News Analyzer attributes tags to faces is provided on our <a href="/methodology">methodology page.</a>
+  </p>
+  {% endif %}
+
 {% endif %}
 
 <h3>Composite Queries (AND's and OR's)</h3>
@@ -181,6 +185,8 @@
     ],
     true
   );
+
+  {% if not hide_gender %}
   setIframeSource(
     '#maleFemale', [
       '{{ search_keys.face_tag }}="{{ global_tags.male }}"',
@@ -195,6 +201,8 @@
     ],
     true
   );
+  {% endif %}
+
   setIframeSource(
     '#harrisAndWarren', [
       '{{ search_keys.face_name }}="Kamala Harris"',

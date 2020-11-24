@@ -76,12 +76,11 @@ def build_app(
         person_whitelist_file: Optional[str],
         min_person_screen_time: int,
         min_person_autocomplete_screen_time: int,
+        hide_gender: bool,
         hide_person_tags: bool,
         default_aggregate_by: str,
         default_text_window: int,
         default_is_commercial: Ternary,         # Whether to exclude commercials by default
-        default_color_gender_bboxes: bool,      # Do not color gender bounding boxes
-                                                # unless the query involves gender
         allow_sharing: bool,                    # Show share, embed, download links
         data_version: Optional[str],
         show_uptime: bool
@@ -134,6 +133,7 @@ def build_app(
         ),
         num_video_samples=NUM_VIDEO_SAMPLES,
         default_text_window=default_text_window,
+        hide_gender=hide_gender,
         hide_person_tags=hide_person_tags,
         allow_sharing=allow_sharing,
         show_uptime=show_uptime)
@@ -149,6 +149,10 @@ def build_app(
         default_aggregate_by=default_aggregate_by,
         default_is_commercial=default_is_commercial,
         default_text_window=default_text_window)
+
+    global_face_tags = list(sorted(GLOBAL_TAGS))
+    if hide_gender:
+        global_face_tags = [x for x in global_face_tags if 'male' not in x]
 
     @app.route('/generated/js/values.js')
     def get_values_js() -> Response:
@@ -189,10 +193,10 @@ def build_app(
                 in video_data_context.all_person_intervals.values()
                 if intervals.screen_time_seconds >= min_person_autocomplete_screen_time
             ],
+            hide_gender=hide_gender,
             hide_person_tags=hide_person_tags,
-            global_face_tags=list(sorted(GLOBAL_TAGS)),
-            person_tags_dict=video_data_context.all_person_tags.tag_name_dict,
-            color_gender_bboxes=default_color_gender_bboxes))
+            global_face_tags=global_face_tags,
+            person_tags_dict=video_data_context.all_person_tags.tag_name_dict))
         resp.headers['Content-type'] = 'application/javascript'
         return resp
 

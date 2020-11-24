@@ -12,7 +12,7 @@ const DEFAULT_COLORS = [
   '#EDC948', '#B07AA1', '#FF9DA7', '#9C755F', '#BAB0AC'
 ];
 
-const DEFAULT_COLOR_GENDER_BBOXES = {% if color_gender_bboxes %}true{% else %}false{% endif %};
+const SHOW_GENDER = {% if hide_gender %}false{% else %}true{% endif %};
 const DEFAULT_NEUTRAL_COLOR = '#FFFF00';
 const DEFAULT_MALE_COLOR = '#9FD4CF';
 const DEFAULT_FEMALE_COLOR = '#C5B2D9';

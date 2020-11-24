@@ -217,9 +217,9 @@
       <tr>
         <td>values</td>
         <td>
-          (fe){{ global_tags.male }}, (non_){{ global_tags.host }},
-          <i>tag on person</i><br />
-          (See the <a href="/data/tags" target="_blank">tags page</a> for a complete list of tags.)
+          {% if not hide_gender %}(fe){{ global_tags.male }},{% endif %} (non_){{ global_tags.host }}
+          {% if not hide_person_tags %}, <i>tag on person</i>{% endif %}
+          <br/>(See the <a href="/data/tags" target="_blank">tags page</a> for a complete list of tags.)
         </td>
       </tr>
       <tr>
@@ -230,10 +230,12 @@
         <td>example</td>
         <td>
           <code>
-            {{ search_keys.face_tag }}="{{ global_tags.male }}"
-	    <br>{{ search_keys.face_tag }}="{{ global_tags.male }},{{ global_tags.host }}"
-	    <br>{{ search_keys.face_tag }}="{{ global_tags.male }} AND {{ global_tags.host }}"
-	    {% if not hide_person_tags %}<br>{{ search_keys.face_tag }}="journalist"{% endif %}
+            {{ search_keys.face_tag }}="{{ global_tags.host }}"
+            {% if not hide_gender %}
+            <br>{{ search_keys.face_tag }}="{{ global_tags.male }},{{ global_tags.host }}"
+            <br>{{ search_keys.face_tag }}="{{ global_tags.male }} AND {{ global_tags.host }}"
+            {% endif %}
+	          {% if not hide_person_tags %}<br>{{ search_keys.face_tag }}="journalist"{% endif %}
           </code>
         </td>
       </tr>
@@ -434,7 +436,7 @@
 
     <div class="code-block" id="normExampleCode"></div>
 
-    The following query computes the fraction of time on CNN that a male-presenting face
+    The following query computes the fraction of time on CNN that a news presenter
     is on screen:
 
     <div class="graph-embed-div">
@@ -484,7 +486,7 @@
 
     setCodeArea('#normSyntax', ['query1 NORMALIZE query2']);
     let norm_cnn_queries = [
-      '{{ search_keys.face_tag }}={{ global_tags.male }} AND {{ search_keys.channel }}=CNN NORMALIZE {{ search_keys.channel }}=CNN'
+      '{{ search_keys.face_tag }}={{ global_tags.host }} AND {{ search_keys.channel }}=CNN NORMALIZE {{ search_keys.channel }}=CNN'
     ];
     setIframeSource('#normExample', norm_cnn_queries);
     setCodeArea('#normExampleCode', norm_cnn_queries);

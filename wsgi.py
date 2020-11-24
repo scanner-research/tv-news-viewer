@@ -22,11 +22,10 @@ DEFAULT_TIME_ZONE = 'US/Eastern'
 DEFAULT_MIN_PERSON_SCREEN_TIME = 10 * 60
 DEFAULT_MIN_PERSON_AUTOCOMPETE_SCREEN_TIME = 10 * 60 * 60
 
+DEFAULT_HIDE_GENDER = True
 DEFAULT_HIDE_PERSON_TAGS = False
 
 DEFAULT_IS_COMMERCIAL = Ternary.false
-
-DEFAULT_COLOR_GENDER_BBOXES = False
 
 DEFAULT_AGGREGATE_BY = 'month'
 DEFAULT_TEXT_WINDOW = 0
@@ -56,6 +55,7 @@ app = build_app(
     min_person_autocomplete_screen_time=options.get(
         'min_person_autocomplete_screen_time',
         DEFAULT_MIN_PERSON_AUTOCOMPETE_SCREEN_TIME),
+    hide_gender=options.get('hide_gender', DEFAULT_HIDE_GENDER),
     hide_person_tags=options.get(
         'hide_person_tags', DEFAULT_HIDE_PERSON_TAGS),
     default_aggregate_by=options.get(
@@ -64,8 +64,6 @@ app = build_app(
         'default_text_window', DEFAULT_TEXT_WINDOW),
     default_is_commercial=options.get(
         'default_is_commercial', DEFAULT_IS_COMMERCIAL),
-    default_color_gender_bboxes=options.get(
-        'default_color_gender_bboxes', DEFAULT_COLOR_GENDER_BBOXES),
     allow_sharing=options.get('allow_sharing', DEFAULT_ALLOW_SHARING),
     data_version=config.get('data_version'),
     show_uptime=config.get('show_uptime', False))

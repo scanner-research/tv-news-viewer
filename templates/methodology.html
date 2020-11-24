@@ -18,7 +18,9 @@
       <li><a href="#face_detection">Face Detection</a>
         <ul>
           <li><a href="#face_descriptors">Face Descriptors</a></li>
+          {% if not hide_gender %}
           <li><a href="#face_gender">Face Gender Tags</a></li>
+          {% endif %}
           <li><a href="#face_identity">Face Identities</a></li>
           {% if not hide_person_tags %}
           <li><a href="#face_misctags">Additional Face Tags</a></li>
@@ -69,6 +71,7 @@ We compute the 128-element <a href="https://github.com/davidsandberg/facenet">Fa
 
 <hr>
 
+{% if not hide_gender %}
 <h3><a id="face_gender"></a>Face Gender Tags</h3>
 
 <p>
@@ -213,6 +216,7 @@ When a face is judged to be female-presenting, the model agrees with the human 9
 </p>
 
 <hr>
+{% endif %}
 
 <h3><a id="face_identity"></a>Face Identity Tags</h3>
 

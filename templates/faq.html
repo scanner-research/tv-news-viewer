@@ -24,7 +24,9 @@
   <ul>
       <li><a href="#mission">What are your goals in creating the Stanford Cable TV News Analyzer?</a></li>
       <li><a href="#facial_rec">Why does the Stanford Cable TV News Analyzer use automated face recognition technology?</a></li>
+      {% if not hide_gender %}
       <li><a href="#gender">Why does the Stanford Cable TV News Analyzer automatically label faces with a binary gender label?</a>
+      {% endif %}
       <li><a href="#race">Does the Stanford Cable TV News Analyzer attempt to identify the race of an individual?</a>
       <li><a href="#methods">What algorithms does the Stanford Cable TV News Analyzer use to annotate the dataset?</a>
       <li><a href="#remove_me">How do I request to be removed from the dataset?</a>
@@ -67,6 +69,7 @@
 
   <hr>
 
+  {% if not hide_gender %}
   <h3><a id="gender"></a>
     Gender is a non-binary quantity and cannot be assessed from a person’s appearance alone.  Why does the Stanford Cable TV News Analyzer automatically label faces with a binary gender label?
   </h3>
@@ -91,6 +94,7 @@
   </p>
 
   <hr>
+  {% endif %}
 
   <h3><a id="race"></a>
     Does the Stanford Cable TV News Analyzer attempt to identify the race of an individual?
@@ -134,7 +138,12 @@
   <hr>
 
   <h3><a id="report_errors"></a>
-    I see a missed face detection, a misidentified face, or misgendered individual in the dataset. How do I report the error?
+    {% if not hide_gender %}
+    I see a missed face detection, a misidentified face, or misgendered individual in the dataset.
+    {% else %}
+    I see a missed face detection or a misidentified face in the dataset.
+    {% endif %}
+    How do I report the error?
   </h3>
   <p>
     Due to the scale of our dataset, we will not be able to correct all labeling errors. However, we welcome comments and feedback via <a href="mailto: tvnews-project@stanford.edu?subject=Feedback">tvnews-project@stanford.edu</a>.

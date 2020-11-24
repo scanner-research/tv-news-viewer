@@ -29,21 +29,6 @@ const EXAMPLE_QUERIES = [
       {start_date: '2016-01-01', end_date: '2017-01-01', aggregate: 'day'}
     )
   ], [
-    'Binary gender presentation, as a fraction of screen time', getExampleChartPath(
-      ['tag="male" NORMALIZE', 'tag="female" NORMALIZE']
-    )
-  ], [
-    'Binary gender presentation, as a fraction of screen time, by channel', getExampleChartPath(
-      [
-        'tag="male" AND channel="CNN" NORMALIZE channel="CNN"',
-        'tag="female" AND channel="CNN" NORMALIZE channel="CNN"',
-        'tag="male" AND channel="FOX" NORMALIZE channel="FOX"',
-        'tag="female" AND channel="FOX" NORMALIZE channel="FOX"',
-        'tag="male" AND channel="MSNBC" NORMALIZE channel="MSNBC"',
-        'tag="female" AND channel="MSNBC" NORMALIZE channel="MSNBC"'
-      ]
-    )
-  ], [
     'Sean Hannity and Tucker Carlson, on screen together', getExampleChartPath(
       ['name="sean hannity" AND name="tucker carlson"']
     )

@@ -26,6 +26,7 @@ def add_html_routes(
         start_date: datetime,
         end_date: datetime,
         default_text_window: int,
+        hide_gender: bool,
         hide_person_tags: bool,
         allow_sharing: bool,
         show_uptime: bool
@@ -83,7 +84,8 @@ def add_html_routes(
     def get_getting_started() -> Response:
         return render_template(
             'getting-started.html', search_keys=SearchKey,
-            global_tags=GlobalTags, hide_person_tags=hide_person_tags,
+            global_tags=GlobalTags, hide_gender=hide_gender,
+            hide_person_tags=hide_person_tags,
             default_text_window=default_text_window, start_date=start_date_str,
             **_get_template_kwargs())
 
@@ -91,14 +93,14 @@ def add_html_routes(
     def get_docs() -> Response:
         return render_template(
             'docs.html', search_keys=SearchKey, global_tags=GlobalTags,
-            hide_person_tags=hide_person_tags,
+            hide_gender=hide_gender, hide_person_tags=hide_person_tags,
             default_text_window=default_text_window, **_get_template_kwargs())
 
     @app.route('/methodology')
     def get_methodology() -> Response:
         return render_template(
-            'methodology.html', hide_person_tags=hide_person_tags,
-            **_get_template_kwargs())
+            'methodology.html', hide_gender=hide_gender,
+            hide_person_tags=hide_person_tags, **_get_template_kwargs())
 
     rounded_hour_str = '{:,}'.format(
         int(num_video_hours / HOURS_GRANULATITY) * HOURS_GRANULATITY)
@@ -123,7 +125,8 @@ def add_html_routes(
     @app.route('/faq')
     def get_faq() -> Response:
         return render_template(
-            'faq.html', n_people=num_people_str, **_get_template_kwargs())
+            'faq.html', n_people=num_people_str, hide_gender=hide_gender,
+            **_get_template_kwargs())
 
     @app.route('/data/people')
     def get_data_people() -> Response:
@@ -136,7 +139,7 @@ def add_html_routes(
     def get_data_tags() -> Response:
         return render_template(
             'data/tags.html', search_keys=SearchKey, global_tags=GlobalTags,
-            hide_person_tags=hide_person_tags,
+            hide_gender=hide_gender, hide_person_tags=hide_person_tags,
             **_get_template_kwargs())
 
     @app.route('/data/shows')

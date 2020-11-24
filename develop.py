@@ -65,11 +65,11 @@ def main(
             person_whitelist_file=None,
             min_person_screen_time=60 * 60,                     # 1 hr
             min_person_autocomplete_screen_time=10 * 60 * 60,   # 10 hrs
+            hide_gender=True,
             hide_person_tags=True,
             default_aggregate_by='month',
             default_text_window=1,                  # amount to dialate text intervals
             default_is_commercial=Ternary.false,    # exclude comercials
-            default_color_gender_bboxes=True,       # color code gender bboxes
             allow_sharing=True,
             data_version='dev',
             show_uptime=True)
@@ -82,7 +82,7 @@ def main(
                     static_folder='static')
         add_html_routes(
             app, 'localhost', 1, 2, 3, 4, 5, datetime.now(), datetime.now(),
-            6, False, True, False)
+            6, False, False, True, False)
 
     app.config['TEMPLATES_AUTO_RELOAD'] = True
     kwargs = {'port': port, 'debug': autoreload}
