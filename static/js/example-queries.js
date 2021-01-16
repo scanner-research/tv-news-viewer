@@ -60,5 +60,8 @@ const EXAMPLE_QUERIES = [
       ['name="hillary clinton" AND text="E [MAIL] | [EMAIL]"'],
       {start_date: '2015-01-01', end_date: '2017-01-01', aggregate: 'day'}
     )
+  ], [
+    'Show all of the data and by channel', getExampleChartPath(
+      ['', 'channel="CNN"', 'channel="FOX"', 'channel="MSNBC"'], {aggregate: 'month'})
   ]
 ];
