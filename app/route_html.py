@@ -120,6 +120,10 @@ def add_html_routes(
     def get_about() -> Response:
         return render_template('about.html', **_get_template_kwargs())
 
+    @app.route('/paper')
+    def get_paper() -> Response:
+        return render_template('paper.html', **_get_template_kwargs())
+
     num_people_str = '{:,}'.format(num_people)
 
     @app.route('/faq')

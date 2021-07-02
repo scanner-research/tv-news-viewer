@@ -1,0 +1,63 @@
+{% extends "layout.html" %}
+
+{% block meta %}
+  {{ super() }}
+  <meta property="og:title" content="Stanford Cable TV News Analyzer - Paper" />
+  <meta property="og:url" content="https://{{ host }}/paper" />
+{% endblock %}
+
+{% block content %}
+<div class="container">
+  <h1>Analysis of Faces in a Decade of US Cable TV News</h1>
+
+  <h5>
+    <a href="https://web.stanford.edu/~jamesh93/">James Hong</a>,
+    <a href="https://willcrichton.net/">Will Crichton</a>,
+    <a href="https://cs.stanford.edu/~haotianz/">Haotian Zhang</a>,
+    <a href="https://www.danfu.org/">Daniel Y. Fu</a>,
+    <a href="https://www.jacobritchie.xyz/">Jacob Ritchie</a>,
+    Jeremy Barenholtz</a>,
+    Ben Hannel,
+    <a href="https://www.davidyao.me/">Xinwei Yao</a>,
+    Michaela Murray,
+    Geraldine Moriba,
+    <a href="http://graphics.stanford.edu/~maneesh/">Maneesh Agrawala</a>,
+    <a href="http://graphics.stanford.edu/~kayvonf/">Kayvon Fatahalian</a>
+  </h5>
+
+  <h5><i>ACM Conference on Knowledge Discovery and Data Mining (KDD) 2021</i></h5>
+
+  <div class="container">
+    <img src="{{ url_for('static', filename='img/paper_teaser.jpg') }}" style="width: 100%;">
+  </div>
+
+  <h3>Abstract</h3>
+  <p>
+    Cable (TV) news reaches millions of US households each day. News
+    stakeholders such as communications researchers, journalists, and
+    media monitoring organizations are interested in the visual content of cable news, especially who is on-screen. Manual analysis,
+    however, is labor intensive and limits the size of prior studies.
+  </p>
+  <p>
+    We conduct a large-scale, quantitative analysis of the faces in
+    a decade of cable news video from the top three US cable news
+    networks (CNN, FOX, and MSNBC), totaling 244,038 hours between
+    January 2010 and July 2019. Our work uses technologies such as automatic face and gender recognition to measure the “screen time” of
+    faces and to enable visual analysis and exploration at scale. Our analysis method gives insight into a broad set of socially relevant topics.
+    For instance, male-presenting faces receive much more screen time
+    than female-presenting faces (2.4x in 2010, 1.9x in 2019).
+  </p>
+  <p>
+    To make our dataset and annotations accessible, we release a public interface, at <a href="/">https://tvnews.stanford.edu/</a>, that allows the general public to write queries and to perform their own analyses.
+  </p>
+
+  <h3>Paper</h3>
+    <a href="https://jhong93.github.io/pdf/tvnews-kdd21.pdf" target="_blank">PDF</a> and
+    <a href="https://jhong93.github.io/pdf/tvnews-supp.pdf" target="_blank">Supplemental PDF</a> (with additional analysis and methodology)
+  </p>
+  {% include "cite.html" %}
+
+  <h3>Contact</h3>
+  <p>Visit our <a href="/about">about us</a> page for more information.</p>
+</div>
+{% endblock %}

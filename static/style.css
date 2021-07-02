@@ -69,4 +69,8 @@ code {
   outline: none !important;
   box-shadow: none;
 }
-
+.cite-us {
+  background-color: #f2f2f2;
+  padding: 10px 10px 0 10px;
+  border-radius: 0.4rem;
+}
