@@ -46,7 +46,7 @@ def client():
         default_aggregate_by='month',
         default_text_window=0,
         default_is_commercial=Ternary.false,
-        default_color_gender_bboxes=True,
+        hide_gender=False,
         allow_sharing=True,
         data_version='test',
         show_uptime=True)
