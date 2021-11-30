@@ -753,7 +753,6 @@ def intersect_sorted_intervals(
         l2: List[Interval]
 ) -> Generator[Interval, None, None]:
     i, j = 0, 0
-    curr_interval = None
     while i < len(l1) and j < len(l2):
         a1, b1 = l1[i]
         a2, b2 = l2[j]

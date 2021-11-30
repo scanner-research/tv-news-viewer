@@ -20,6 +20,7 @@ from .load import load_app_data, CaptionDataContext
 from .route_html import add_html_routes
 from .route_data_json import add_data_json_routes
 from .route_search import add_search_routes
+from .route_data_export import add_data_export_routes
 
 
 FILE_DIR = os.path.dirname(os.path.realpath(__file__))
@@ -149,6 +150,8 @@ def build_app(
         default_aggregate_by=default_aggregate_by,
         default_is_commercial=default_is_commercial,
         default_text_window=default_text_window)
+
+    add_data_export_routes(app, video_data_context)
 
     global_face_tags = list(sorted(GLOBAL_TAGS))
     if hide_gender:
