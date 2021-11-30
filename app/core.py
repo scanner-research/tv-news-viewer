@@ -151,7 +151,7 @@ def build_app(
         default_is_commercial=default_is_commercial,
         default_text_window=default_text_window)
 
-    add_data_export_routes(app, video_data_context)
+    add_data_export_routes(app, caption_data_context, video_data_context)
 
     global_face_tags = list(sorted(GLOBAL_TAGS))
     if hide_gender:

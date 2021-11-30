@@ -1,12 +1,19 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
+from typing import List
 
-from .load import VideoDataContext
+from captions.query import Query                        # type: ignore
+
+from .load import CaptionDataContext, VideoDataContext
 from .types_frontend import *
 from .error import *
+
+from .route_search import MAX_TRANSCRIPT_SEARCH_COST
+
 
 """ Support limited export of interval data """
 def add_data_export_routes(
         app: Flask,
+        caption_data_context: CaptionDataContext,
         video_data_context: VideoDataContext
 ):
 
@@ -27,11 +34,6 @@ def add_data_export_routes(
 
     @app.route('/export/person/<person>')
     def get_person(person):
-        # start_date = parse_date(
-        #     request.args.get(SearchParam.start_date, None, type=str))
-        # end_date = parse_date(
-        #     request.args.get(SearchParam.end_date, None, type=str))
-
         person_intervals = video_data_context.all_person_intervals.get(
             person, None)
         if person_intervals is None:
@@ -65,3 +67,49 @@ def add_data_export_routes(
                         video_id, True)
             })
         return jsonify(ret)
+
+    def get_caption_video_ids(
+            cdc: CaptionDataContext,
+            vdc: VideoDataContext,
+            text_str: str
+    ) -> List[str]:
+        missing_videos = 0
+        matched_videos = 0
+
+        query = None
+        try:
+            query = Query(text_str.upper())
+        except Exception as e:
+            raise InvalidCaptionSearch(text_str)
+
+        if query.estimate_cost(cdc.lexicon) > MAX_TRANSCRIPT_SEARCH_COST:
+            raise QueryTooExpensive(
+                'The text query is too expensive to compute. '
+                '"{}" contains too many common words/phrases.'.format(text_str))
+
+        results = []
+        for raw_result in query.execute(
+                cdc.lexicon, cdc.index, ignore_word_not_found=True
+        ):
+            document = cdc.documents[raw_result.id]
+            video = vdc.video_dict.get(document.name)
+            if video is None:
+                missing_videos += 1
+                continue
+            else:
+                matched_videos += 1
+
+            results.append({
+                'video_id': video.id,
+                'archive_id': video.name,
+                'count': len(raw_result.postings)
+            })
+        return results
+
+    @app.route('/export/search/video+text')
+    def get_video_with_text():
+        query = request.args.get('query', None)
+        if query is None:
+            raise InvalidCaptionSearch('No query specified.')
+        return jsonify(get_caption_video_ids(
+            caption_data_context, video_data_context, query))
