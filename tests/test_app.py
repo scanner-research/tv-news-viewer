@@ -184,8 +184,7 @@ TEST_DAYOFWEEK_OPTIONS = [None, 'mon-wed', 'sat']
 TEST_IS_COMMERCIAL_OPTIONS = [None, 'false', 'true', 'both']
 TEST_FACE_NAME_OPTIONS = [None, 'wolf blitzer', 'rachel maddow', 'tom hanks']
 TEST_FACE_TAG_OPTIONS = [
-    None, 'all', 'journalist', 'female', 'male,presenter',
-    'female,journalist'
+    None, 'all', 'female', 'male,presenter', 'female,non_presenter'
 ]
 TEST_TEXT_OPTIONS = [
     None, 'united states of america', 'health care', 'united & airlines'
