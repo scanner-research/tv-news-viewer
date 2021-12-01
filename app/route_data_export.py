@@ -89,7 +89,8 @@ def add_data_export_routes(
 
         results = []
         for raw_result in query.execute(
-                cdc.lexicon, cdc.index, ignore_word_not_found=True
+                cdc.lexicon, cdc.index, ignore_word_not_found=True,
+                case_insensitive=True
         ):
             document = cdc.documents[raw_result.id]
             video = vdc.video_dict.get(document.name)

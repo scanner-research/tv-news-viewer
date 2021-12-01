@@ -234,7 +234,7 @@ def get_caption_intervals(
     results = []
     for raw_result in query.execute(
             cdc.lexicon, cdc.index, documents=documents,
-            ignore_word_not_found=True
+            ignore_word_not_found=True, case_insensitive=True
     ):
         document = cdc.documents[raw_result.id]
         video = vdc.video_dict.get(document.name)
