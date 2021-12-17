@@ -33,6 +33,7 @@
       <li><a href="#missing_face_id">I recognize an individual in the video, but the face in the video was not labeled with the individual’s name.  Why were they not identified?</a>
       <li><a href="#report_errors">How do I report errors in video annotations?</a>
       <li><a href="#update_rate">How quickly after a program airs is the Stanford Cable TV News Analyzer updated to reflect new content?</a>
+      <li><a href="#known_confounds">What are some known confounds in the dataset?</a>
     </ul>
 
   <hr>
@@ -155,11 +156,29 @@
     How quickly after a program airs is the site updated to reflect new content?
   </h3>
 
-<p>
-  The Internet Archive makes video data available to the Stanford Cable TV News Analyzer after a 24-hour delay.
-  Because of this delay, as well the processing time of video analysis, new results appear on the Stanford Cable TV News Analyzer approximately 24-36 hours after a program's original air time.  Please see our <a href="/methodology">methodology</a> page for more detail.
-</p>
+  <p>
+    The Internet Archive makes video data available to the Stanford Cable TV News Analyzer after a 24-hour delay.
+    Because of this delay, as well the processing time of video analysis, new results appear on the Stanford Cable TV News Analyzer approximately 24-36 hours after a program's original air time.  Please see our <a href="/methodology">methodology</a> page for more detail.
+  </p>
 
+  <hr>
+
+  <h3><a id="known_confounds"></a>
+    What are some known confounds in the dataset?
+  </h3>
+
+  <p>
+    This list is by no means comprehensive, but is instead intended as a set of examples for the kinds of confounds that one should be aware of when using this tool. We highly recommend using the video playback functions provided by the tool to validate the results of any query.
+
+    <ul>
+      <li><b>Variation in caption spellings.</b>
+        The canonical spelling of a word or phrase may not be consistently reflected in the captions. For example, the word "Obamacare" often appears as "Obama care" (two separate words). "Email" is also often written as "E mail".</li>
+      <li><b>Changes in the face identification models.</b>
+        This tool relies on the <a href="https://docs.aws.amazon.com/rekognition/latest/dg/celebrities.html" target="_blank">Amazon Rekognition Celebrity Recognition API</a> for face identification. Amazon's API may change without notice. For example, Laura Ingraham, a Fox News host, is no longer detected after September 2021. Similarly, if new individuals are added and begin receiving screen time, this is not a guarantee that they were not present in the historical data when face identification was performed.</li>
+    </ul>
+
+    Our <a href="/paper">research paper</a> provides additional details on other patterns in the dataset.
+  </p>
 
 </div>
 {% endblock %}
