@@ -27,6 +27,7 @@
         <th>Channel</th>
         <th>Show</th>
         <th>Total screen time (in hours)</th>
+        <th>Last 365 days (in hours)</th>
       </tr>
     </thead>
   </table>
@@ -39,7 +40,9 @@
           null,
           {render: x => x.length > 0 ? x : '&lt;unnamed&gt;' },
           {render: x => formatNumber(x, 1),
-           width: '25%', className: 'text-right'},
+           width: '20%', className: 'text-right'},
+          {render: x => formatNumber(x, 1),
+           width: '20%', className: 'text-right'},
         ],
         order: [[2, 'desc']],
         language: {

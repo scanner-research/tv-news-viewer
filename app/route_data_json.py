@@ -1,5 +1,5 @@
 import random
-from datetime import datetime
+from datetime import datetime, timedelta
 from collections import namedtuple, defaultdict
 from flask import Flask, Response, jsonify
 
@@ -43,12 +43,21 @@ def add_data_json_routes(
 
     @app.route('/data/shows.json')
     def get_data_shows_json() -> Response:
-        tmp = defaultdict(float)
+        time_all = defaultdict(float)
+        time_1yr = defaultdict(float)
+        max_date_minus_1yr = max(
+            v.date for v in video_data_context.video_dict.values()
+        ) - timedelta(days=365)
         for v in video_data_context.video_dict.values():
-            tmp[(v.channel, v.show)] += v.num_frames / v.fps
+            s = v.num_frames / v.fps
+            k = (v.channel, v.show)
+            time_all[k] += s
+            if v.date >= max_date_minus_1yr:
+                time_1yr[k] += s
+
         channel_and_show = [
-            (channel, show, round(seconds / 3600, 1))
-            for (channel, show), seconds in tmp.items()]
+            (*k, round(s / 3600, 1), round(time_1yr[k] / 3600, 1))
+            for k, s in time_all.items()]
         channel_and_show.sort()
         return jsonify({'data': channel_and_show})
 
