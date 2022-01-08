@@ -60,7 +60,7 @@
   </p>
 
   <p>
-    <b>Individual privacy concerns.</b> The Stanford Cable TV News Analyzer only applies face recognition to publicly-aired broadcast cable TV news video. Additionally, our database contains only individuals identified by the <a href="https://docs.aws.amazon.com/rekognition/latest/dg/celebrities.html">Amazon Rekognition Celebrity Recognition API</a>, which identifies only <i>public figures</i>. (Amazon does not disclose their definition of "public figure".)  Additionally, the Stanford Cable TV News Analyzer only permits screen time queries for individuals that have received at least <i>ten hours of screen time</i> as of August 1, 2020 (according to the Celebrity Recognition API results).
+    <b>Individual privacy concerns.</b> The Stanford Cable TV News Analyzer only applies face recognition to publicly-aired broadcast cable TV news video. Additionally, our database contains only individuals identified by the <a href="https://docs.aws.amazon.com/rekognition/latest/dg/celebrities.html">Amazon Rekognition Celebrity Recognition API</a>, which identifies only <i>public figures</i>. (Amazon does not disclose their definition of "public figure".)  Additionally, the Stanford Cable TV News Analyzer only permits screen time queries for individuals that have received at least <i>ten hours of screen time</i> as of December 31, 2021 (according to the Celebrity Recognition API results).
     This is a total of {{ n_people }} individuals.  The full set of individuals identified in our dataset is given on our <a href="/data">dataset page</a>.  Individuals that wish to be removed from the dataset should email us at <a href="mailto: tvnews-project@stanford.edu?subject=RemoveMe">tvnews-project@stanford.edu</a>.
   </p>
 
@@ -129,7 +129,7 @@
     I recognize an individual in the video, but the face in the video was not labeled with the individual’s name.  Why were they not identified?
   </h3>
   <p>
-    The Stanford Cable TV News Analyzer uses the <a href="https://docs.aws.amazon.com/rekognition/latest/dg/celebrities.html" target="_blank">Amazon’s Celebrity Recognition</a> service to identify faces. This service is only designed to identify celebrities and public individuals.  In addition, the site only displays the names of individuals that have appeared on screen for at least ten hours by August 1, 2020 (according to the celebrity recognition detections).  Individuals not identified by <a href="https://docs.aws.amazon.com/rekognition/latest/dg/celebrities.html" target="_blank">Amazon’s Celebrity Recognition</a> service, or individuals who are identified, but only briefly appear on screen, will not be shown on the site.
+    The Stanford Cable TV News Analyzer uses the <a href="https://docs.aws.amazon.com/rekognition/latest/dg/celebrities.html" target="_blank">Amazon’s Celebrity Recognition</a> service to identify faces. This service is only designed to identify celebrities and public individuals.  In addition, the site only displays the names of individuals that have appeared on screen for at least ten hours by December 31, 2021 (according to the celebrity recognition detections).  Individuals not identified by <a href="https://docs.aws.amazon.com/rekognition/latest/dg/celebrities.html" target="_blank">Amazon’s Celebrity Recognition</a> service, or individuals who are identified, but only briefly appear on screen, will not be shown on the site.
   </p>
 
   <p>
