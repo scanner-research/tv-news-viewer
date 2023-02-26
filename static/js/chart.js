@@ -17,7 +17,8 @@ const VGRID_INSTRUCTIONS = $('<ul />').append(
   $('<li>').html(
     'Relavant words in the captions are bolded in ' +
     '<span style="color: #de2a2a; font-weight: bold">red</span>.'),
-  $('<li>').html('Expand the video thumbnail to show labeled identities.')
+  $('<li>').html('Expand the video thumbnail to show labeled identities.'),
+  $('<li>').html('Click <img style="height: 1rem" src="/static/img/archive.svg">, next to the video title, to view the clip at the Internet Archive.')
 );
 
 const EPSILON = 1e-4;
