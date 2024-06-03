@@ -214,7 +214,7 @@ def _load_person_intervals(
         for k, v in skipped_counter.most_common(25):
             print('    {}: {}s'.format(k, int(v)))
 
-    all_person_intervals.sort()
+    all_person_intervals.sort(key=lambda x: x[0])
     return OrderedDict(all_person_intervals)
 
 
