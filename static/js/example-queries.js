@@ -15,16 +15,21 @@ function getExampleChartPath(queries, chart_options) {
   return '/?data=' + urlSafeBase64Encode(JSON.stringify(data));
 }
 
-const DEFAULT_QUERIES = ['name="joe biden"', 'name="donald trump"'];
+const DEFAULT_QUERIES = ['name="donald trump"', 'name="kamala harris"', 'name="joe biden"'];
 
 const EXAMPLE_QUERIES = [
   [
-    'Joe Biden vs. Donald Trump in 2020', getExampleChartPath(
-      ['name="joe biden"', 'name="donald trump"'],
-      {start_date: '2020-01-01', aggregate: 'day'}
+    'Donald Trump vs. Kamala Harris, vs. Joe Biden screen time in 2024', getExampleChartPath(
+      ['name="donald trump"', 'name="kamala harris"', 'name="joe biden"'],
+      {start_date: '2024-01-01', aggregate: 'day'}
     )
   ], [
-    'Hillary Clinton vs. Donald Trump in 2016', getExampleChartPath(
+    'Joe Biden vs. Donald Trump screen time in 2020', getExampleChartPath(
+      ['name="joe biden"', 'name="donald trump"'],
+      {start_date: '2020-01-01', end_date: '2022-03-01', aggregate: 'day'}
+    )
+  ], [
+    'Hillary Clinton vs. Donald Trump screen time in 2016', getExampleChartPath(
       ['name="hillary clinton"', 'name="donald trump"'],
       {start_date: '2016-01-01', end_date: '2017-01-01', aggregate: 'day'}
     )
@@ -33,17 +38,28 @@ const EXAMPLE_QUERIES = [
       ['name="sean hannity" AND name="tucker carlson"']
     )
   ], [
+    'US Dept. of State designated Foreign Terrorist Organizations', getExampleChartPath(
+      [
+        'text="ISIS | Islamic State"',
+        'text="Hamas"',
+        'text="Al-Qaeda | Al Qaeda"',
+        'text="Hezbollah | Hizballah"'
+      ],
+      {start_date: '2010-01-01', aggregate: 'month'}
+    )
+  ], [
     'COVID-19 pandemic', getExampleChartPath(
       [
         'text="COVID | CORONAVIRUS | CORONA VIRUS"',
         'text="WUHAN VIRUS | CHINESE VIRUS"',
         'text="SOCIAL DISTANCING"'
       ],
-      {start_date: '2019-12-01', aggregate: 'day'}
+      {start_date: '2019-12-01', aggregate: 'week'}
     )
   ], [
     'Black Lives Matter', getExampleChartPath(
-      ['text="BLACK LIVES MATTER"'], {aggregate: 'day'})
+      ['text="BLACK LIVES MATTER"'], {aggregate: 'week'}
+    )
   ], [
     'Illegal vs. undocumented immigration', getExampleChartPath(
       [
